@@ -1,0 +1,11 @@
+anomalies/
+segments/
+datasets/
+datasources/
+models/
+metrics/
+__pycache__/
+*.pyc
+*.txt
+*.log
+tasks.csv

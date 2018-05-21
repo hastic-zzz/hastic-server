@@ -1,0 +1,32 @@
+{
+  "name": "hastic-server",
+  "version": "1.0.0",
+  "description": "REST server for managing data for analytics",
+  "scripts": {
+    "start": "node dist/server.js",
+    "dev": "node build/dev-server.js",
+    "build": "webpack --config build/webpack.prod.conf.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hastic/hastic-server.git"
+  },
+  "author": "CorpGlory",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hastic/hastic-server/issues"
+  },
+  "homepage": "https://github.com/hastic/hastic-server#readme",
+  "dependencies": {
+    "express": "^4.16.3",
+    "fast-csv": "^2.4.1",
+    "telegraf": "^3.21.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.11.1",
+    "nodemon": "^1.17.3",
+    "ts-loader": "^3.5.0",
+    "typescript": "^2.8.3",
+    "webpack": "^3.5.6"
+  }
+}
