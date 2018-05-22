@@ -52,7 +52,7 @@ async function alertsTick() {
 
 const alertTimeout = 60000; // ms
 const activeAlerts = new Set<string>();
-setTimeout(alertsTick, 5000);
+// setTimeout(alertsTick, 5000);
 
 
 export { getAlertsAnomalies, saveAlertsAnomalies }

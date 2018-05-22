@@ -15,7 +15,6 @@ const learnWorker = spawn('python3', ['worker.py'], { cwd: ANALYTICS_PATH })
 learnWorker.stdout.pipe(split())
   .pipe(
     mapSync(function(line){
-      console.log(line)
       onMessage(line)
     })
   );
@@ -26,6 +25,7 @@ const taskMap = {};
 let nextTaskId = 0;
 
 function onMessage(data) {
+  console.log(`worker stdout: ${data}`);
   let response = JSON.parse(data);
   let taskId = response.__task_id;
   // let anomalyName = response.anomaly_name;

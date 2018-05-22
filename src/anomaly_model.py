@@ -4,6 +4,7 @@ from data_preprocessor import data_preprocessor
 import json
 import pandas as pd
 import logging
+from urllib.parse import urlparse
 
 datasource_folder = "datasources/"
 dataset_folder = "datasets/"
@@ -26,22 +27,22 @@ class AnomalyModel:
         self.anomaly_name = anomaly_name
         self.load_anomaly_config()
 
-        datasource = self.anomaly_config['metric']['datasource']
+        parsedUrl = urlparse(self.anomaly_config['panelUrl'])
+        origin = parsedUrl.scheme + '://' + parsedUrl.netloc
+
+        datasource = self.anomaly_config['datasource']
+        datasource['origin'] = origin
         metric_name = self.anomaly_config['metric']['targets'][0]
 
-        dbconfig_filename = os.path.join(datasource_folder, datasource + ".json")
         target_filename = os.path.join(metrics_folder, metric_name + ".json")
 
         dataset_filename = os.path.join(dataset_folder, metric_name + ".csv")
         augmented_path = os.path.join(dataset_folder, metric_name + "_augmented.csv")
 
-        with open(dbconfig_filename, 'r') as config_file:
-            dbconfig = json.load(config_file)
-
         with open(target_filename, 'r') as file:
             target = json.load(file)
 
-        self.data_prov = DataProvider(dbconfig, target, dataset_filename)
+        self.data_prov = DataProvider(datasource, target, dataset_filename)
         self.preprocessor = data_preprocessor(self.data_prov, augmented_path)
         self.model = None
 
@@ -96,8 +97,6 @@ class AnomalyModel:
         start_index = self.data_prov.get_upper_bound(last_prediction_time)
         stop_index = self.data_prov.size()
 
-        # last_prediction_time = pd.to_datetime(last_prediction_time, unit='ms')
-        # dataframe = dataframe[dataframe['timestamp'] > last_prediction_time]
         last_prediction_time = int(last_prediction_time.timestamp() * 1000)
 
         predicted_anomalies = []

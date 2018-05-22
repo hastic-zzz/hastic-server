@@ -1,14 +1,18 @@
-from influxdb import InfluxDBClient
 import pandas as pd
-import os.path
+import os, re
 import numpy as np
+from urllib.parse import urlencode, urlparse
+import urllib.request
+import json
+from time import time
 
+MS_IN_WEEK = 604800000
 
 class DataProvider:
     chunk_size = 50000
 
-    def __init__(self, dbconfig, target, data_filename):
-        self.dbconfig = dbconfig
+    def __init__(self, datasource, target, data_filename):
+        self.datasource = datasource
         self.target = target
         self.data_filename = data_filename
         self.last_time = None
@@ -69,78 +73,79 @@ class DataProvider:
         return [(dataframe['timestamp'][i1], dataframe['timestamp'][i2]) for (i1, i2) in indexes]
 
     def synchronize(self):
-        # last_time = None
-        # if len(self.dataframe/) > 0:
-        #     last_time = self.dataframe['time'][len(self.dataframe)-1]
         append_dataframe = self.load_from_db(self.last_time)
         self.__append_data(append_dataframe)
-        # append_dataframe
-        # append_dataframe.to_csv(self.data_filename, mode='a', index=False, header=False)
-        # self.dataframe = pd.concat([self.dataframe, append_dataframe], ignore_index=True)
 
-    # def load(self):
-    #     if os.path.exists(self.data_filename):
-    #         self.dataframe = pd.read_csv(self.data_filename, parse_dates=[0])
-    #         self.synchronize()
-    #     else:
-    #         append_dataframe = self.load_from_db()
-    #         self.__append_data(append_dataframe)
-    #         #self.dataframe.to_csv(self.data_filename, index=False, header=True)
-
-    def custom_query(self, after_time):
-        query = self.target["query"]
-        timeFilter = "TRUE"
-        if after_time is not None:
-            timeFilter = "time > '%s'" % (str(after_time))
-        query = query.replace("$timeFilter", timeFilter)
-        return query
+    def custom_query(self, after_time, before_time = None):
+        if self.datasource['type'] == 'influxdb':
+            query = self.datasource['params']['q']
+            if after_time is not None:
+                if before_time is not None:
+                    timeFilter = 'time >= %s AND time <= %s' % (after_time, before_time)
+                else:
+                    timeFilter = 'time >= "%s"' % (str(after_time))
+            else:
+                timeFilter = 'time > 0ms'
+            query = re.sub(r'(?:time >.+?)(GROUP.+)*$', timeFilter + r' \1', query)
+            return query
+        else:
+            raise 'Datasource type ' + self.datasource['type'] + ' is not supported yet'
 
     def load_from_db(self, after_time=None):
-        """Instantiate a connection to the InfluxDB."""
-        host = self.dbconfig['host']
-        port = self.dbconfig['port']
-        user = self.dbconfig['user']
-        password = self.dbconfig['password']
-        dbname = self.dbconfig['dbname']
-
-        client = InfluxDBClient(host, port, user, password, dbname)
-        # query = 'select k0, k1, k2 from vals;'
-
-        measurement = self.target['measurement']
-        select = self.target['select']
-        tags = self.target['tags']
-
-        if "query" in self.target:
-            query = self.custom_query(after_time)
+        result = self.__load_data_chunks(after_time)
+        if result == None or len(result['values']) == 0:
+            dataframe = pd.DataFrame([])
         else:
-            select_values = select[0][0]['params']
-            escaped_select_values = ["\"" + value + "\"" for value in select_values]
-
-            conditions_entries = []
-            if len(tags) > 0:
-                for tag in tags:
-                    conditions_entries.append("(\"" + tag['key'] + "\"" + tag['operator'] + "'" + tag['value'] + "')")
-            if after_time:
-                conditions_entries.append("time > '%s'" % (str(after_time)))
-
-            condition = ""
-            if len(conditions_entries) > 0:
-                condition = " where " + " AND ".join(conditions_entries)
-
-            query = "select %s from \"%s\"%s;" % (",".join(escaped_select_values), measurement, condition)
-
-        result = client.query(query, chunked=True, chunk_size=10000)
-        dataframe = pd.DataFrame(result.get_points())
-        if len(dataframe) > 0:
+            dataframe = pd.DataFrame(result['values'], columns = result['columns'])
             cols = dataframe.columns.tolist()
             cols.remove('time')
             cols = ['time'] + cols
             dataframe = dataframe[cols]
-
-            dataframe['time'] = pd.to_datetime(dataframe['time'])
+            dataframe['time'] = pd.to_datetime(dataframe['time'], unit='ms')
             dataframe = dataframe.dropna(axis=0, how='any')
 
         return dataframe
+
+    def __load_data_chunks(self, after_time = None):
+        params = self.datasource['params']
+
+        if after_time == None:
+            res = {
+                'columns': [],
+                'values': []
+            }
+
+            after_time = int(time()*1000 - MS_IN_WEEK)
+            before_time = int(time()*1000)
+            while True:
+                params['q'] = self.custom_query(str(after_time) + 'ms', str(before_time) + 'ms')
+                serie = self.__query_grafana(params)
+
+                if serie != None:
+                    res['columns'] = serie['columns']
+                    res['values'] += serie['values']
+
+                    after_time -= MS_IN_WEEK
+                    before_time -= MS_IN_WEEK
+                else:
+                    return res
+        else:
+            params['q'] = self.custom_query(str(after_time) + 'ms')
+
+            return self.__query_grafana(params)
+
+    def __query_grafana(self, params):
+        
+        headers = { 'Authorization': 'Bearer ' + os.environ['API_KEY'] }
+        url = self.datasource['origin'] + '/' + self.datasource['url'] + '?' + urlencode(params)
+
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req) as resp:
+            res = json.loads(resp.read().decode('utf-8'))['results'][0]
+            if 'series' in res:
+                return res['series'][0]
+            else:
+                return None
 
     def __init_chunks(self):
         chunk_index = 0
