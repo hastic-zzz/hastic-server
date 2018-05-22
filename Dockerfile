@@ -7,7 +7,7 @@ VOLUME [ "/var/www/src/anomalies", "/var/www/src/datasets", "/var/www/src/metric
 RUN pip install pandas
 RUN pip install seglearn
 RUN pip install scipy
-RUN pip install fbprophet
+RUN pip install tsfresh
 
 COPY . /var/www
 
