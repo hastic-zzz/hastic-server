@@ -52,12 +52,23 @@ Data format:
 {
   "name": "cpu_utilization_supervised",
   "metric": {
-    "datasource": "influx accelerometer",
-    "targets": [
-      <targets>
-    ]
+		"datasource": "influx accelerometer",
+		"targets": [
+		  <targets>
+		]
   },
-  "panelUrl": "http://grafana.example.com/d/oNZ35bWiz/new-dashboard-copy?panelId=2&fullscreen"
+  "panelUrl": "http://grafana.example.com/d/oNZ35bWiz/new-dashboard-copy?panelId=2&fullscreen",
+  "datasource": {
+		"data": null,
+		"type": "influxdb",
+		"method": "GET",
+		"params": {
+			"db": "collectd",
+			"q": "SELECT mean("value") FROM "cpu_value" WHERE ("type…ms and time <= 1526986266633ms GROUP BY time(10s)",
+			"epoch": "ms"
+		}
+		"url": "api/datasources/proxy/8/query"
+	}
 }
 ```
 
