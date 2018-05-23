@@ -30,7 +30,7 @@ async function sendAnomalyTypeStatus(req, res) {
     if(anomaly.status === undefined) {
       throw new Error('No status for ' + name);
     }
-    res.status(200).send({ status: anomaly.status });
+    res.status(200).send({ status: anomaly.status, errorMessage: anomaly.error });
   } catch(e) {
     console.error(e);
     // TODO: better send 404 when we know than isn`t found

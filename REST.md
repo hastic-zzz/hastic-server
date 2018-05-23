@@ -32,7 +32,8 @@ Return data format:
 
 ```
 {
-  "status": <str>
+  "status": <str>,
+  "errorMessage": <str>
 }
 ```
 

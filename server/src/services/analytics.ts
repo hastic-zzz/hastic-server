@@ -89,7 +89,7 @@ async function runLearning(anomalyId:AnomalyId) {
     insertSegments(anomalyId, result.segments, false);
     setAnomalyPredictionTime(anomalyId, result.last_prediction_time);
   } else {
-    setAnomalyStatus(anomalyId, 'failed');
+    setAnomalyStatus(anomalyId, 'failed', result.error);
   }
 }
 

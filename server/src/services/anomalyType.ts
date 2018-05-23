@@ -25,6 +25,7 @@ export type Anomaly = {
   metric: Metric,
   datasource: Datasource
   status: string,
+  error?: string,
 
   last_prediction_time: number,
   next_id: number
@@ -108,9 +109,14 @@ function getAnomalyTypeInfo(name) {
   return getJsonDataSync(path.join(ANOMALIES_PATH, `${name}.json`));
 }
 
-function setAnomalyStatus(anomalyId:AnomalyId, status:string) {
+function setAnomalyStatus(anomalyId:AnomalyId, status:string, error?:string) {
   let info = loadAnomalyById(anomalyId);
   info.status = status;
+  if(error !== undefined) {
+    info.error = error;
+  } else {
+    info.error = '';
+  }
   saveAnomaly(anomalyId, info);
 }
 
