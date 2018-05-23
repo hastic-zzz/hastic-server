@@ -1,5 +1,6 @@
 import { getJsonDataSync, writeJsonDataSync } from './json';
 import * as path from 'path';
+import * as fs from 'fs';
 import { AnomalyId } from './anomalyType';
 import { ANOMALIES_PATH } from '../config';
 import { runPredict } from './analytics';
@@ -7,6 +8,10 @@ import { sendNotification } from './notification';
 import { getLabeledSegments } from './segments';
 
 function getAlertsAnomalies() : AnomalyId[] {
+  let filename = path.join(ANOMALIES_PATH, `alerts_anomalies.json`);
+  if(!fs.existsSync(filename)) {
+    saveAlertsAnomalies([]);
+  }
   return getJsonDataSync(path.join(ANOMALIES_PATH, `alerts_anomalies.json`));
 }
 
@@ -52,7 +57,7 @@ async function alertsTick() {
 
 const alertTimeout = 60000; // ms
 const activeAlerts = new Set<string>();
-// setTimeout(alertsTick, 5000);
+setTimeout(alertsTick, 5000);
 
 
 export { getAlertsAnomalies, saveAlertsAnomalies }
