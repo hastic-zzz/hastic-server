@@ -136,7 +136,7 @@ class DataProvider:
 
     def __query_grafana(self, params):
         
-        headers = { 'Authorization': 'Bearer ' + os.environ['API_KEY'] }
+        headers = { 'Authorization': 'Bearer ' + os.environ['HASTIC_API_KEY'] }
         url = self.datasource['origin'] + '/' + self.datasource['url'] + '?' + urlencode(params)
 
         req = urllib.request.Request(url, headers=headers)

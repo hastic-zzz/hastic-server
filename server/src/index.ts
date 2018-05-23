@@ -7,7 +7,7 @@ import { router as alertsRouter } from './routes/alerts';
 import { tgBotInit } from './services/notification';
 
 const app = express();
-const PORT = 8000;
+const PORT = process.env.HASTIC_PORT || 8000;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
