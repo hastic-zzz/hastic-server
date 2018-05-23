@@ -7,11 +7,9 @@ see [REST API](REST.md)
 
 ## Build & run
 
-First of all, you should generate [API key](http://docs.grafana.org/tutorials/api_org_token_howto/) in your Grafana instance.
+Server needs [Grafana's API key](http://docs.grafana.org/tutorials/api_org_token_howto/) to query data from Grafana datasources.
 
-Without API key hastic-server will not be able to use your datasources.
-
-### Docker
+### Docker installation
 
 Example of running hastic-server in Docker:
 
@@ -20,7 +18,7 @@ docker build -t hastic-server .
 docker run -d --name hastic-server -p 80:8000 -e HASTIC_API_KEY=<your_grafana_api_key> hastic-server
 ```
 
-### Linux
+### Linux installation
 
 #### Environment variables
 
