@@ -4,6 +4,14 @@ import { ANOMALIES_PATH } from '../config'
 import * as fs from 'fs'
 import * as crypto from 'crypto';
 
+export type Datasource = {
+  method: string,
+  data: Object,
+  params: Object,
+  type: string,
+  url: string
+}
+
 export type Metric = {
   datasource: string,
   targets: string[]
@@ -15,6 +23,7 @@ export type Anomaly = {
   panelUrl: string,
 
   metric: Metric,
+  datasource: Datasource
   status: string,
 
   last_prediction_time: number,

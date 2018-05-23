@@ -1,6 +1,7 @@
 import * as express from 'express';
 
 import {
+  Datasource,
   Metric,
   Anomaly,
   saveAnomaly,
@@ -81,6 +82,7 @@ async function createAnomaly(req, res) {
       name: req.body.name,
       panelUrl: req.body.panelUrl,
       metric: metric,
+      datasource: req.body.datasource,
       status: 'learning',
       last_prediction_time: 0,
       next_id: 0
