@@ -22,7 +22,7 @@ app.use(function (req, res, next) {
 app.use('/anomalies', anomaliesRouter);
 app.use('/segments', segmentsRouter);
 app.use('/alerts', alertsRouter);
-app.use('/', (req, res) => { res.send('Analytic unit works') });
+app.use('/', (req, res) => res.send({ status: 'OK' }));
 
 app.listen(PORT, () => {
   console.log(`Server is running on :${PORT}`)
