@@ -21,15 +21,15 @@ module.exports = {
     filename: "server.js",
     path: resolve('dist')
   },
-  externals: [
-    function(context, request, callback) {
-      if(request[0] == '.') {
-        callback();
-      } else {
-        callback(null, "require('" + request + "')");
-      }
-    }
-  ],
+  // externals: [
+  //   function(context, request, callback) {
+  //     if(request[0] == '.') {
+  //       callback();
+  //     } else {
+  //       callback(null, "require('" + request + "')");
+  //     }
+  //   }
+  // ],
   plugins: [
     new webpack.optimize.OccurrenceOrderPlugin(),
     new webpack.HotModuleReplacementPlugin(),
