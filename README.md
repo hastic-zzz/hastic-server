@@ -7,7 +7,7 @@ see [REST API](REST.md)
 
 ## Build & run
 
-Server needs [Grafana's API key](http://docs.grafana.org/tutorials/api_org_token_howto/) to query data from Grafana datasources.
+Server needs Grafana's API key (http://<your_grafana_url>/org/apikeys) to query data from Grafana datasources.
 
 ### Docker installation
 
