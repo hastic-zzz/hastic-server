@@ -9,6 +9,11 @@ see [REST API](REST.md)
 
 Server needs Grafana's API key (http://<your_grafana_url>/org/apikeys) to query data from Grafana datasources.
 
+API key role can be any of:
+- Viewer
+- Editor
+- Admin
+
 ### Docker installation
 
 Example of running hastic-server in Docker:
