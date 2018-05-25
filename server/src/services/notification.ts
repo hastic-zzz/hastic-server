@@ -15,15 +15,16 @@ function sendNotification(anomalyId, active) {
     notification.status = 'OK';
   }
 
-  if(process.env.ALERT_ENDPOINT !== undefined) {
-    fetch(process.env.ALERT_ENDPOINT, {
+  let endpoint = process.env.HASTIC_ALERT_ENDPOINT;
+  if(endpoint !== undefined) {
+    fetch(endpoint, {
       method: 'POST',
       body: JSON.stringify(notification)
     })
       .then(data => console.log(data))
-      .catch(err => console.error(`Can't send alert to ${process.env.ALERT_ENDPOINT}. Error: ${err}`));
+      .catch(err => console.error(`Can't send alert to ${endpoint}. Error: ${err}`));
   } else {
-    console.error(`Can't send alert, env ALERT_ENDPOINT is undefined`);
+    console.error(`Can't send alert, env HASTIC_ALERT_ENDPOINT is undefined`);
   }
 }
 
