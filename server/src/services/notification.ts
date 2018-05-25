@@ -117,21 +117,21 @@ function removeNotification(ctx) {
   }
 }
 
-const Telegraf = require('telegraf');
+// const Telegraf = require('telegraf');
 let botConfig: BotConfig;
 let bot;
 
 function tgBotInit() {
   try {
-    botConfig = loadBotConfig();
-    bot = new Telegraf(botConfig.token);
+    // botConfig = loadBotConfig();
+    // bot = new Telegraf(botConfig.token);
 
-    bot.use(commandArgs);
+    // bot.use(commandArgs);
 
-    bot.command('addNotification', addNotification);
-    bot.command('removeNotification', removeNotification);
+    // bot.command('addNotification', addNotification);
+    // bot.command('removeNotification', removeNotification);
 
-    bot.startPolling();
+    // bot.startPolling();
   } catch(e) {
     // TODO: handle exception
   }

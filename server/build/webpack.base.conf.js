@@ -41,11 +41,17 @@ module.exports = {
     extensions: [".ts", ".js"]
   },
   module: {
-    rules: [
+    loaders: [
       {
-        test: /\.ts$/,
-        loader: "ts-loader",
-        exclude: /node_modules/
+        test: /\.ts?$/,
+        loaders: ['babel-loader', 'ts-loader'],
+        exclude: [ /node_modules/ ]
+      },
+      // babel-loader for pure javascript (es6) => javascript (es5)
+      {
+        test: /\.(jsx?)$/,
+        loaders: ['babel'],
+        exclude: [ /node_modules/ ]
       }
     ]
   }
