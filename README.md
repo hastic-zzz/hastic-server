@@ -30,11 +30,25 @@ docker run -d --name hastic-server -p 80:8000 -e HASTIC_API_KEY=<your_grafana_ap
 You can export following environment variables for hastic-server to use:
 - HASTIC_API_KEY - (required) API-key of your Grafana instance
 - HASTIC_PORT - (optional) port you want to run server on, default: 8000
+- HASTIC_ALERT_ENDPOINT - (optional) endpoint you want to send alerts to
+
+Alert example (method: POST):
+
+```
+{
+  anomaly: 'cpu_load',
+  status: <str>
+}
+```
+
+`status` field can be one of:
+- `alert`
+- `OK`
 
 #### Dependencies
 
+- git
 - python3 with:
-  - pip
   - pandas
   - seglearn
   - scipy
@@ -44,10 +58,11 @@ You can export following environment variables for hastic-server to use:
 Example of running hastic-server on Debian / Ubuntu host:
 
 ```
-$ git clone https://github.com/hastic/hastic-server.git
 $ export HASTIC_API_KEY=<your_grafana_api_key>
 $ export HASTIC_PORT=<port_you_want_to_run_server_on>
-# apt-get install python3 \
+$ export HASTIC_ALERT_ENDPOINT=http://alert.example.com
+# apt-get install \
+  python3 \
   python3-pip \
   gnupg \
   curl \
@@ -60,6 +75,7 @@ $ pip3 install scipy
 $ pip3 install tsfresh
 $ curl -sL https://deb.nodesource.com/setup_9.x | bash -
 # apt-get update && apt-get install -y nodejs
+$ git clone https://github.com/hastic/hastic-server.git
 $ cd hastic-server/server
 $ npm install && npm run build
 $ npm start
