@@ -9,7 +9,7 @@ import {
 } from './anomalyType'
 import { getTarget } from './metrics';
 import { getLabeledSegments, insertSegments, removeSegments } from './segments';
-import { split, map, mapSync } from 'event-stream'
+import { split, map, mapSync } from 'event-stream';
 
 const learnWorker = spawn('python3', ['worker.py'], { cwd: ANALYTICS_PATH })
 learnWorker.stdout.pipe(split())

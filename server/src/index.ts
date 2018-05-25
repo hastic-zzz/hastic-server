@@ -4,7 +4,6 @@ import * as bodyParser from 'body-parser';
 import { router as anomaliesRouter } from './routes/anomalies';
 import { router as segmentsRouter } from './routes/segments';
 import { router as alertsRouter } from './routes/alerts';
-import { tgBotInit } from './services/notification';
 
 const app = express();
 const PORT = process.env.HASTIC_PORT || 8000;
@@ -27,5 +26,3 @@ app.use('/', (req, res) => res.send({ status: 'OK' }));
 app.listen(PORT, () => {
   console.log(`Server is running on :${PORT}`)
 });
-
-tgBotInit();
