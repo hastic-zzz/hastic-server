@@ -48,7 +48,6 @@ Example of running hastic-server on Debian / Ubuntu host:
 ```
 $ export HASTIC_API_KEY=<your_grafana_api_key>
 $ export HASTIC_PORT=<port_you_want_to_run_server_on>
-$ export HASTIC_ALERT_ENDPOINT=http://alert.example.com
 # apt-get install \
   python3 \
   python3-pip \
