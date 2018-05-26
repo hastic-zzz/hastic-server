@@ -5,10 +5,10 @@ It's possible to get notifications about new anomalies via [WebHooks](https://en
 You need to set variable `HASTIC_ALERT_ENDPOINT` with your endpoint and expects `POST` methods 
 from hastic-server if format:
 
-```
+```json
 {
-  anomaly: 'cpu_load',
-  status: <str>
+  "anomaly": "cpu_load",
+  "status": "OK"
 }
 ```
 
@@ -26,9 +26,12 @@ docker run -d --name hastic-server -p 80:8000 -e HASTIC_API_KEY=<your_grafana_ap
 Add variable before launch node.js server
 
 ```bash
-$ export HASTIC_ALERT_ENDPOINT=http://alert.example.com
-$ cd hastic-server/server
-$ npm start
+export HASTIC_API_KEY=<your_grafana_api_key>
+export HASTIC_PORT=<port_you_want_to_run_server_on>
+export HASTIC_ALERT_ENDPOINT=http://alert.example.com
+
+cd hastic-server/server
+npm start
 ```
 
 
