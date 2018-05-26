@@ -3,7 +3,11 @@
 Implementation of basic pattern recognition and unsupervised learning for anomaly detection.
 
 Implementation of analytic unit for Hastic. 
-see [REST API](REST.md)
+
+See also:
+* [Hooks](https://github.com/hastic/hastic-server/blob/master/HOOKS.md) - notifications about events
+* [REST](REST.md) - developing your plugins
+* [HasticPanel][https://github.com/hastic/hastic-grafana-graph-panel] - Hastic plugin for Grafana 
 
 ## Build & run
 
@@ -27,8 +31,6 @@ You can export following environment variables for hastic-server to use:
 - HASTIC_API_KEY - (required) API-key of your Grafana instance
 - HASTIC_PORT - (optional) port you want to run server on, default: 8000
 
-See [hooks docs](https://github.com/hastic/hastic-server/blob/master/HOOKS.md) for notifications about events.
-
 #### Dependencies
 
 - git
@@ -42,7 +44,7 @@ $ export HASTIC_API_KEY=<your_grafana_api_key>
 $ export HASTIC_PORT=<port_you_want_to_run_server_on>
 # If you don't have nodejs, uncomment next line:
 # curl -sL https://deb.nodesource.com/setup_9.x | bash -
-# apt-get install \
+$ apt-get install \
   python3 \
   python3-pip \
   gnupg \
@@ -50,12 +52,8 @@ $ export HASTIC_PORT=<port_you_want_to_run_server_on>
   make \
   g++ \
   git
-$ pip3 install pandas
-$ pip3 install seglearn
-$ pip3 install scipy
-$ pip3 install tsfresh
+$ pip3 install pandas seglearn scipy tsfresh
 
-# apt-get update && apt-get install -y nodejs
 $ git clone https://github.com/hastic/hastic-server.git
 $ cd hastic-server/server
 $ npm install && npm run build
