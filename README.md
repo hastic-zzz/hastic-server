@@ -18,7 +18,7 @@ API key role needs only `Viewer` access.
 
 Example of running hastic-server in Docker:
 
-```
+```bash
 docker build -t hastic-server .
 docker run -d --name hastic-server -p 80:8000 -e HASTIC_API_KEY=<your_grafana_api_key> hastic-server
 ```
@@ -33,26 +33,18 @@ You can export following environment variables for hastic-server to use:
 
 #### Dependencies
 
-- git
-- python3
-- nodejs >= 6.0.0
+You need in your system:
+* [nodejs >= 6.0.0](https://nodejs.org/en/download/package-manager/)
+* [python3 python3-pip](https://www.python.org/downloads/)
+* curl gnupg git make g++
+
 
 Example of running hastic-server on Debian / Ubuntu host:
 
 ```bash
+$ pip3 install pandas seglearn scipy tsfresh
 $ export HASTIC_API_KEY=<your_grafana_api_key>
 $ export HASTIC_PORT=<port_you_want_to_run_server_on>
-# If you don't have nodejs, uncomment next line:
-# curl -sL https://deb.nodesource.com/setup_9.x | bash -
-$ apt-get install \
-  python3 \
-  python3-pip \
-  gnupg \
-  curl \
-  make \
-  g++ \
-  git
-$ pip3 install pandas seglearn scipy tsfresh
 
 $ git clone https://github.com/hastic/hastic-server.git
 $ cd hastic-server/server
