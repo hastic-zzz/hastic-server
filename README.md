@@ -8,11 +8,7 @@ see [REST API](REST.md)
 ## Build & run
 
 Server needs Grafana's API key (http://<your_grafana_url>/org/apikeys) to query data from Grafana datasources.
-
-API key role can be any of:
-- Viewer
-- Editor
-- Admin
+API key role needs only `Viewer` access.
 
 ### Docker installation
 
