@@ -36,19 +36,17 @@ See [hooks docs](https://github.com/hastic/hastic-server/blob/master/HOOKS.md) f
 #### Dependencies
 
 - git
-- python3 with:
-  - pandas
-  - seglearn
-  - scipy
-  - tsfresh
-- nodejs >= 9
+- python3
+- nodejs >= 6.0.0
 
 Example of running hastic-server on Debian / Ubuntu host:
 
-```
+```bash
 $ export HASTIC_API_KEY=<your_grafana_api_key>
 $ export HASTIC_PORT=<port_you_want_to_run_server_on>
-# sudo apt-get install \
+# If you don't have nodejs, uncomment next line:
+# curl -sL https://deb.nodesource.com/setup_9.x | bash -
+# apt-get install \
   python3 \
   python3-pip \
   gnupg \
@@ -56,8 +54,11 @@ $ export HASTIC_PORT=<port_you_want_to_run_server_on>
   make \
   g++ \
   git
-$ sudo pip3 install pandas seglearn scipy tsfresh
-$ curl -sL https://deb.nodesource.com/setup_9.x | bash -
+$ pip3 install pandas
+$ pip3 install seglearn
+$ pip3 install scipy
+$ pip3 install tsfresh
+
 # apt-get update && apt-get install -y nodejs
 $ git clone https://github.com/hastic/hastic-server.git
 $ cd hastic-server/server
