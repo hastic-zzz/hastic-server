@@ -6,8 +6,8 @@ Implementation of analytic unit for Hastic.
 
 See also:
 * [Hooks](https://github.com/hastic/hastic-server/blob/master/HOOKS.md) - notifications about events
-* [REST](REST.md) - developing your plugins
-* [HasticPanel][https://github.com/hastic/hastic-grafana-graph-panel] - Hastic plugin for Grafana 
+* [REST](REST.md) - for developing your plugins
+* [HasticPanel](https://github.com/hastic/hastic-grafana-graph-panel) - Hastic plugin for Grafana 
 
 ## Build & run
 
