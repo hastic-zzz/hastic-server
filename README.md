@@ -30,20 +30,8 @@ docker run -d --name hastic-server -p 80:8000 -e HASTIC_API_KEY=<your_grafana_ap
 You can export following environment variables for hastic-server to use:
 - HASTIC_API_KEY - (required) API-key of your Grafana instance
 - HASTIC_PORT - (optional) port you want to run server on, default: 8000
-- HASTIC_ALERT_ENDPOINT - (optional) endpoint you want to send alerts to
 
-Alert example (method: POST):
-
-```
-{
-  anomaly: 'cpu_load',
-  status: <str>
-}
-```
-
-`status` field can be one of:
-- `alert`
-- `OK`
+See [hooks docs](https://github.com/hastic/hastic-server/blob/master/HOOKS.md) for notifications about events.
 
 #### Dependencies
 
