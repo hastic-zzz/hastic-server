@@ -15,12 +15,12 @@ Alert example (method: POST):
 - `alert`
 - `OK`
 
-# Docker run
+## Docker run
 ```
 docker run -d --name hastic-server -p 80:8000 -e HASTIC_API_KEY=<your_grafana_api_key> HASTIC_ALERT_ENDPOINT="http://exam.ple" hastic-server
 ```
 
-# Node run
+## Node run
 
 Add variable before launch node.js server
 ```
