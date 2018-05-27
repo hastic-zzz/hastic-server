@@ -2,13 +2,11 @@ from data_provider import DataProvider
 import logging
 import os.path
 import json
+import config
+
 import pandas as pd
 
-datasource_folder = "datasources/"
-dataset_folder = "datasets/"
-anomalies_folder = "anomalies/"
-models_folder = "models/"
-metrics_folder = "metrics/"
+
 logger = logging.getLogger('analytic_toolset')
 
 
@@ -33,10 +31,10 @@ class PatternDetectionModel:
         datasource = self.anomaly_config['metric']['datasource']
         metric_name = self.anomaly_config['metric']['targets'][0]
 
-        dbconfig_filename = os.path.join(datasource_folder, datasource + ".json")
-        target_filename = os.path.join(metrics_folder, metric_name + ".json")
+        dbconfig_filename = os.path.join(config.DATASOURCE_FOLDER, datasource + ".json")
+        target_filename = os.path.join(config.METRICS_FOLDER, metric_name + ".json")
 
-        dataset_filename = os.path.join(dataset_folder, metric_name + ".csv")
+        dataset_filename = os.path.join(config.DATASET_FOLDER, metric_name + ".csv")
 
         with open(dbconfig_filename, 'r') as config_file:
             dbconfig = json.load(config_file)
@@ -111,17 +109,17 @@ class PatternDetectionModel:
             return StepDetector(preset)
 
     def __load_anomaly_config(self):
-        with open(os.path.join(anomalies_folder, self.pattern_name + ".json"), 'r') as config_file:
+        with open(os.path.join(config.ANOMALIES_FOLDER, self.pattern_name + ".json"), 'r') as config_file:
             self.anomaly_config = json.load(config_file)
 
     def __save_model(self):
         logger.info("Save model '%s'" % self.pattern_name)
-        model_filename = os.path.join(models_folder, self.pattern_name + ".m")
+        model_filename = os.path.join(config.MODELS_FOLDER, self.pattern_name + ".m")
         self.model.save(model_filename)
 
     def __load_model(self, preset):
         logger.info("Load model '%s'" % self.pattern_name)
-        model_filename = os.path.join(models_folder, self.pattern_name + ".m")
+        model_filename = os.path.join(config.MODELS_FOLDER, self.pattern_name + ".m")
         if os.path.exists(model_filename):
             self.model = self.__create_model(preset)
             self.model.load(model_filename)

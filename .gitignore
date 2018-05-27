@@ -1,6 +1,11 @@
+data
+dist
+
 node_modules/
-dist/
+
 .vscode/
 package-lock.json
-server/dist
-data
+__pycache__/
+*.pyc
+*.txt
+*.log

@@ -5,12 +5,9 @@ import json
 import pandas as pd
 import logging
 from urllib.parse import urlparse
+import config
 
-datasource_folder = "datasources/"
-dataset_folder = "datasets/"
-anomalies_folder = "anomalies/"
-models_folder = "models/"
-metrics_folder = "metrics/"
+
 logger = logging.getLogger('analytic_toolset')
 
 
@@ -34,10 +31,10 @@ class AnomalyModel:
         datasource['origin'] = origin
         metric_name = self.anomaly_config['metric']['targets'][0]
 
-        target_filename = os.path.join(metrics_folder, metric_name + ".json")
+        target_filename = os.path.join(config.METRICS_FOLDER, metric_name + ".json")
 
-        dataset_filename = os.path.join(dataset_folder, metric_name + ".csv")
-        augmented_path = os.path.join(dataset_folder, metric_name + "_augmented.csv")
+        dataset_filename = os.path.join(config.DATASET_FOLDER, metric_name + ".csv")
+        augmented_path = os.path.join(config.DATASET_FOLDER, metric_name + "_augmented.csv")
 
         with open(target_filename, 'r') as file:
             target = json.load(file)
@@ -129,11 +126,11 @@ class AnomalyModel:
         self.preprocessor.synchronize()
 
     def load_anomaly_config(self):
-        with open(os.path.join(anomalies_folder, self.anomaly_name + ".json"), 'r') as config_file:
+        with open(os.path.join(config.ANOMALIES_FOLDER, self.anomaly_name + ".json"), 'r') as config_file:
             self.anomaly_config = json.load(config_file)
 
     def get_anomalies(self):
-        labeled_anomalies_file = os.path.join(anomalies_folder, self.anomaly_name + "_labeled.json")
+        labeled_anomalies_file = os.path.join(config.ANOMALIES_FOLDER, self.anomaly_name + "_labeled.json")
         if not os.path.exists(labeled_anomalies_file):
             return []
         with open(labeled_anomalies_file) as file:
@@ -145,12 +142,12 @@ class AnomalyModel:
 
     def __save_model(self):
         logger.info("Save model '%s'" % self.anomaly_name)
-        model_filename = os.path.join(models_folder, self.anomaly_name + ".m")
+        model_filename = os.path.join(config.MODELS_FOLDER, self.anomaly_name + ".m")
         self.model.save(model_filename)
 
     def __load_model(self):
         logger.info("Load model '%s'" % self.anomaly_name)
-        model_filename = os.path.join(models_folder, self.anomaly_name + ".m")
+        model_filename = os.path.join(config.MODELS_FOLDER, self.anomaly_name + ".m")
         if os.path.exists(model_filename):
             self.model = self.create_algorithm()
             self.model.load(model_filename)
