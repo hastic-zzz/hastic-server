@@ -1,6 +1,6 @@
 import * as path from 'path';
 
-export const ANALYTICS_PATH = path.join(__dirname, '../../src');
+export const ANALYTICS_PATH = path.join(__dirname, '../../analytics');
 
 export const DATA_PATH = path.join(__dirname, '../../data');
 export const ANOMALIES_PATH = path.join(DATA_PATH, 'anomalies');
