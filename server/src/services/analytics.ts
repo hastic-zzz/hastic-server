@@ -12,12 +12,7 @@ import { getLabeledSegments, insertSegments, removeSegments } from './segments';
 import { split, map, mapSync } from 'event-stream';
 
 const learnWorker = spawn('python3', ['worker.py'], { cwd: ANALYTICS_PATH })
-learnWorker.stdout.pipe(split())
-  .pipe(
-    mapSync(function(line){
-      onMessage(line)
-    })
-  );
+learnWorker.stdout.pipe(split()).pipe(mapSync(onMessage));
 
 learnWorker.stderr.on('data', data => console.error(`worker stderr: ${data}`));
 
