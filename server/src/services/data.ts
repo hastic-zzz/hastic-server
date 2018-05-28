@@ -5,7 +5,7 @@ import * as fs from 'fs';
 // see analytics/pattern_detection_model.py with folders available
 
 function maybeCreate(path: string): void {
-  if(fs.existsSync(config.DATA_PATH)) {
+  if(fs.existsSync(path)) {
     return;
   }
   fs.mkdirSync(path);
@@ -14,7 +14,6 @@ function maybeCreate(path: string): void {
 export function checkDataFolders(): void {
   var folders = [
     config.DATA_PATH,
-    config.DATASOURCES_PATH,
     config.DATASETS_PATH,
     config.ANOMALIES_PATH,
     config.MODELS_PATH,
