@@ -1,4 +1,7 @@
-# Hastic server
+[Hastic server](https://hastic.io) [![Travis CI](https://travis-ci.org/hastic/hastic-server.svg?branch=master)](https://travis-ci.org/hastic/hastic-server) 
+================
+[Website](https://hastic.io) |
+[Twitter](https://twitter.com/hasticio) |
 
 Implementation of basic pattern recognition and unsupervised learning for anomaly detection.
 
