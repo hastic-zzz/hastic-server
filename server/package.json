@@ -19,8 +19,10 @@
   "homepage": "https://github.com/hastic/hastic-server#readme",
   "dependencies": {},
   "devDependencies": {
+    "@types/axios": "^0.14.0",
     "@types/koa": "^2.0.45",
     "@types/koa-router": "^7.0.28",
+    "axios": "^0.18.0",
     "babel-core": "^6.26.3",
     "babel-loader": "^6.4.1",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
@@ -34,7 +36,6 @@
     "fast-csv": "^2.4.1",
     "koa": "^2.5.1",
     "koa-router": "^7.4.0",
-    "node-fetch": "^2.1.2",
     "nodemon": "^1.17.3",
     "ts-loader": "^3.5.0",
     "typescript": "^2.8.3",
