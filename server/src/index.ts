@@ -1,5 +1,6 @@
-import * as express from 'express';
-import * as bodyParser from 'body-parser';
+import * as Koa from 'koa';
+import * as Router from 'koa-router';
+
 
 import { router as anomaliesRouter } from './routes/anomalies';
 import { router as segmentsRouter } from './routes/segments';
@@ -9,23 +10,28 @@ import { checkDataFolders } from './services/data';
 
 checkDataFolders();
 
-const app = express();
+var app = new Koa();
 const PORT = process.env.HASTIC_PORT || 8000;
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
-app.use(function (req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
+app.use(async function(ctx) {
+  ctx.header('Access-Control-Allow-Origin', '*');
+  ctx.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  ctx.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
 });
 
-app.use('/anomalies', anomaliesRouter);
-app.use('/segments', segmentsRouter);
-app.use('/alerts', alertsRouter);
-app.use('/', (req, res) => res.send({ status: 'OK' }));
+var anRouter = new Router();
+anRouter.use('/anomalies', anomaliesRouter.routes(), anomaliesRouter.allowedMethods());
+
+var seRouter = new Router();
+anRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
+
+var seRouter = new Router();
+anRouter.use('/alerts', alertsRouter.routes(), alertsRouter.allowedMethods());
+
+var rootRoute = new Router();
+rootRoute.get('/', async (ctx) => {
+  ctx.body = { status: 'OK' };
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on :${PORT}`)
