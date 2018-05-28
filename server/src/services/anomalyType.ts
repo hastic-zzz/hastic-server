@@ -37,6 +37,9 @@ let anomaliesNameToIdMap = {};
 
 function loadAnomaliesMap() {
   let filename = path.join(ANOMALIES_PATH, `all_anomalies.json`);
+  if(!fs.existsSync(filename)) {
+    saveAnomaliesMap();
+  }
   anomaliesNameToIdMap = getJsonDataSync(filename);
 }
 
