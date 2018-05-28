@@ -2,7 +2,7 @@ FROM python:3
 
 EXPOSE 8000
 
-VOLUME [ "/var/www/src/anomalies", "/var/www/src/datasets", "/var/www/src/metrics", "/var/www/src/models", "/var/www/src/segments" ]
+VOLUME [ "/var/www/data/anomalies", "/var/www/data/datasets", "/var/www/data/metrics", "/var/www/data/models", "/var/www/data/segments" ]
 
 RUN pip install pandas
 RUN pip install seglearn
