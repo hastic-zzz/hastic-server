@@ -14,24 +14,22 @@ var app = new Koa();
 const PORT = process.env.HASTIC_PORT || 8000;
 
 app.use(async function(ctx) {
-  ctx.response.header('Access-Control-Allow-Origin', '*');
-  ctx.response.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  ctx.response.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  ctx.set('Access-Control-Allow-Origin', '*');
+  ctx.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  ctx.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
 });
 
-var anRouter = new Router();
-anRouter.use('/anomalies', anomaliesRouter.routes(), anomaliesRouter.allowedMethods());
-
-var seRouter = new Router();
-anRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
-
-var seRouter = new Router();
-anRouter.use('/alerts', alertsRouter.routes(), alertsRouter.allowedMethods());
-
-var rootRoute = new Router();
-rootRoute.get('/', async (ctx) => {
+var rootRouter = new Router();
+rootRouter.use('/anomalies', anomaliesRouter.routes(), anomaliesRouter.allowedMethods());
+rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
+rootRouter.use('/alerts', alertsRouter.routes(), alertsRouter.allowedMethods());
+rootRouter.get('/', async (ctx) => {
   ctx.body = { status: 'OK' };
 });
+
+app
+  .use(rootRouter.routes())
+  .use(rootRouter.allowedMethods())
 
 app.listen(PORT, () => {
   console.log(`Server is running on :${PORT}`)
