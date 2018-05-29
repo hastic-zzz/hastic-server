@@ -28,7 +28,7 @@ class DataProvider:
             if after_time is None or after_time <= last_chunk_time:
                 chunk = self.__load_chunk(chunk_index)
                 if after_time is not None:
-                    chunk = chunk[chunk['timestamp'] > after_time]
+                    chunk = chunk[chunk['timestamp'] >= after_time]
                 result = pd.concat([result, chunk])
         return result
 
@@ -36,7 +36,7 @@ class DataProvider:
         for chunk_index, last_chunk_time in self.chunk_last_times.items():
             if after_time < last_chunk_time:
                 chunk = self.__load_chunk(chunk_index)
-                chunk = chunk[chunk['timestamp'] > after_time]
+                chunk = chunk[chunk['timestamp'] >= after_time]
                 return chunk.index[0]
         return self.size()
 

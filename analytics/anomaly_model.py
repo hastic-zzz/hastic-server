@@ -64,14 +64,12 @@ class AnomalyModel:
         if len(anomalies) > 0:
             confidence = 0.0
             min_time, max_time = self.anomalies_box(anomalies)
-            start_index = dataframe[dataframe['timestamp'] >= min_time].index[0]
-            stop_index = dataframe[dataframe['timestamp'] > max_time].index[0]
-            start_index, stop_index = self.preprocessor.expand_indexes(start_index, stop_index)
-        dataframe = dataframe[start_index:stop_index]
+            dataframe = dataframe[dataframe['timestamp'] <= max_time]
+            dataframe = dataframe[dataframe['timestamp'] >= min_time]
 
         train_augmented = self.preprocessor.get_augmented_data(
-            start_index,
-            stop_index,
+            dataframe.index[0],
+            dataframe.index[-1],
             anomalies
         )
 

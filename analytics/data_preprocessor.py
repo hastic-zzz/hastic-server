@@ -83,8 +83,7 @@ class data_preprocessor:
                 anomaly_index = current_index
 
         rows = dataframe[anomaly_index]
-        indexes = np.floor_divide(rows.index, self.frame_size)
-        # indexes = np.unique(rows.index)
+        indexes = np.unique(rows.index)
         return indexes
 
     def inverse_transform_anomalies(self, prediction):
