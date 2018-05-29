@@ -130,7 +130,7 @@ class DataProvider:
                 else:
                     return res
         else:
-            params['q'] = self.custom_query(str(after_time) + 'ms')
+            params['q'] = self.custom_query(str(after_time))
 
             return self.__query_grafana(params)
 
