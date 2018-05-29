@@ -14,9 +14,9 @@ var app = new Koa();
 const PORT = process.env.HASTIC_PORT || 8000;
 
 app.use(async function(ctx) {
-  ctx.header('Access-Control-Allow-Origin', '*');
-  ctx.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  ctx.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  ctx.response.header('Access-Control-Allow-Origin', '*');
+  ctx.response.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  ctx.response.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
 });
 
 var anRouter = new Router();

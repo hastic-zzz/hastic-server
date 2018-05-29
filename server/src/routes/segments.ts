@@ -1,51 +1,48 @@
-import * as express from 'express';
+import * as Router from 'koa-router';
+
 import {
   getLabeledSegments,
   insertSegments,
   removeSegments,
 } from '../services/segments';
-import {runLearning} from '../services/analytics';
-import {Anomaly, AnomalyId, getAnomalyIdByName, loadAnomalyById} from '../services/anomalyType';
+
+import {
+  Anomaly, AnomalyId, getAnomalyIdByName, loadAnomalyById
+} from '../services/anomalyType';
+
+import { runLearning } from '../services/analytics';
 
 
-async function sendSegments(req, res) {
-  try {
-    let anomalyId: AnomalyId = req.query.anomaly_id;
-    let anomaly:Anomaly = loadAnomalyById(anomalyId);
-    if(anomaly === null) {
-      anomalyId = getAnomalyIdByName(anomalyId);
-    }
+async function sendSegments(ctx: Router.IRouterContext) {
 
-    let lastSegmentId = req.query.last_segment;
-    let timeFrom = req.query.from;
-    let timeTo = req.query.to;
-
-    let segments = getLabeledSegments(anomalyId);
-
-    // Id filtering
-    if(lastSegmentId !== undefined) {
-      segments = segments.filter(el => el.id > lastSegmentId);
-    }
-
-    // Time filtering
-    if(timeFrom !== undefined) {
-      segments = segments.filter(el => el.finish > timeFrom);
-    }
-
-    if(timeTo !== undefined) {
-      segments = segments.filter(el => el.start < timeTo);
-    }
-
-    let payload = JSON.stringify({
-      segments
-    });
-    res.status(200).send(payload);
-  } catch(e) {
-    res.status(500).send({
-      code: 500,
-      message: 'Internal error'
-    });
+  let anomalyId: AnomalyId = ctx.query.anomaly_id;
+  let anomaly:Anomaly = loadAnomalyById(anomalyId);
+  if(anomaly === null) {
+    anomalyId = getAnomalyIdByName(anomalyId);
   }
+
+  let lastSegmentId = ctx.query.last_segment;
+  let timeFrom = ctx.query.from;
+  let timeTo = ctx.query.to;
+
+  let segments = getLabeledSegments(anomalyId);
+
+  // Id filtering
+  if(lastSegmentId !== undefined) {
+    segments = segments.filter(el => el.id > lastSegmentId);
+  }
+
+  // Time filtering
+  if(timeFrom !== undefined) {
+    segments = segments.filter(el => el.finish > timeFrom);
+  }
+
+  if(timeTo !== undefined) {
+    segments = segments.filter(el => el.start < timeTo);
+  }
+
+  ctx.response.body = { segments }
+
 }
 
 async function updateSegments(req, res) {
@@ -74,7 +71,7 @@ async function updateSegments(req, res) {
   }
 }
 
-export const router = express.Router();
+export const router = new Router();
 
 router.get('/', sendSegments);
 router.patch('/', updateSegments);
