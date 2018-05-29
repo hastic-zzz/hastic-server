@@ -66,3 +66,8 @@ export HASTIC_PORT=<port_you_want_to_run_server_on>
 cd ./hastic-server/server
 npm start
 ```
+
+#### Known bugs & issues
+
+- If you add labeled segments while learning - it fails
+- Dataset doesn't get updated after 1st learning
