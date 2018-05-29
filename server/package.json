@@ -33,6 +33,7 @@
     "babel-preset-es2015": "^6.24.1",
     "babel-runtime": "^6.26.0",
     "encoding": "^0.1.12",
+    "es6-promise": "^4.2.4",
     "event-stream": "^3.3.4",
     "fast-csv": "^2.4.1",
     "koa": "^2.5.1",
