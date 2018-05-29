@@ -6,9 +6,9 @@ import * as Router from 'koa-router';
 
 function getAlert(ctx: Router.IRouterContext) {
   
-  let anomalyId: AnomalyId = ctx.request.body.query.anomaly_id;
+  let anomalyId: AnomalyId = ctx.request.query.anomaly_id;
   let anomaly = loadAnomalyById(anomalyId)
-  if (anomaly == null) {
+  if(anomaly == null) {
     anomalyId = getAnomalyIdByName(anomalyId.toLowerCase());
   }
 
@@ -21,25 +21,26 @@ function getAlert(ctx: Router.IRouterContext) {
 }
 
 function changeAlert(ctx: Router.IRouterContext) {
-  
-    let anomalyId: AnomalyId = ctx.request.body.anomaly_id;
-    let enable: boolean = ctx.body.enable;
 
-    let anomaly = loadAnomalyById(anomalyId)
-    if (anomaly == null) {
-      anomalyId = getAnomalyIdByName(anomalyId.toLowerCase());
-    }
+  let anomalyId: AnomalyId = ctx.request.body.anomaly_id;
+  let enable: boolean = ctx.request.body.enable;
 
-    let alertsAnomalies = getAlertsAnomalies();
-    let pos: number = alertsAnomalies.indexOf(anomalyId);
-    if(enable && pos == -1) {
-      alertsAnomalies.push(anomalyId);
-      saveAlertsAnomalies(alertsAnomalies);
-    } else if(!enable && pos > -1) {
-      alertsAnomalies.splice(pos, 1);
-      saveAlertsAnomalies(alertsAnomalies);
-    }
-    ctx.response.body = { status: 'Ok' };
+  let anomaly = loadAnomalyById(anomalyId)
+  if(anomaly == null) {
+    anomalyId = getAnomalyIdByName(anomalyId.toLowerCase());
+  }
+
+  let alertsAnomalies = getAlertsAnomalies();
+  let pos: number = alertsAnomalies.indexOf(anomalyId);
+  if(enable && pos == -1) {
+    alertsAnomalies.push(anomalyId);
+    saveAlertsAnomalies(alertsAnomalies);
+  } else if(!enable && pos > -1) {
+    alertsAnomalies.splice(pos, 1);
+    saveAlertsAnomalies(alertsAnomalies);
+  }
+  ctx.response.body = { status: 'OK' };
+
 }
 
 export const router = new Router();
