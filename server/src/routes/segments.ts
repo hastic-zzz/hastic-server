@@ -15,15 +15,15 @@ import { runLearning } from '../services/analytics';
 
 async function sendSegments(ctx: Router.IRouterContext) {
 
-  let anomalyId: AnomalyId = ctx.query.anomaly_id;
+  let anomalyId: AnomalyId = ctx.request.query.anomaly_id;
   let anomaly:Anomaly = loadAnomalyById(anomalyId);
   if(anomaly === null) {
     anomalyId = getAnomalyIdByName(anomalyId);
   }
 
-  let lastSegmentId = ctx.query.last_segment;
-  let timeFrom = ctx.query.from;
-  let timeTo = ctx.query.to;
+  let lastSegmentId = ctx.request.query.last_segment;
+  let timeFrom = ctx.request.query.from;
+  let timeTo = ctx.request.query.to;
 
   let segments = getLabeledSegments(anomalyId);
 
@@ -45,9 +45,9 @@ async function sendSegments(ctx: Router.IRouterContext) {
 
 }
 
-async function updateSegments(req, res) {
+async function updateSegments(ctx: Router.IRouterContext) {
   try {
-    let segmentsUpdate = req.body;
+    let segmentsUpdate = ctx.request.body;
 
     let anomalyId = segmentsUpdate.anomaly_id;
     let anomalyName = segmentsUpdate.name;
@@ -59,15 +59,15 @@ async function updateSegments(req, res) {
     let addedIds = insertSegments(anomalyId, segmentsUpdate.added_segments, true);
     removeSegments(anomalyId, segmentsUpdate.removed_segments);
 
-    let payload = JSON.stringify({ added_ids: addedIds });
-    res.status(200).send(payload);
+    ctx.response.body = { added_ids: addedIds };
 
     runLearning(anomalyId);
   } catch(e) {
-    res.status(500).send({
+    ctx.response.status = 500;
+    ctx.response.body = {
       code: 500,
       message: 'Internal error'
-    });
+    };
   }
 }
 

@@ -10,9 +10,9 @@ import {
 import { runLearning } from '../services/analytics'
 import { saveTargets } from '../services/metrics';
 
-async function sendAnomalyTypeStatus(req, res) {
-  let id = req.query.id;
-  let name = req.query.name;
+async function sendAnomalyTypeStatus(ctx: Router.IRouterContext) {
+  let id = ctx.request.query.id;
+  let name = ctx.request.query.name;
   try {
     let anomaly: Anomaly;
     if(id !== undefined) {
@@ -21,28 +21,26 @@ async function sendAnomalyTypeStatus(req, res) {
       anomaly = loadAnomalyByName(name);
     }
     if(anomaly === null) {
-      res.status(404).send({
-        code: 404,
-        message: 'Not found'
-      });
+      ctx.response.status = 404;
       return;
     }
     if(anomaly.status === undefined) {
       throw new Error('No status for ' + name);
     }
-    res.status(200).send({ status: anomaly.status, errorMessage: anomaly.error });
+    ctx.response.body = { status: anomaly.status, errorMessage: anomaly.error };
   } catch(e) {
     console.error(e);
     // TODO: better send 404 when we know than isn`t found
-    res.status(500).send({ error: 'Can`t return anything' });
+    ctx.response.status = 500;
+    ctx.response.body = { error: 'Can`t return anything' };
   }
 
 }
 
-async function getAnomaly(req, res) {
+async function getAnomaly(ctx: Router.IRouterContext) {
   try {
-    let id = req.query.id;
-    let name = req.query.name;
+    let id = ctx.request.query.id;
+    let name = ctx.request.query.name;
 
     let anomaly:Anomaly;
     if(id !== undefined) {
@@ -51,66 +49,65 @@ async function getAnomaly(req, res) {
       anomaly = loadAnomalyByName(name.toLowerCase());
     }
     if(anomaly === null) {
-      res.status(404).send({
-        code: 404,
-        message: 'Not found'
-      });
+      ctx.response.status = 404;
       return;
     }
 
-    let payload = JSON.stringify({
+    ctx.response.body = {
       name: anomaly.name,
       metric: anomaly.metric,
       status: anomaly.status
-    });
-    res.status(200).send(payload)
+    };
   } catch(e) {
     console.error(e);
     // TODO: better send 404 when we know than isn`t found
-    res.status(500).send('Can`t get anything');
+    ctx.response.status = 500;
+    ctx.response.body = 'Can`t get anything';
   }
 }
 
-async function createAnomaly(req, res) {
+async function createAnomaly(ctx: Router.IRouterContext) {
   try {
+    let body = ctx.request.body;
     const metric:Metric = {
-      datasource: req.body.metric.datasource,
-      targets: saveTargets(req.body.metric.targets)
+      datasource: body.metric.datasource,
+      targets: saveTargets(body.metric.targets)
     };
 
     const anomaly:Anomaly = {
-      name: req.body.name,
-      panelUrl: req.body.panelUrl,
+      name: body.name,
+      panelUrl: body.panelUrl,
       metric: metric,
-      datasource: req.body.datasource,
+      datasource: body.datasource,
       status: 'learning',
       last_prediction_time: 0,
       next_id: 0
     };
     let anomalyId = insertAnomaly(anomaly);
     if(anomalyId === null) {
-      res.status(403).send({
+      ctx.response.status = 403;
+      ctx.response.body = {
         code: 403,
         message: 'Already exists'
-      });
+      };
     }
 
-    let payload = JSON.stringify({ anomaly_id: anomalyId })
-    res.status(200).send(payload);
+    ctx.response.body = { anomaly_id: anomalyId };
 
     runLearning(anomalyId);
   } catch(e) {
-    res.status(500).send({
+    ctx.response.status = 500;
+    ctx.response.body = {
       code: 500,
       message: 'Internal error'
-    });
+    };
   }
 }
 
-function deleteAnomaly(req, res) {
+function deleteAnomaly(ctx: Router.IRouterContext) {
   try {
-    let id = req.query.id;
-    let name = req.query.name;
+    let id = ctx.request.query.id;
+    let name = ctx.request.query.name;
 
     if(id !== undefined) {
       removeAnomaly(id);
@@ -118,15 +115,16 @@ function deleteAnomaly(req, res) {
       removeAnomaly(name.toLowerCase());
     }
     
-    res.status(200).send({
+    ctx.response.body = {
       code: 200,
       message: 'Success'
-    });
+    };
   } catch(e) {
-    res.status(500).send({
+    ctx.response.status = 500;
+    ctx.response.body = {
       code: 500,
       message: 'Internal error'
-    });
+    };
   }
 }
 
