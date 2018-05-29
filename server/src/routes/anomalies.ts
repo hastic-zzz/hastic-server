@@ -1,4 +1,4 @@
-import * as express from 'express';
+import * as Router from 'koa-router';
 
 import {
   Datasource,
@@ -130,7 +130,8 @@ function deleteAnomaly(req, res) {
   }
 }
 
-export const router = express.Router();
+
+export var router = new Router();
 
 router.get('/status', sendAnomalyTypeStatus);
 router.get('/', getAnomaly);

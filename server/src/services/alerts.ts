@@ -1,22 +1,26 @@
 import { getJsonDataSync, writeJsonDataSync } from './json';
-import * as path from 'path';
-import * as fs from 'fs';
 import { AnomalyId } from './anomalyType';
-import { ANOMALIES_PATH } from '../config';
 import { runPredict } from './analytics';
 import { sendNotification } from './notification';
 import { getLabeledSegments } from './segments';
 
-function getAlertsAnomalies() : AnomalyId[] {
-  let filename = path.join(ANOMALIES_PATH, `alerts_anomalies.json`);
-  if(!fs.existsSync(filename)) {
+import { ANOMALIES_PATH } from '../config';
+
+import * as path from 'path';
+import * as fs from 'fs';
+
+
+const ALERTS_DB_PATH = path.join(ANOMALIES_PATH, `alerts_anomalies.json`);
+
+function getAlertsAnomalies(): AnomalyId[] {
+  if(!fs.existsSync(ALERTS_DB_PATH)) {
     saveAlertsAnomalies([]);
   }
-  return getJsonDataSync(path.join(ANOMALIES_PATH, `alerts_anomalies.json`));
+  return getJsonDataSync(ALERTS_DB_PATH);
 }
 
 function saveAlertsAnomalies(anomalies: AnomalyId[]) {
-  return writeJsonDataSync(path.join(ANOMALIES_PATH, `alerts_anomalies.json`), anomalies);
+  return writeJsonDataSync(ALERTS_DB_PATH, anomalies);
 }
 
 function processAlerts(anomalyId) {

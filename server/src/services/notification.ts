@@ -1,7 +1,7 @@
-import fetch from 'node-fetch';
+import axios from 'axios';
 import { loadAnomalyById } from './anomalyType';
 
-function sendNotification(anomalyId, active) {
+export async function sendNotification(anomalyId, active) {
   let anomalyName = loadAnomalyById(anomalyId).name;
   console.log('Notification ' + anomalyName);
 
@@ -16,16 +16,20 @@ function sendNotification(anomalyId, active) {
   }
 
   let endpoint = process.env.HASTIC_ALERT_ENDPOINT;
-  if(endpoint !== undefined) {
-    fetch(endpoint, {
+  if(endpoint === undefined) {
+    console.error(`Can't send alert, env HASTIC_ALERT_ENDPOINT is undefined`);
+    return;
+  }
+
+  try {
+    var data = await axios.post(endpoint, {
       method: 'POST',
       body: JSON.stringify(notification)
     })
-      .then(data => console.log(data))
-      .catch(err => console.error(`Can't send alert to ${endpoint}. Error: ${err}`));
-  } else {
-    console.error(`Can't send alert, env HASTIC_ALERT_ENDPOINT is undefined`);
+    console.log(data);
+  } catch(err) {
+    console.error(`Can't send alert to ${endpoint}. Error: ${err}`)
   }
+  
 }
 
-export { sendNotification }
