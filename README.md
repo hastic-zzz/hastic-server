@@ -71,3 +71,4 @@ npm start
 
 - If you add labeled segments while learning - it fails
 - Dataset doesn't get updated after 1st learning
+- Currently only influxDB datasource is supported
