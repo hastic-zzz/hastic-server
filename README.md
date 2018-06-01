@@ -67,7 +67,7 @@ cd ./hastic-server/server
 npm start
 ```
 
-#### Known bugs & issues
+### Known bugs & issues
 
 - If you add labeled segments while learning - it fails
 - Dataset doesn't get updated after 1st learning
