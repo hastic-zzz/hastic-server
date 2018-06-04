@@ -22,6 +22,7 @@ export type Anomaly = {
 
   panelUrl: string,
 
+  pattern: string,
   metric: Metric,
   datasource: Datasource
   status: string,

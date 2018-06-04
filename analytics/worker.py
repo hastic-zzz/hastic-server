@@ -45,18 +45,12 @@ class worker(object):
             anomaly_id = task['anomaly_id']
             if type == "predict":
                 last_prediction_time = task['last_prediction_time']
-                analytics_type = task['analytics_type']
-                preset = None
-                if "preset" in task:
-                    preset = task['preset']
-                result = self.do_predict(anomaly_id, last_prediction_time, analytics_type, preset)
+                pattern = task['pattern']
+                result = self.do_predict(anomaly_id, last_prediction_time, pattern)
             elif type == "learn":
                 segments = task['segments']
-                analytics_type = task['analytics_type']
-                preset = None
-                if "preset" in task:
-                    preset = task['preset']
-                result = self.do_learn(anomaly_id, segments, analytics_type, preset)
+                pattern = task['pattern']
+                result = self.do_learn(anomaly_id, segments, pattern)
             else:
                 result = {
                     'status': "failed",
@@ -74,16 +68,16 @@ class worker(object):
             }
         return result
 
-    def do_learn(self, anomaly_id, segments, analytics_type, preset=None):
-        model = self.get_model(anomaly_id, analytics_type, preset)
+    def do_learn(self, anomaly_id, segments, pattern):
+        model = self.get_model(anomaly_id, pattern)
         model.synchronize_data()
         last_prediction_time = model.learn(segments)
-        result = self.do_predict(anomaly_id, last_prediction_time, analytics_type, preset)
+        result = self.do_predict(anomaly_id, last_prediction_time, pattern)
         result['task'] = 'learn'
         return result
 
-    def do_predict(self, anomaly_id, last_prediction_time, analytics_type, preset=None):
-        model = self.get_model(anomaly_id, analytics_type, preset)
+    def do_predict(self, anomaly_id, last_prediction_time, pattern):
+        model = self.get_model(anomaly_id, pattern)
         model.synchronize_data()
         segments, last_prediction_time = model.predict(last_prediction_time)
         return {
@@ -94,12 +88,12 @@ class worker(object):
             'last_prediction_time': last_prediction_time
         }
 
-    def get_model(self, anomaly_id, analytics_type, preset=None):
+    def get_model(self, anomaly_id, pattern):
         if anomaly_id not in self.models_cache:
-            if analytics_type == "anomalies":
+            if pattern == "general approach":
                 model = AnomalyModel(anomaly_id)
-            elif analytics_type == "patterns":
-                model = PatternDetectionModel(anomaly_id, preset)
+            else:
+                model = PatternDetectionModel(anomaly_id, pattern)
             self.models_cache[anomaly_id] = model
         return self.models_cache[anomaly_id]
 
