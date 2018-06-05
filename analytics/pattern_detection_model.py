@@ -1,5 +1,6 @@
 from data_provider import DataProvider
 import logging
+from urllib.parse import urlparse
 import os.path
 import json
 import config
@@ -23,32 +24,32 @@ def segments_box(segments):
 
 class PatternDetectionModel:
 
-    def __init__(self, pattern_name, preset=None):
-        self.pattern_name = pattern_name
-        self.preset = preset
+    def __init__(self, anomaly_id, pattern):
+        self.anomaly_id = anomaly_id
+        self.pattern = pattern
 
         self.__load_anomaly_config()
-        datasource = self.anomaly_config['metric']['datasource']
+
+        parsedUrl = urlparse(self.anomaly_config['panelUrl'])
+        origin = parsedUrl.scheme + '://' + parsedUrl.netloc
+
+        datasource = self.anomaly_config['datasource']
         metric_name = self.anomaly_config['metric']['targets'][0]
 
-        dbconfig_filename = os.path.join(config.DATASOURCE_FOLDER, datasource + ".json")
         target_filename = os.path.join(config.METRICS_FOLDER, metric_name + ".json")
-
+        datasource['origin'] = origin
         dataset_filename = os.path.join(config.DATASET_FOLDER, metric_name + ".csv")
-
-        with open(dbconfig_filename, 'r') as config_file:
-            dbconfig = json.load(config_file)
 
         with open(target_filename, 'r') as file:
             target = json.load(file)
 
-        self.data_prov = DataProvider(dbconfig, target, dataset_filename)
+        self.data_prov = DataProvider(datasource, target, dataset_filename)
 
         self.model = None
-        self.__load_model(preset)
+        self.__load_model(pattern)
 
     def learn(self, segments):
-        self.model = self.__create_model(self.preset)
+        self.model = self.__create_model(self.pattern)
         window_size = 200
 
         dataframe = self.data_prov.get_dataframe()
@@ -100,26 +101,26 @@ class PatternDetectionModel:
     def synchronize_data(self):
         self.data_prov.synchronize()
 
-    def __create_model(self, preset):
-        if preset == "peaks":
+    def __create_model(self, pattern):
+        if pattern == "peaks":
             from peaks_detector import PeaksDetector
             return PeaksDetector()
-        if preset == "steps" or preset == "cliffs":
+        if pattern == "jumps" or pattern == "drops":
             from step_detector import StepDetector
-            return StepDetector(preset)
+            return StepDetector(pattern)
 
     def __load_anomaly_config(self):
-        with open(os.path.join(config.ANOMALIES_FOLDER, self.pattern_name + ".json"), 'r') as config_file:
+        with open(os.path.join(config.ANOMALIES_FOLDER, self.anomaly_id + ".json"), 'r') as config_file:
             self.anomaly_config = json.load(config_file)
 
     def __save_model(self):
-        logger.info("Save model '%s'" % self.pattern_name)
-        model_filename = os.path.join(config.MODELS_FOLDER, self.pattern_name + ".m")
+        logger.info("Save model '%s'" % self.anomaly_id)
+        model_filename = os.path.join(config.MODELS_FOLDER, self.anomaly_id + ".m")
         self.model.save(model_filename)
 
-    def __load_model(self, preset):
-        logger.info("Load model '%s'" % self.pattern_name)
-        model_filename = os.path.join(config.MODELS_FOLDER, self.pattern_name + ".m")
+    def __load_model(self, pattern):
+        logger.info("Load model '%s'" % self.anomaly_id)
+        model_filename = os.path.join(config.MODELS_FOLDER, self.pattern + ".m")
         if os.path.exists(model_filename):
-            self.model = self.__create_model(preset)
+            self.model = self.__create_model(pattern)
             self.model.load(model_filename)

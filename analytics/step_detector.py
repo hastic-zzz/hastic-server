@@ -58,8 +58,8 @@ def compress_segments(segments):
 
 
 class StepDetector:
-    def __init__(self, preset):
-        self.preset = preset
+    def __init__(self, pattern):
+        self.pattern = pattern
         self.mean = None
         self.window_size = None
         self.corr_max = None

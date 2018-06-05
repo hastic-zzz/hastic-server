@@ -77,6 +77,7 @@ async function createAnomaly(ctx: Router.IRouterContext) {
     const anomaly:Anomaly = {
       name: body.name,
       panelUrl: body.panelUrl,
+      pattern: body.pattern.toLowerCase(),
       metric: metric,
       datasource: body.datasource,
       status: 'learning',
