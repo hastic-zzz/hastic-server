@@ -66,7 +66,7 @@ class data_preprocessor:
         augmented = self.__get_data(start_frame, stop_frame)
         if len(anomalies) > 0:
             anomalies_indexes = self.transform_anomalies(anomalies)
-            augmented = augmented.drop(anomalies_indexes)
+            augmented = augmented.drop(anomalies_indexes[:-1])
 
         return augmented
 
