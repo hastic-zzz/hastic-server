@@ -3,6 +3,8 @@ import { getJsonDataSync, writeJsonDataSync }  from './json';
 import { SEGMENTS_PATH } from '../config';
 import { AnomalyId, loadAnomalyById, saveAnomaly } from './anomalyType';
 
+import * as _ from 'lodash';
+
 function getLabeledSegments(anomalyId: AnomalyId) {
   let filename = path.join(SEGMENTS_PATH, `${anomalyId}_labeled.json`);
 
@@ -37,7 +39,7 @@ function saveSegments(anomalyId: AnomalyId, segments) {
   let filename = path.join(SEGMENTS_PATH, `${anomalyId}_labeled.json`);
 
   try {
-    return writeJsonDataSync(filename, segments);
+    return writeJsonDataSync(filename, _.uniqBy(segments, 'start'));
   } catch(e) {
     console.error(e.message);
     throw new Error('Can`t write to db');
