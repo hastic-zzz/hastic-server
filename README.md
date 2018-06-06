@@ -3,7 +3,7 @@
 [Website](https://hastic.io) |
 [Twitter](https://twitter.com/hasticio) |
 
-Implementation of basic pattern recognition and unsupervised learning for anomaly detection.
+Implementation of basic pattern recognition for anomaly detection.
 
 Implementation of analytic unit for Hastic.
 
