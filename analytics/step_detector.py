@@ -138,7 +138,7 @@ class StepDetector:
         self.__optimize_threshold(data, self.window_size, segments, contamination)
 
     def __optimize_threshold(self, data, window_size, segments, contamination):
-        step_size = window_size // 2
+        step_size = 3
         pattern = np.concatenate([[-1] * step_size, [1] * step_size])
         corr_res = np.correlate(data, pattern, mode='same') / window_size
         corr_res = np.concatenate((np.zeros(step_size), corr_res, np.zeros(step_size)))
