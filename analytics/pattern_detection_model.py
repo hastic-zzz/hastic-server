@@ -89,8 +89,8 @@ class PatternDetectionModel:
             ts1 = int(time_value[0].timestamp() * 1000)
             ts2 = int(time_value[1].timestamp() * 1000)
             segments.append({
-                'start': ts1,
-                'finish': ts2
+                'start': min(ts1, ts2),
+                'finish': max(ts1, ts2)
             })
 
         last_dataframe_time = dataframe.iloc[- 1]['timestamp']
