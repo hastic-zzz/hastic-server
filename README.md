@@ -33,7 +33,7 @@ You can export following environment variables for hastic-server to use:
 #### Dependencies
 
 You need in your system:
-* curl gnupg git make g++
+* [git](https://git-scm.com/download/linux)
 * [nodejs >= 6.0.0](https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions)
 * [python3](https://www.python.org/downloads/) with pip3
 
