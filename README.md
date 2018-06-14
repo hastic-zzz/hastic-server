@@ -58,8 +58,6 @@ npm start
 
 ### Docker
 
-Example of running hastic-server in Docker:
-
 #### Build 
 ```bash
 git clone https://github.com/hastic/hastic-server.git
