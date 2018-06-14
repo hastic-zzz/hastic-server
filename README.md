@@ -1,7 +1,7 @@
 [Hastic server](https://hastic.io) [![Travis CI](https://travis-ci.org/hastic/hastic-server.svg?branch=master)](https://travis-ci.org/hastic/hastic-server) 
 ================
 [Website](https://hastic.io) |
-[Twitter](https://twitter.com/hasticio) |
+[Twitter](https://twitter.com/hasticio)
 
 Implementation of basic pattern recognition for anomaly detection.
 
@@ -15,23 +15,12 @@ See also:
 ## Build & run
 
 Server needs Grafana's API key (http://<your_grafana_url>/org/apikeys) to query data from Grafana datasources.
-API key role needs only `Viewer` access.
+API key role needs only `Viewer` access. 
 
-### Docker
+You can install it on:
 
-Example of running hastic-server in Docker:
-
-#### Build 
-```bash
-git clone https://github.com/hastic/hastic-server.git
-cd hastic-server
-docker build -t hastic-server .
-```
-
-#### Run
-```bash
-docker run -d --name hastic-server -p 80:8000 -e HASTIC_API_KEY=<your_grafana_api_key> hastic-server
-```
+* [Linux](#linux)
+* [Docker](#docker)
 
 ### Linux
 
@@ -65,6 +54,22 @@ export HASTIC_PORT=<port_you_want_to_run_server_on>
 
 cd ./hastic-server/server
 npm start
+```
+
+### Docker
+
+Example of running hastic-server in Docker:
+
+#### Build 
+```bash
+git clone https://github.com/hastic/hastic-server.git
+cd hastic-server
+docker build -t hastic-server .
+```
+
+#### Run
+```bash
+docker run -d --name hastic-server -p 80:8000 -e HASTIC_API_KEY=<your_grafana_api_key> hastic-server
 ```
 
 ### Known bugs & issues
