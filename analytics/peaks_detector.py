@@ -34,8 +34,6 @@ class PeaksDetector:
         array = array[window_size:-window_size]
         filtered = np.subtract(array, filtered)
 
-        import matplotlib.pyplot as plt
-
         # filtered = np.convolve(array, step, mode='valid')
         # print(len(array))
         # print(len(filtered))
@@ -53,12 +51,8 @@ class PeaksDetector:
         data = filtered
         data /= data.max()
 
-        #plt.plot(array[:1000])
-        plt.plot(data[:1000])
-        plt.show()
-
         result = step_detect.find_steps(data, 0.1)
-        return [dataframe.index[x + window_size] for x in result]
+        return [(dataframe.index[x], dataframe.index[x + window_size]) for x in result]
 
     def save(self, model_filename):
         pass

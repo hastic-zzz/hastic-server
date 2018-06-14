@@ -56,10 +56,13 @@ class PatternDetectionModel:
         start_index, stop_index = 0, len(dataframe)
         if len(segments) > 0:
             min_time, max_time = segments_box(segments)
-            start_index = dataframe[dataframe['timestamp'] >= min_time].index[0]
-            stop_index = dataframe[dataframe['timestamp'] > max_time].index[0]
-            start_index = max(start_index - window_size, 0)
-            stop_index = min(stop_index + window_size, len(dataframe))
+            try:
+                start_index = dataframe[dataframe['timestamp'] >= min_time].index[0]
+                stop_index = dataframe[dataframe['timestamp'] > max_time].index[0]
+                start_index = max(start_index - window_size, 0)
+                stop_index = min(stop_index + window_size, len(dataframe))
+            except IndexError:
+                pass
 
         dataframe = dataframe[start_index:stop_index]
 
