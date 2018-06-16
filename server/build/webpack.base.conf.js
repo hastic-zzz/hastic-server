@@ -15,7 +15,7 @@ module.exports = {
     __filename: false,
   },
   context: resolve('./src'),
-  entry: './index',
+  entry: ["babel-polyfill", './index'],
   output: {
     filename: "server.js",
     path: resolve('dist')
@@ -30,18 +30,19 @@ module.exports = {
     }
   },
   module: {
-    loaders: [
-      {
-        test: /\.ts?$/,
-        loaders: ['babel-loader', 'ts-loader'],
-        exclude: [ /node_modules/ ]
-      },
-      // babel-loader for pure javascript (es6) => javascript (es5)
-      {
-        test: /\.(jsx?)$/,
-        loaders: ['babel'],
-        exclude: [ /node_modules/ ]
-      }
-    ]
+    rules: [{
+      test: /\.ts$/,
+      use: [
+        { 
+          loader: 'babel-loader',
+          options: {
+            plugins: ['transform-async-generator-functions'],
+            babelrc: false
+          }
+          
+        },
+        { loader: 'ts-loader' }
+      ]
+    }]
   }
 }
