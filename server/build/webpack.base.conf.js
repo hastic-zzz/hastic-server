@@ -5,7 +5,7 @@ const webpack = require('webpack');
 
 
 function resolve(p) {
-  return path.join(__dirname, '/../', p);
+  return path.resolve(__dirname, './../', p);
 }
 
 module.exports = {
@@ -14,8 +14,7 @@ module.exports = {
     __dirname: false,
     __filename: false,
   },
-  context: resolve('./src'),
-  entry: ["babel-polyfill", './index'],
+  entry: ["babel-polyfill", './src/index.ts'],
   output: {
     filename: "server.js",
     path: resolve('dist')

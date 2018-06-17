@@ -2,6 +2,7 @@ const base = require('./webpack.base.conf');
 
 const webpack = require('webpack');
 
+base.mode = 'development';
 base.watch = true;
 
 base.devtool = 'inline-source-map';
