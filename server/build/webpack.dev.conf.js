@@ -10,7 +10,7 @@ base.devtool = 'inline-source-map';
 base.externals = base.externals ? base.externals : [];
 base.externals.push(
   function(context, request, callback) {
-    if(request[0] == '.') {
+    if(request[0] == '.' || request.indexOf('koa') == 0) {
       callback();
     } else {
       callback(null, "require('" + request + "')");

@@ -14,13 +14,16 @@ module.exports = {
     __dirname: false,
     __filename: false,
   },
-  entry: ["babel-polyfill", './src/index.ts'],
+  entry: [ './src/index.ts' ],
   output: {
     filename: "server.js",
     path: resolve('dist')
   },
+  optimization: {
+    minimize: false
+  },
   plugins: [
-    new webpack.optimize.OccurrenceOrderPlugin()
+    
   ],
   resolve: {
     extensions: [".ts", ".js"],
@@ -29,19 +32,14 @@ module.exports = {
     }
   },
   module: {
-    rules: [{
-      test: /\.ts$/,
-      use: [
-        { 
-          loader: 'babel-loader',
-          options: {
-            plugins: ['transform-async-generator-functions'],
-            babelrc: false
-          }
-          
-        },
-        { loader: 'ts-loader' }
-      ]
-    }]
+    rules: [
+      {
+        test: /\.ts$/,
+        use: [
+          { loader: 'babel-loader' },
+          { loader: 'ts-loader' }
+        ]
+      }
+    ]
   }
 }

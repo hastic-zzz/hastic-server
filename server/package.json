@@ -18,7 +18,12 @@
   },
   "homepage": "https://github.com/hastic/hastic-server#readme",
   "dependencies": {
-    "axios": "^0.18.0"
+    "axios": "^0.18.0",
+    "es6-promise": "^4.2.4",
+    "event-stream": "^3.3.4",
+    "koa": "^2.5.1",
+    "koa-bodyparser": "^4.2.1",
+    "koa-router": "^7.4.0"
   },
   "devDependencies": {
     "@types/koa": "^2.0.45",
@@ -26,10 +31,11 @@
     "@types/koa-router": "^7.0.28",
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.4",
-    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "nodemon": "^1.17.5",
     "ts-loader": "^4.4.1",
     "typescript": "^2.8.3",
     "webpack": "^4.12.0",
-    "webpack-command": "^0.2.1"
+    "webpack-cli": "^3.0.8"
   }
 }
