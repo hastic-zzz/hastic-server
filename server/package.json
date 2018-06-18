@@ -11,7 +11,7 @@
     "6-14-install": "npm install && npm install babel-cli",
     "6-14-copyserver": "echo \"require('babel-polyfill'); \" > dist/server-6-14-prebuild.js && cat dist/server.js >> dist/server-6-14-prebuild.js",
     "6-14-prebuild": "npm run build && npm run 6-14-copyserver",
-    "6-14-build": "npm run 6-14-prebuild && babel --presets es2015 dist/server-6-14-prebuild.js -o dist/server-6-14.js "
+    "6-14-build": "npm run 6-14-prebuild && babel --presets es2015 dist/server-6-14-prebuild.js -o dist/server-6-14.js && rm dist/server-6-14-prebuild.js"
   },
   "repository": {
     "type": "git",
