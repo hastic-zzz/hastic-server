@@ -30,9 +30,8 @@ It is possible to export the following environment variables for hastic-server t
 - HASTIC_API_KEY - (required) API-key of your Grafana instance
 - HASTIC_PORT - (optional) port you want to run server on, default: 8000
 
-#### Dependencies
+#### System prerequisites:
 
-System prerequisites:
 * [git](https://git-scm.com/download/linux)
 * [nodejs >= 6.0.0](https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions)
 * [python3](https://www.python.org/downloads/) with pip3
