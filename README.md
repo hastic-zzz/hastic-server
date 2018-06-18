@@ -7,6 +7,8 @@ Implementation of basic pattern recognition for anomaly detection.
 
 Implementation of analytics unit for Hastic.
 
+**Please note that we are still in alpha, so features are subject to change**
+
 See also:
 * [Hooks](https://github.com/hastic/hastic-server/blob/master/HOOKS.md) - notifications about events
 * [REST](REST.md) - for developing your plugins
