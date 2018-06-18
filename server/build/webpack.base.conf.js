@@ -5,7 +5,7 @@ const webpack = require('webpack');
 
 
 function resolve(p) {
-  return path.join(__dirname, '/../', p);
+  return path.resolve(__dirname, './../', p);
 }
 
 module.exports = {
@@ -14,14 +14,16 @@ module.exports = {
     __dirname: false,
     __filename: false,
   },
-  context: resolve('./src'),
-  entry: './index',
+  entry: [ './src/index.ts' ],
   output: {
     filename: "server.js",
     path: resolve('dist')
   },
+  optimization: {
+    minimize: false
+  },
   plugins: [
-    new webpack.optimize.OccurrenceOrderPlugin()
+    
   ],
   resolve: {
     extensions: [".ts", ".js"],
@@ -30,17 +32,13 @@ module.exports = {
     }
   },
   module: {
-    loaders: [
+    rules: [
       {
-        test: /\.ts?$/,
-        loaders: ['babel-loader', 'ts-loader'],
-        exclude: [ /node_modules/ ]
-      },
-      // babel-loader for pure javascript (es6) => javascript (es5)
-      {
-        test: /\.(jsx?)$/,
-        loaders: ['babel'],
-        exclude: [ /node_modules/ ]
+        test: /\.ts$/,
+        use: [
+          { loader: 'babel-loader' },
+          { loader: 'ts-loader' }
+        ]
       }
     ]
   }

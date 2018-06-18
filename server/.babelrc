@@ -1,8 +1,9 @@
 {
   "presets": [
-    "es2015"
-  ],
-  "plugins": [
-    "transform-runtime"
+    ["env", {
+      "targets": {
+        "node": "6.14"
+      }
+    }]
   ]
 }
