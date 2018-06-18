@@ -35,7 +35,7 @@ It is possible to export the following environment variables for hastic-server t
 #### System prerequisites:
 
 * [git](https://git-scm.com/download/linux)
-* [nodejs >= 8.x](https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions), but there is special build for [nodejs 6.15](server/BUILD_6_14.md)
+* [nodejs >= 8.x](https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions), but there is special build for [nodejs 6.14](server/BUILD_6_14.md)
 * [python3](https://www.python.org/downloads/) with pip3
 
 #### Installation
