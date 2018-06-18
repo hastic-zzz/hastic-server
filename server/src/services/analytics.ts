@@ -55,25 +55,11 @@ async function runLearning(anomalyId:AnomalyId) {
   let segments = getLabeledSegments(anomalyId);
   setAnomalyStatus(anomalyId, 'learning');
   let anomaly:Anomaly  = loadAnomalyById(anomalyId);
-  let analyticsType = "anomalies";
-  let preset = undefined;
-  if (anomaly.name.includes("jumps")) {
-    analyticsType = "patterns";
-    preset = "steps"
-  }
-  if (anomaly.name.includes("cliffs") || anomaly.name.includes("drops")) {
-    analyticsType = "patterns";
-    preset = "cliffs"
-  }
-  if (anomaly.name.includes("peaks")) {
-    analyticsType = "patterns";
-    preset = "peaks"
-  }
+  let pattern = anomaly.pattern;
   let task = {
     type: 'learn',
     anomaly_id: anomalyId,
-    analytics_type: analyticsType,
-    preset,
+    pattern,
     segments: segments
   };
 
@@ -90,25 +76,11 @@ async function runLearning(anomalyId:AnomalyId) {
 
 async function runPredict(anomalyId:AnomalyId) {
   let anomaly:Anomaly = loadAnomalyById(anomalyId);
-  let analyticsType = "anomalies";
-  let preset = undefined;
-  if (anomaly.name.includes("jump")) {
-    analyticsType = "patterns";
-    preset = "steps"
-  }
-  if (anomaly.name.includes("cliffs") || anomaly.name.includes("drops")) {
-    analyticsType = "patterns";
-    preset = "cliffs"
-  }
-  if (anomaly.name.includes("peaks")) {
-    analyticsType = "patterns";
-    preset = "peaks"
-  }
+  let pattern = anomaly.pattern;
   let task = {
     type: 'predict',
     anomaly_id: anomalyId,
-    analytics_type: analyticsType,
-    preset,
+    pattern,
     last_prediction_time: anomaly.last_prediction_time
   };
   let result = await runTask(task);

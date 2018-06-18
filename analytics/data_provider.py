@@ -52,17 +52,19 @@ class DataProvider:
             return result
         dataframe = self.get_dataframe(None)
         for anomaly in anomalies:
-            start_time = pd.to_datetime(anomaly['start']-1, unit='ms')
-            finish_time = pd.to_datetime(anomaly['finish']+1, unit='ms')
+            start_time = pd.to_datetime(anomaly['start'] - 1, unit='ms')
+            finish_time = pd.to_datetime(anomaly['finish'] + 1, unit='ms')
             current_index = (dataframe['timestamp'] >= start_time) & (dataframe['timestamp'] <= finish_time)
             anomaly_frame = dataframe[current_index]
+            if anomaly_frame.empty:
+                continue
+
             cur_anomaly = {
                 'start': anomaly_frame.index[0],
                 'finish': anomaly_frame.index[len(anomaly_frame) - 1],
                 'labeled': anomaly['labeled']
             }
             result.append(cur_anomaly)
-
         return result
 
     def inverse_transform_indexes(self, indexes):
