@@ -6,12 +6,8 @@
     "start": "node dist/server.js",
     "dev": "node build/dev-server.js",
     "build": "webpack --config build/webpack.prod.conf.js",
-
     "6-14-start": "node dist/server-6-14.js",
-    "6-14-install": "npm install && npm install babel-cli",
-    "6-14-copyserver": "echo \"require('babel-polyfill'); \" > dist/server-6-14-prebuild.js && cat dist/server.js >> dist/server-6-14-prebuild.js",
-    "6-14-prebuild": "npm run build && npm run 6-14-copyserver",
-    "6-14-build": "npm run 6-14-prebuild && babel --presets es2015 dist/server-6-14-prebuild.js -o dist/server-6-14.js && rm dist/server-6-14-prebuild.js"
+    "6-14-build": "npm run build && webpack --config build/webpack.614.prod.conf.js"
   },
   "repository": {
     "type": "git",
@@ -24,19 +20,20 @@
   },
   "homepage": "https://github.com/hastic/hastic-server#readme",
   "dependencies": {
-    "axios": "^0.18.0",
-    "es6-promise": "^4.2.4",
-    "event-stream": "^3.3.4",
-    "koa": "^2.5.1",
-    "koa-bodyparser": "^4.2.1",
-    "koa-router": "^7.4.0"
   },
   "devDependencies": {
     "@types/koa": "^2.0.45",
     "@types/koa-bodyparser": "^4.2.0",
     "@types/koa-router": "^7.0.28",
+    "axios": "^0.18.0",
+    "es6-promise": "^4.2.4",
+    "event-stream": "^3.3.4",
+    "koa": "^2.5.1",
+    "koa-bodyparser": "^4.2.1",
+    "koa-router": "^7.4.0",
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.4",
+    "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "babel-preset-es2015": "^6.24.1",
     "nodemon": "^1.17.5",
