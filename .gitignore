@@ -5,7 +5,6 @@ node_modules/
 
 .vscode/
 package-lock.json
-__pycache__/
 *.pyc
 *.txt
 *.log
