@@ -12,9 +12,20 @@ Implementation of analytics unit for Hastic.
 See also:
 * [Hooks](https://github.com/hastic/hastic-server/blob/master/HOOKS.md) - notifications about events
 * [REST](REST.md) - for developing your plugins
-* [HasticPanel](https://github.com/hastic/hastic-grafana-graph-panel) - Hastic visualisation plugin for Grafana 
+* [HasticPanel](https://github.com/hastic/hastic-grafana-graph-panel) - Hastic visualisation plugin for Grafana
 
-## Build & run
+## Download & Install on Linux
+
+You need only [nodejs >=6.14](https://nodejs.org/en/download/) on your machine
+
+```
+wget https://github.com/hastic/hastic-server/releases/download/0.1.0-alpha/hastic-server-0.1.0-alpha.tar.gz
+tar -zxvf hastic-server-0.1.0-alpha.tar.gz
+cd hastic-server-0.1.0-alpha/server/dist
+node server
+```
+
+## Build & run from soure 
 
 Hastic server requires Grafana's API key (http://<your_grafana_url>/org/apikeys) to query data from Grafana datasources.
 API key role requires only `Viewer` access. 
