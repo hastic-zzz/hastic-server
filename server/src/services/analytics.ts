@@ -9,9 +9,17 @@ import {
 } from './anomalyType'
 import { getTarget } from './metrics';
 import { getLabeledSegments, insertSegments, removeSegments } from './segments';
-import { split, map, mapSync } from 'event-stream';
+import { split, mapSync } from 'event-stream';
+import * as fs from 'fs';
+import * as path from 'path';
 
-const learnWorker = spawn('python3', ['worker.py'], { cwd: ANALYTICS_PATH })
+var learnWorker;
+if(fs.existsSync(path.join(ANALYTICS_PATH, 'dist/worker/worker'))) {
+  learnWorker = spawn('dist/worker/worker', [], { cwd: ANALYTICS_PATH })
+} else {
+  // If compiled analytics script doesn't exist - fallback to regular python
+  learnWorker = spawn('python3', ['worker.py'], { cwd: ANALYTICS_PATH })
+}
 learnWorker.stdout.pipe(split()).pipe(mapSync(onMessage));
 
 learnWorker.stderr.on('data', data => console.error(`worker stderr: ${data}`));
