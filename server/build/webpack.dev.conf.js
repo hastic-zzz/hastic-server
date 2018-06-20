@@ -5,12 +5,13 @@ const webpack = require('webpack');
 base.mode = 'development';
 base.watch = true;
 
+// https://webpack.js.org/configuration/devtool/
 base.devtool = 'inline-source-map';
 
 base.externals = base.externals ? base.externals : [];
 base.externals.push(
   function(context, request, callback) {
-    if(request[0] == '.' || request.indexOf('koa') == 0) {
+    if(request[0] == '.') {
       callback();
     } else {
       callback(null, "require('" + request + "')");

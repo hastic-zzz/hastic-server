@@ -10,6 +10,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 
+
 const ALERTS_DB_PATH = path.join(ANOMALIES_PATH, `alerts_anomalies.json`);
 
 function getAlertsAnomalies(): AnomalyId[] {

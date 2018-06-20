@@ -23,12 +23,13 @@ app.use(async function(ctx, next) {
   next();
 });
 
+
 var rootRouter = new Router();
 rootRouter.use('/anomalies', anomaliesRouter.routes(), anomaliesRouter.allowedMethods());
 rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
 rootRouter.use('/alerts', alertsRouter.routes(), alertsRouter.allowedMethods());
 rootRouter.get('/', async (ctx) => {
-  ctx.response.body = { status: 'OK' };
+  ctx.response.body = { status: 'Ok' };
 });
 
 app
@@ -38,3 +39,4 @@ app
 app.listen(PORT, () => {
   console.log(`Server is running on :${PORT}`)
 });
+

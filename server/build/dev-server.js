@@ -2,9 +2,18 @@ const { spawn } = require('child_process');
 
 const webpack = spawn('webpack', ['--config', 'build/webpack.dev.conf.js'], {
   stdio: 'inherit',
-  shell: true
+  shell: false
 });
 
-const nodemon = spawn('nodemon', ['../dist/server', '--watch', 'server.js']);
+var env = Object.create(process.env);
+env.LOG_LEVEL = 'debug';
+
+const nodemon = spawn(
+  'nodemon',
+  ['--exec', '"node --inspect dist/server.js"'],
+  { env: env, shell: true }
+);
+
+
 nodemon.stdout.pipe(process.stdout);
 nodemon.stderr.pipe(process.stderr);
