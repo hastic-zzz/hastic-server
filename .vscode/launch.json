@@ -1,0 +1,23 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach to Remote",
+      "address": "127.0.0.1",
+      "sourceMaps": true,
+      "outFiles": [ "${workspaceFolder}/server/dist/**/*.js" ],
+      "sourceMapPathOverrides": {
+        "webpack:///./*": "c:\\Projects\\hastic-server\\server\\*"
+      },
+      //"outFiles": [ "/home/alex/Projects/hastic-server/server/server.js" ],
+      "port": 9229,
+      "restart": true,
+      "trace": true
+    }
+  ]
+}
