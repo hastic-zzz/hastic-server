@@ -16,7 +16,7 @@ See also:
 
 ## Download & Install on Linux
 
-You need only [nodejs >=6.14](https://nodejs.org/en/download/) on your machine
+You need only [nodejs >= 6.14](https://nodejs.org/en/download/) on your machine.
 
 ```
 wget https://github.com/hastic/hastic-server/releases/download/0.1.0-alpha/hastic-server-0.1.0-alpha.tar.gz
@@ -25,7 +25,7 @@ cd hastic-server-0.1.0-alpha/server/dist
 node server
 ```
 
-## Build & run from soure 
+## Build & run from source 
 
 Hastic server requires Grafana's API key (http://<your_grafana_url>/org/apikeys) to query data from Grafana datasources.
 API key role requires only `Viewer` access. 
