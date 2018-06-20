@@ -29,7 +29,7 @@ rootRouter.use('/anomalies', anomaliesRouter.routes(), anomaliesRouter.allowedMe
 rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
 rootRouter.use('/alerts', alertsRouter.routes(), alertsRouter.allowedMethods());
 rootRouter.get('/', async (ctx) => {
-  ctx.response.body = { status: 'Ok' };
+  ctx.response.body = { status: 'Ok ok' };
 });
 
 app
