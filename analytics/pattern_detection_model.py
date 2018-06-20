@@ -53,24 +53,12 @@ class PatternDetectionModel:
         window_size = 200
 
         dataframe = self.data_prov.get_dataframe()
-        start_index, stop_index = 0, len(dataframe)
-        if len(segments) > 0:
-            min_time, max_time = segments_box(segments)
-            try:
-                start_index = dataframe[dataframe['timestamp'] >= min_time].index[0]
-                stop_index = dataframe[dataframe['timestamp'] > max_time].index[0]
-                start_index = max(start_index - window_size, 0)
-                stop_index = min(stop_index + window_size, len(dataframe))
-            except IndexError:
-                pass
-
-        dataframe = dataframe[start_index:stop_index]
 
         segments = self.data_prov.transform_anomalies(segments)
+        # TODO: pass only part of dataframe that has segments
         self.model.fit(dataframe, segments)
         self.__save_model()
         return 0
-        # return last_prediction_time
 
     def predict(self, last_prediction_time):
         if self.model is None:

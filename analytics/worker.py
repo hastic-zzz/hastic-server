@@ -72,7 +72,17 @@ class worker(object):
         model = self.get_model(anomaly_id, pattern)
         model.synchronize_data()
         last_prediction_time = model.learn(segments)
-        result = self.do_predict(anomaly_id, last_prediction_time, pattern)
+        # TODO: we should not do predict before labeling in all models, not just in drops
+        if pattern == 'drops' and len(segments) == 0:
+            result = {
+                'status': 'success',
+                'anomaly_id': anomaly_id,
+                'segments': [],
+                'last_prediction_time': last_prediction_time
+            }
+        else:
+            result = self.do_predict(anomaly_id, last_prediction_time, pattern)
+            
         result['task'] = 'learn'
         return result
 
