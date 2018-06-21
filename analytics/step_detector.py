@@ -62,7 +62,31 @@ class StepDetector:
             if all_max_flatten_data[i] < extrema_list[i]:
                 segments.append(i - 20)
 
-        return [(x - 1, x + 1) for x in segments]
+        return [(x - 1, x + 1) for x in self.__filter_prediction(segments, all_max_flatten_data)]
+
+    def __filter_prediction(self, segments, all_max_flatten_data):
+        delete_list = []
+        for i in range(1, len(segments)):
+            if segments[i] < segments[i-1] + 500:
+                delete_list.append(segments[i])
+        
+        for item in delete_list:
+            segments.remove(item)
+
+        # delete_list = []
+        # for i in segments:
+        #     new_data = all_max_flatten_data[i-150:i+50]
+        #     min_value = 100
+        #     for j in new_data:
+        #         if j < min_value:
+        #             min_value = j
+        #     if all_max_flatten_data[i] > min_value:
+        #         delete_list.append(i)
+
+        # for item in delete_list:
+        #     segments.remove(item)
+
+        return segments
 
     def save(self, model_filename):
         with open(model_filename, 'wb') as file:
