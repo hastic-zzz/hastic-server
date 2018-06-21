@@ -49,8 +49,8 @@ class StepDetector:
         return result
 
     def __predict(self, data):
-        all_normal_flatten_data = data.rolling(window=10).mean()
-        all_max_flatten_data = data.rolling(window=24).mean()
+        window_size = 24
+        all_max_flatten_data = data.rolling(window=window_size).mean()
         all_mins = argrelextrema(np.array(all_max_flatten_data), np.less)[0]
         extrema_list = []
 
@@ -60,31 +60,23 @@ class StepDetector:
         segments = []
         for i in all_mins:
             if all_max_flatten_data[i] < extrema_list[i]:
-                segments.append(i - 20)
+                segments.append(i - window_size)
 
         return [(x - 1, x + 1) for x in self.__filter_prediction(segments, all_max_flatten_data)]
 
     def __filter_prediction(self, segments, all_max_flatten_data):
         delete_list = []
-        for i in range(1, len(segments)):
-            if segments[i] < segments[i-1] + 500:
-                delete_list.append(segments[i])
-        
+        for i in segments:
+            new_data = all_max_flatten_data[i-50:i+250]
+            min_value = 100
+            for val in new_data:
+                if val < min_value:
+                    min_value = val
+            if all_max_flatten_data[i] > min_value:
+                delete_list.append(i)
+
         for item in delete_list:
             segments.remove(item)
-
-        # delete_list = []
-        # for i in segments:
-        #     new_data = all_max_flatten_data[i-150:i+50]
-        #     min_value = 100
-        #     for j in new_data:
-        #         if j < min_value:
-        #             min_value = j
-        #     if all_max_flatten_data[i] > min_value:
-        #         delete_list.append(i)
-
-        # for item in delete_list:
-        #     segments.remove(item)
 
         return segments
 
