@@ -1,0 +1,6 @@
+{
+  "python.pythonPath": "python",
+  "terminal.integrated.shell.windows": "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true
+}
