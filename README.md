@@ -51,7 +51,7 @@ It is possible to export the following environment variables for hastic-server t
 
 #### Installation
 ```bash
-pip3 install pandas seglearn scipy tsfresh
+pip3 install -r analytics/requirements.txt
 
 git clone https://github.com/hastic/hastic-server.git
 cd ./hastic-server/server
