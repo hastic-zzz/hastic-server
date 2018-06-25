@@ -37,12 +37,6 @@ Possible to install on:
 
 ### Linux
 
-#### Environment variables
-
-It is possible to export the following environment variables for hastic-server to use:
-- HASTIC_API_KEY - (required) API-key of your Grafana instance
-- HASTIC_PORT - (optional) port you want to run server on, default: 8000
-
 #### System prerequisites:
 
 * [git](https://git-scm.com/download/linux)
@@ -59,11 +53,28 @@ npm install
 npm run build
 ```
 
+#### Configuration
+
+You can configure hastic-server using either *environment variables* or *config file*.
+
+> NOTE: environment variables have higher priority than config file.
+
+##### Environment variables
+You can export the following environment variables for hastic-server to use:
+- HASTIC_API_KEY - (required) API-key of your Grafana instance
+- HASTIC_PORT - (optional) port you want to run server on, default: 8000
+
+e.g.
+```bash
+export HASTIC_API_KEY=eyJrIjoiVjZqMHY0dHk4UEE3eEN4MzgzRnd2aURlMWlIdXdHNW4iLCJuIjoiaGFzdGljIiwiaWQiOjF9
+export HASTIC_PORT=8080
+```
+
+##### Config file
+You can also rename `config.example.json` to `config.json` and set your values there.
+
 #### Run
 ```bash
-export HASTIC_API_KEY=<your_grafana_api_key>
-export HASTIC_PORT=<port_you_want_to_run_server_on>
-
 cd ./hastic-server/server
 npm start
 ```

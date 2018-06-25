@@ -5,6 +5,7 @@ from urllib.parse import urlencode, urlparse
 import urllib.request
 import json
 from time import time
+from config import HASTIC_API_KEY
 
 MS_IN_WEEK = 604800000
 
@@ -138,7 +139,7 @@ class DataProvider:
 
     def __query_grafana(self, params):
         
-        headers = { 'Authorization': 'Bearer ' + os.environ['HASTIC_API_KEY'] }
+        headers = { 'Authorization': 'Bearer ' + HASTIC_API_KEY }
         url = self.datasource['origin'] + '/' + self.datasource['url'] + '?' + urlencode(params)
 
         req = urllib.request.Request(url, headers=headers)
