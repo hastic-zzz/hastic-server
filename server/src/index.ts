@@ -9,10 +9,11 @@ import { router as alertsRouter } from './routes/alerts';
 
 import { checkDataFolders } from './services/data';
 
+import { HASTIC_PORT } from './config';
+
 checkDataFolders();
 
 var app = new Koa();
-const PORT = process.env.HASTIC_PORT || 8000;
 
 app.use(bodyParser())
 
@@ -36,7 +37,7 @@ app
   .use(rootRouter.routes())
   .use(rootRouter.allowedMethods())
 
-app.listen(PORT, () => {
-  console.log(`Server is running on :${PORT}`)
+app.listen(HASTIC_PORT, () => {
+  console.log(`Server is running on :${HASTIC_PORT}`)
 });
 
