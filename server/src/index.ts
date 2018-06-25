@@ -30,14 +30,14 @@ rootRouter.use('/anomalies', anomaliesRouter.routes(), anomaliesRouter.allowedMe
 rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
 rootRouter.use('/alerts', alertsRouter.routes(), alertsRouter.allowedMethods());
 rootRouter.get('/', async (ctx) => {
-  ctx.response.body = { status: 'Ok ok' };
+  ctx.response.body = { status: 'Ok' };
 });
 
 app
   .use(rootRouter.routes())
-  .use(rootRouter.allowedMethods())
+  .use(rootRouter.allowedMethods());
 
 app.listen(HASTIC_PORT, () => {
-  console.log(`Server is running on :${HASTIC_PORT}`)
+  console.log(`Server is running on :${HASTIC_PORT}`);
 });
 
