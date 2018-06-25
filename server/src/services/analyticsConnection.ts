@@ -32,10 +32,8 @@ export class AnalyticsConnection {
   }
 
   public async sendMessage(task: any): Promise<void> {
-    // return Promise.resolve().then(() => {
     let command = JSON.stringify(task);
     this._learnWorker.stdin.write(`${command}\n`);
-    // });
   }
 
 }
