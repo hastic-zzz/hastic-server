@@ -7,7 +7,7 @@ import logging
 import sys
 import traceback
 
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.WARNING,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
                     filename='analytic_toolset.log',
                     filemode='a')
