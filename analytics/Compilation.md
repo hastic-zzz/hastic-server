@@ -1,6 +1,6 @@
 # Compilation
 
-We use (pyinstaller)[https://www.pyinstaller.org/] to compile analytics unit into binary file supported by *nix systems with all the dependencies.
+We use [pyinstaller](https://www.pyinstaller.org/) to compile analytics unit into binary file supported by *nix systems with all the dependencies.
 
 ```bash
 pip install pyinstaller
