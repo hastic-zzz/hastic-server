@@ -107,4 +107,4 @@ docker run -d --name hastic-server -p 80:8000 -e HASTIC_API_KEY=<your_grafana_ap
 
 ### [0.1.1-alpha] - 2018-06-25
 #### Added
-- HASTIC_API_KEY to config file.
+- HASTIC_API_KEY to config file [#23](https://github.com/hastic/hastic-server/issues/23)
