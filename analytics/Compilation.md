@@ -1,12 +1,12 @@
 # Compilation
 
-We use [pyinstaller](https://www.pyinstaller.org/) to compile analytics unit into binary file supported by *nix systems with all the dependencies.
+We use [pyinstaller](https://www.pyinstaller.org/) to compile analytics unit into binary file with all the dependencies.
+
+Compiled module is supported by all *nix systems.
 
 ```bash
-pip install pyinstaller
-echo "hiddenimports=['pandas._libs.tslibs.timedeltas', 'scipy._lib.messagestream']" | cat > $PYTHON_SITE_PACKAGES/PyInstaller/hooks/hook-pandas.py
+pip3 install pyinstaller
 cd $HASTIC_SERVER_PATH/analytics
-pyinstaller worker.py
+pyinstaller --additional-hooks-dir=pyinstaller_hooks worker.py
 ```
 
-On Ubuntu 16.04 $PYTHON_SITE_PACKAGES directory located at `~/.local/lib/python3.5/site-packages`
