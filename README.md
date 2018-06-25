@@ -19,9 +19,9 @@ See also:
 You need only [nodejs >= 6.14](https://nodejs.org/en/download/) on your machine.
 
 ```
-wget https://github.com/hastic/hastic-server/releases/download/0.1.0-alpha/hastic-server-0.1.0-alpha.tar.gz
-tar -zxvf hastic-server-0.1.0-alpha.tar.gz
-cd hastic-server-0.1.0-alpha/server/dist
+wget https://github.com/hastic/hastic-server/releases/download/0.1.1-alpha/hastic-server-0.1.1-alpha.tar.gz
+tar -zxvf hastic-server-0.1.1-alpha.tar.gz
+cd hastic-server-0.1.1-alpha/server/dist
 node server
 ```
 
@@ -98,3 +98,9 @@ docker run -d --name hastic-server -p 80:8000 -e HASTIC_API_KEY=<your_grafana_ap
 - Adding labeled segments while learning is in progress is not supported
 - Dataset doesn't update after 1st learning
 - Currently only influxDB datasource is supported
+
+### Changelog
+
+### [0.1.1-alpha] - 2018-06-25
+#### Added
+- HASTIC_API_KEY to config file.
