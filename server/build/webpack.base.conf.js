@@ -16,7 +16,7 @@ module.exports = {
   },
   entry: [ './src/index.ts' ],
   output: {
-    filename: "server.js",
+    filename: "server-dev.js",
     path: resolve('dist')
   },
   optimization: {

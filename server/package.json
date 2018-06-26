@@ -5,9 +5,8 @@
   "scripts": {
     "start": "node dist/server.js",
     "dev": "node build/dev-server.js",
-    "build": "webpack --config build/webpack.prod.conf.js",
-    "6-14-start": "node dist/server-6-14.js",
-    "6-14-build": "npm run build && webpack --config build/webpack.614.prod.conf.js"
+    "build-prod": "webpack --config build/webpack.prod.conf.js",
+    "build": "npm run build-prod && webpack --config build/webpack.614.prod.conf.js"
   },
   "repository": {
     "type": "git",

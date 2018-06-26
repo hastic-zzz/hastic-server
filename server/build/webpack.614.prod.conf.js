@@ -11,9 +11,9 @@ module.exports = {
     __dirname: false,
     __filename: false,
   },
-  entry: [ 'babel-polyfill', './dist/server.js' ],
+  entry: [ 'babel-polyfill', './dist/server-dev.js' ],
   output: {
-    filename: "server-6-14.js",
+    filename: "server.js",
     path: path.join(__dirname, '../dist')
   },
   module: {

@@ -10,7 +10,7 @@ env.LOG_LEVEL = 'debug';
 
 const nodemon = spawn(
   'nodemon',
-  ['--exec', '"node --inspect dist/server.js"'],
+  ['--exec', '"node --inspect dist/server-dev.js"'],
   { env: env, shell: true }
 );
 
