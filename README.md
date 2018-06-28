@@ -40,8 +40,8 @@ Possible to install on:
 #### System prerequisites:
 
 * [git](https://git-scm.com/download/linux)
-* [nodejs >= 8.x](https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions), but there is special build for [nodejs 6.14](server/BUILD_6_14.md)
-* [python3](https://www.python.org/downloads/) with pip3
+* [nodejs >= 6.14](https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions)
+* [python3](https://www.python.org/downloads/) with [pip3](https://packaging.python.org/guides/installing-using-linux-tools/#installing-pip-setuptools-wheel-with-linux-package-managers)
 
 #### Installation
 ```bash
