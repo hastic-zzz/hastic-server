@@ -100,7 +100,7 @@ class worker(object):
 
     def get_model(self, anomaly_id, pattern):
         if anomaly_id not in self.models_cache:
-            if pattern == "general approach":
+            if pattern.find('general') != -1:
                 model = AnomalyModel(anomaly_id)
             else:
                 model = PatternDetectionModel(anomaly_id, pattern)
