@@ -16,8 +16,8 @@ function getLabeledSegments(anomalyId: AnomalyId) {
         segment.labeled = false;
       }
     }
-  } catch (e) {
-    console.error(e.message);
+  } catch(e) {
+    segments = [];
   }
   return segments;
 }
