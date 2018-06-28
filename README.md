@@ -19,9 +19,9 @@ See also:
 You need only [nodejs >= 6.14](https://nodejs.org/en/download/) on your machine.
 
 ```
-wget https://github.com/hastic/hastic-server/releases/download/0.1.2-alpha/hastic-server-0.1.2-alpha.tar.gz
-tar -zxvf hastic-server-0.1.2-alpha.tar.gz
-cd hastic-server-0.1.2-alpha/server/dist
+wget https://github.com/hastic/hastic-server/releases/download/0.1.3-alpha/hastic-server-0.1.3-alpha.tar.gz
+tar -zxvf hastic-server-0.1.3-alpha.tar.gz
+cd hastic-server-0.1.3-alpha/server/dist
 node server
 ```
 
@@ -100,6 +100,10 @@ docker run -d --name hastic-server -p 80:8000 -e HASTIC_API_KEY=<your_grafana_ap
 - Currently only influxDB datasource is supported
 
 ### Changelog
+
+### [0.1.3-alpha] - 2018-06-28
+#### Changed
+- Drops algorithm improvement.
 
 ### [0.1.2-alpha] - 2018-06-25
 #### Fixed
