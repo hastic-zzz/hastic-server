@@ -100,7 +100,7 @@ async function createAnomaly(ctx: Router.IRouterContext) {
     ctx.response.status = 500;
     ctx.response.body = {
       code: 500,
-      message: 'Internal error'
+      message: `Anomaly creation error: ${e.message}`
     };
   }
 }
@@ -124,7 +124,7 @@ function deleteAnomaly(ctx: Router.IRouterContext) {
     ctx.response.status = 500;
     ctx.response.body = {
       code: 500,
-      message: 'Internal error'
+      message: `Anomaly deletion error: ${e.message}`
     };
   }
 }

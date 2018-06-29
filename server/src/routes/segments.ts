@@ -66,7 +66,7 @@ async function updateSegments(ctx: Router.IRouterContext) {
     ctx.response.status = 500;
     ctx.response.body = {
       code: 500,
-      message: 'Internal error'
+      message: `Learning error: ${e.message}`
     };
   }
 }
