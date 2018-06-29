@@ -19,9 +19,9 @@ See also:
 You need only [nodejs >= 6.14](https://nodejs.org/en/download/) on your machine.
 
 ```
-wget https://github.com/hastic/hastic-server/releases/download/0.1.3-alpha/hastic-server-0.1.3-alpha.tar.gz
-tar -zxvf hastic-server-0.1.3-alpha.tar.gz
-cd hastic-server-0.1.3-alpha/server/dist
+wget https://github.com/hastic/hastic-server/releases/download/0.1.4-alpha/hastic-server-0.1.4-alpha.tar.gz
+tar -zxvf hastic-server-0.1.4-alpha.tar.gz
+cd hastic-server-0.1.4-alpha/server/dist
 node server
 ```
 
@@ -101,9 +101,13 @@ docker run -d --name hastic-server -p 80:8000 -e HASTIC_API_KEY=<your_grafana_ap
 
 ### Changelog
 
-### [0.1.4-alpha] - not released yet
+### [0.1.4-alpha] - 2018-06-29
+#### Changed
+- Informative error messages instead of "Internal error" [#40](https://github.com/hastic/hastic-server/issues/33)
+
 #### Fixed
 - "No such file or directory" error on anomaly create [#33](https://github.com/hastic/hastic-server/issues/33)
+- Case-sensitive anomaly name [#41](https://github.com/hastic/hastic-server/issues/41)
 
 ### [0.1.3-alpha] - 2018-06-28
 #### Changed
