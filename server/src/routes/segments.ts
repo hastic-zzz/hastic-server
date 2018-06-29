@@ -15,7 +15,7 @@ import { runLearning } from '../services/analytics';
 
 async function sendSegments(ctx: Router.IRouterContext) {
 
-  let anomalyId: AnomalyId = ctx.request.query.anomaly_id;
+  let anomalyId: AnomalyId = ctx.request.query.anomaly_id.toLowerCase();
   let anomaly:Anomaly = loadAnomalyById(anomalyId);
   if(anomaly === null) {
     anomalyId = getAnomalyIdByName(anomalyId);
@@ -50,10 +50,10 @@ async function updateSegments(ctx: Router.IRouterContext) {
     let segmentsUpdate = ctx.request.body;
 
     let anomalyId = segmentsUpdate.anomaly_id;
-    let anomalyName = segmentsUpdate.name;
+    let anomalyName = segmentsUpdate.name.toLowerCase();
 
     if(anomalyId === undefined) {
-      anomalyId = getAnomalyIdByName(anomalyName.toLowerCase());
+      anomalyId = getAnomalyIdByName(anomalyName);
     }
 
     let addedIds = insertSegments(anomalyId, segmentsUpdate.added_segments, true);

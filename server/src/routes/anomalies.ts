@@ -12,7 +12,7 @@ import { saveTargets } from '../services/metrics';
 
 async function sendAnomalyTypeStatus(ctx: Router.IRouterContext) {
   let id = ctx.request.query.id;
-  let name = ctx.request.query.name;
+  let name = ctx.request.query.name.toLowerCase();
   try {
     let anomaly: Anomaly;
     if(id !== undefined) {
@@ -40,13 +40,13 @@ async function sendAnomalyTypeStatus(ctx: Router.IRouterContext) {
 async function getAnomaly(ctx: Router.IRouterContext) {
   try {
     let id = ctx.request.query.id;
-    let name = ctx.request.query.name;
+    let name = ctx.request.query.name.toLowerCase();
 
     let anomaly:Anomaly;
     if(id !== undefined) {
       anomaly = loadAnomalyById(id);
     } else {
-      anomaly = loadAnomalyByName(name.toLowerCase());
+      anomaly = loadAnomalyByName(name);
     }
     if(anomaly === null) {
       ctx.response.status = 404;
@@ -75,7 +75,7 @@ async function createAnomaly(ctx: Router.IRouterContext) {
     };
 
     const anomaly:Anomaly = {
-      name: body.name,
+      name: body.name.toLowerCase(),
       panelUrl: body.panelUrl,
       pattern: body.pattern.toLowerCase(),
       metric: metric,
@@ -108,12 +108,12 @@ async function createAnomaly(ctx: Router.IRouterContext) {
 function deleteAnomaly(ctx: Router.IRouterContext) {
   try {
     let id = ctx.request.query.id;
-    let name = ctx.request.query.name;
+    let name = ctx.request.query.name.toLowerCase();
 
     if(id !== undefined) {
       removeAnomaly(id);
     } else {
-      removeAnomaly(name.toLowerCase());
+      removeAnomaly(name);
     }
     
     ctx.response.body = {

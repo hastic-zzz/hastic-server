@@ -6,10 +6,10 @@ import * as Router from 'koa-router';
 
 function getAlert(ctx: Router.IRouterContext) {
   
-  let anomalyId: AnomalyId = ctx.request.query.anomaly_id;
+  let anomalyId: AnomalyId = ctx.request.query.anomaly_id.toLowerCase();
   let anomaly = loadAnomalyById(anomalyId)
   if(anomaly == null) {
-    anomalyId = getAnomalyIdByName(anomalyId.toLowerCase());
+    anomalyId = getAnomalyIdByName(anomalyId);
   }
 
   let alertsAnomalies = getAlertsAnomalies();
@@ -22,12 +22,12 @@ function getAlert(ctx: Router.IRouterContext) {
 
 function changeAlert(ctx: Router.IRouterContext) {
 
-  let anomalyId: AnomalyId = ctx.request.body.anomaly_id;
+  let anomalyId: AnomalyId = ctx.request.body.anomaly_id.toLowerCase();
   let enable: boolean = ctx.request.body.enable;
 
   let anomaly = loadAnomalyById(anomalyId)
   if(anomaly == null) {
-    anomalyId = getAnomalyIdByName(anomalyId.toLowerCase());
+    anomalyId = getAnomalyIdByName(anomalyId);
   }
 
   let alertsAnomalies = getAlertsAnomalies();
