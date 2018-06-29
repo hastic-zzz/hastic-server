@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as fs from 'fs';
 import { getJsonDataSync, writeJsonDataSync }  from './json';
 import { SEGMENTS_PATH } from '../config';
 import { AnomalyId, loadAnomalyById, saveAnomaly } from './anomalyType';
@@ -8,18 +9,17 @@ import * as _ from 'lodash';
 function getLabeledSegments(anomalyId: AnomalyId) {
   let filename = path.join(SEGMENTS_PATH, `${anomalyId}_labeled.json`);
 
-  let segments = [];
-  try {
-    segments = getJsonDataSync(filename);
-    for (let segment of segments) {
-      if (segment.labeled === undefined) {
+  if(!fs.existsSync(filename)) {
+    return [];
+  } else {
+    let segments = getJsonDataSync(filename);
+    for(let segment of segments) {
+      if(segment.labeled === undefined) {
         segment.labeled = false;
       }
     }
-  } catch(e) {
-    segments = [];
+    return segments;
   }
-  return segments;
 }
 
 function getPredictedSegments(anomalyId: AnomalyId) {
