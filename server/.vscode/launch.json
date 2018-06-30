@@ -10,11 +10,11 @@
       "name": "Attach to Remote",
       "address": "127.0.0.1",
       "sourceMaps": true,
-      "outFiles": [ "${workspaceFolder}/server/dist/**/*.js" ],
+      "outFiles": [ "${workspaceFolder}/dist/**/*.js" ],
       "sourceMapPathOverrides": {
         "webpack:///./*": "c:\\Projects\\hastic-server\\server\\*"
       },
-      //"outFiles": [ "/home/alex/Projects/hastic-server/server/server.js" ],
+      //"outFiles": [ "/home/alex/Projects/hastic-server/server.js" ],
       "port": 9229,
       "restart": true,
       "trace": true
