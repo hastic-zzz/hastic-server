@@ -35,11 +35,11 @@ class StepDetector:
                 segment_data = data[segment['start'] : segment['finish'] + 1]
                 segment_min = min(segment_data)
                 segment_max = max(segment_data)
-                confidences.append(0.24 * (segment_max - segment_min))
+                confidences.append(0.20 * (segment_max - segment_min))
                 flat_segment = segment_data.rolling(window=5).mean()
                 
                 segment_min_index = flat_segment.idxmin() - 5
-                labeled_drop = data[segment_min_index - 60 : segment_min_index + 60]
+                labeled_drop = data[segment_min_index - 120 : segment_min_index + 120]
                 convolve = scipy.signal.fftconvolve(labeled_drop, labeled_drop)
                 convolve_list.append(max(convolve))
 
@@ -91,11 +91,11 @@ class StepDetector:
             segments.remove(item)
 
         delete_list = []
-        pattern_data = all_max_flatten_data[segments[0] - 60 : segments[0] + 60]
+        pattern_data = all_max_flatten_data[segments[0] - 120 : segments[0] + 120]
         for segment in segments:
-            convol_data = all_max_flatten_data[segment - 60 : segment + 60]
+            convol_data = all_max_flatten_data[segment - 120 : segment + 120]
             conv = scipy.signal.fftconvolve(pattern_data, convol_data)
-            if max(conv) > self.convolve_max * 1.05:
+            if max(conv) > self.convolve_max * 1.1 or max(conv) < self.convolve_max * 0.9:
                 delete_list.append(segment)
         for item in delete_list:
             segments.remove(item)
