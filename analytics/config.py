@@ -27,4 +27,4 @@ MODELS_FOLDER = os.path.join(DATA_FOLDER, 'models/')
 METRICS_FOLDER = os.path.join(DATA_FOLDER, 'metrics/')
 
 HASTIC_API_KEY = get_config_field('HASTIC_API_KEY')
-
+ZEROMQ_CONNECTION_STRING = get_config_field('ZEROMQ_CONNECTION_STRING', 'tcp://localhost:8001')

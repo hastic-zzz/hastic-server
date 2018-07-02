@@ -17,6 +17,9 @@ export const METRICS_PATH = path.join(DATA_PATH, 'metrics');
 export const SEGMENTS_PATH = path.join(DATA_PATH, 'segments');
 
 export const HASTIC_PORT = getConfigField('HASTIC_PORT', '8000');
+export const ZEROMQ_CONNECTION_STRING = getConfigField('ZEROMQ_CONNECTION_STRING', 'tcp://localhost:8001');
+
+
 function getConfigField(field, defaultVal?) {
   let val = defaultVal;
 
