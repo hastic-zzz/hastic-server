@@ -34,7 +34,7 @@ function getConfigField(field, defaultVal?) {
   }
 
   if(val === undefined) {
-    throw new Error(`Please configure ${field}`)
+    throw new Error(`Please configure ${field}`);
   }
   return val;
 }

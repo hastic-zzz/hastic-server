@@ -7,6 +7,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 
+
 export class AnalyticsConnection {
 
   private _requester: any;
@@ -15,10 +16,14 @@ export class AnalyticsConnection {
     this._initConnection();
   }
 
-  public async sendMessage(task: any): Promise<void> {
-    let command = JSON.stringify(task);
+  public async sendTask(msgObj: any): Promise<void> {
+    let message = JSON.stringify(msgObj);
+    return this.sendMessage(message);
+  }
+
+  public async sendMessage(message: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      this._requester.send(command, undefined, (err) => {
+      this._requester.send(message, undefined, (err) => {
         if(err) {
           reject(err);
         } else {
@@ -33,17 +38,33 @@ export class AnalyticsConnection {
     this._requester.close();
   }
 
-  private _initConnection() {
-    this._requester = zmq.socket('req');
-    this._requester.on("message", this._onAnalyticsMessage.bind(this));
+  private async _initConnection() {
+    this._requester = zmq.socket('pair');
 
     if(process.env.NODE_ENV !== 'development') {
       this._runAnalyticsProcess();
     }
 
-    console.log("Connecting analytics process...: %s", ZEROMQ_CONNECTION_STRING);
+    console.log("Binding to zmq...: %s", ZEROMQ_CONNECTION_STRING);
     this._requester.connect(ZEROMQ_CONNECTION_STRING);
     console.log('Ok');
+
+    console.log('Sending ping to analytics...');
+    await this._connectToAnalytics();
+    console.log('Ok')
+
+    this._requester.on("message", this._onAnalyticsMessage.bind(this));
+
+  }
+
+  private async _connectToAnalytics() {
+    this.sendMessage('ping'); // we don`t await here
+    return new Promise(resolve => {
+      this._requester.once('message', (message) => {
+        console.log('Got message from analytics: ' + message);
+        resolve();
+      })
+    });
   }
 
   private _runAnalyticsProcess() {

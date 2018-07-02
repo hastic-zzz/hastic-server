@@ -16,6 +16,29 @@ ch.setFormatter(formatter)
 root.addHandler(ch)
 
 logger = logging.getLogger('SERVER')
+socket = None
+
+def handlePing():
+    socket.send(b'pong')
+
+def handleTask(text):
+    try:
+        task = json.loads(text)
+        logger.info("Command is OK")
+
+        socket.send_string(json.dumps({
+            'task': task['type'],
+            'anomaly_id': task['anomaly_id'],
+            '__task_id': task['__task_id'],
+            'status': "in progress"
+        }))
+        
+        res = w.do_task(task)
+        res['__task_id'] = task['__task_id']
+        socket.send_string(json.dumps(res))
+
+    except Exception as e:
+        logger.error("Exception: '%s'" % str(e))
 
 
 if __name__ == "__main__":
@@ -24,30 +47,17 @@ if __name__ == "__main__":
 
     logger.info("Binding to %s ..." % config.ZEROMQ_CONNECTION_STRING)
     context = zmq.Context()
-    socket = context.socket(zmq.REP)
+    socket = context.socket(zmq.PAIR)
     socket.bind(config.ZEROMQ_CONNECTION_STRING)
     logger.info("Ok")
 
     while True:
-        try:
-            text = socket.recv()
-            task = json.loads(text)
-            logger.info("Received command '%s'" % text)
+        text = socket.recv()
+        logger.info('Got message %s' % text)
+        if text == b'ping':
+            handlePing()
+            logger.info('Sent pong')
+        else:
+            handleTask(text)
 
-            if task['type'] == "stop":
-                logger.info("Stopping...")
-                break
-
-            socket.send(json.dumps({
-                'task': task['type'],
-                'anomaly_id': task['anomaly_id'],
-                '__task_id': task['__task_id'],
-                'status': "in progress"
-            }))
-            
-            res = w.do_task(task)
-            res['__task_id'] = task['__task_id']
-            socket.send(json.dumps(res))
-
-        except Exception as e:
-            logger.error("Exception: '%s'" % str(e))
+        
