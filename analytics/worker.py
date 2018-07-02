@@ -10,7 +10,7 @@ import traceback
 import time
 
 
-logger = logging.getLogger('analytic_toolset')
+logger = logging.getLogger('WORKER')
 
 
 class Worker(object):
