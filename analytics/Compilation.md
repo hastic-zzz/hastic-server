@@ -7,6 +7,6 @@ Compiled module is supported by all *nix systems.
 ```bash
 pip3 install pyinstaller
 cd $HASTIC_SERVER_PATH/analytics
-pyinstaller --additional-hooks-dir=pyinstaller_hooks worker.py
+pyinstaller --additional-hooks-dir=pyinstaller_hooks server.py
 ```
 

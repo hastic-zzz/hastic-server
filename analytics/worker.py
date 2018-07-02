@@ -1,3 +1,4 @@
+import config
 from anomaly_model import AnomalyModel
 from pattern_detection_model import PatternDetectionModel
 import queue
@@ -6,15 +7,13 @@ import json
 import logging
 import sys
 import traceback
-
-logging.basicConfig(level=logging.WARNING,
-                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                    filename='analytic_toolset.log',
-                    filemode='a')
-logger = logging.getLogger('analytic_toolset')
+import time
 
 
-class worker(object):
+logger = logging.getLogger('WORKER')
+
+
+class Worker(object):
     models_cache = {}
     thread = None
     queue = queue.Queue()
@@ -107,29 +106,4 @@ class worker(object):
             self.models_cache[anomaly_id] = model
         return self.models_cache[anomaly_id]
 
-
-if __name__ == "__main__":
-    w = worker()
-    logger.info("Worker was started")
-    while True:
-        try:
-            text = input("")
-            task = json.loads(text)
-            logger.info("Received command '%s'" % text)
-            if task['type'] == "stop":
-                logger.info("Stopping...")
-                break
-            print(json.dumps({
-                'task': task['type'],
-                'anomaly_id': task['anomaly_id'],
-                '__task_id': task['__task_id'],
-                'status': "in progress"
-            }))
-            sys.stdout.flush()
-            res = w.do_task(task)
-            res['__task_id'] = task['__task_id']
-            print(json.dumps(res))
-            sys.stdout.flush()
-        except Exception as e:
-            logger.error("Exception: '%s'" % str(e))
 

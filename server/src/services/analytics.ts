@@ -35,9 +35,9 @@ async function runTask(task): Promise<any> {
   };
 
   task.__task_id = nextTaskId++;
-  await analyticsConnection.sendMessage(task);
+  await analyticsConnection.sendTask(task);
 
-  return new Promise<void>((resolve, reject) => {
+  return new Promise<void>(resolve => {
     taskMap[task.__task_id] = resolve;
   })
 }
