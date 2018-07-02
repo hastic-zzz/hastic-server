@@ -1,4 +1,4 @@
-from config import ZEROMQ_CONNECTION_STRING
+import config
 from anomaly_model import AnomalyModel
 from pattern_detection_model import PatternDetectionModel
 import queue
@@ -8,17 +8,12 @@ import logging
 import sys
 import traceback
 import time
-import zmq
 
 
-logging.basicConfig(level=logging.WARNING,
-                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                    filename='analytic_toolset.log',
-                    filemode='a')
 logger = logging.getLogger('analytic_toolset')
 
 
-class worker(object):
+class Worker(object):
     models_cache = {}
     thread = None
     queue = queue.Queue()
@@ -111,36 +106,4 @@ class worker(object):
             self.models_cache[anomaly_id] = model
         return self.models_cache[anomaly_id]
 
-
-if __name__ == "__main__":
-    w = worker()
-    logger.info("Worker was started")
-
-    context = zmq.Context()
-    socket = context.socket(zmq.REP)
-    socket.bind(ZEROMQ_CONNECTION_STRING)
-
-    while True:
-        try:
-            text = socket.recv()
-            task = json.loads(text)
-            logger.info("Received command '%s'" % text)
-
-            if task['type'] == "stop":
-                logger.info("Stopping...")
-                break
-
-            socket.send(json.dumps({
-                'task': task['type'],
-                'anomaly_id': task['anomaly_id'],
-                '__task_id': task['__task_id'],
-                'status': "in progress"
-            }))
-            
-            res = w.do_task(task)
-            res['__task_id'] = task['__task_id']
-            socket.send(json.dumps(res))
-
-        except Exception as e:
-            logger.error("Exception: '%s'" % str(e))
 

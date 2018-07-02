@@ -1,0 +1,47 @@
+import config
+import json
+import logging
+import zmq
+
+from worker import Worker
+
+
+logging.basicConfig(level=logging.WARNING,
+                    format='[ANALYTICS] %(asctime)s %(name)-12s %(levelname)-8s %(message)s'
+                    )
+logger = logging.getLogger('analytic_toolset')
+
+
+
+
+if __name__ == "__main__":
+    w = Worker()
+    logger.info("Worker was started")
+
+    context = zmq.Context()
+    socket = context.socket(zmq.REP)
+    socket.bind(config.ZEROMQ_CONNECTION_STRING)
+
+    while True:
+        try:
+            text = socket.recv()
+            task = json.loads(text)
+            logger.info("Received command '%s'" % text)
+
+            if task['type'] == "stop":
+                logger.info("Stopping...")
+                break
+
+            socket.send(json.dumps({
+                'task': task['type'],
+                'anomaly_id': task['anomaly_id'],
+                '__task_id': task['__task_id'],
+                'status': "in progress"
+            }))
+            
+            res = w.do_task(task)
+            res['__task_id'] = task['__task_id']
+            socket.send(json.dumps(res))
+
+        except Exception as e:
+            logger.error("Exception: '%s'" % str(e))
