@@ -2,25 +2,31 @@ import config
 import json
 import logging
 import zmq
+import sys
 
 from worker import Worker
 
+root = logging.getLogger()
+root.setLevel(logging.DEBUG)
 
-logging.basicConfig(level=logging.WARNING,
-                    format='[ANALYTICS] %(asctime)s %(name)-12s %(levelname)-8s %(message)s'
-                    )
-logger = logging.getLogger('analytic_toolset')
+ch = logging.StreamHandler(sys.stdout)
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
+ch.setFormatter(formatter)
+root.addHandler(ch)
 
-
+logger = logging.getLogger('SERVER')
 
 
 if __name__ == "__main__":
     w = Worker()
     logger.info("Worker was started")
 
+    logger.info("Binding to %s ..." % config.ZEROMQ_CONNECTION_STRING)
     context = zmq.Context()
     socket = context.socket(zmq.REP)
     socket.bind(config.ZEROMQ_CONNECTION_STRING)
+    logger.info("Ok")
 
     while True:
         try:

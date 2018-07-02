@@ -52,9 +52,9 @@ export class AnalyticsConnection {
       console.log('dist/worker/worker');
       spawn('dist/worker/worker', [], { cwd: ANALYTICS_PATH })
     } else {
-      console.log('python3 worker.py');
+      console.log('python3 server.py');
       // If compiled analytics script doesn't exist - fallback to regular python
-      spawn('python3', ['worker.py'], { cwd: ANALYTICS_PATH })
+      spawn('python3', ['server.py'], { cwd: ANALYTICS_PATH })
     }
     console.log('ok');
   }
