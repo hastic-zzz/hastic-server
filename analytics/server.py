@@ -52,9 +52,10 @@ if __name__ == "__main__":
     logger.info("Ok")
 
     while True:
-        text = socket.recv()
+        received_bytes = socket.recv()
+        text = received_bytes.decode('utf-8')
         logger.info('Got message %s' % text)
-        if text == b'ping':
+        if text == 'ping':
             handlePing()
             logger.info('Sent pong')
         else:
