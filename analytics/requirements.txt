@@ -3,6 +3,7 @@ future==0.16.0
 macholib==1.9
 numpy==1.14.5
 pandas==0.20.3
+pandas-datareader==0.6.0
 patsy==0.5.0
 pefile==2017.11.5
 python-dateutil==2.7.3
