@@ -41,15 +41,15 @@ class Worker(object):
     def do_task(self, task):
         try:
             type = task['type']
-            anomaly_id = task['anomaly_id']
+            predictor_id = task['predictor_id']
             if type == "predict":
                 last_prediction_time = task['last_prediction_time']
                 pattern = task['pattern']
-                result = self.do_predict(anomaly_id, last_prediction_time, pattern)
+                result = self.do_predict(predictor_id, last_prediction_time, pattern)
             elif type == "learn":
                 segments = task['segments']
                 pattern = task['pattern']
-                result = self.do_learn(anomaly_id, segments, pattern)
+                result = self.do_learn(predictor_id, segments, pattern)
             else:
                 result = {
                     'status': "failed",
@@ -62,48 +62,48 @@ class Worker(object):
             result = {
                 'task': type,
                 'status': "failed",
-                'anomaly_id': anomaly_id,
+                'predictor_id': predictor_id,
                 'error': str(e)
             }
         return result
 
-    def do_learn(self, anomaly_id, segments, pattern):
-        model = self.get_model(anomaly_id, pattern)
+    def do_learn(self, predictor_id, segments, pattern):
+        model = self.get_model(predictor_id, pattern)
         model.synchronize_data()
         last_prediction_time = model.learn(segments)
         # TODO: we should not do predict before labeling in all models, not just in drops
         if pattern == 'drops' and len(segments) == 0:
             result = {
                 'status': 'success',
-                'anomaly_id': anomaly_id,
+                'predictor_id': predictor_id,
                 'segments': [],
                 'last_prediction_time': last_prediction_time
             }
         else:
-            result = self.do_predict(anomaly_id, last_prediction_time, pattern)
+            result = self.do_predict(predictor_id, last_prediction_time, pattern)
             
         result['task'] = 'learn'
         return result
 
-    def do_predict(self, anomaly_id, last_prediction_time, pattern):
-        model = self.get_model(anomaly_id, pattern)
+    def do_predict(self, predictor_id, last_prediction_time, pattern):
+        model = self.get_model(predictor_id, pattern)
         model.synchronize_data()
         segments, last_prediction_time = model.predict(last_prediction_time)
         return {
             'task': "predict",
             'status': "success",
-            'anomaly_id': anomaly_id,
+            'predictor_id': predictor_id,
             'segments': segments,
             'last_prediction_time': last_prediction_time
         }
 
-    def get_model(self, anomaly_id, pattern):
-        if anomaly_id not in self.models_cache:
+    def get_model(self, predictor_id, pattern):
+        if predictor_id not in self.models_cache:
             if pattern.find('general') != -1:
-                model = AnomalyModel(anomaly_id)
+                model = AnomalyModel(predictor_id)
             else:
-                model = PatternDetectionModel(anomaly_id, pattern)
-            self.models_cache[anomaly_id] = model
-        return self.models_cache[anomaly_id]
+                model = PatternDetectionModel(predictor_id, pattern)
+            self.models_cache[predictor_id] = model
+        return self.models_cache[predictor_id]
 
 

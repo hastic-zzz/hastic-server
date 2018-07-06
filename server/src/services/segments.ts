@@ -2,12 +2,12 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { getJsonDataSync, writeJsonDataSync }  from './json';
 import { SEGMENTS_PATH } from '../config';
-import { AnomalyId, loadAnomalyById, saveAnomaly } from './anomalyType';
+import { PredictorId, loadAnomalyById, saveAnomaly } from './anomalyType';
 
 import * as _ from 'lodash';
 
-function getLabeledSegments(anomalyId: AnomalyId) {
-  let filename = path.join(SEGMENTS_PATH, `${anomalyId}_labeled.json`);
+function getLabeledSegments(predictorId: PredictorId) {
+  let filename = path.join(SEGMENTS_PATH, `${predictorId}_labeled.json`);
 
   if(!fs.existsSync(filename)) {
     return [];
@@ -22,8 +22,8 @@ function getLabeledSegments(anomalyId: AnomalyId) {
   }
 }
 
-function getPredictedSegments(anomalyId: AnomalyId) {
-  let filename = path.join(SEGMENTS_PATH, `${anomalyId}_segments.json`);
+function getPredictedSegments(predictorId: PredictorId) {
+  let filename = path.join(SEGMENTS_PATH, `${predictorId}_segments.json`);
 
   let jsonData;
   try {
@@ -35,8 +35,8 @@ function getPredictedSegments(anomalyId: AnomalyId) {
   return jsonData;
 }
 
-function saveSegments(anomalyId: AnomalyId, segments) {
-  let filename = path.join(SEGMENTS_PATH, `${anomalyId}_labeled.json`);
+function saveSegments(predictorId: PredictorId, segments) {
+  let filename = path.join(SEGMENTS_PATH, `${predictorId}_labeled.json`);
 
   try {
     return writeJsonDataSync(filename, _.uniqBy(segments, 'start'));
@@ -46,10 +46,10 @@ function saveSegments(anomalyId: AnomalyId, segments) {
   }
 }
 
-function insertSegments(anomalyId: AnomalyId, addedSegments, labeled:boolean) {
+function insertSegments(predictorId: PredictorId, addedSegments, labeled:boolean) {
   // Set status
-  let info = loadAnomalyById(anomalyId);
-  let segments = getLabeledSegments(anomalyId);
+  let info = loadAnomalyById(predictorId);
+  let segments = getLabeledSegments(predictorId);
 
   let nextId = info.next_id;
   let addedIds = []
@@ -61,17 +61,17 @@ function insertSegments(anomalyId: AnomalyId, addedSegments, labeled:boolean) {
     segments.push(segment);
   }
   info.next_id = nextId;
-  saveSegments(anomalyId, segments);
-  saveAnomaly(anomalyId, info);
+  saveSegments(predictorId, segments);
+  saveAnomaly(predictorId, info);
   return addedIds;
 }
 
-function removeSegments(anomalyId: AnomalyId, removedSegments) {
-  let segments = getLabeledSegments(anomalyId);
+function removeSegments(predictorId: PredictorId, removedSegments) {
+  let segments = getLabeledSegments(predictorId);
   for (let segmentId of removedSegments) {
     segments = segments.filter(el => el.id !== segmentId);
   }
-  saveSegments(anomalyId, segments);
+  saveSegments(predictorId, segments);
 }
 
 export { getLabeledSegments, getPredictedSegments, saveSegments, insertSegments, removeSegments }

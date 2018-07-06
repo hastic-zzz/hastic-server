@@ -1,4 +1,4 @@
-import { AnomalyId, getAnomalyIdByName, loadAnomalyById } from '../services/anomalyType';
+import { PredictorId, getPredictorIdByName, loadAnomalyById } from '../services/anomalyType';
 import { getAlertsAnomalies, saveAlertsAnomalies } from '../services/alerts';
 
 import * as Router from 'koa-router';
@@ -6,14 +6,14 @@ import * as Router from 'koa-router';
 
 function getAlert(ctx: Router.IRouterContext) {
   
-  let anomalyId: AnomalyId = ctx.request.query.anomaly_id.toLowerCase();
-  let anomaly = loadAnomalyById(anomalyId)
+  let predictorId: PredictorId = ctx.request.query.predictor_id.toLowerCase();
+  let anomaly = loadAnomalyById(predictorId)
   if(anomaly == null) {
-    anomalyId = getAnomalyIdByName(anomalyId);
+    predictorId = getPredictorIdByName(predictorId);
   }
 
   let alertsAnomalies = getAlertsAnomalies();
-  let pos = alertsAnomalies.indexOf(anomalyId);
+  let pos = alertsAnomalies.indexOf(predictorId);
 
   let enable: boolean = (pos !== -1);
   ctx.response.body = { enable };
@@ -22,18 +22,18 @@ function getAlert(ctx: Router.IRouterContext) {
 
 function changeAlert(ctx: Router.IRouterContext) {
 
-  let anomalyId: AnomalyId = ctx.request.body.anomaly_id.toLowerCase();
+  let predictorId: PredictorId = ctx.request.body.predictor_id.toLowerCase();
   let enable: boolean = ctx.request.body.enable;
 
-  let anomaly = loadAnomalyById(anomalyId)
+  let anomaly = loadAnomalyById(predictorId)
   if(anomaly == null) {
-    anomalyId = getAnomalyIdByName(anomalyId);
+    predictorId = getPredictorIdByName(predictorId);
   }
 
   let alertsAnomalies = getAlertsAnomalies();
-  let pos: number = alertsAnomalies.indexOf(anomalyId);
+  let pos: number = alertsAnomalies.indexOf(predictorId);
   if(enable && pos == -1) {
-    alertsAnomalies.push(anomalyId);
+    alertsAnomalies.push(predictorId);
     saveAlertsAnomalies(alertsAnomalies);
   } else if(!enable && pos > -1) {
     alertsAnomalies.splice(pos, 1);

@@ -12,7 +12,7 @@ function maybeCreate(path: string): void {
 }
 
 export function checkDataFolders(): void {
-  var folders = [
+  [
     config.DATA_PATH,
     config.DATASETS_PATH,
     config.ANOMALIES_PATH,

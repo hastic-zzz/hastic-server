@@ -5,7 +5,7 @@ import {
   Metric,
   Anomaly,
   saveAnomaly,
-  insertAnomaly, removeAnomaly, loadAnomalyByName, loadAnomalyById, getAnomalyIdByName
+  insertAnomaly, removeAnomaly, loadAnomalyByName, loadAnomalyById, getPredictorIdByName
 } from '../services/anomalyType';
 import { runLearning } from '../services/analytics'
 import { saveTargets } from '../services/metrics';
@@ -84,8 +84,8 @@ async function createAnomaly(ctx: Router.IRouterContext) {
       last_prediction_time: 0,
       next_id: 0
     };
-    let anomalyId = insertAnomaly(anomaly);
-    if(anomalyId === null) {
+    let predictorId = insertAnomaly(anomaly);
+    if(predictorId === null) {
       ctx.response.status = 403;
       ctx.response.body = {
         code: 403,
@@ -93,9 +93,9 @@ async function createAnomaly(ctx: Router.IRouterContext) {
       };
     }
 
-    ctx.response.body = { anomaly_id: anomalyId };
+    ctx.response.body = { predictor_id: predictorId };
 
-    runLearning(anomalyId);
+    runLearning(predictorId);
   } catch(e) {
     ctx.response.status = 500;
     ctx.response.body = {

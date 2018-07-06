@@ -3,7 +3,7 @@
 ## /anomalies
 
 ### Get anomalies
-`GET /anomalies?id=<anomaly_id>[&name=<anomaly_name>]`
+`GET /anomalies?id=<predictor_id>[&name=<anomaly_name>]`
 
 NOTE: `name` param is deprecated, use `id` instead
 
@@ -24,7 +24,7 @@ status field can be one of:
 - `failed`
 
 ### Get anomaly status
-`GET /anomalies/status?id=<anomaly_id>[&name=<anomaly_name>]`
+`GET /anomalies/status?id=<predictor_id>[&name=<anomaly_name>]`
 
 NOTE: `name` param is deprecated, use `id` instead
 
@@ -102,7 +102,7 @@ Return data format:
 
 ```
 {
-  "anomaly_id": "<anomaly_id>"
+  "predictor_id": "<predictor_id>"
 }
 ```
 
@@ -113,7 +113,7 @@ Data format:
 
 ```
 {
-  "id": "<anomaly_id>",
+  "id": "<predictor_id>",
   "name": "<anomaly_name>" // deprecated, use id instead
 }
 ```
@@ -127,7 +127,7 @@ Success
 ## /segments
 
 ### Get segments
-`GET /segments?anomaly_id=<anomaly_id>[&last_segment=<id>][&from=<time_from>][&to=<time_to>]`
+`GET /segments?predictor_id=<predictor_id>[&last_segment=<id>][&from=<time_from>][&to=<time_to>]`
 
 Return data format:
 
@@ -153,7 +153,7 @@ Data format:
 
 ```
 {
-  "anomaly_id": "<anomaly_id>",
+  "predictor_id": "<predictor_id>",
   "name": "<anomaly_name>", // deprecated, use id instead
   "added_segments": [
     {
@@ -178,7 +178,7 @@ Return data format:
 
 ### Check if alert is enabled for anomaly
 
-`GET /alerts?anomaly_id=<anomaly_id>`
+`GET /alerts?predictor_id=<predictor_id>`
 
 Return data format:
 
@@ -196,7 +196,7 @@ Data format:
 
 ```
 {
-  "anomaly_id": "<anomaly_id>",
+  "predictor_id": "<predictor_id>",
   "enable": true
 }
 ```

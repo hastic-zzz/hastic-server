@@ -32,7 +32,7 @@ export type Anomaly = {
   next_id: number
 }
 
-export type AnomalyId = string;
+export type PredictorId = string;
 
 let anomaliesNameToIdMap = {};
 
@@ -49,7 +49,7 @@ function saveAnomaliesMap() {
   writeJsonDataSync(filename, anomaliesNameToIdMap);
 }
 
-function getAnomalyIdByName(anomalyName:string) : AnomalyId {
+function getPredictorIdByName(anomalyName:string): PredictorId {
   loadAnomaliesMap();
   anomalyName = anomalyName.toLowerCase();
   if(anomalyName in anomaliesNameToIdMap) {
@@ -58,42 +58,40 @@ function getAnomalyIdByName(anomalyName:string) : AnomalyId {
   return anomalyName;
 }
 
-function insertAnomaly(anomaly: Anomaly) : AnomalyId {
+function insertAnomaly(anomaly: Anomaly): PredictorId {
   const hashString = anomaly.name + (new Date()).toString();
-  const anomalyId:AnomalyId = crypto.createHash('md5').update(hashString).digest('hex');
-  anomaliesNameToIdMap[anomaly.name] = anomalyId;
+  const predictorId:PredictorId = crypto.createHash('md5').update(hashString).digest('hex');
+  anomaliesNameToIdMap[anomaly.name] = predictorId;
   saveAnomaliesMap();
-  // return anomalyId
-  // const anomalyId:AnomalyId = anomaly.name;
-  let filename = path.join(ANOMALIES_PATH, `${anomalyId}.json`);
+  let filename = path.join(ANOMALIES_PATH, `${predictorId}.json`);
   if(fs.existsSync(filename)) {
     return null;
   }
-  saveAnomaly(anomalyId, anomaly);
-  return anomalyId;
+  saveAnomaly(predictorId, anomaly);
+  return predictorId;
 }
 
-function removeAnomaly(anomalyId:AnomalyId) {
-  let filename = path.join(ANOMALIES_PATH, `${anomalyId}.json`);
+function removeAnomaly(predictorId: PredictorId) {
+  let filename = path.join(ANOMALIES_PATH, `${predictorId}.json`);
   fs.unlinkSync(filename);
 }
 
-function saveAnomaly(anomalyId: AnomalyId, anomaly: Anomaly) {
-  let filename = path.join(ANOMALIES_PATH, `${anomalyId}.json`);
+function saveAnomaly(predictorId: PredictorId, anomaly: Anomaly) {
+  let filename = path.join(ANOMALIES_PATH, `${predictorId}.json`);
   return writeJsonDataSync(filename, anomaly);
 }
 
-function loadAnomalyById(anomalyId: AnomalyId) : Anomaly {
-  let filename = path.join(ANOMALIES_PATH, `${anomalyId}.json`);
+function loadAnomalyById(predictorId: PredictorId): Anomaly {
+  let filename = path.join(ANOMALIES_PATH, `${predictorId}.json`);
   if(!fs.existsSync(filename)) {
     return null;
   }
   return getJsonDataSync(filename);
 }
 
-function loadAnomalyByName(anomalyName: string) : Anomaly {
-  let anomalyId = getAnomalyIdByName(anomalyName);
-  return loadAnomalyById(anomalyId);
+function loadAnomalyByName(anomalyName: string): Anomaly {
+  let predictorId = getPredictorIdByName(anomalyName);
+  return loadAnomalyById(predictorId);
 }
 
 function saveAnomalyTypeInfo(info) {
@@ -113,24 +111,24 @@ function getAnomalyTypeInfo(name) {
   return getJsonDataSync(path.join(ANOMALIES_PATH, `${name}.json`));
 }
 
-function setAnomalyStatus(anomalyId:AnomalyId, status:string, error?:string) {
-  let info = loadAnomalyById(anomalyId);
+function setAnomalyStatus(predictorId: PredictorId, status: string, error?: string) {
+  let info = loadAnomalyById(predictorId);
   info.status = status;
   if(error !== undefined) {
     info.error = error;
   } else {
     info.error = '';
   }
-  saveAnomaly(anomalyId, info);
+  saveAnomaly(predictorId, info);
 }
 
-function setAnomalyPredictionTime(anomalyId:AnomalyId, lastPredictionTime:number) {
-  let info = loadAnomalyById(anomalyId);
+function setAnomalyPredictionTime(predictorId: PredictorId, lastPredictionTime: number) {
+  let info = loadAnomalyById(predictorId);
   info.last_prediction_time = lastPredictionTime;
-  saveAnomaly(anomalyId, info);
+  saveAnomaly(predictorId, info);
 }
 
 export {
   saveAnomaly, loadAnomalyById, loadAnomalyByName, insertAnomaly, removeAnomaly, saveAnomalyTypeInfo,
-  getAnomalyTypeInfo, getAnomalyIdByName, setAnomalyStatus, setAnomalyPredictionTime
+  getAnomalyTypeInfo, getPredictorIdByName, setAnomalyStatus, setAnomalyPredictionTime
 }
