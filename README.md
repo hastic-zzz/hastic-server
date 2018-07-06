@@ -93,12 +93,6 @@ docker build -t hastic-server .
 docker run -d --name hastic-server -p 80:8000 -e HASTIC_API_KEY=<your_grafana_api_key> hastic-server
 ```
 
-### Known bugs & issues
-
-- Adding labeled segments while learning is in progress is not supported
-- Dataset doesn't update after 1st learning
-- Currently only influxDB datasource is supported
-
 ### Changelog
 
 ### [0.1.4-alpha] - 2018-06-29
