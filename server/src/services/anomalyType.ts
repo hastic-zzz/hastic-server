@@ -49,7 +49,7 @@ function saveAnomaliesMap() {
   writeJsonDataSync(filename, anomaliesNameToIdMap);
 }
 
-function getPredictorIdByName(anomalyName:string) : PredictorId {
+function getPredictorIdByName(anomalyName:string): PredictorId {
   loadAnomaliesMap();
   anomalyName = anomalyName.toLowerCase();
   if(anomalyName in anomaliesNameToIdMap) {
@@ -58,7 +58,7 @@ function getPredictorIdByName(anomalyName:string) : PredictorId {
   return anomalyName;
 }
 
-function insertAnomaly(anomaly: Anomaly) : PredictorId {
+function insertAnomaly(anomaly: Anomaly): PredictorId {
   const hashString = anomaly.name + (new Date()).toString();
   const predictorId:PredictorId = crypto.createHash('md5').update(hashString).digest('hex');
   anomaliesNameToIdMap[anomaly.name] = predictorId;
@@ -71,7 +71,7 @@ function insertAnomaly(anomaly: Anomaly) : PredictorId {
   return predictorId;
 }
 
-function removeAnomaly(predictorId:PredictorId) {
+function removeAnomaly(predictorId: PredictorId) {
   let filename = path.join(ANOMALIES_PATH, `${predictorId}.json`);
   fs.unlinkSync(filename);
 }
@@ -81,7 +81,7 @@ function saveAnomaly(predictorId: PredictorId, anomaly: Anomaly) {
   return writeJsonDataSync(filename, anomaly);
 }
 
-function loadAnomalyById(predictorId: PredictorId) : Anomaly {
+function loadAnomalyById(predictorId: PredictorId): Anomaly {
   let filename = path.join(ANOMALIES_PATH, `${predictorId}.json`);
   if(!fs.existsSync(filename)) {
     return null;
@@ -89,7 +89,7 @@ function loadAnomalyById(predictorId: PredictorId) : Anomaly {
   return getJsonDataSync(filename);
 }
 
-function loadAnomalyByName(anomalyName: string) : Anomaly {
+function loadAnomalyByName(anomalyName: string): Anomaly {
   let predictorId = getPredictorIdByName(anomalyName);
   return loadAnomalyById(predictorId);
 }
@@ -111,7 +111,7 @@ function getAnomalyTypeInfo(name) {
   return getJsonDataSync(path.join(ANOMALIES_PATH, `${name}.json`));
 }
 
-function setAnomalyStatus(predictorId:PredictorId, status:string, error?:string) {
+function setAnomalyStatus(predictorId: PredictorId, status: string, error?: string) {
   let info = loadAnomalyById(predictorId);
   info.status = status;
   if(error !== undefined) {
@@ -122,7 +122,7 @@ function setAnomalyStatus(predictorId:PredictorId, status:string, error?:string)
   saveAnomaly(predictorId, info);
 }
 
-function setAnomalyPredictionTime(predictorId:PredictorId, lastPredictionTime:number) {
+function setAnomalyPredictionTime(predictorId: PredictorId, lastPredictionTime: number) {
   let info = loadAnomalyById(predictorId);
   info.last_prediction_time = lastPredictionTime;
   saveAnomaly(predictorId, info);
