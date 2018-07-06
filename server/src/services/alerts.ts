@@ -1,5 +1,5 @@
 import { getJsonDataSync, writeJsonDataSync } from './json';
-import { AnomalyId } from './anomalyType';
+import { PredictorId } from './anomalyType';
 import { runPredict } from './analytics';
 import { sendNotification } from './notification';
 import { getLabeledSegments } from './segments';
@@ -13,22 +13,22 @@ import * as fs from 'fs';
 
 const ALERTS_DB_PATH = path.join(ANOMALIES_PATH, `alerts_anomalies.json`);
 
-function getAlertsAnomalies(): AnomalyId[] {
+function getAlertsAnomalies(): PredictorId[] {
   if(!fs.existsSync(ALERTS_DB_PATH)) {
     saveAlertsAnomalies([]);
   }
   return getJsonDataSync(ALERTS_DB_PATH);
 }
 
-function saveAlertsAnomalies(anomalies: AnomalyId[]) {
+function saveAlertsAnomalies(anomalies: PredictorId[]) {
   return writeJsonDataSync(ALERTS_DB_PATH, anomalies);
 }
 
-function processAlerts(anomalyId) {
-  let segments = getLabeledSegments(anomalyId);
+function processAlerts(predictorId) {
+  let segments = getLabeledSegments(predictorId);
 
   const currentTime = new Date().getTime();
-  const activeAlert = activeAlerts.has(anomalyId);
+  const activeAlert = activeAlerts.has(predictorId);
   let newActiveAlert = false;
 
   if(segments.length > 0) {
@@ -39,20 +39,20 @@ function processAlerts(anomalyId) {
   }
 
   if(!activeAlert && newActiveAlert) {
-    activeAlerts.add(anomalyId);
-    sendNotification(anomalyId, true);
+    activeAlerts.add(predictorId);
+    sendNotification(predictorId, true);
   } else if(activeAlert && !newActiveAlert) {
-    activeAlerts.delete(anomalyId);
-    sendNotification(anomalyId, false);
+    activeAlerts.delete(predictorId);
+    sendNotification(predictorId, false);
   }
 }
 
 async function alertsTick() {
   let alertsAnomalies = getAlertsAnomalies();
-  for (let anomalyId of alertsAnomalies) {
+  for (let predictorId of alertsAnomalies) {
     try {
-      await runPredict(anomalyId);
-      processAlerts(anomalyId);
+      await runPredict(predictorId);
+      processAlerts(predictorId);
     } catch (e) {
       console.error(e);
     }

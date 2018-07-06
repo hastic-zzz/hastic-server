@@ -95,6 +95,9 @@ docker run -d --name hastic-server -p 80:8000 -e HASTIC_API_KEY=<your_grafana_ap
 
 ### Changelog
 
+### [0.2.0-alpha] - Not released yet
+`Please note: hastic-panels of older versions are not supported`
+
 ### [0.1.4-alpha] - 2018-06-29
 #### Changed
 - Informative error messages instead of "Internal error" [#40](https://github.com/hastic/hastic-server/issues/33)

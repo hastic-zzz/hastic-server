@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { loadAnomalyById } from './anomalyType';
 
-export async function sendNotification(anomalyId, active) {
-  let anomalyName = loadAnomalyById(anomalyId).name;
+export async function sendNotification(predictorId, active) {
+  let anomalyName = loadAnomalyById(predictorId).name;
   console.log('Notification ' + anomalyName);
 
   let notification = {

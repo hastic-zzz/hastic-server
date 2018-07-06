@@ -7,7 +7,7 @@ import {
 } from '../services/segments';
 
 import {
-  Anomaly, AnomalyId, getAnomalyIdByName, loadAnomalyById
+  Anomaly, PredictorId, getPredictorIdByName, loadAnomalyById
 } from '../services/anomalyType';
 
 import { runLearning } from '../services/analytics';
@@ -15,17 +15,17 @@ import { runLearning } from '../services/analytics';
 
 async function sendSegments(ctx: Router.IRouterContext) {
 
-  let anomalyId: AnomalyId = ctx.request.query.anomaly_id.toLowerCase();
-  let anomaly:Anomaly = loadAnomalyById(anomalyId);
+  let predictorId: PredictorId = ctx.request.query.predictor_id.toLowerCase();
+  let anomaly:Anomaly = loadAnomalyById(predictorId);
   if(anomaly === null) {
-    anomalyId = getAnomalyIdByName(anomalyId);
+    predictorId = getPredictorIdByName(predictorId);
   }
 
   let lastSegmentId = ctx.request.query.last_segment;
   let timeFrom = ctx.request.query.from;
   let timeTo = ctx.request.query.to;
 
-  let segments = getLabeledSegments(anomalyId);
+  let segments = getLabeledSegments(predictorId);
 
   // Id filtering
   if(lastSegmentId !== undefined) {
@@ -49,19 +49,19 @@ async function updateSegments(ctx: Router.IRouterContext) {
   try {
     let segmentsUpdate = ctx.request.body;
 
-    let anomalyId = segmentsUpdate.anomaly_id;
+    let predictorId = segmentsUpdate.predictor_id;
     let anomalyName = segmentsUpdate.name.toLowerCase();
 
-    if(anomalyId === undefined) {
-      anomalyId = getAnomalyIdByName(anomalyName);
+    if(predictorId === undefined) {
+      predictorId = getPredictorIdByName(anomalyName);
     }
 
-    let addedIds = insertSegments(anomalyId, segmentsUpdate.added_segments, true);
-    removeSegments(anomalyId, segmentsUpdate.removed_segments);
+    let addedIds = insertSegments(predictorId, segmentsUpdate.added_segments, true);
+    removeSegments(predictorId, segmentsUpdate.removed_segments);
 
     ctx.response.body = { added_ids: addedIds };
 
-    runLearning(anomalyId);
+    runLearning(predictorId);
   } catch(e) {
     ctx.response.status = 500;
     ctx.response.body = {

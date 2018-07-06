@@ -1,6 +1,6 @@
 import {
   Anomaly,
-  AnomalyId, getAnomalyTypeInfo,
+  PredictorId, getAnomalyTypeInfo,
   loadAnomalyById,
   setAnomalyPredictionTime,
   setAnomalyStatus
@@ -28,7 +28,7 @@ function onResponse(response: any) {
 }
 
 async function runTask(task): Promise<any> {
-  let anomaly: Anomaly = loadAnomalyById(task.anomaly_id);
+  let anomaly: Anomaly = loadAnomalyById(task.predictor_id);
   task.metric = {
     datasource: anomaly.metric.datasource,
     targets: anomaly.metric.targets.map(t => getTarget(t))
@@ -42,14 +42,14 @@ async function runTask(task): Promise<any> {
   })
 }
 
-export async function runLearning(anomalyId:AnomalyId) {
-  let segments = getLabeledSegments(anomalyId);
-  setAnomalyStatus(anomalyId, 'learning');
-  let anomaly:Anomaly  = loadAnomalyById(anomalyId);
+export async function runLearning(predictorId:PredictorId) {
+  let segments = getLabeledSegments(predictorId);
+  setAnomalyStatus(predictorId, 'learning');
+  let anomaly:Anomaly  = loadAnomalyById(predictorId);
   let pattern = anomaly.pattern;
   let task = {
     type: 'learn',
-    anomaly_id: anomalyId,
+    predictor_id: predictorId,
     pattern,
     segments: segments
   };
@@ -57,20 +57,20 @@ export async function runLearning(anomalyId:AnomalyId) {
   let result = await runTask(task);
 
   if (result.status === 'success') {
-    setAnomalyStatus(anomalyId, 'ready');
-    insertSegments(anomalyId, result.segments, false);
-    setAnomalyPredictionTime(anomalyId, result.last_prediction_time);
+    setAnomalyStatus(predictorId, 'ready');
+    insertSegments(predictorId, result.segments, false);
+    setAnomalyPredictionTime(predictorId, result.last_prediction_time);
   } else {
-    setAnomalyStatus(anomalyId, 'failed', result.error);
+    setAnomalyStatus(predictorId, 'failed', result.error);
   }
 }
 
-export async function runPredict(anomalyId:AnomalyId) {
-  let anomaly:Anomaly = loadAnomalyById(anomalyId);
+export async function runPredict(predictorId:PredictorId) {
+  let anomaly:Anomaly = loadAnomalyById(predictorId);
   let pattern = anomaly.pattern;
   let task = {
     type: 'predict',
-    anomaly_id: anomalyId,
+    predictor_id: predictorId,
     pattern,
     last_prediction_time: anomaly.last_prediction_time
   };
@@ -80,18 +80,18 @@ export async function runPredict(anomalyId:AnomalyId) {
     return [];
   }
   // Merging segments
-  let segments = getLabeledSegments(anomalyId);
+  let segments = getLabeledSegments(predictorId);
   if(segments.length > 0 && result.segments.length > 0) {
     let lastOldSegment = segments[segments.length - 1];
     let firstNewSegment = result.segments[0];
 
     if(firstNewSegment.start <= lastOldSegment.finish) {
       result.segments[0].start = lastOldSegment.start;
-      removeSegments(anomalyId, [lastOldSegment.id]);
+      removeSegments(predictorId, [lastOldSegment.id]);
     }
   }
 
-  insertSegments(anomalyId, result.segments, false);
-  setAnomalyPredictionTime(anomalyId, result.last_prediction_time);
+  insertSegments(predictorId, result.segments, false);
+  setAnomalyPredictionTime(predictorId, result.last_prediction_time);
   return result.segments;
 }

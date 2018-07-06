@@ -10,6 +10,7 @@ export const ANALYTICS_PATH = path.join(__dirname, '../../analytics');
 
 export const DATA_PATH = path.join(__dirname, '../../data');
 
+export const DB_PATH = path.join(DATA_PATH, 'data.db')
 export const DATASETS_PATH = path.join(DATA_PATH, 'datasets');
 export const ANOMALIES_PATH = path.join(DATA_PATH, 'anomalies');
 export const MODELS_PATH = path.join(DATA_PATH, 'models');

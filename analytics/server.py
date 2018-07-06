@@ -28,7 +28,7 @@ def handleTask(text):
 
         socket.send_string(json.dumps({
             'task': task['type'],
-            'anomaly_id': task['anomaly_id'],
+            'predictor_id': task['predictor_id'],
             '__task_id': task['__task_id'],
             'status': "in progress"
         }))
