@@ -7,7 +7,7 @@ import {
 } from '../services/segments';
 
 import { AnalyticUnitId } from '../models/analytic_unit';
-import { runLearning } from '../services/analytics';
+import { runLearning } from '../services/analytics_service';
 
 
 async function sendSegments(ctx: Router.IRouterContext) {

@@ -1,8 +1,10 @@
+import { findById } from '../models/analytic_unit';
+
 import axios from 'axios';
-import { loadById } from '../models/analytic_unit';
+
 
 export async function sendNotification(predictorId, active) {
-  let anomalyName = loadById(predictorId).name;
+  let anomalyName = findById(predictorId).name;
   console.log('Notification ' + anomalyName);
 
   let notification = {

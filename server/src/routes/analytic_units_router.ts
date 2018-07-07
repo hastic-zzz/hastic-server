@@ -2,7 +2,7 @@ import * as Router from 'koa-router';
 
 import * as AnalyticUnit from '../models/analytic_unit';
 
-import { runLearning } from '../services/analytics'
+import { runLearning } from '../services/analytics_service'
 import { saveTargets } from '../services/metrics';
 
 async function sendStatus(ctx: Router.IRouterContext) {
@@ -13,7 +13,7 @@ async function sendStatus(ctx: Router.IRouterContext) {
     if(id === undefined) {
       throw new Error('Id is undefined');
     }
-    let unit = AnalyticUnit.loadById(id);
+    let unit = AnalyticUnit.findById(id);
 
     if(unit.status === undefined) {
       throw new Error('No status for ' + name);
@@ -36,7 +36,7 @@ async function findItem(ctx: Router.IRouterContext) {
       throw new Error('No id param in query');
     }
 
-    let unit: AnalyticUnit.AnalyticUnit = AnalyticUnit.loadById(id);
+    let unit: AnalyticUnit.AnalyticUnit = AnalyticUnit.findById(id);
 
     ctx.response.body = {
       name: unit.name,
@@ -118,7 +118,7 @@ function deleteItem(ctx: Router.IRouterContext) {
     let id = ctx.request.query.id;
 
     if(id !== undefined) {
-      AnalyticUnit.removeItem(id);
+      AnalyticUnit.remove(id);
     }
 
     ctx.response.body = {

@@ -1,7 +1,10 @@
-import * as path from 'path';
 import { getJsonDataSync, writeJsonDataSync }  from './json';
 import { METRICS_PATH } from '../config';
+
 import * as crypto from 'crypto';
+
+import * as path from 'path';
+
 
 function saveTargets(targets) {
   let metrics = [];

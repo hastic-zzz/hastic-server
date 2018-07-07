@@ -47,7 +47,7 @@ export function createItem(item: AnalyticUnit): AnalyticUnitId {
   return newId;
 }
 
-export function removeItem(id: AnalyticUnitId) {
+export function remove(id: AnalyticUnitId) {
   let filename = path.join(ANALYTIC_UNITS_PATH, `${id}.json`);
   fs.unlinkSync(filename);
 }
@@ -58,7 +58,7 @@ export function save(id: AnalyticUnitId, unit: AnalyticUnit) {
 }
 
 // TODO: make async
-export function loadById(id: AnalyticUnitId): AnalyticUnit {
+export function findById(id: AnalyticUnitId): AnalyticUnit {
   let filename = path.join(ANALYTIC_UNITS_PATH, `${id}.json`);
   if(!fs.existsSync(filename)) {
     throw new Error(`Can't find Analytic Unit with id ${id}`);
@@ -66,12 +66,8 @@ export function loadById(id: AnalyticUnitId): AnalyticUnit {
   return getJsonDataSync(filename);
 }
 
-export function getAnomalyTypeInfo(name) {
-  return getJsonDataSync(path.join(ANALYTIC_UNITS_PATH, `${name}.json`));
-}
-
-export function setAnomalyStatus(predictorId: AnalyticUnitId, status: string, error?: string) {
-  let info = loadById(predictorId);
+export function setStatus(predictorId: AnalyticUnitId, status: string, error?: string) {
+  let info = findById(predictorId);
   info.status = status;
   if(error !== undefined) {
     info.error = error;
@@ -82,7 +78,7 @@ export function setAnomalyStatus(predictorId: AnalyticUnitId, status: string, er
 }
 
 export function setPredictionTime(id: AnalyticUnitId, time: number) {
-  let info = loadById(id);
+  let info = findById(id);
   info.lastPredictionTime = time;
   save(id, info);
 }

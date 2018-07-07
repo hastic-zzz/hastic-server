@@ -1,5 +1,5 @@
 import { getJsonDataSync, writeJsonDataSync }  from './json';
-import { AnalyticUnitId, loadById, save } from '../models/analytic_unit';
+import { AnalyticUnitId, findById, save } from '../models/analytic_unit';
 import { SEGMENTS_PATH } from '../config';
 
 import * as _ from 'lodash';
@@ -48,9 +48,9 @@ export function saveSegments(id: AnalyticUnitId, segments) {
   }
 }
 
-export function insertSegments(id: AnalyticUnitId, addedSegments, labeled:boolean) {
+export function insertSegments(id: AnalyticUnitId, addedSegments, labeled: boolean) {
   // Set status
-  let info = loadById(id);
+  let info = findById(id);
   let segments = getLabeledSegments(id);
 
   let nextId = info.nextId;

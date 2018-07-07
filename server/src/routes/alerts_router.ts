@@ -1,24 +1,22 @@
 import * as AnalyticUnit from '../models/analytic_unit';
-import { getAlertsAnomalies, saveAlertsAnomalies } from '../services/alerts';
+import { getAlertsAnomalies, saveAlertsAnomalies } from '../services/alerts_service';
 
 import * as Router from 'koa-router';
 
 
 function getAlert(ctx: Router.IRouterContext) {
-  let predictorId: AnalyticUnit.AnalyticUnitId = ctx.request.query.predictor_id.toLowerCase();
+  let id: AnalyticUnit.AnalyticUnitId = ctx.request.query.id;
 
   let alertsAnomalies = getAlertsAnomalies();
-  let pos = alertsAnomalies.indexOf(predictorId);
+  let pos = alertsAnomalies.indexOf(id);
 
-  let enable: boolean = (pos !== -1);
-  ctx.response.body = { enable };
+  let enabled: boolean = (pos !== -1);
+  ctx.response.body = { enabled };
 }
 
 function setAlertEnabled(ctx: Router.IRouterContext) {
   let id: AnalyticUnit.AnalyticUnitId = ctx.request.body.id;
   let enabled: boolean = ctx.request.body.enabled;
-
-  let unit = AnalyticUnit.loadById(id)
 
   let alertsAnomalies = getAlertsAnomalies();
   let pos: number = alertsAnomalies.indexOf(id);
@@ -30,7 +28,6 @@ function setAlertEnabled(ctx: Router.IRouterContext) {
     saveAlertsAnomalies(alertsAnomalies);
   }
   ctx.response.body = { status: 'OK' };
-
 }
 
 export const router = new Router();

@@ -1,17 +1,16 @@
+import { router as anomaliesRouter } from './routes/analytic_units_router';
+import { router as segmentsRouter } from './routes/segments_router';
+import { router as alertsRouter } from './routes/alerts_router';
+
+import * as Data from './services/data';
+
+import { HASTIC_PORT } from './config';
+
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
 import * as bodyParser from 'koa-bodyparser';
 
-
-import { router as anomaliesRouter } from './routes/analytic_units';
-import { router as segmentsRouter } from './routes/segments';
-import { router as alertsRouter } from './routes/alerts';
-
-import { checkDataFolders } from './services/data';
-
-import { HASTIC_PORT } from './config';
-
-checkDataFolders();
+Data.checkDataFolders();
 
 var app = new Koa();
 
