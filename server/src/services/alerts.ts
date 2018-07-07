@@ -4,14 +4,14 @@ import { runPredict } from './analytics';
 import { sendNotification } from './notification';
 import { getLabeledSegments } from './segments';
 
-import { ANOMALIES_PATH } from '../config';
+import { ANALYTIC_UNITS_PATH } from '../config';
 
 import * as path from 'path';
 import * as fs from 'fs';
 
 
 
-const ALERTS_DB_PATH = path.join(ANOMALIES_PATH, `alerts_anomalies.json`);
+const ALERTS_DB_PATH = path.join(ANALYTIC_UNITS_PATH, `alerts_anomalies.json`);
 
 function getAlertsAnomalies(): AnalyticUnitId[] {
   if(!fs.existsSync(ALERTS_DB_PATH)) {

@@ -26,7 +26,7 @@ app.use(async function(ctx, next) {
 
 
 var rootRouter = new Router();
-rootRouter.use('/anomalies', anomaliesRouter.routes(), anomaliesRouter.allowedMethods());
+rootRouter.use('/analyticUnits', anomaliesRouter.routes(), anomaliesRouter.allowedMethods());
 rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
 rootRouter.use('/alerts', alertsRouter.routes(), alertsRouter.allowedMethods());
 rootRouter.get('/', async (ctx) => {

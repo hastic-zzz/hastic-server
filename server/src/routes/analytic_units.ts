@@ -6,19 +6,15 @@ import { runLearning } from '../services/analytics'
 import { saveTargets } from '../services/metrics';
 
 async function sendStatus(ctx: Router.IRouterContext) {
-  let id = ctx.request.query.id;
-  let name = ctx.request.query.name;
   try {
-    let unit: AnalyticUnit.AnalyticUnit;
+    let id = ctx.request.query.id;
+    let name = ctx.request.query.name;
+
     if(id === undefined) {
       throw new Error('Id is undefined');
     }
-    unit = AnalyticUnit.loadById(id);
+    let unit = AnalyticUnit.loadById(id);
 
-    if(unit === null) {
-      ctx.response.status = 404;
-      return;
-    }
     if(unit.status === undefined) {
       throw new Error('No status for ' + name);
     }
@@ -42,11 +38,6 @@ async function findItem(ctx: Router.IRouterContext) {
 
     let unit: AnalyticUnit.AnalyticUnit = AnalyticUnit.loadById(id);
 
-    if(unit === null) {
-      ctx.response.status = 404;
-      return;
-    }
-
     ctx.response.body = {
       name: unit.name,
       metric: unit.metric,
@@ -63,18 +54,39 @@ async function findItem(ctx: Router.IRouterContext) {
 
 async function createItem(ctx: Router.IRouterContext) {
   try {
+
     let body = ctx.request.body;
+
+    if(body.type === undefined) {
+      throw new Error(`Missing field: type`);
+    }
+    if(body.name === undefined) {
+      throw new Error(`Missing field: name`);
+    }
+    if(body.panelUrl === undefined) {
+      throw new Error(`Missing field: panelUrl`);
+    }
+    if(body.metric === undefined) {
+      throw new Error(`Missing field: datasource`);
+    }
+    if(body.metric.datasource === undefined) {
+      throw new Error(`Missing field: metric.datasource`);
+    }
+    if(body.metric.targets === undefined) {
+      throw new Error(`Missing field: metric.targets`);
+    }
+
     const metric: AnalyticUnit.Metric = {
       datasource: body.metric.datasource,
       targets: saveTargets(body.metric.targets)
     };
 
     const unit: AnalyticUnit.AnalyticUnit = {
-      name: body.name.toLowerCase(),
+      name: body.name,
       panelUrl: body.panelUrl,
-      pattern: body.pattern.toLowerCase(),
-      metric: metric,
+      type: body.type,
       datasource: body.datasource,
+      metric: metric,
       status: 'learning',
       lastPredictionTime: 0,
       nextId: 0

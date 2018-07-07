@@ -1,37 +1,31 @@
-import { AnalyticUnitId, loadById } from '../models/analytic_unit';
+import * as AnalyticUnit from '../models/analytic_unit';
 import { getAlertsAnomalies, saveAlertsAnomalies } from '../services/alerts';
 
 import * as Router from 'koa-router';
 
 
 function getAlert(ctx: Router.IRouterContext) {
-  
-  let predictorId: AnalyticUnitId = ctx.request.query.predictor_id.toLowerCase();
+  let predictorId: AnalyticUnit.AnalyticUnitId = ctx.request.query.predictor_id.toLowerCase();
 
   let alertsAnomalies = getAlertsAnomalies();
   let pos = alertsAnomalies.indexOf(predictorId);
 
   let enable: boolean = (pos !== -1);
   ctx.response.body = { enable };
-  
 }
 
-function changeAlert(ctx: Router.IRouterContext) {
+function setAlertEnabled(ctx: Router.IRouterContext) {
+  let id: AnalyticUnit.AnalyticUnitId = ctx.request.body.id;
+  let enabled: boolean = ctx.request.body.enabled;
 
-  let predictorId: AnalyticUnitId = ctx.request.body.predictor_id.toLowerCase();
-  let enable: boolean = ctx.request.body.enable;
-
-  let predictor = loadById(predictorId)
-  if(predictor == null) {
-    throw new Error('Predctor is null');
-  }
+  let unit = AnalyticUnit.loadById(id)
 
   let alertsAnomalies = getAlertsAnomalies();
-  let pos: number = alertsAnomalies.indexOf(predictorId);
-  if(enable && pos == -1) {
-    alertsAnomalies.push(predictorId);
+  let pos: number = alertsAnomalies.indexOf(id);
+  if(enabled && pos == -1) {
+    alertsAnomalies.push(id);
     saveAlertsAnomalies(alertsAnomalies);
-  } else if(!enable && pos > -1) {
+  } else if(!enabled && pos > -1) {
     alertsAnomalies.splice(pos, 1);
     saveAlertsAnomalies(alertsAnomalies);
   }
@@ -42,5 +36,4 @@ function changeAlert(ctx: Router.IRouterContext) {
 export const router = new Router();
 
 router.get('/', getAlert);
-router.post('/', changeAlert);
-
+router.post('/', setAlertEnabled);

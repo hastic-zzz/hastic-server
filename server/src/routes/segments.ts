@@ -6,20 +6,12 @@ import {
   removeSegments,
 } from '../services/segments';
 
-import {
-  AnalyticUnit, AnalyticUnitId, loadById
-} from '../models/analytic_unit';
-
+import { AnalyticUnitId } from '../models/analytic_unit';
 import { runLearning } from '../services/analytics';
 
 
 async function sendSegments(ctx: Router.IRouterContext) {
   let id: AnalyticUnitId = ctx.request.query.id;
-  let unit: AnalyticUnit = loadById(id);
-
-  if(unit === null) {
-    throw new Error(`Can't find Analitic unit with id ${id}`);
-  }
 
   let lastSegmentId = ctx.request.query.lastSegmentId;
   let timeFrom = ctx.request.query.from;
@@ -48,14 +40,10 @@ async function sendSegments(ctx: Router.IRouterContext) {
 async function updateSegments(ctx: Router.IRouterContext) {
   try {
     let segmentsUpdate = ctx.request.body;
-
     let key = segmentsUpdate.analyticUnitKey;
-
     let addedIds = insertSegments(key, segmentsUpdate.addedSegments, true);
     removeSegments(key, segmentsUpdate.removedSegments);
-
     ctx.response.body = { addedIds };
-
     runLearning(key);
   } catch(e) {
     ctx.response.status = 500;

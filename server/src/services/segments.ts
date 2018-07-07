@@ -8,8 +8,8 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 
-export function getLabeledSegments(predictorId: AnalyticUnitId) {
-  let filename = path.join(SEGMENTS_PATH, `${predictorId}_labeled.json`);
+export function getLabeledSegments(id: AnalyticUnitId) {
+  let filename = path.join(SEGMENTS_PATH, `${id}_labeled.json`);
 
   if(!fs.existsSync(filename)) {
     return [];
@@ -24,8 +24,8 @@ export function getLabeledSegments(predictorId: AnalyticUnitId) {
   }
 }
 
-export function getPredictedSegments(predictorId: AnalyticUnitId) {
-  let filename = path.join(SEGMENTS_PATH, `${predictorId}_segments.json`);
+export function getPredictedSegments(id: AnalyticUnitId) {
+  let filename = path.join(SEGMENTS_PATH, `${id}_segments.json`);
 
   let jsonData;
   try {
@@ -68,10 +68,10 @@ export function insertSegments(id: AnalyticUnitId, addedSegments, labeled:boolea
   return addedIds;
 }
 
-export function removeSegments(predictorId: AnalyticUnitId, removedSegments) {
-  let segments = getLabeledSegments(predictorId);
+export function removeSegments(id: AnalyticUnitId, removedSegments) {
+  let segments = getLabeledSegments(id);
   for (let segmentId of removedSegments) {
     segments = segments.filter(el => el.id !== segmentId);
   }
-  saveSegments(predictorId, segments);
+  saveSegments(id, segments);
 }

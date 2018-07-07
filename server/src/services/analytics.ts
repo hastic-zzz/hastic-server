@@ -2,7 +2,7 @@ import {
   AnalyticUnit,
   AnalyticUnitId, getAnomalyTypeInfo,
   loadById,
-  setAnomalyPredictionTime,
+  setPredictionTime,
   setAnomalyStatus
 } from '../models/analytic_unit'
 import { getTarget } from './metrics';
@@ -46,7 +46,7 @@ export async function runLearning(predictorId:AnalyticUnitId) {
   let segments = getLabeledSegments(predictorId);
   setAnomalyStatus(predictorId, 'learning');
   let anomaly:AnalyticUnit  = loadById(predictorId);
-  let pattern = anomaly.pattern;
+  let pattern = anomaly.type;
   let task = {
     type: 'learn',
     predictor_id: predictorId,
@@ -59,7 +59,7 @@ export async function runLearning(predictorId:AnalyticUnitId) {
   if (result.status === 'success') {
     setAnomalyStatus(predictorId, 'ready');
     insertSegments(predictorId, result.segments, false);
-    setAnomalyPredictionTime(predictorId, result.last_prediction_time);
+    setPredictionTime(predictorId, result.last_prediction_time);
   } else {
     setAnomalyStatus(predictorId, 'failed', result.error);
   }
@@ -67,7 +67,7 @@ export async function runLearning(predictorId:AnalyticUnitId) {
 
 export async function runPredict(predictorId:AnalyticUnitId) {
   let anomaly:AnalyticUnit = loadById(predictorId);
-  let pattern = anomaly.pattern;
+  let pattern = anomaly.type;
   let task = {
     type: 'predict',
     predictor_id: predictorId,
@@ -92,6 +92,6 @@ export async function runPredict(predictorId:AnalyticUnitId) {
   }
 
   insertSegments(predictorId, result.segments, false);
-  setAnomalyPredictionTime(predictorId, result.last_prediction_time);
+  setPredictionTime(predictorId, result.last_prediction_time);
   return result.segments;
 }
