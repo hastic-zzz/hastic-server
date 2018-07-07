@@ -2,8 +2,8 @@ import * as Router from 'koa-router';
 
 import * as AnalyticUnit from '../models/analytic_unit';
 
-import { runLearning } from '../services/analytics_service'
-import { saveTargets } from '../services/metrics';
+import { runLearning } from '../controllers/analytics_service'
+import { saveTargets } from '../controllers/metrics';
 
 async function sendStatus(ctx: Router.IRouterContext) {
   try {

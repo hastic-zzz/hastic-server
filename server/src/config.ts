@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import { getJsonDataSync } from './services/json';
+import { getJsonDataSync } from './controllers/json';
 
 
 let configFile = path.join(__dirname, '../../config.json');

@@ -1,5 +1,5 @@
 import * as AnalyticUnit from '../models/analytic_unit';
-import { getAlertsAnomalies, saveAlertsAnomalies } from '../services/alerts_service';
+import { getAlertsAnomalies, saveAlertsAnomalies } from '../controllers/alerts_service';
 
 import * as Router from 'koa-router';
 
