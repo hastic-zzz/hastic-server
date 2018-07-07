@@ -7,7 +7,7 @@ import {
 } from '../models/analytic_unit'
 import { getTarget } from './metrics';
 import { getLabeledSegments, insertSegments, removeSegments } from './segments'
-import { AnalyticsConnection } from './analytics_сonnection'
+import { AnalyticsConnection } from './analytics_connection'
 
 
 const taskMap = {};
