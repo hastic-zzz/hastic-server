@@ -1,8 +1,8 @@
+import { ANALYTICS_PATH, ZEROMQ_CONNECTION_STRING } from '../config'
+
 const zmq = require('zeromq');
 
 import { spawn } from 'child_process'
-import { ANALYTICS_PATH, ZEROMQ_CONNECTION_STRING } from '../config'
-
 import * as fs from 'fs';
 import * as path from 'path';
 

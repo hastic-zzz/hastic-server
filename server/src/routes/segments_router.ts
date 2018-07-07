@@ -1,12 +1,12 @@
 import * as Router from 'koa-router';
 
+import { AnalyticUnitId } from '../models/analytic_unit';
+
 import {
   getLabeledSegments,
   insertSegments,
   removeSegments,
 } from '../controllers/segments_controller';
-
-import { AnalyticUnitId } from '../models/analytic_unit';
 import { runLearning } from '../controllers/analytics_controller';
 
 

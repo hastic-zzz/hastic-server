@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 
+
 async function getJsonData(filename: string): Promise<Object> {
   var data = await new Promise<string>((resolve, reject) => {
     fs.readFile(filename, 'utf8', (err, data) => {

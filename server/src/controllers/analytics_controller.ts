@@ -1,12 +1,6 @@
-import {
-  AnalyticUnit,
-  AnalyticUnitId,
-  findById,
-  setPredictionTime,
-  setStatus
-} from '../models/analytic_unit'
 import { getTarget } from './metrics_controler';
 import { getLabeledSegments, insertSegments, removeSegments } from './segments_controller'
+import * as AnalyticUnit from '../models/analytic_unit'
 import { AnalyticsConnection } from '../services/analytics_service'
 
 
@@ -28,7 +22,7 @@ function onResponse(response: any) {
 }
 
 async function runTask(task): Promise<any> {
-  let anomaly: AnalyticUnit = findById(task.analyticUnitId);
+  let anomaly: AnalyticUnit.AnalyticUnit = AnalyticUnit.findById(task.analyticUnitId);
   task.metric = {
     datasource: anomaly.metric.datasource,
     targets: anomaly.metric.targets.map(getTarget)
@@ -42,11 +36,11 @@ async function runTask(task): Promise<any> {
   })
 }
 
-export async function runLearning(id: AnalyticUnitId) {
+export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
   let segments = getLabeledSegments(id);
-  setStatus(id, 'learning');
-  let anomaly: AnalyticUnit = findById(id);
-  let pattern = anomaly.type;
+  AnalyticUnit.setStatus(id, 'learning');
+  let unit = AnalyticUnit.findById(id);
+  let pattern = unit.type;
   let task = {
     analyticUnitId: id,
     type: 'learn',
@@ -57,16 +51,16 @@ export async function runLearning(id: AnalyticUnitId) {
   let result = await runTask(task);
 
   if (result.status === 'success') {
-    setStatus(id, 'ready');
+    AnalyticUnit.setStatus(id, 'ready');
     insertSegments(id, result.segments, false);
-    setPredictionTime(id, result.lastPredictionTime);
+    AnalyticUnit.setPredictionTime(id, result.lastPredictionTime);
   } else {
-    setStatus(id, 'failed', result.error);
+    AnalyticUnit.setStatus(id, 'failed', result.error);
   }
 }
 
-export async function runPredict(id: AnalyticUnitId) {
-  let unit: AnalyticUnit = findById(id);
+export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
+  let unit = AnalyticUnit.findById(id);
   let pattern = unit.type;
   let task = {
     type: 'predict',
@@ -92,6 +86,6 @@ export async function runPredict(id: AnalyticUnitId) {
   }
 
   insertSegments(id, result.segments, false);
-  setPredictionTime(id, result.last_prediction_time);
+  AnalyticUnit.setPredictionTime(id, result.lastPredictionTime);
   return result.segments;
 }

@@ -17,6 +17,7 @@ export async function sendNotification(predictorId, active) {
     notification.status = 'OK';
   }
 
+  // TODO: more to config
   let endpoint = process.env.HASTIC_ALERT_ENDPOINT;
   if(endpoint === undefined) {
     console.error(`Can't send alert, env HASTIC_ALERT_ENDPOINT is undefined`);
