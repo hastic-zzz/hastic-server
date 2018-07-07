@@ -1,5 +1,5 @@
 import { getJsonDataSync, writeJsonDataSync } from './json';
-import { AnomalyUnitKey } from '../models/analytic_unit';
+import { AnalyticUnitId } from '../models/analytic_unit';
 import { runPredict } from './analytics';
 import { sendNotification } from './notification';
 import { getLabeledSegments } from './segments';
@@ -13,14 +13,14 @@ import * as fs from 'fs';
 
 const ALERTS_DB_PATH = path.join(ANOMALIES_PATH, `alerts_anomalies.json`);
 
-function getAlertsAnomalies(): AnomalyUnitKey[] {
+function getAlertsAnomalies(): AnalyticUnitId[] {
   if(!fs.existsSync(ALERTS_DB_PATH)) {
     saveAlertsAnomalies([]);
   }
   return getJsonDataSync(ALERTS_DB_PATH);
 }
 
-function saveAlertsAnomalies(anomalies: AnomalyUnitKey[]) {
+function saveAlertsAnomalies(anomalies: AnalyticUnitId[]) {
   return writeJsonDataSync(ALERTS_DB_PATH, anomalies);
 }
 

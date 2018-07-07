@@ -1,4 +1,4 @@
-import { AnomalyUnitKey, loadPredictorById } from '../models/analytic_unit';
+import { AnalyticUnitId, loadById } from '../models/analytic_unit';
 import { getAlertsAnomalies, saveAlertsAnomalies } from '../services/alerts';
 
 import * as Router from 'koa-router';
@@ -6,7 +6,7 @@ import * as Router from 'koa-router';
 
 function getAlert(ctx: Router.IRouterContext) {
   
-  let predictorId: AnomalyUnitKey = ctx.request.query.predictor_id.toLowerCase();
+  let predictorId: AnalyticUnitId = ctx.request.query.predictor_id.toLowerCase();
 
   let alertsAnomalies = getAlertsAnomalies();
   let pos = alertsAnomalies.indexOf(predictorId);
@@ -18,10 +18,10 @@ function getAlert(ctx: Router.IRouterContext) {
 
 function changeAlert(ctx: Router.IRouterContext) {
 
-  let predictorId: AnomalyUnitKey = ctx.request.body.predictor_id.toLowerCase();
+  let predictorId: AnalyticUnitId = ctx.request.body.predictor_id.toLowerCase();
   let enable: boolean = ctx.request.body.enable;
 
-  let predictor = loadPredictorById(predictorId)
+  let predictor = loadById(predictorId)
   if(predictor == null) {
     throw new Error('Predctor is null');
   }

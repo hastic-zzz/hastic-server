@@ -7,25 +7,25 @@ import {
 } from '../services/segments';
 
 import {
-  AnalyticUnit, AnomalyUnitKey, getPredictorIdByName, loadPredictorById
+  AnalyticUnit, AnalyticUnitId, loadById
 } from '../models/analytic_unit';
 
 import { runLearning } from '../services/analytics';
 
 
 async function sendSegments(ctx: Router.IRouterContext) {
+  let id: AnalyticUnitId = ctx.request.query.id;
+  let unit: AnalyticUnit = loadById(id);
 
-  let predictorId: AnomalyUnitKey = ctx.request.query.predictor_id.toLowerCase();
-  let anomaly:AnalyticUnit = loadPredictorById(predictorId);
-  if(anomaly === null) {
-    predictorId = getPredictorIdByName(predictorId);
+  if(unit === null) {
+    throw new Error(`Can't find Analitic unit with id ${id}`);
   }
 
-  let lastSegmentId = ctx.request.query.last_segment;
+  let lastSegmentId = ctx.request.query.lastSegmentId;
   let timeFrom = ctx.request.query.from;
   let timeTo = ctx.request.query.to;
 
-  let segments = getLabeledSegments(predictorId);
+  let segments = getLabeledSegments(id);
 
   // Id filtering
   if(lastSegmentId !== undefined) {
@@ -49,19 +49,14 @@ async function updateSegments(ctx: Router.IRouterContext) {
   try {
     let segmentsUpdate = ctx.request.body;
 
-    let predictorId = segmentsUpdate.predictor_id;
-    let anomalyName = segmentsUpdate.name.toLowerCase();
+    let key = segmentsUpdate.analyticUnitKey;
 
-    if(predictorId === undefined) {
-      predictorId = getPredictorIdByName(anomalyName);
-    }
+    let addedIds = insertSegments(key, segmentsUpdate.addedSegments, true);
+    removeSegments(key, segmentsUpdate.removedSegments);
 
-    let addedIds = insertSegments(predictorId, segmentsUpdate.added_segments, true);
-    removeSegments(predictorId, segmentsUpdate.removed_segments);
+    ctx.response.body = { addedIds };
 
-    ctx.response.body = { added_ids: addedIds };
-
-    runLearning(predictorId);
+    runLearning(key);
   } catch(e) {
     ctx.response.status = 500;
     ctx.response.body = {
