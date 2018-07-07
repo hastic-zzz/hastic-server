@@ -1,13 +1,13 @@
 import {
-  Anomaly,
-  PredictorId, getAnomalyTypeInfo,
-  loadAnomalyById,
+  AnalyticUnit,
+  AnomalyUnitKey, getAnomalyTypeInfo,
+  loadPredictorById,
   setAnomalyPredictionTime,
   setAnomalyStatus
-} from './anomalyType'
+} from '../models/analytic_unit'
 import { getTarget } from './metrics';
 import { getLabeledSegments, insertSegments, removeSegments } from './segments'
-import { AnalyticsConnection } from './analyticsConnection'
+import { AnalyticsConnection } from './analytics_сonnection'
 
 
 const taskMap = {};
@@ -28,7 +28,7 @@ function onResponse(response: any) {
 }
 
 async function runTask(task): Promise<any> {
-  let anomaly: Anomaly = loadAnomalyById(task.predictor_id);
+  let anomaly: AnalyticUnit = loadPredictorById(task.predictor_id);
   task.metric = {
     datasource: anomaly.metric.datasource,
     targets: anomaly.metric.targets.map(t => getTarget(t))
@@ -42,10 +42,10 @@ async function runTask(task): Promise<any> {
   })
 }
 
-export async function runLearning(predictorId:PredictorId) {
+export async function runLearning(predictorId:AnomalyUnitKey) {
   let segments = getLabeledSegments(predictorId);
   setAnomalyStatus(predictorId, 'learning');
-  let anomaly:Anomaly  = loadAnomalyById(predictorId);
+  let anomaly:AnalyticUnit  = loadPredictorById(predictorId);
   let pattern = anomaly.pattern;
   let task = {
     type: 'learn',
@@ -65,14 +65,14 @@ export async function runLearning(predictorId:PredictorId) {
   }
 }
 
-export async function runPredict(predictorId:PredictorId) {
-  let anomaly:Anomaly = loadAnomalyById(predictorId);
+export async function runPredict(predictorId:AnomalyUnitKey) {
+  let anomaly:AnalyticUnit = loadPredictorById(predictorId);
   let pattern = anomaly.pattern;
   let task = {
     type: 'predict',
     predictor_id: predictorId,
     pattern,
-    last_prediction_time: anomaly.last_prediction_time
+    last_prediction_time: anomaly.lastPredictionTime
   };
   let result = await runTask(task);
 

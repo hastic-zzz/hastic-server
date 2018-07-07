@@ -3,10 +3,10 @@ import * as Router from 'koa-router';
 import {
   Datasource,
   Metric,
-  Anomaly,
-  saveAnomaly,
-  insertAnomaly, removeAnomaly, loadAnomalyByName, loadAnomalyById, getPredictorIdByName
-} from '../services/anomalyType';
+  AnalyticUnit,
+
+  insertAnomaly, removeItem, loadPredictorById
+} from '../models/analytic_unit';
 import { runLearning } from '../services/analytics'
 import { saveTargets } from '../services/metrics';
 
@@ -14,12 +14,12 @@ async function sendAnomalyTypeStatus(ctx: Router.IRouterContext) {
   let id = ctx.request.query.id;
   let name = ctx.request.query.name.toLowerCase();
   try {
-    let anomaly: Anomaly;
-    if(id !== undefined) {
-      anomaly = loadAnomalyById(id);
-    } else {
-      anomaly = loadAnomalyByName(name);
+    let anomaly: AnalyticUnit;
+    if(id === undefined) {
+      throw new Error('Id is undefined');
     }
+    anomaly = loadPredictorById(id);
+
     if(anomaly === null) {
       ctx.response.status = 404;
       return;
@@ -37,27 +37,32 @@ async function sendAnomalyTypeStatus(ctx: Router.IRouterContext) {
 
 }
 
-async function getAnomaly(ctx: Router.IRouterContext) {
+async function getAnalyticUnit(ctx: Router.IRouterContext) {
   try {
     let id = ctx.request.query.id;
     let name = ctx.request.query.name.toLowerCase();
 
-    let anomaly:Anomaly;
-    if(id !== undefined) {
-      anomaly = loadAnomalyById(id);
-    } else {
-      anomaly = loadAnomalyByName(name);
+    if(id === undefined) {
+      throw new Error('No id param in query');
     }
-    if(anomaly === null) {
+
+    if(name === undefined) {
+      throw new Error('No name param in query');
+    }
+
+    let unit: AnalyticUnit = loadPredictorById(id);
+
+    if(unit === null) {
       ctx.response.status = 404;
       return;
     }
 
     ctx.response.body = {
-      name: anomaly.name,
-      metric: anomaly.metric,
-      status: anomaly.status
+      name: unit.name,
+      metric: unit.metric,
+      status: unit.status
     };
+
   } catch(e) {
     console.error(e);
     // TODO: better send 404 when we know than isn`t found
@@ -66,7 +71,7 @@ async function getAnomaly(ctx: Router.IRouterContext) {
   }
 }
 
-async function createAnomaly(ctx: Router.IRouterContext) {
+async function createAnalyticUnit(ctx: Router.IRouterContext) {
   try {
     let body = ctx.request.body;
     const metric:Metric = {
@@ -74,15 +79,15 @@ async function createAnomaly(ctx: Router.IRouterContext) {
       targets: saveTargets(body.metric.targets)
     };
 
-    const anomaly:Anomaly = {
+    const anomaly:AnalyticUnit = {
       name: body.name.toLowerCase(),
       panelUrl: body.panelUrl,
       pattern: body.pattern.toLowerCase(),
       metric: metric,
       datasource: body.datasource,
       status: 'learning',
-      last_prediction_time: 0,
-      next_id: 0
+      lastPredictionTime: 0,
+      nextId: 0
     };
     let predictorId = insertAnomaly(anomaly);
     if(predictorId === null) {
@@ -111,11 +116,11 @@ function deleteAnomaly(ctx: Router.IRouterContext) {
     let name = ctx.request.query.name.toLowerCase();
 
     if(id !== undefined) {
-      removeAnomaly(id);
+      removeItem(id);
     } else {
-      removeAnomaly(name);
+      removeItem(name);
     }
-    
+
     ctx.response.body = {
       code: 200,
       message: 'Success'
@@ -133,6 +138,6 @@ function deleteAnomaly(ctx: Router.IRouterContext) {
 export var router = new Router();
 
 router.get('/status', sendAnomalyTypeStatus);
-router.get('/', getAnomaly);
-router.post('/', createAnomaly);
+router.get('/', getAnalyticUnit);
+router.post('/', createAnalyticUnit);
 router.delete('/', deleteAnomaly);

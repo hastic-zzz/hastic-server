@@ -2,11 +2,11 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { getJsonDataSync, writeJsonDataSync }  from './json';
 import { SEGMENTS_PATH } from '../config';
-import { PredictorId, loadAnomalyById, saveAnomaly } from './anomalyType';
+import { AnomalyUnitKey, loadPredictorById, saveAnomaly } from '../models/analytic_unit';
 
 import * as _ from 'lodash';
 
-function getLabeledSegments(predictorId: PredictorId) {
+function getLabeledSegments(predictorId: AnomalyUnitKey) {
   let filename = path.join(SEGMENTS_PATH, `${predictorId}_labeled.json`);
 
   if(!fs.existsSync(filename)) {
@@ -22,7 +22,7 @@ function getLabeledSegments(predictorId: PredictorId) {
   }
 }
 
-function getPredictedSegments(predictorId: PredictorId) {
+function getPredictedSegments(predictorId: AnomalyUnitKey) {
   let filename = path.join(SEGMENTS_PATH, `${predictorId}_segments.json`);
 
   let jsonData;
@@ -35,7 +35,7 @@ function getPredictedSegments(predictorId: PredictorId) {
   return jsonData;
 }
 
-function saveSegments(predictorId: PredictorId, segments) {
+function saveSegments(predictorId: AnomalyUnitKey, segments) {
   let filename = path.join(SEGMENTS_PATH, `${predictorId}_labeled.json`);
 
   try {
@@ -46,9 +46,9 @@ function saveSegments(predictorId: PredictorId, segments) {
   }
 }
 
-function insertSegments(predictorId: PredictorId, addedSegments, labeled:boolean) {
+function insertSegments(predictorId: AnomalyUnitKey, addedSegments, labeled:boolean) {
   // Set status
-  let info = loadAnomalyById(predictorId);
+  let info = loadPredictorById(predictorId);
   let segments = getLabeledSegments(predictorId);
 
   let nextId = info.next_id;
@@ -66,7 +66,7 @@ function insertSegments(predictorId: PredictorId, addedSegments, labeled:boolean
   return addedIds;
 }
 
-function removeSegments(predictorId: PredictorId, removedSegments) {
+function removeSegments(predictorId: AnomalyUnitKey, removedSegments) {
   let segments = getLabeledSegments(predictorId);
   for (let segmentId of removedSegments) {
     segments = segments.filter(el => el.id !== segmentId);

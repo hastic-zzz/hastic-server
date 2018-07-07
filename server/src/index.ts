@@ -3,7 +3,7 @@ import * as Router from 'koa-router';
 import * as bodyParser from 'koa-bodyparser';
 
 
-import { router as anomaliesRouter } from './routes/anomalies';
+import { router as anomaliesRouter } from './routes/analytic_units';
 import { router as segmentsRouter } from './routes/segments';
 import { router as alertsRouter } from './routes/alerts';
 

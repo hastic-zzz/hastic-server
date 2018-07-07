@@ -7,16 +7,16 @@ import {
 } from '../services/segments';
 
 import {
-  Anomaly, PredictorId, getPredictorIdByName, loadAnomalyById
-} from '../services/anomalyType';
+  AnalyticUnit, AnomalyUnitKey, getPredictorIdByName, loadPredictorById
+} from '../models/analytic_unit';
 
 import { runLearning } from '../services/analytics';
 
 
 async function sendSegments(ctx: Router.IRouterContext) {
 
-  let predictorId: PredictorId = ctx.request.query.predictor_id.toLowerCase();
-  let anomaly:Anomaly = loadAnomalyById(predictorId);
+  let predictorId: AnomalyUnitKey = ctx.request.query.predictor_id.toLowerCase();
+  let anomaly:AnalyticUnit = loadPredictorById(predictorId);
   if(anomaly === null) {
     predictorId = getPredictorIdByName(predictorId);
   }
