@@ -3,6 +3,7 @@ import { findById } from '../models/analytic_unit';
 import axios from 'axios';
 
 
+// TODO: send notification with payload without dep to AnalyticUnit
 export async function sendNotification(predictorId, active) {
   let anomalyName = findById(predictorId).name;
   console.log('Notification ' + anomalyName);
@@ -31,7 +32,7 @@ export async function sendNotification(predictorId, active) {
     })
     console.log(data);
   } catch(err) {
-    console.error(`Can't send alert to ${endpoint}. Error: ${err}`)
+    console.error(`Can't send alert to ${endpoint}. Error: ${err}`);
   }
   
 }

@@ -8,15 +8,13 @@ import { saveTargets } from '../controllers/metrics_controler';
 async function sendStatus(ctx: Router.IRouterContext) {
   try {
     let id = ctx.request.query.id;
-    let name = ctx.request.query.name;
-
     if(id === undefined) {
       throw new Error('Id is undefined');
     }
     let unit = AnalyticUnit.findById(id);
 
     if(unit.status === undefined) {
-      throw new Error('No status for ' + name);
+      throw new Error('status is undefined');
     }
     ctx.response.body = { status: unit.status, errorMessage: unit.error };
   } catch(e) {
