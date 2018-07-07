@@ -5,9 +5,9 @@ import {
   setPredictionTime,
   setStatus
 } from '../models/analytic_unit'
-import { getTarget } from './metrics';
-import { getLabeledSegments, insertSegments, removeSegments } from './segments'
-import { AnalyticsConnection } from './analytics_connection'
+import { getTarget } from './metrics_controler';
+import { getLabeledSegments, insertSegments, removeSegments } from './segments_controller'
+import { AnalyticsConnection } from '../services/analytics_service'
 
 
 const taskMap = {};

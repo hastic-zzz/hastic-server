@@ -1,4 +1,4 @@
-import { getJsonDataSync, writeJsonDataSync }  from './json';
+import { getJsonDataSync, writeJsonDataSync }  from '../services/json_service';
 import { AnalyticUnitId, findById, save } from '../models/analytic_unit';
 import { SEGMENTS_PATH } from '../config';
 

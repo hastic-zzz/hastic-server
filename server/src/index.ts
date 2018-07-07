@@ -2,7 +2,7 @@ import { router as anomaliesRouter } from './routes/analytic_units_router';
 import { router as segmentsRouter } from './routes/segments_router';
 import { router as alertsRouter } from './routes/alerts_router';
 
-import * as Data from './controllers/data';
+import * as Data from './services/data_service';
 
 import { HASTIC_PORT } from './config';
 

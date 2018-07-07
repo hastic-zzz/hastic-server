@@ -4,10 +4,10 @@ import {
   getLabeledSegments,
   insertSegments,
   removeSegments,
-} from '../controllers/segments';
+} from '../controllers/segments_controller';
 
 import { AnalyticUnitId } from '../models/analytic_unit';
-import { runLearning } from '../controllers/analytics_service';
+import { runLearning } from '../controllers/analytics_controller';
 
 
 async function sendSegments(ctx: Router.IRouterContext) {

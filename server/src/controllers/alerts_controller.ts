@@ -1,8 +1,8 @@
-import { getJsonDataSync, writeJsonDataSync } from './json';
+import { getJsonDataSync, writeJsonDataSync } from '../services/json_service';
 import { AnalyticUnitId } from '../models/analytic_unit';
-import { runPredict } from './analytics_service';
-import { sendNotification } from './notification_service';
-import { getLabeledSegments } from './segments';
+import { runPredict } from './analytics_controller';
+import { sendNotification } from '../services/notification_service';
+import { getLabeledSegments } from './segments_controller';
 
 import { ANALYTIC_UNITS_PATH } from '../config';
 

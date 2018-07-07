@@ -1,4 +1,4 @@
-import { getJsonDataSync, writeJsonDataSync }  from './json';
+import { getJsonDataSync, writeJsonDataSync }  from '../services/json_service';
 import { METRICS_PATH } from '../config';
 
 import * as crypto from 'crypto';

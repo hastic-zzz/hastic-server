@@ -1,4 +1,4 @@
-import { getJsonDataSync, writeJsonDataSync } from '../controllers/json'
+import { getJsonDataSync, writeJsonDataSync } from '../services/json_service'
 import { ANALYTIC_UNITS_PATH } from '../config'
 
 import * as crypto from 'crypto';
