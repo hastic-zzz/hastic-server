@@ -56,22 +56,22 @@ async function createItem(ctx: Router.IRouterContext) {
     let body = ctx.request.body;
 
     if(body.type === undefined) {
-      throw new Error(`Missing field: type`);
+      throw new Error(`Missing field "type"`);
     }
     if(body.name === undefined) {
-      throw new Error(`Missing field: name`);
+      throw new Error(`Missing field "name"`);
     }
     if(body.panelUrl === undefined) {
-      throw new Error(`Missing field: panelUrl`);
+      throw new Error(`Missing field "panelUrl"`);
     }
     if(body.metric === undefined) {
-      throw new Error(`Missing field: datasource`);
+      throw new Error(`Missing field "datasource"`);
     }
     if(body.metric.datasource === undefined) {
-      throw new Error(`Missing field: metric.datasource`);
+      throw new Error(`Missing field "metric.datasource"`);
     }
     if(body.metric.targets === undefined) {
-      throw new Error(`Missing field: metric.targets`);
+      throw new Error(`Missing field "metric.targets"`);
     }
 
     const metric: AnalyticUnit.Metric = {
