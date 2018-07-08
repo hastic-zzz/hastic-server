@@ -24,8 +24,8 @@ def segments_box(segments):
 
 class PatternDetectionModel:
 
-    def __init__(self, predictor_id, pattern):
-        self.predictor_id = predictor_id
+    def __init__(self, analytic_unit_id, pattern):
+        self.analytic_unit_id = analytic_unit_id
         self.pattern = pattern
 
         self.__load_anomaly_config()
@@ -101,16 +101,16 @@ class PatternDetectionModel:
             return StepDetector(pattern)
 
     def __load_anomaly_config(self):
-        with open(os.path.join(config.ANOMALIES_FOLDER, self.predictor_id + ".json"), 'r') as config_file:
+        with open(os.path.join(config.ANOMALIES_FOLDER, self.analytic_unit_id + ".json"), 'r') as config_file:
             self.anomaly_config = json.load(config_file)
 
     def __save_model(self):
-        logger.info("Save model '%s'" % self.predictor_id)
-        model_filename = os.path.join(config.MODELS_FOLDER, self.predictor_id + ".m")
+        logger.info("Save model '%s'" % self.analytic_unit_id)
+        model_filename = os.path.join(config.MODELS_FOLDER, self.analytic_unit_id + ".m")
         self.model.save(model_filename)
 
     def __load_model(self, pattern):
-        logger.info("Load model '%s'" % self.predictor_id)
+        logger.info("Load model '%s'" % self.analytic_unit_id)
         model_filename = os.path.join(config.MODELS_FOLDER, self.pattern + ".m")
         if os.path.exists(model_filename):
             self.model = self.__create_model(pattern)

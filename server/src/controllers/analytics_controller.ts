@@ -64,7 +64,7 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
   let pattern = unit.type;
   let task = {
     type: 'predict',
-    predictor_id: id,
+    analyticUnitId: id,
     pattern,
     lastPredictionTime: unit.lastPredictionTime
   };
