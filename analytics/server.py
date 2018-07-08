@@ -29,12 +29,12 @@ def handleTask(text):
         socket.send_string(json.dumps({
             'task': task['type'],
             'predictor_id': task['predictor_id'],
-            '__task_id': task['__task_id'],
+            '_taskId': task['_taskId'],
             'status': "in progress"
         }))
         
         res = w.do_task(task)
-        res['__task_id'] = task['__task_id']
+        res['_taskId'] = task['_taskId']
         socket.send_string(json.dumps(res))
 
     except Exception as e:

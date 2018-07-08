@@ -10,7 +10,7 @@ let nextTaskId = 0;
 const analyticsService = new AnalyticsService(onResponse);
 
 function onResponse(response: any) {
-  let taskId = response.__task_id;
+  let taskId = response._taskId;
   let status = response.status;
   if(status === 'success' || status === 'failed') {
     if(taskId in taskMap) {
@@ -28,11 +28,11 @@ async function runTask(task): Promise<any> {
     targets: anomaly.metric.targets.map(getTarget)
   };
 
-  task.__task_id = nextTaskId++;
+  task._task_id = nextTaskId++;
   await analyticsService.sendTask(task);
 
   return new Promise<void>(resolve => {
-    taskMap[task.__task_id] = resolve;
+    taskMap[task._taskId] = resolve;
   })
 }
 
