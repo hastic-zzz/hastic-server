@@ -10,13 +10,17 @@ import * as path from 'path';
 export class AnalyticsService {
 
   private _requester: any;
-  
+  private _ready: boolean = false;
+
 
   constructor(private _onResponse: (response: any) => void) {
     this._initConnection();
   }
 
   public async sendTask(msgObj: any): Promise<void> {
+    if(!this._ready) {
+      return Promise.reject("Analytics is not ready");
+    }
     let message = JSON.stringify(msgObj);
     return this.sendMessage(message);
   }
@@ -38,6 +42,8 @@ export class AnalyticsService {
     this._requester.close();
   }
 
+  public get ready() { return this._ready; }
+
   private async _initConnection() {
     this._requester = zmq.socket('pair');
 
@@ -54,6 +60,8 @@ export class AnalyticsService {
     console.log('Ok')
 
     this._requester.on("message", this._onAnalyticsMessage.bind(this));
+
+    this._ready = true;
 
   }
 

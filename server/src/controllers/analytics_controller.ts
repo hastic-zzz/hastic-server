@@ -89,3 +89,7 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
   AnalyticUnit.setPredictionTime(id, result.lastPredictionTime);
   return result.segments;
 }
+
+export function isAnalyticReady(): boolean {
+  return analyticsService.ready;
+}
