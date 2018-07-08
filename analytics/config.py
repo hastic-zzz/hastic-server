@@ -2,8 +2,9 @@ import os
 import json
 
 
-DATA_FOLDER = '../data'
-CONFIG_FILE = '../config.json'
+PARENT_FOLDER = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+DATA_FOLDER = os.path.join(PARENT_FOLDER, 'data')
+CONFIG_FILE = os.path.join(PARENT_FOLDER, 'config.json')
 
 
 config_exists = os.path.isfile(CONFIG_FILE)
@@ -27,10 +28,10 @@ def get_config_field(field, default_val = None):
 
 
 
-DATASET_FOLDER = os.path.join(DATA_FOLDER, 'datasets/')
-ANOMALIES_FOLDER = os.path.join(DATA_FOLDER, 'anomalies/')
-MODELS_FOLDER = os.path.join(DATA_FOLDER, 'models/')
-METRICS_FOLDER = os.path.join(DATA_FOLDER, 'metrics/')
+DATASET_FOLDER = os.path.join(DATA_FOLDER, 'datasets')
+ANALYTIC_UNITS_FOLDER = os.path.join(DATA_FOLDER, 'analytic_units')
+MODELS_FOLDER = os.path.join(DATA_FOLDER, 'models')
+METRICS_FOLDER = os.path.join(DATA_FOLDER, 'metrics')
 
 HASTIC_API_KEY = get_config_field('HASTIC_API_KEY')
 ZEROMQ_CONNECTION_STRING = get_config_field('ZEROMQ_CONNECTION_STRING', 'tcp://*:8002')

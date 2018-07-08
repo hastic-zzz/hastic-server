@@ -59,6 +59,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
   }
 }
 
+
 export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
   let unit = AnalyticUnit.findById(id);
   let pattern = unit.type;

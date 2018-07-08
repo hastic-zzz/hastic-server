@@ -101,7 +101,7 @@ class PatternDetectionModel:
             return StepDetector(pattern)
 
     def __load_anomaly_config(self):
-        with open(os.path.join(config.ANOMALIES_FOLDER, self.analytic_unit_id + ".json"), 'r') as config_file:
+        with open(os.path.join(config.ANALYTIC_UNITS_FOLDER, self.analytic_unit_id + ".json"), 'r') as config_file:
             self.anomaly_config = json.load(config_file)
 
     def __save_model(self):

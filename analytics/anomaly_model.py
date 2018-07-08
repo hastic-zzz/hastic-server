@@ -124,11 +124,11 @@ class AnomalyModel:
         self.preprocessor.synchronize()
 
     def load_anomaly_config(self):
-        with open(os.path.join(config.ANOMALIES_FOLDER, self.anomaly_name + ".json"), 'r') as config_file:
+        with open(os.path.join(config.ANALYTIC_UNITS_FOLDER, self.anomaly_name + ".json"), 'r') as config_file:
             self.anomaly_config = json.load(config_file)
 
     def get_anomalies(self):
-        labeled_anomalies_file = os.path.join(config.ANOMALIES_FOLDER, self.anomaly_name + "_labeled.json")
+        labeled_anomalies_file = os.path.join(config.ANALYTIC_UNITS_FOLDER, self.anomaly_name + "_labeled.json")
         if not os.path.exists(labeled_anomalies_file):
             return []
         with open(labeled_anomalies_file) as file:
