@@ -92,9 +92,9 @@ class Worker(object):
         return {
             'task': "predict",
             'status': "success",
-            'predictor_id': predictor_id,
+            'analyticUnitId': predictor_id,
             'segments': segments,
-            'last_prediction_time': last_prediction_time
+            'lastPredictionTime': last_prediction_time
         }
 
     def get_model(self, predictor_id, pattern):

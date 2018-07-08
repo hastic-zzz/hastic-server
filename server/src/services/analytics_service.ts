@@ -7,10 +7,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 
-
-export class AnalyticsConnection {
+export class AnalyticsService {
 
   private _requester: any;
+  
 
   constructor(private _onResponse: (response: any) => void) {
     this._initConnection();

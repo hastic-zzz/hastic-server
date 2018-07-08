@@ -1,13 +1,13 @@
 import { getTarget } from './metrics_controler';
 import { getLabeledSegments, insertSegments, removeSegments } from './segments_controller'
 import * as AnalyticUnit from '../models/analytic_unit'
-import { AnalyticsConnection } from '../services/analytics_service'
+import { AnalyticsService } from '../services/analytics_service'
 
 
 const taskMap = {};
 let nextTaskId = 0;
 
-const analyticsConnection = new AnalyticsConnection(onResponse);
+const analyticsService = new AnalyticsService(onResponse);
 
 function onResponse(response: any) {
   let taskId = response.__task_id;
@@ -29,7 +29,7 @@ async function runTask(task): Promise<any> {
   };
 
   task.__task_id = nextTaskId++;
-  await analyticsConnection.sendTask(task);
+  await analyticsService.sendTask(task);
 
   return new Promise<void>(resolve => {
     taskMap[task.__task_id] = resolve;
