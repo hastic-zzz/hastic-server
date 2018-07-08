@@ -28,7 +28,7 @@ async function runTask(task): Promise<any> {
     targets: anomaly.metric.targets.map(getTarget)
   };
 
-  task._task_id = nextTaskId++;
+  task._taskId = nextTaskId++;
   await analyticsService.sendTask(task);
 
   return new Promise<void>(resolve => {
