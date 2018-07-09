@@ -42,7 +42,7 @@ export class AnalyticsService {
     this._requester.close();
   }
 
-  public get ready() { return this._ready; }
+  public get ready(): boolean { return this._ready; }
 
   private async _initConnection() {
     this._requester = zmq.socket('pair');

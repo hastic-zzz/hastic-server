@@ -6,7 +6,13 @@ import sys
 
 from worker import Worker
 
+
 root = logging.getLogger()
+logger = logging.getLogger('SERVER')
+socket = None
+worker = None
+
+
 root.setLevel(logging.DEBUG)
 
 ch = logging.StreamHandler(sys.stdout)
@@ -15,25 +21,23 @@ formatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-
 ch.setFormatter(formatter)
 root.addHandler(ch)
 
-logger = logging.getLogger('SERVER')
-socket = None
 
-def handlePing():
+def handle_ping():
     socket.send(b'pong')
 
-def handleTask(text):
+def handle_task(text):
     try:
         task = json.loads(text)
         logger.info("Command is OK")
 
         socket.send_string(json.dumps({
+            '_taskId': task['_taskId'],
             'task': task['type'],
             'analyticUnitId': task['analyticUnitId'],
-            '_taskId': task['_taskId'],
             'status': "in progress"
         }))
         
-        res = w.do_task(task)
+        res = worker.do_task(task)
         res['_taskId'] = task['_taskId']
         socket.send_string(json.dumps(res))
 
@@ -42,7 +46,7 @@ def handleTask(text):
 
 
 if __name__ == "__main__":
-    w = Worker()
+    worker = Worker()
     logger.info("Worker was started")
 
     logger.info("Binding to %s ..." % config.ZEROMQ_CONNECTION_STRING)
@@ -56,9 +60,9 @@ if __name__ == "__main__":
         text = received_bytes.decode('utf-8')
         logger.info('Got message %s' % text)
         if text == 'ping':
-            handlePing()
+            handle_ping()
             logger.info('Sent pong')
         else:
-            handleTask(text)
+            handle_task(text)
 
         
