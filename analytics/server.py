@@ -58,10 +58,8 @@ if __name__ == "__main__":
     while True:
         received_bytes = socket.recv()
         text = received_bytes.decode('utf-8')
-        logger.info('Got message %s' % text)
         if text == 'ping':
             handle_ping()
-            logger.info('Sent pong')
         else:
             handle_task(text)
 

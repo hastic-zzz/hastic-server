@@ -18,6 +18,7 @@ export const SEGMENTS_PATH = path.join(DATA_PATH, 'segments');
 
 export const HASTIC_PORT = getConfigField('HASTIC_PORT', '8000');
 export const ZEROMQ_CONNECTION_STRING = getConfigField('ZEROMQ_CONNECTION_STRING', 'tcp://127.0.0.1:8002');
+export const ANLYTICS_PING_INTERVAL = 500; // ms
 
 
 function getConfigField(field, defaultVal?) {
