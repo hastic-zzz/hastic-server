@@ -13,7 +13,7 @@ import time
 logger = logging.getLogger('WORKER')
 
 
-class Worker(object):
+class AnalyticUnitWorker(object):
     models_cache = {}
     thread = None
     queue = queue.Queue()
@@ -85,7 +85,7 @@ class Worker(object):
             }
         else:
             result = self.do_predict(analytic_unit_id, last_prediction_time, pattern)
-            
+
         result['task'] = 'learn'
         return result
 

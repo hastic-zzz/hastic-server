@@ -4,7 +4,7 @@ import logging
 import zmq
 import sys
 
-from worker import Worker
+from worker import AnalyticUnitWorker
 
 
 root = logging.getLogger()
@@ -46,7 +46,7 @@ def handle_task(text):
 
 
 if __name__ == "__main__":
-    worker = Worker()
+    worker = AnalyticUnitWorker()
     logger.info("Worker was started")
 
     logger.info("Binding to %s ..." % config.ZEROMQ_CONNECTION_STRING)
