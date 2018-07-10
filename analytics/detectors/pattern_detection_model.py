@@ -97,9 +97,9 @@ class PatternDetectionModel:
         self.data_prov.synchronize()
 
     def __create_model(self, pattern):
-        if pattern == "peaks":
+        if pattern == "peak":
             return PeaksDetector()
-        if pattern == "jumps" or pattern == "drops":
+        if pattern == "jump" or pattern == "drop":
             return StepDetector(pattern)
         raise ValueError('Unknown pattern "%s"' % pattern)
 

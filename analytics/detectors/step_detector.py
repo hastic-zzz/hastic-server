@@ -1,8 +1,11 @@
-import numpy as np
-import pickle
 import scipy.signal
 from scipy.fftpack import fft
 from scipy.signal import argrelextrema
+
+import numpy as np
+import pickle
+
+
 
 def is_intersect(target_segment, segments):
     for segment in segments:

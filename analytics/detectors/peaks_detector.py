@@ -4,7 +4,6 @@ from scipy import signal
 import numpy as np
 
 
-
 class PeaksDetector:
     def __init__(self):
         pass

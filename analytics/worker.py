@@ -75,7 +75,7 @@ class Worker(object):
         last_prediction_time = model.learn(segments)
         # TODO: we should not do predict before labeling in all models, not just in drops
         
-        if pattern == 'drops' and len(segments) == 0:
+        if pattern == 'drop' and len(segments) == 0:
             # TODO: move result to a class which renders to json for messaging to analytics
             result = {
                 'status': 'success',
@@ -101,12 +101,12 @@ class Worker(object):
             'lastPredictionTime': last_prediction_time
         }
 
-    def get_model(self, analytic_unit_id, pattern):
+    def get_model(self, analytic_unit_id, pattern_type):
         if analytic_unit_id not in self.models_cache:
-            if pattern.find('general') != -1:
+            if pattern_type == 'general':
                 model = GeneralDetector(analytic_unit_id)
             else:
-                model = PatternDetectionModel(analytic_unit_id, pattern)
+                model = PatternDetectionModel(analytic_unit_id, pattern_type)
             self.models_cache[analytic_unit_id] = model
         return self.models_cache[analytic_unit_id]
 
