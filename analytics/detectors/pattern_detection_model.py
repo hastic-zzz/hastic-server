@@ -1,4 +1,8 @@
+from detectors.step_detector import StepDetector
+from detectors.peaks_detector import PeaksDetector
+
 from data_provider import DataProvider
+
 import logging
 from urllib.parse import urlparse
 import os.path
@@ -24,9 +28,9 @@ def segments_box(segments):
 
 class PatternDetectionModel:
 
-    def __init__(self, analytic_unit_id, pattern):
+    def __init__(self, analytic_unit_id, pattern_type):
         self.analytic_unit_id = analytic_unit_id
-        self.pattern = pattern
+        self.pattern_type = pattern_type
 
         self.__load_anomaly_config()
 
@@ -46,10 +50,10 @@ class PatternDetectionModel:
         self.data_prov = DataProvider(datasource, target, dataset_filename)
 
         self.model = None
-        self.__load_model(pattern)
+        self.__load_model(pattern_type)
 
     def learn(self, segments):
-        self.model = self.__create_model(self.pattern)
+        self.model = self.__create_model(self.pattern_type)
         window_size = 200
 
         dataframe = self.data_prov.get_dataframe()
@@ -94,11 +98,10 @@ class PatternDetectionModel:
 
     def __create_model(self, pattern):
         if pattern == "peaks":
-            from peaks_detector import PeaksDetector
             return PeaksDetector()
         if pattern == "jumps" or pattern == "drops":
-            from step_detector import StepDetector
             return StepDetector(pattern)
+        raise ValueError('Unknown pattern "%s"' % pattern)
 
     def __load_anomaly_config(self):
         with open(os.path.join(config.ANALYTIC_UNITS_FOLDER, self.analytic_unit_id + ".json"), 'r') as config_file:
@@ -111,7 +114,7 @@ class PatternDetectionModel:
 
     def __load_model(self, pattern):
         logger.info("Load model '%s'" % self.analytic_unit_id)
-        model_filename = os.path.join(config.MODELS_FOLDER, self.pattern + ".m")
+        model_filename = os.path.join(config.MODELS_FOLDER, self.pattern_type + ".m")
         if os.path.exists(model_filename):
             self.model = self.__create_model(pattern)
             self.model.load(model_filename)

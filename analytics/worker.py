@@ -1,6 +1,6 @@
 import config
-from anomaly_model import AnomalyModel
-from pattern_detection_model import PatternDetectionModel
+from detectors.general_detector import GeneralDetector
+from detectors.pattern_detection_model import PatternDetectionModel
 import queue
 import threading
 import json
@@ -104,7 +104,7 @@ class Worker(object):
     def get_model(self, analytic_unit_id, pattern):
         if analytic_unit_id not in self.models_cache:
             if pattern.find('general') != -1:
-                model = AnomalyModel(analytic_unit_id)
+                model = GeneralDetector(analytic_unit_id)
             else:
                 model = PatternDetectionModel(analytic_unit_id, pattern)
             self.models_cache[analytic_unit_id] = model

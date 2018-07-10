@@ -1,6 +1,8 @@
+import detectors.step_detect
+
 from scipy import signal
 import numpy as np
-import step_detect
+
 
 
 class PeaksDetector:

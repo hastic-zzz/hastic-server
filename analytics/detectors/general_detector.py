@@ -1,11 +1,11 @@
-import os.path
 from data_provider import DataProvider
 from data_preprocessor import data_preprocessor
-import json
 import pandas as pd
 import logging
 from urllib.parse import urlparse
 import config
+import os.path
+import json
 
 
 logger = logging.getLogger('analytic_toolset')
@@ -18,7 +18,7 @@ def anomalies_to_timestamp(anomalies):
     return anomalies
 
 
-class AnomalyModel:
+class GeneralDetector:
 
     def __init__(self, anomaly_name):
         self.anomaly_name = anomaly_name
