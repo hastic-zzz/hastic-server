@@ -42,11 +42,8 @@ app
   .use(rootRouter.routes())
   .use(rootRouter.allowedMethods());
 
-
-
 app.listen(HASTIC_PORT, () => {
   console.log(`Server is running on :${HASTIC_PORT}`);
 });
 
 console.log('Server version: '+ process.env.npm_package_version);
-
