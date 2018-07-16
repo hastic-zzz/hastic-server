@@ -34,7 +34,8 @@ rootRouter.get('/', async (ctx) => {
 
   ctx.response.body = { 
     server: 'Ok', 
-    analyticsReady: AnalyticsController.isAnalyticReady()
+    analyticsReady: AnalyticsController.isAnalyticReady(),
+    version: process.env.npm_package_version
   };
 });
 
@@ -45,4 +46,3 @@ app
 app.listen(HASTIC_PORT, () => {
   console.log(`Server is running on :${HASTIC_PORT}`);
 });
-
