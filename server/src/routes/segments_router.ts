@@ -40,11 +40,11 @@ async function sendSegments(ctx: Router.IRouterContext) {
 async function updateSegments(ctx: Router.IRouterContext) {
   try {
     let segmentsUpdate = ctx.request.body;
-    let key = segmentsUpdate.analyticUnitKey;
-    let addedIds = insertSegments(key, segmentsUpdate.addedSegments, true);
-    removeSegments(key, segmentsUpdate.removedSegments);
+    let id = segmentsUpdate.id;
+    let addedIds = insertSegments(id, segmentsUpdate.addedSegments, true);
+    removeSegments(id, segmentsUpdate.removedSegments);
     ctx.response.body = { addedIds };
-    runLearning(key);
+    runLearning(id);
   } catch(e) {
     ctx.response.status = 500;
     ctx.response.body = {
