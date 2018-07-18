@@ -7,6 +7,7 @@ import config
 import os.path
 import json
 
+NANOSECONDS_IN_MS = 1000000
 
 logger = logging.getLogger('analytic_toolset')
 
@@ -91,8 +92,7 @@ class GeneralDetector:
 
         start_index = self.data_prov.get_upper_bound(last_prediction_time)
         stop_index = self.data_prov.size()
-
-        last_prediction_time = int(last_prediction_time.timestamp() * 1000)
+        last_prediction_time = int(last_prediction_time.value / NANOSECONDS_IN_MS)
 
         predicted_anomalies = []
         if start_index < stop_index:

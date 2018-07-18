@@ -2,7 +2,7 @@ import { ANALYTICS_PATH, ZEROMQ_CONNECTION_STRING, ANLYTICS_PING_INTERVAL } from
 
 const zmq = require('zeromq');
 
-import { spawn } from 'child_process'
+import * as childProcess from 'child_process'
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -49,7 +49,14 @@ export class AnalyticsService {
     this._requester = zmq.socket('pair');
 
     if(process.env.NODE_ENV !== 'development') {
-      this._runAnalyticsProcess();
+      console.log('Creating analytics process...');
+      try {
+        var cp = await AnalyticsService._runAnalyticsProcess();
+      } catch(error) {
+        console.error('Can`t run analytics process: %s', error);
+        return;
+      }
+      console.log('Ok, pid: %s', cp.pid);
     }
 
     console.log("Binding to zmq...: %s", ZEROMQ_CONNECTION_STRING);
@@ -63,27 +70,63 @@ export class AnalyticsService {
 
   }
 
-  private _runAnalyticsProcess() {
-    console.log('Creating analytics process...');
+  /**
+   * Spawns analytics process. Reads process stderr and fails if it 
+   * is not empty. No need to stop process later.
+   *
+   * @returns creaded child process
+   */
+  private static async _runAnalyticsProcess(): Promise<childProcess.ChildProcess> {
+    let cp: childProcess.ChildProcess;
     if(fs.existsSync(path.join(ANALYTICS_PATH, 'dist/worker/worker'))) {
       console.log('dist/worker/worker');
-      spawn('dist/worker/worker', [], { cwd: ANALYTICS_PATH })
+      cp = childProcess.spawn('dist/worker/worker', [], { cwd: ANALYTICS_PATH });
     } else {
       console.log('python3 server.py');
       // If compiled analytics script doesn't exist - fallback to regular python
-      spawn('python3', ['server.py'], { cwd: ANALYTICS_PATH })
+      console.log(ANALYTICS_PATH);
+      cp = childProcess.spawn('python3', ['server.py'], { cwd: ANALYTICS_PATH });
     }
-    console.log('ok');
+
+    if(cp.pid === undefined) {
+      return new Promise<childProcess.ChildProcess>((resolve, reject) => {
+        cp.on('error', reject);
+      });
+    }
+
+    return new Promise<childProcess.ChildProcess>((resolve, reject) => {
+      var resolved = false;
+
+      cp.stdout.on('data', () => {
+        if(resolved) {
+          return;
+        } else {
+          resolved = true;
+        }
+        resolve(cp);
+      });
+
+      cp.stderr.on('data', function(data) {
+        if(resolved) {
+          return;
+        } else {
+          resolved = true;
+        }
+        reject(data);
+      });
+
+    });
+
   }
 
   private _onAnalyticsUp() {
     console.log('Analytics is up');
   }
 
-  private _onAnalyticsDown() {
+  private async _onAnalyticsDown() {
     console.log('Analytics is down');
     if(process.env.NODE_ENV !== 'development') {
-      this._runAnalyticsProcess();
+      await AnalyticsService._runAnalyticsProcess();
     }
   }
 
@@ -97,7 +140,7 @@ export class AnalyticsService {
       return;
     }
     console.log(`analytics message: "${text}"`);
-    let response; 
+    let response;
     try {
       response = JSON.parse(text);
     } catch (e) {

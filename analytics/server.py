@@ -4,6 +4,8 @@ import logging
 import zmq
 import sys
 
+from analytic_unit_worker import AnalyticUnitWorker
+
 
 root = logging.getLogger()
 logger = logging.getLogger('SERVER')
