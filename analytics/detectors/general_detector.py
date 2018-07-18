@@ -92,7 +92,7 @@ class GeneralDetector:
 
         start_index = self.data_prov.get_upper_bound(last_prediction_time)
         stop_index = self.data_prov.size()
-        last_prediction_time = last_prediction_time.value / NANOSECONDS_IN_MS
+        last_prediction_time = int(last_prediction_time.value / NANOSECONDS_IN_MS)
 
         predicted_anomalies = []
         if start_index < stop_index:
