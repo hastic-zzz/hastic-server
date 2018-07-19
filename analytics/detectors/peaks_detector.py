@@ -11,7 +11,7 @@ class PeaksDetector:
     def fit(self, dataset, contamination=0.005):
         pass
 
-    def predict(self, dataframe):
+    async def predict(self, dataframe):
         array = dataframe['value'].as_matrix()
         window_size = 20
         # window = np.ones(101)

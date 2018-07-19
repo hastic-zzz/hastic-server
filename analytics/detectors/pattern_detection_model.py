@@ -52,7 +52,7 @@ class PatternDetectionModel:
         self.model = None
         self.__load_model(pattern_type)
 
-    def learn(self, segments):
+    async def learn(self, segments):
         self.model = self.__create_model(self.pattern_type)
         window_size = 200
 
@@ -64,7 +64,7 @@ class PatternDetectionModel:
         self.__save_model()
         return 0
 
-    def predict(self, last_prediction_time):
+    async def predict(self, last_prediction_time):
         if self.model is None:
             return [], last_prediction_time
 
@@ -75,7 +75,7 @@ class PatternDetectionModel:
         start_index = max(0, start_index - window_size)
         dataframe = self.data_prov.get_data_range(start_index)
 
-        predicted_indexes = self.model.predict(dataframe)
+        predicted_indexes = await self.model.predict(dataframe)
         predicted_indexes = [(x, y) for (x, y) in predicted_indexes if x >= start_index and y >= start_index]
 
         predicted_times = self.data_prov.inverse_transform_indexes(predicted_indexes)

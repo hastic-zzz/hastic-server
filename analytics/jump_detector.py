@@ -76,7 +76,7 @@ class Jumpdetector:
             distribution.append(F)
         return distribution
     
-    def predict(self, dataframe):
+    async def predict(self, dataframe):
         data = dataframe['value']
 
         result = self.__predict(data)
