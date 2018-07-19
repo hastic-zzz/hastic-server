@@ -7,6 +7,7 @@ import json
 from time import time
 from config import HASTIC_API_KEY
 
+
 MS_IN_WEEK = 604800000
 
 class DataProvider:
@@ -118,8 +119,8 @@ class DataProvider:
                 'values': []
             }
 
-            after_time = int(time()*1000 - MS_IN_WEEK)
-            before_time = int(time()*1000)
+            after_time = int(time() * 1000 - MS_IN_WEEK)
+            before_time = int(time() * 1000)
             while True:
                 params['q'] = self.custom_query(str(after_time) + 'ms', str(before_time) + 'ms')
                 serie = self.__query_grafana(params)

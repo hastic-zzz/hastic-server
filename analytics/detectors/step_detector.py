@@ -56,7 +56,7 @@ class StepDetector:
         else:
             self.convolve_max = 570000
 
-    def predict(self, dataframe):
+    async def predict(self, dataframe):
         data = dataframe['value']
 
         result = self.__predict(data)

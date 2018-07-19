@@ -56,7 +56,7 @@ class GeneralDetector:
         max_time = pd.to_datetime(max_time, unit='ms')
         return min_time, max_time
 
-    def learn(self, anomalies):
+    async def learn(self, anomalies):
         logger.info("Start to learn for anomaly_name='%s'" % self.anomaly_name)
 
         confidence = 0.02
@@ -86,7 +86,7 @@ class GeneralDetector:
         logger.info("Learning is finished for anomaly_name='%s'" % self.anomaly_name)
         return last_prediction_time
 
-    def predict(self, last_prediction_time):
+    async def predict(self, last_prediction_time):
         logger.info("Start to predict for anomaly type='%s'" % self.anomaly_name)
         last_prediction_time = pd.to_datetime(last_prediction_time, unit='ms')
 
@@ -105,7 +105,7 @@ class GeneralDetector:
 
                 assert(len(predict_augmented) == chunk_finish - chunk_start)
 
-                predicted_current = self.model.predict(predict_augmented)
+                predicted_current = await self.model.predict(predict_augmented)
                 predicted = pd.concat([predicted, predicted_current])
             predicted_anomalies = self.preprocessor.inverse_transform_anomalies(predicted)
 

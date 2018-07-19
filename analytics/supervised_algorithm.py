@@ -44,7 +44,7 @@ class supervised_algorithm(object):
         dataset = self.scaler.transform(dataset)
         self.clf.fit(dataset)
 
-    def predict(self, dataframe):
+    async def predict(self, dataframe):
         dataset = dataframe[self.good_features]
         dataset = self.scaler.transform(dataset)
         prediction = self.clf.predict(dataset)
