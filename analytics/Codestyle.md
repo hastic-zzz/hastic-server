@@ -1,3 +1,7 @@
+# Line endings
+
+We use CRLS everywhere
+
 # Imports
 
 You import local files first, than spesific liba and then standart libs.
