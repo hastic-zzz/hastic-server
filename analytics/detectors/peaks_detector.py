@@ -1,14 +1,42 @@
-import detectors.step_detect
-
 from scipy import signal
 import numpy as np
+
+
+def find_steps(array, threshold):
+    """
+    Finds local maxima by segmenting array based on positions at which
+    the threshold value is crossed. Note that this thresholding is
+    applied after the absolute value of the array is taken. Thus,
+    the distinction between upward and downward steps is lost. However,
+    get_step_sizes can be used to determine directionality after the
+    fact.
+    Parameters
+    ----------
+    array : numpy array
+        1 dimensional array that represents time series of data points
+    threshold : int / float
+        Threshold value that defines a step
+    Returns
+    -------
+    steps : list
+        List of indices of the detected steps
+    """
+    steps        = []
+    array        = np.abs(array)
+    above_points = np.where(array > threshold, 1, 0)
+    ap_dif       = np.diff(above_points)
+    cross_ups    = np.where(ap_dif == 1)[0]
+    cross_dns    = np.where(ap_dif == -1)[0]
+    for upi, dni in zip(cross_ups,cross_dns):
+        steps.append(np.argmax(array[upi:dni]) + upi)
+    return steps
 
 
 class PeaksDetector:
     def __init__(self):
         pass
 
-    def fit(self, dataset, contamination=0.005):
+    async def fit(self, dataset, contamination=0.005):
         pass
 
     async def predict(self, dataframe):
@@ -52,7 +80,7 @@ class PeaksDetector:
         data = filtered
         data /= data.max()
 
-        result = step_detect.find_steps(data, 0.1)
+        result = find_steps(data, 0.1)
         return [(dataframe.index[x], dataframe.index[x + window_size]) for x in result]
 
     def save(self, model_filename):

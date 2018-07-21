@@ -81,6 +81,6 @@ class AnalyticUnitWorker(object):
             if pattern_type == 'general':
                 model = detectors.GeneralDetector(analytic_unit_id)
             else:
-                model = detectors.PatternDetectionModel(analytic_unit_id, pattern_type)
+                model = detectors.PatternDetector(analytic_unit_id, pattern_type)
             self.models_cache[analytic_unit_id] = model
         return self.models_cache[analytic_unit_id]

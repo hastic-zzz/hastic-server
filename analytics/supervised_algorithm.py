@@ -31,7 +31,7 @@ class supervised_algorithm(object):
         self.col_to_max, self.col_to_min, self.col_to_median = None, None, None
         self.augmented_path = None
 
-    def fit(self, dataset, contamination=0.005):
+    async def fit(self, dataset, contamination=0.005):
         dataset = dataset[self.good_features]
         dataset = dataset[-100000:]
 

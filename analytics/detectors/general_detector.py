@@ -75,7 +75,7 @@ class GeneralDetector:
         )
 
         self.model = self.create_algorithm()
-        self.model.fit(train_augmented, confidence)
+        await self.model.fit(train_augmented, confidence)
         if len(anomalies) > 0:
             last_dataframe_time = dataframe.iloc[-1]['timestamp']
             last_prediction_time = int(last_dataframe_time.timestamp() * 1000)

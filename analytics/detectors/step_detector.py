@@ -23,13 +23,12 @@ def exponential_smoothing(series, alpha):
 
 class StepDetector:
 
-    def __init__(self, pattern):
-        self.pattern = pattern
+    def __init__(self):
         self.segments = []
         self.confidence = 1.5
         self.convolve_max = 570000
 
-    def fit(self, dataframe, segments):
+    async def fit(self, dataframe, segments):
         data = dataframe['value']
         confidences = []
         convolve_list = []

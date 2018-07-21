@@ -1,5 +1,4 @@
-from detectors.step_detector import StepDetector
-from detectors.peaks_detector import PeaksDetector
+import detectors
 
 from grafana_data_provider import GrafanaDataProvider
 
@@ -25,8 +24,17 @@ def segments_box(segments):
     max_time = pd.to_datetime(max_time, unit='ms')
     return min_time, max_time
 
+def resolve_detector_by_pattern(pattern):
+    if pattern == "peak":
+        return detectors.PeaksDetector()
+    if pattern == "drop":
+        return detectors.StepDetector()
+    if pattern == "jump":
+        return detectors.Jumpdetector()
+    raise ValueError('Unknown pattern "%s"' % pattern)
 
-class PatternDetectionModel:
+
+class PatternDetector:
 
     def __init__(self, analytic_unit_id, pattern_type):
         self.analytic_unit_id = analytic_unit_id
@@ -53,14 +61,14 @@ class PatternDetectionModel:
         self.__load_model(pattern_type)
 
     async def learn(self, segments):
-        self.model = self.__create_model(self.pattern_type)
+        self.model = resolve_detector_by_pattern(self.pattern_type)
         window_size = 200
 
         dataframe = self.data_prov.get_dataframe()
 
         segments = self.data_prov.transform_anomalies(segments)
         # TODO: pass only part of dataframe that has segments
-        self.model.fit(dataframe, segments)
+        await self.model.fit(dataframe, segments)
         self.__save_model()
         return 0
 
@@ -88,20 +96,13 @@ class PatternDetectionModel:
                 'finish': max(ts1, ts2)
             })
 
-        last_dataframe_time = dataframe.iloc[- 1]['timestamp']
+        last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_prediction_time = int(last_dataframe_time.timestamp() * 1000)
         return segments, last_prediction_time
         # return predicted_anomalies, last_prediction_time
 
     def synchronize_data(self):
         self.data_prov.synchronize()
-
-    def __create_model(self, pattern):
-        if pattern == "peak":
-            return PeaksDetector()
-        if pattern == "jump" or pattern == "drop":
-            return StepDetector(pattern)
-        raise ValueError('Unknown pattern "%s"' % pattern)
 
     def __load_anomaly_config(self):
         with open(os.path.join(config.ANALYTIC_UNITS_FOLDER, self.analytic_unit_id + ".json"), 'r') as config_file:
@@ -116,5 +117,5 @@ class PatternDetectionModel:
         logger.info("Load model '%s'" % self.analytic_unit_id)
         model_filename = os.path.join(config.MODELS_FOLDER, self.pattern_type + ".m")
         if os.path.exists(model_filename):
-            self.model = self.__create_model(pattern)
+            self.model = resolve_detector_by_pattern(pattern)
             self.model.load(model_filename)
