@@ -26,7 +26,31 @@ class Jumpdetector:
         self.segments = []
         self.confidence = 1.5
         self.convolve_max = 120
-    
+
+    def intersection_segment(self, data, median):
+        cen_ind = []
+        for i in range(1, len(data)-1):
+            if data[i-1] < median and data[i+1] > median:
+                cen_ind.append(i)
+        del_ind = []
+        for i in range(1,len(cen_ind)):
+            if cen_ind[i] == cen_ind[i-1]+1:
+                del_ind.append(i - 1)
+        del_ind = del_ind[::-1]
+        for i in del_ind:
+            del cen_ind[i]
+        return cen_ind
+
+    def logistic_sigmoid(self, x , y, alpha, height):
+        distribution = []
+        for i in range(x, y):
+            F = 1 * height / (1 + math.exp(-i * alpha))
+            distribution.append(F)
+        return distribution
+    def alpha_finder(self, data, ):
+        # поиск альфы для логистической сигмоиды
+
+
     def fit(self, dataframe, segments):
             data = dataframe['value']
             confidences = []
@@ -37,7 +61,27 @@ class Jumpdetector:
                     segment_min = min(segment_data)
                     segment_max = max(segment_data)
                     confidences.append(0.20 * (segment_max - segment_min))
-                    flat_segment = segment_data.rolling(window=5).mean() #сглаживаем сегмент
+                    flat_segment = segment_data.rolling(window=4).mean() #сглаживаем сегмент
+                    kde_segment = flat_data.dropna().plot.kde() # distribution density
+                    ax = flat_data.dropna().plot.kde()
+                    ax_list = ax.get_lines()[0].get_xydata()
+                    mids = argrelextrema(np.array(ax_list), np.less)[0]
+                    maxs = argrelextrema(np.array(ax_list), np.greater)[0]
+                    min_peak = maxs[0]
+                    max_peak = maxs[1]
+                    min_line = ax_list[min_peak, 0]
+                    max_line = ax_list[max_peak, 0]
+                    sigm_heidht = max_line - min_line
+                    pat_sigm = logistic_sigmoid(-120, 120, 1, sigm_heidht)
+                    for i in range(0, len(pat_sigm)):
+                        pat_sigm[i] = pat_sigm[i] + min_line 
+                    cen_ind = self.intersection_segment(flat_segment, mids[0])
+                    c = []
+                    for i in range(len(cen_ind)):
+                        x = cen_ind[i]
+                        cx = scipy.signal.fftconvolve(pat_sigm, flat_data[x-120:x+120])
+                        c.append(cx[240])
+                    
                     # в идеале нужно посмотреть гистограмму сегмента и выбрать среднее значение,
                     # далее от него брать + -120 
                     segment_summ = 0
@@ -76,7 +120,7 @@ class Jumpdetector:
             distribution.append(F)
         return distribution
     
-    async def predict(self, dataframe):
+    def predict(self, dataframe):
         data = dataframe['value']
 
         result = self.__predict(data)
@@ -91,7 +135,7 @@ class Jumpdetector:
             all_max_flatten_data = data.rolling(window=window_size).mean()
             extrema_list = []
             # добавить все пересечения экспоненты со сглаженным графиком
-            # 
+            
             for i in exponential_smoothing(data + self.confidence, 0.02):
                 extrema_list.append(i)
 
