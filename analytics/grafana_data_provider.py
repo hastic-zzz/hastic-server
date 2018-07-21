@@ -10,7 +10,7 @@ from config import HASTIC_API_KEY
 
 MS_IN_WEEK = 604800000
 
-class DataProvider:
+class GrafanaDataProvider:
     chunk_size = 50000
 
     def __init__(self, datasource, target, data_filename):

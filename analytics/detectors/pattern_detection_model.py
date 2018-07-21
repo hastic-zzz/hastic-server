@@ -1,7 +1,7 @@
 from detectors.step_detector import StepDetector
 from detectors.peaks_detector import PeaksDetector
 
-from data_provider import DataProvider
+from grafana_data_provider import GrafanaDataProvider
 
 import logging
 from urllib.parse import urlparse
@@ -47,7 +47,7 @@ class PatternDetectionModel:
         with open(target_filename, 'r') as file:
             target = json.load(file)
 
-        self.data_prov = DataProvider(datasource, target, dataset_filename)
+        self.data_prov = GrafanaDataProvider(datasource, target, dataset_filename)
 
         self.model = None
         self.__load_model(pattern_type)

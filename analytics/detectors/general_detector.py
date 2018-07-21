@@ -1,4 +1,4 @@
-from data_provider import DataProvider
+from grafana_data_provider import GrafanaDataProvider
 from data_preprocessor import data_preprocessor
 import pandas as pd
 import logging
@@ -40,7 +40,7 @@ class GeneralDetector:
         with open(target_filename, 'r') as file:
             target = json.load(file)
 
-        self.data_prov = DataProvider(datasource, target, dataset_filename)
+        self.data_prov = GrafanaDataProvider(datasource, target, dataset_filename)
         self.preprocessor = data_preprocessor(self.data_prov, augmented_path)
         self.model = None
 

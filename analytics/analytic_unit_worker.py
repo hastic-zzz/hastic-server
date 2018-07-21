@@ -1,6 +1,5 @@
 import config
-from detectors.general_detector import GeneralDetector
-from detectors.pattern_detection_model import PatternDetectionModel
+import detectors
 import json
 import logging
 import sys
@@ -80,8 +79,8 @@ class AnalyticUnitWorker(object):
     def get_model(self, analytic_unit_id, pattern_type):
         if analytic_unit_id not in self.models_cache:
             if pattern_type == 'general':
-                model = GeneralDetector(analytic_unit_id)
+                model = detectors.GeneralDetector(analytic_unit_id)
             else:
-                model = PatternDetectionModel(analytic_unit_id, pattern_type)
+                model = detectors.PatternDetectionModel(analytic_unit_id, pattern_type)
             self.models_cache[analytic_unit_id] = model
         return self.models_cache[analytic_unit_id]
