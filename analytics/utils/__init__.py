@@ -59,3 +59,24 @@ def segments_box(segments):
     min_time = pd.to_datetime(min_time, unit='ms')
     max_time = pd.to_datetime(max_time, unit='ms')
     return min_time, max_time
+
+def intersection_segment(data, median):
+    cen_ind = []
+    for i in range(1, len(data)-1):
+        if data[i - 1] < median and data[i + 1] > median:
+            cen_ind.append(i)
+    del_ind = []
+    for i in range(1,len(cen_ind)):
+        if cen_ind[i] == cen_ind[i - 1] + 1:
+            del_ind.append(i - 1)
+    del_ind = del_ind[::-1]
+    for i in del_ind:
+        del cen_ind[i]
+    return cen_ind
+
+def logistic_sigmoid(self, x1, x2, alpha, height):
+    distribution = []
+    for i in range(x1, x2):
+        F = 1 * height / (1 + math.exp(-i * alpha))
+        distribution.append(F)
+    return distribution

@@ -10,7 +10,6 @@ import os.path
 import json
 
 
-
 NANOSECONDS_IN_MS = 1000000
 
 logger = logging.getLogger('analytic_toolset')

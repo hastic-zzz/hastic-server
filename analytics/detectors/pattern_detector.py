@@ -17,12 +17,12 @@ logger = logging.getLogger('analytic_toolset')
 
 
 def resolve_detector_by_pattern(pattern):
-    if pattern == "peak":
+    if pattern == 'peak':
         return detectors.PeaksDetector()
-    if pattern == "drop":
+    if pattern == 'drop':
         return detectors.StepDetector()
-    if pattern == "jump":
-        return detectors.Jumpdetector()
+    if pattern == 'jump':
+        return detectors.JumpDetector()
     raise ValueError('Unknown pattern "%s"' % pattern)
 
 
