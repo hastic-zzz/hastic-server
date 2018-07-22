@@ -1,3 +1,4 @@
+import utils
 from grafana_data_provider import GrafanaDataProvider
 from data_preprocessor import data_preprocessor
 import pandas as pd
@@ -7,16 +8,10 @@ import config
 import os.path
 import json
 
+
 NANOSECONDS_IN_MS = 1000000
 
 logger = logging.getLogger('analytic_toolset')
-
-
-def anomalies_to_timestamp(anomalies):
-    for anomaly in anomalies:
-        anomaly['start'] = int(anomaly['start'].timestamp() * 1000)
-        anomaly['finish'] = int(anomaly['finish'].timestamp() * 1000)
-    return anomalies
 
 
 class GeneralDetector:
@@ -46,37 +41,27 @@ class GeneralDetector:
 
         self.__load_model()
 
-    def anomalies_box(self, anomalies):
-        max_time = 0
-        min_time = float("inf")
-        for anomaly in anomalies:
-            max_time = max(max_time, anomaly['finish'])
-            min_time = min(min_time, anomaly['start'])
-        min_time = pd.to_datetime(min_time, unit='ms')
-        max_time = pd.to_datetime(max_time, unit='ms')
-        return min_time, max_time
-
-    async def learn(self, anomalies):
+    async def learn(self, segments):
         logger.info("Start to learn for anomaly_name='%s'" % self.anomaly_name)
 
         confidence = 0.02
         dataframe = self.data_prov.get_dataframe()
         start_index, stop_index = 0, len(dataframe)
-        if len(anomalies) > 0:
+        if len(segments) > 0:
             confidence = 0.0
-            min_time, max_time = self.anomalies_box(anomalies)
+            min_time, max_time = utils.segments_box(segments)
             dataframe = dataframe[dataframe['timestamp'] <= max_time]
             dataframe = dataframe[dataframe['timestamp'] >= min_time]
 
         train_augmented = self.preprocessor.get_augmented_data(
             dataframe.index[0],
             dataframe.index[-1],
-            anomalies
+            segments
         )
 
         self.model = self.create_algorithm()
         await self.model.fit(train_augmented, confidence)
-        if len(anomalies) > 0:
+        if len(segments) > 0:
             last_dataframe_time = dataframe.iloc[-1]['timestamp']
             last_prediction_time = int(last_dataframe_time.timestamp() * 1000)
         else:
@@ -112,7 +97,7 @@ class GeneralDetector:
             last_row = self.data_prov.get_data_range(stop_index - 1, stop_index)
 
             last_dataframe_time = last_row.iloc[0]['timestamp']
-            predicted_anomalies = anomalies_to_timestamp(predicted_anomalies)
+            predicted_anomalies = utils.anomalies_to_timestamp(predicted_anomalies)
             last_prediction_time = int(last_dataframe_time.timestamp() * 1000)
 
         logger.info("Predicting is finished for anomaly type='%s'" % self.anomaly_name)

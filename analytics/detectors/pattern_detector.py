@@ -1,4 +1,5 @@
 import detectors
+import utils
 
 from grafana_data_provider import GrafanaDataProvider
 
@@ -14,15 +15,6 @@ import pandas as pd
 logger = logging.getLogger('analytic_toolset')
 
 
-def segments_box(segments):
-    max_time = 0
-    min_time = float("inf")
-    for segment in segments:
-        min_time = min(min_time, segment['start'])
-        max_time = max(max_time, segment['finish'])
-    min_time = pd.to_datetime(min_time, unit='ms')
-    max_time = pd.to_datetime(max_time, unit='ms')
-    return min_time, max_time
 
 def resolve_detector_by_pattern(pattern):
     if pattern == "peak":

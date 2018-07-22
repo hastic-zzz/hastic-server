@@ -2,24 +2,10 @@ import scipy.signal
 from scipy.fftpack import fft
 from scipy.signal import argrelextrema
 
+import utils
 import numpy as np
 import pickle
 
-
-
-def is_intersect(target_segment, segments):
-    for segment in segments:
-        start = max(segment['start'], target_segment[0])
-        finish = min(segment['finish'], target_segment[1])
-        if start <= finish:
-            return True
-    return False
-
-def exponential_smoothing(series, alpha):
-    result = [series[0]]
-    for n in range(1, len(series)):
-        result.append(alpha * series[n] + (1 - alpha) * result[n-1])
-    return result
 
 class StepDetector:
 
@@ -58,20 +44,20 @@ class StepDetector:
     async def predict(self, dataframe):
         data = dataframe['value']
 
-        result = self.__predict(data)
+        result = await self.__predict(data)
         result.sort()
 
         if len(self.segments) > 0:
-            result = [segment for segment in result if not is_intersect(segment, self.segments)]
+            result = [segment for segment in result if not utils.is_intersect(segment, self.segments)]
         return result
 
-    def __predict(self, data):
+    async def __predict(self, data):
         window_size = 24
         all_max_flatten_data = data.rolling(window=window_size).mean()
         all_mins = argrelextrema(np.array(all_max_flatten_data), np.less)[0]
         extrema_list = []
 
-        for i in exponential_smoothing(data - self.confidence, 0.03):
+        for i in utils.exponential_smoothing(data - self.confidence, 0.03):
             extrema_list.append(i)
 
         segments = []

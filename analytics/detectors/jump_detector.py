@@ -1,3 +1,4 @@
+import utils
 import numpy as np
 import pickle
 import scipy.signal
@@ -5,20 +6,6 @@ from scipy.fftpack import fft
 from scipy.signal import argrelextrema
 import math
 
-
-def is_intersect(target_segment, segments):
-    for segment in segments:
-        start = max(segment['start'], target_segment[0])
-        finish = min(segment['finish'], target_segment[1])
-        if start <= finish:
-            return True
-    return False
-
-def exponential_smoothing(series, alpha):
-    result = [series[0]]
-    for n in range(1, len(series)):
-        result.append(alpha * series[n] + (1 - alpha) * result[n-1])
-    return result
 
 class Jumpdetector:
 
@@ -56,6 +43,7 @@ class Jumpdetector:
 
 
     async def fit(self, dataframe, segments):
+        #self.alpha_finder()
         data = dataframe['value']
         confidences = []
         convolve_list = []
@@ -131,7 +119,7 @@ class Jumpdetector:
         result.sort()
 
         if len(self.segments) > 0:
-            result = [segment for segment in result if not is_intersect(segment, self.segments)]
+            result = [segment for segment in result if not utils.is_intersect(segment, self.segments)]
         return result
 
     def __predict(self, data):
@@ -140,7 +128,7 @@ class Jumpdetector:
         extrema_list = []
         # добавить все пересечения экспоненты со сглаженным графиком
         
-        for i in exponential_smoothing(data + self.confidence, 0.02):
+        for i in utils.exponential_smoothing(data + self.confidence, 0.02):
             extrema_list.append(i)
 
         segments = []
