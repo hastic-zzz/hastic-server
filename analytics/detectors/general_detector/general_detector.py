@@ -1,3 +1,4 @@
+from detectors.general_detector.supervised_algorithm import SupervisedAlgorithm
 import utils
 from grafana_data_provider import GrafanaDataProvider
 from data_preprocessor import data_preprocessor
@@ -7,6 +8,7 @@ from urllib.parse import urlparse
 import config
 import os.path
 import json
+
 
 
 NANOSECONDS_IN_MS = 1000000
@@ -120,8 +122,7 @@ class GeneralDetector:
             return json.load(file)
 
     def create_algorithm(self):
-        from supervised_algorithm import supervised_algorithm
-        return supervised_algorithm()
+        return SupervisedAlgorithm()
 
     def __save_model(self):
         logger.info("Save model '%s'" % self.anomaly_name)

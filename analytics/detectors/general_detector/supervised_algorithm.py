@@ -4,10 +4,8 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.ensemble import IsolationForest
 import pandas as pd
 
-from sklearn import svm
 
-
-class supervised_algorithm(object):
+class SupervisedAlgorithm(object):
     frame_size = 16
     good_features = [
         #"value__agg_linear_trend__f_agg_\"max\"__chunk_len_5__attr_\"intercept\"",
