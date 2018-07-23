@@ -1,8 +1,9 @@
-import { ANALYTICS_PATH, ZEROMQ_CONNECTION_STRING, ANLYTICS_PING_INTERVAL } from '../config'
+import { ANALYTICS_PATH, ZEROMQ_CONNECTION_STRING, ANLYTICS_PING_INTERVAL } from '../config';
+import { saveModel, getModel } from './model_service';
 
 const zmq = require('zeromq');
 
-import * as childProcess from 'child_process'
+import * as childProcess from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -130,7 +131,7 @@ export class AnalyticsService {
     }
   }
 
-  private _onAnalyticsMessage(text: any, error) {
+  private async _onAnalyticsMessage(text: any, error) {
     if(text.toString() === 'pong') {
       this._pingResponded = true;
       if(!this._ready) {
@@ -143,6 +144,16 @@ export class AnalyticsService {
     let response;
     try {
       response = JSON.parse(text);
+      if(response.task === 'save_model') {
+        await saveModel(response);
+      }
+      if(response.task === 'get_model') {
+        let model = await getModel(response);
+        this.sendMessage(JSON.stringify({
+          id: response.id,
+          model
+        }));
+      }
     } catch (e) {
       console.error("Can`t parse response from analytics as json:");
       console.error(text);
