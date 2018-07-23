@@ -1,3 +1,7 @@
+<p align="center">
+  <img width="180" height="75" src="https://github.com/sankerust/hello-world/blob/master/hastic_logo_sm_alpha.png?raw=true">
+</p>
+
 [Hastic server](https://hastic.io) [![Travis CI](https://travis-ci.org/hastic/hastic-server.svg?branch=master)](https://travis-ci.org/hastic/hastic-server) 
 ================
 [Website](https://hastic.io) |
