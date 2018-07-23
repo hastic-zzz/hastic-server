@@ -13,6 +13,7 @@ class JumpDetector:
         self.segments = []
         self.confidence = 1.5
         self.convolve_max = 120
+        self.size = 50
     
     async def fit(self, dataframe, segments):
         #self.alpha_finder()
@@ -27,9 +28,8 @@ class JumpDetector:
                 confidences.append(0.20 * (segment_max - segment_min))
                 flat_segment = segment_data.rolling(window=4).mean() #сглаживаем сегмент
                 kde_segment = flat_data.dropna().plot.kde() # distribution density
-                ax = flat_data.dropna().plot.kde()
-                ax_list = ax.get_lines()[0].get_xydata()
-                mids = argrelextrema(np.array(ax_list), np.less)[0]
+                ax_list = kde_segment.get_lines()[0].get_xydata() #take coordinates of kde
+                mids = argrelextrema(np.array(ax_list), np.less)[0] 
                 maxs = argrelextrema(np.array(ax_list), np.greater)[0]
                 min_peak = maxs[0]
                 max_peak = maxs[1]
@@ -39,24 +39,21 @@ class JumpDetector:
                 pat_sigm = utils.logistic_sigmoid(-120, 120, 1, sigm_heidht)
                 for i in range(0, len(pat_sigm)):
                     pat_sigm[i] = pat_sigm[i] + min_line 
-                cen_ind = utils.intersection_segment(flat_segment, mids[0])
-                c = []
+                cen_ind = utils.intersection_segment(flat_segment, mids[0]) #finds all interseprions with median
+                c = [] # choose the correct one interseption by convolve
+                jump_center = cen_ind[0]
                 for i in range(len(cen_ind)):
                     x = cen_ind[i]
                     cx = scipy.signal.fftconvolve(pat_sigm, flat_data[x-120:x+120])
                     c.append(cx[240])
+                    if i > 0 and cx > c[i-1]:
+                        jump_center = x 
+                               
                 
-                # в идеале нужно посмотреть гистограмму сегмента и выбрать среднее значение,
-                # далее от него брать + -120 
-                segment_summ = 0
-                for val in flat_segment:
-                    segment_summ += val
-                segment_mid = segment_summ /  len(flat_segment) #посчитать нормально среднее значение/медиану
-                for ind in range(1, len(flat_segment) - 1):
-                    if flat_segment[ind + 1] > segment_mid and flat_segment[ind - 1] < segment_mid:
-                        flat_mid_index = ind   # найти пересечение средней и графика, получить его индекс
-                segment_mid_index = flat_mid_index - 5
-                labeled_drop = data[segment_mid_index - 120 : segment_mid_index + 120]
+                # в идеале нужно посмотреть гистограмму сегмента и выбрать среднее значение, - done!
+                # далее от него брать + -120  - done!
+                segment_cent_index = jump_center - 4
+                labeled_drop = data[segment_cent_index - 120 : segment_cent_index + 120]
                 labeled_min = min(labeled_drop) 
                 for value in labeled_drop: # обрезаем
                     value = value - labeled_min
@@ -65,7 +62,9 @@ class JumpDetector:
                     value = value / labeled_max
                 convolve = scipy.signal.fftconvolve(labeled_drop, labeled_drop)
                 convolve_list.append(max(convolve)) # сворачиваем паттерн
-                # плюс надо впихнуть сюда логистическую сигмоиду и поиск альфы
+                #need to add convolve with alpha sigmoid
+                #add size of jump rize
+
 
         if len(confidences) > 0:
             self.confidence = min(confidences)
@@ -90,10 +89,10 @@ class JumpDetector:
     async def __predict(self, data):
         window_size = 24
         all_max_flatten_data = data.rolling(window=window_size).mean()
-        all_mins = argrelextrema(np.array(all_max_flatten_data), np.less)[0]
-        extrema_list = []
-        # добавить все пересечения экспоненты со сглаженным графиком
-        
+        all_mins = argrelextrema(np.array(all_max_flatten_data), np.less)[0]        
+        possible_jumps = utils.findAllJumps(all_max_flatten_data, 50, self.confidence)
+
+        '''
         for i in utils.exponential_smoothing(data + self.confidence, 0.02):
             extrema_list.append(i)
 
@@ -101,8 +100,9 @@ class JumpDetector:
         for i in all_mins:
             if all_max_flatten_data[i] > extrema_list[i]:
                 segments.append(i - window_size)
+        '''
 
-        return [(x - 1, x + 1) for x in self.__filter_prediction(segments, all_max_flatten_data)]
+        return [(x - 1, x + 1) for x in self.__filter_prediction(possible_jumps, all_max_flatten_data)]
 
     def __filter_prediction(self, segments, all_max_flatten_data):
         delete_list = []
@@ -116,6 +116,10 @@ class JumpDetector:
             segments.remove(item)
 
         # изменить секонд делит лист, сделать для свертки с сигмоидой
+        # !!!!!!!!
+        # написать фильтрацию паттернов-джампов! посмотерть каждый сегмент, обрезать его
+        # отнормировать, сравнить с выбранным патерном.
+        # !!!!!!!!
         delete_list = []
         pattern_data = all_max_flatten_data[segments[0] - 120 : segments[0] + 120]
         for segment in segments:

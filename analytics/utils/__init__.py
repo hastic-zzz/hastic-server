@@ -61,6 +61,9 @@ def segments_box(segments):
     return min_time, max_time
 
 def intersection_segment(data, median):
+    '''
+    Finds all intersections between flatten data and median
+    '''
     cen_ind = []
     for i in range(1, len(data)-1):
         if data[i - 1] < median and data[i + 1] > median:
