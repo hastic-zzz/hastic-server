@@ -80,3 +80,21 @@ def logistic_sigmoid(self, x1, x2, alpha, height):
         F = 1 * height / (1 + math.exp(-i * alpha))
         distribution.append(F)
     return distribution
+
+def findOneJump(data, x, size, height, err):
+    l = []
+    for i in range(x + 1, x + size):
+        if (data[i] > data[x] and data[x + size] > data[x] + height):
+            l.append(data[i])
+    if len(l) > size * err:
+        return x
+    else:
+        return 0
+
+def findAllJumps(data, size, height):
+    possible_jump_list = []
+    for i in range(len(data - size):
+        x = findOneJump(data, i, size, height, 0.9)
+        if x > 0:
+            possible_jump_list.append(x)
+    return possible_jump_list
