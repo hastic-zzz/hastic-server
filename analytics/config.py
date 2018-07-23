@@ -27,11 +27,11 @@ def get_config_field(field, default_val = None):
     raise Exception('Please configure {}'.format(field))
 
 
-
 DATASET_FOLDER = os.path.join(DATA_FOLDER, 'datasets')
 ANALYTIC_UNITS_FOLDER = os.path.join(DATA_FOLDER, 'analytic_units')
 MODELS_FOLDER = os.path.join(DATA_FOLDER, 'models')
 METRICS_FOLDER = os.path.join(DATA_FOLDER, 'metrics')
 
 HASTIC_API_KEY = get_config_field('HASTIC_API_KEY')
+
 ZEROMQ_CONNECTION_STRING = get_config_field('ZEROMQ_CONNECTION_STRING', 'tcp://*:8002')

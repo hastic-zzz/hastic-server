@@ -47,8 +47,11 @@ export class AnalyticsService {
 
   private async _init() {
     this._requester = zmq.socket('pair');
+    let connectionString = 'tcp://127.0.0.1:8002'; // debug mode
 
     if(process.env.NODE_ENV !== 'development') {
+      connectionString = ZEROMQ_CONNECTION_STRING;
+
       console.log('Creating analytics process...');
       try {
         var cp = await AnalyticsService._runAnalyticsProcess();
@@ -59,8 +62,8 @@ export class AnalyticsService {
       console.log('Ok, pid: %s', cp.pid);
     }
 
-    console.log("Binding to zmq...: %s", ZEROMQ_CONNECTION_STRING);
-    this._requester.connect(ZEROMQ_CONNECTION_STRING);
+    console.log("Binding to zmq...: %s", connectionString);
+    this._requester.connect(connectionString);
     this._requester.on("message", this._onAnalyticsMessage.bind(this));
     console.log('Ok');
 
@@ -78,14 +81,22 @@ export class AnalyticsService {
    */
   private static async _runAnalyticsProcess(): Promise<childProcess.ChildProcess> {
     let cp: childProcess.ChildProcess;
+    let cpOptions = {
+      cwd: ANALYTICS_PATH,
+      env: {
+        ...process.env,
+        ZEROMQ_CONNECTION_STRING: ZEROMQ_CONNECTION_STRING
+      }
+    };
+
     if(fs.existsSync(path.join(ANALYTICS_PATH, 'dist/worker/worker'))) {
       console.log('dist/worker/worker');
-      cp = childProcess.spawn('dist/worker/worker', [], { cwd: ANALYTICS_PATH });
+      cp = childProcess.spawn('dist/worker/worker', [], cpOptions);
     } else {
       console.log('python3 server.py');
       // If compiled analytics script doesn't exist - fallback to regular python
       console.log(ANALYTICS_PATH);
-      cp = childProcess.spawn('python3', ['server.py'], { cwd: ANALYTICS_PATH });
+      cp = childProcess.spawn('python3', ['server.py'], cpOptions);
     }
 
     if(cp.pid === undefined) {
