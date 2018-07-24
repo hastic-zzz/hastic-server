@@ -13,7 +13,10 @@ import * as Koa from 'koa';
 import * as Router from 'koa-router';
 import * as bodyParser from 'koa-bodyparser';
 
+
+
 Data.checkDataFolders();
+AnalyticsController.init();
 ProcessService.registerExitHandler(AnalyticsController.terminate);
 
 var app = new Koa();
@@ -50,8 +53,5 @@ let server = app.listen(HASTIC_PORT, () => {
 
 ProcessService.registerExitHandler(() => {
   console.log('Stopping server...');
-  server.close(() => {
-    console.log('Server is closed');
-  });
-  
+  server.close();
 })

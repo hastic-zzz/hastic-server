@@ -1,5 +1,6 @@
 
 var exitHandlers = []
+var exitHandled = false;
 
 /**
  * Add a callback for closing programm bacause of any reason
@@ -11,6 +12,10 @@ export function registerExitHandler(callback: () => void) {
 }
 
 function exitHandler(options, err) {
+  if(exitHandled) {
+    return;
+  }
+  exitHandled = true;
   for(let i = 0; i < exitHandlers.length; i++) {
     exitHandlers[i]();
   }

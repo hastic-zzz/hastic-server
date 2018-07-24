@@ -5,7 +5,6 @@ const zmq = require('zeromq');
 import * as childProcess from 'child_process'
 import * as fs from 'fs';
 import * as path from 'path';
-import { resolve } from 'dns';
 
 
 export class AnalyticsService {
@@ -44,6 +43,7 @@ export class AnalyticsService {
   }
 
   public close() {
+    this._isClosed = true;
     console.log('Terminating analytics service...');
     clearInterval(this._analyticsPinger);
     if(this._ipcPath !== null) {
@@ -61,7 +61,7 @@ export class AnalyticsService {
 
     this._zmqConnectionString = 'tcp://127.0.0.1:8002'; // debug mode
     if(productionMode) {
-      this._zmqConnectionString = config.ZEROMQ_CONNECTION_STRING;
+      this._zmqConnectionString = config.ZMQ_CONNECTION_STRING;
       if(this._zmqConnectionString === null) {
         var createResult = await AnalyticsService.createIPCAddress();
         this._zmqConnectionString = createResult.address;
@@ -197,11 +197,9 @@ export class AnalyticsService {
   }
 
   private static async createIPCAddress(): Promise<{ address: string, file: string }> {
-    let filename = 'i' + process.pid.toString() // "i" is necessary because a strange error with all-digits name
-    let p = path.join(config.ZMQ_IPC_PATH, filename); 
-
-    // TODO: decide if we should make it async (no real need)
-    fs.writeFileSync(p, 'x');
+    let filename = `${process.pid}.ipc`
+    let p = path.join(config.ZMQ_IPC_PATH, filename);
+    fs.writeFileSync(p, '');
     return Promise.resolve({ address: 'ipc://' + p, file: p });
   }
 

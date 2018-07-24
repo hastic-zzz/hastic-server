@@ -15,7 +15,9 @@ function maybeCreate(path: string): void {
   if(fs.existsSync(path)) {
     return;
   }
+  console.log('mkdir: ' + path);
   fs.mkdirSync(path);
+  console.log('exists: ' + fs.existsSync(path));
 }
 
 export function checkDataFolders(): void {

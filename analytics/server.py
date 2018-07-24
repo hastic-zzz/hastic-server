@@ -17,10 +17,11 @@ data_service = None
 
 root.setLevel(logging.DEBUG)
 
-#logging_formatter = logging.StreamHandler(sys.stdout)
+
 logging_formatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
 
-logging_handler = logging.FileHandler(config.DATA_FOLDER + '/analytics.log')
+logging_handler = logging.StreamHandler(sys.stdout)
+#logging_handler = logging.FileHandler(config.DATA_FOLDER + '/analytics.log')
 logging_handler.setLevel(logging.DEBUG)
 logging_handler.setFormatter(logging_formatter)
 
