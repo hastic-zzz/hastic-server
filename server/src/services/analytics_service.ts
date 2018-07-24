@@ -47,11 +47,19 @@ export class AnalyticsService {
 
   private async _init() {
     this._requester = zmq.socket('pair');
+    let productionMode = process.env.NODE_ENV !== 'development';
+
     let connectionString = 'tcp://127.0.0.1:8002'; // debug mode
-
-    if(process.env.NODE_ENV !== 'development') {
+    if(productionMode) {
       connectionString = ZEROMQ_CONNECTION_STRING;
+    }
 
+    console.log("Binding to zmq... %s", connectionString);
+    this._requester.connect(connectionString);
+    this._requester.on("message", this._onAnalyticsMessage.bind(this));
+    console.log('Ok');
+
+    if(productionMode) {
       console.log('Creating analytics process...');
       try {
         var cp = await AnalyticsService._runAnalyticsProcess();
@@ -61,11 +69,6 @@ export class AnalyticsService {
       }
       console.log('Ok, pid: %s', cp.pid);
     }
-
-    console.log("Binding to zmq...: %s", connectionString);
-    this._requester.connect(connectionString);
-    this._requester.on("message", this._onAnalyticsMessage.bind(this));
-    console.log('Ok');
 
     console.log('Start analytics pinger...');
     this._runAlalyticsPinger();
@@ -77,7 +80,8 @@ export class AnalyticsService {
    * Spawns analytics process. Reads process stderr and fails if it 
    * is not empty. No need to stop process later.
    *
-   * @returns creaded child process
+   * @returns Creaded child process
+   * @throws Process start error or first exception during python start
    */
   private static async _runAnalyticsProcess(): Promise<childProcess.ChildProcess> {
     let cp: childProcess.ChildProcess;
