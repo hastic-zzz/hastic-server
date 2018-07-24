@@ -6,13 +6,14 @@ from scipy.fftpack import fft
 from scipy.signal import argrelextrema
 import math
 
+WINDOW_SIZE = 120
 
 class JumpDetector:
 
     def __init__(self):
         self.segments = []
         self.confidence = 1.5
-        self.convolve_max = 120
+        self.convolve_max = WINDOW_SIZE
         self.size = 50
     
     async def fit(self, dataframe, segments):
@@ -36,24 +37,15 @@ class JumpDetector:
                 min_line = ax_list[min_peak, 0]
                 max_line = ax_list[max_peak, 0]
                 sigm_heidht = max_line - min_line
-                pat_sigm = utils.logistic_sigmoid(-120, 120, 1, sigm_heidht)
+                pat_sigm = utils.logistic_sigmoid(-WINDOW_SIZE, WINDOW_SIZE, 1, sigm_heidht)
                 for i in range(0, len(pat_sigm)):
                     pat_sigm[i] = pat_sigm[i] + min_line 
                 cen_ind = utils.intersection_segment(flat_segment, mids[0]) #finds all interseprions with median
                 c = [] # choose the correct one interseption by convolve
-                jump_center = cen_ind[0]
-                for i in range(len(cen_ind)):
-                    x = cen_ind[i]
-                    cx = scipy.signal.fftconvolve(pat_sigm, flat_data[x-120:x+120])
-                    c.append(cx[240])
-                    if i > 0 and cx > c[i-1]:
-                        jump_center = x 
-                               
-                
-                # в идеале нужно посмотреть гистограмму сегмента и выбрать среднее значение, - done!
-                # далее от него брать + -120  - done!
+                jump_center = utils.find_jump_center(cen_ind)
+
                 segment_cent_index = jump_center - 4
-                labeled_drop = data[segment_cent_index - 120 : segment_cent_index + 120]
+                labeled_drop = data[segment_cent_index - WINDOW_SIZE : segment_cent_index + WINDOW_SIZE]
                 labeled_min = min(labeled_drop) 
                 for value in labeled_drop: # обрезаем
                     value = value - labeled_min
@@ -62,8 +54,8 @@ class JumpDetector:
                     value = value / labeled_max
                 convolve = scipy.signal.fftconvolve(labeled_drop, labeled_drop)
                 convolve_list.append(max(convolve)) # сворачиваем паттерн
-                #need to add convolve with alpha sigmoid
-                #add size of jump rize
+                # TODO: add convolve with alpha sigmoid
+                # TODO: add size of jump rize
 
 
         if len(confidences) > 0:
@@ -74,7 +66,7 @@ class JumpDetector:
         if len(convolve_list) > 0:
             self.convolve_max = max(convolve_list)
         else:
-            self.convolve_max = 120 # макс метрика свертки равна отступу(120), вау!
+            self.convolve_max = WINDOW_SIZE # макс метрика свертки равна отступу(WINDOW_SIZE), вау!
     
     async def predict(self, dataframe):
         data = dataframe['value']
@@ -90,7 +82,7 @@ class JumpDetector:
         window_size = 24
         all_max_flatten_data = data.rolling(window=window_size).mean()
         all_mins = argrelextrema(np.array(all_max_flatten_data), np.less)[0]        
-        possible_jumps = utils.findAllJumps(all_max_flatten_data, 50, self.confidence)
+        possible_jumps = utils.find_all_jumps(all_max_flatten_data, 50, self.confidence)
 
         '''
         for i in utils.exponential_smoothing(data + self.confidence, 0.02):
@@ -121,9 +113,9 @@ class JumpDetector:
         # отнормировать, сравнить с выбранным патерном.
         # !!!!!!!!
         delete_list = []
-        pattern_data = all_max_flatten_data[segments[0] - 120 : segments[0] + 120]
+        pattern_data = all_max_flatten_data[segments[0] - WINDOW_SIZE : segments[0] + WINDOW_SIZE]
         for segment in segments:
-            convol_data = all_max_flatten_data[segment - 120 : segment + 120]
+            convol_data = all_max_flatten_data[segment - WINDOW_SIZE : segment + WINDOW_SIZE]
             conv = scipy.signal.fftconvolve(pattern_data, convol_data)
             if max(conv) > self.convolve_max * 1.1 or max(conv) < self.convolve_max * 0.9:
                 delete_list.append(segment)
