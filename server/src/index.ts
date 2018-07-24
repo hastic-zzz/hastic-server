@@ -5,6 +5,7 @@ import { router as alertsRouter } from './routes/alerts_router';
 import * as AnalyticsController from './controllers/analytics_controller';
 
 import * as Data from './services/data_service';
+import * as ProcessService from './services/process_service';
 
 import { HASTIC_PORT } from './config';
 
@@ -13,6 +14,7 @@ import * as Router from 'koa-router';
 import * as bodyParser from 'koa-bodyparser';
 
 Data.checkDataFolders();
+ProcessService.registerExitHandler(AnalyticsController.terminate);
 
 var app = new Koa();
 
@@ -31,7 +33,6 @@ rootRouter.use('/analyticUnits', anomaliesRouter.routes(), anomaliesRouter.allow
 rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
 rootRouter.use('/alerts', alertsRouter.routes(), alertsRouter.allowedMethods());
 rootRouter.get('/', async (ctx) => {
-
   ctx.response.body = { 
     server: 'Ok', 
     analyticsReady: AnalyticsController.isAnalyticReady(),
@@ -43,6 +44,14 @@ app
   .use(rootRouter.routes())
   .use(rootRouter.allowedMethods());
 
-app.listen(HASTIC_PORT, () => {
+let server = app.listen(HASTIC_PORT, () => {
   console.log(`Server is running on :${HASTIC_PORT}`);
 });
+
+ProcessService.registerExitHandler(() => {
+  console.log('Stopping server...');
+  server.close(() => {
+    console.log('Server is closed');
+  });
+  
+})

@@ -21,6 +21,10 @@ function onResponse(response: any) {
   }
 }
 
+export function terminate() {
+  analyticsService.close();
+}
+
 async function runTask(task): Promise<any> {
   let anomaly: AnalyticUnit.AnalyticUnit = AnalyticUnit.findById(task.analyticUnitId);
   task.metric = {

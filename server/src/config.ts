@@ -19,9 +19,10 @@ export const ANALYTIC_UNITS_PATH = path.join(DATA_PATH, 'analytic_units');
 export const MODELS_PATH = path.join(DATA_PATH, 'models');
 export const METRICS_PATH = path.join(DATA_PATH, 'metrics');
 export const SEGMENTS_PATH = path.join(DATA_PATH, 'segments');
+export const ZMQ_IPC_PATH = path.join(DATA_PATH, 'ipc');
 
 export const HASTIC_PORT = getConfigField('HASTIC_PORT', '8000');
-export const ZEROMQ_CONNECTION_STRING = getConfigField('ZEROMQ_CONNECTION_STRING', 'ipc://' + ANALYTICS_PATH);
+export const ZEROMQ_CONNECTION_STRING = getConfigField('ZEROMQ_CONNECTION_STRING', null);
 export const ANLYTICS_PING_INTERVAL = 500; // ms
 
 

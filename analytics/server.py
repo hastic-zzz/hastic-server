@@ -8,7 +8,6 @@ import services
 from analytic_unit_worker import AnalyticUnitWorker
 
 
-
 root = logging.getLogger()
 logger = logging.getLogger('SERVER')
 
@@ -18,13 +17,14 @@ data_service = None
 
 root.setLevel(logging.DEBUG)
 
-#ch = logging.StreamHandler(sys.stdout)
-ch = logging.FileHandler(config.DATA_FOLDER + '/analytics.log')
+#logging_formatter = logging.StreamHandler(sys.stdout)
+logging_formatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
 
-ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
-ch.setFormatter(formatter)
-root.addHandler(ch)
+logging_handler = logging.FileHandler(config.DATA_FOLDER + '/analytics.log')
+logging_handler.setLevel(logging.DEBUG)
+logging_handler.setFormatter(logging_formatter)
+
+root.addHandler(logging_handler)
 
 
 async def handle_task(text):
@@ -63,4 +63,6 @@ if __name__ == "__main__":
     worker = AnalyticUnitWorker()
     logger.info("Ok")
     server_service, data_service = init_services()
+    print('Analytics process is running') # we need to print to stdout and flush
+    sys.stdout.flush()                    # because node.js expects it
     loop.run_until_complete(server_service.handle_loop())

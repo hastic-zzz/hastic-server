@@ -1,10 +1,11 @@
-import { ANALYTICS_PATH, ZEROMQ_CONNECTION_STRING, ANLYTICS_PING_INTERVAL } from '../config'
+import * as config from '../config';
 
 const zmq = require('zeromq');
 
 import * as childProcess from 'child_process'
 import * as fs from 'fs';
 import * as path from 'path';
+import { resolve } from 'dns';
 
 
 export class AnalyticsService {
@@ -12,6 +13,10 @@ export class AnalyticsService {
   private _requester: any;
   private _ready: boolean = false;
   private _pingResponded = false;
+  private _zmqConnectionString = null;
+  private _ipcPath = null;
+  private _analyticsPinger: NodeJS.Timer = null;
+  private _isClosed = false;
 
 
   constructor(private _onResponse: (response: any) => void) {
@@ -39,8 +44,13 @@ export class AnalyticsService {
   }
 
   public close() {
-    // TODO: close socket & terminate process if you have any
+    console.log('Terminating analytics service...');
+    clearInterval(this._analyticsPinger);
+    if(this._ipcPath !== null) {
+      fs.unlinkSync(this._ipcPath);
+    }
     this._requester.close();
+    console.log('Ok');
   }
 
   public get ready(): boolean { return this._ready; }
@@ -49,20 +59,25 @@ export class AnalyticsService {
     this._requester = zmq.socket('pair');
     let productionMode = process.env.NODE_ENV !== 'development';
 
-    let connectionString = 'tcp://127.0.0.1:8002'; // debug mode
+    this._zmqConnectionString = 'tcp://127.0.0.1:8002'; // debug mode
     if(productionMode) {
-      connectionString = ZEROMQ_CONNECTION_STRING;
+      this._zmqConnectionString = config.ZEROMQ_CONNECTION_STRING;
+      if(this._zmqConnectionString === null) {
+        var createResult = await AnalyticsService.createIPCAddress();
+        this._zmqConnectionString = createResult.address;
+        this._ipcPath = createResult.file;
+      }
     }
 
-    console.log("Binding to zmq... %s", connectionString);
-    this._requester.connect(connectionString);
+    console.log("Binding to zmq... %s", this._zmqConnectionString);
+    this._requester.connect(this._zmqConnectionString);
     this._requester.on("message", this._onAnalyticsMessage.bind(this));
     console.log('Ok');
 
     if(productionMode) {
       console.log('Creating analytics process...');
       try {
-        var cp = await AnalyticsService._runAnalyticsProcess();
+        var cp = await AnalyticsService._runAnalyticsProcess(this._zmqConnectionString);
       } catch(error) {
         console.error('Can`t run analytics process: %s', error);
         return;
@@ -77,29 +92,29 @@ export class AnalyticsService {
   }
 
   /**
-   * Spawns analytics process. Reads process stderr and fails if it 
-   * is not empty. No need to stop process later.
+   * Spawns analytics process. Reads process stderr and fails if it isn`t empty.
+   * No need to stop the process later.
    *
    * @returns Creaded child process
    * @throws Process start error or first exception during python start
    */
-  private static async _runAnalyticsProcess(): Promise<childProcess.ChildProcess> {
+  private static async _runAnalyticsProcess(zmqConnectionString: string): Promise<childProcess.ChildProcess> {
     let cp: childProcess.ChildProcess;
     let cpOptions = {
-      cwd: ANALYTICS_PATH,
+      cwd: config.ANALYTICS_PATH,
       env: {
         ...process.env,
-        ZEROMQ_CONNECTION_STRING: ZEROMQ_CONNECTION_STRING
+        ZEROMQ_CONNECTION_STRING: zmqConnectionString
       }
     };
 
-    if(fs.existsSync(path.join(ANALYTICS_PATH, 'dist/worker/worker'))) {
+    if(fs.existsSync(path.join(config.ANALYTICS_PATH, 'dist/worker/worker'))) {
       console.log('dist/worker/worker');
       cp = childProcess.spawn('dist/worker/worker', [], cpOptions);
     } else {
       console.log('python3 server.py');
       // If compiled analytics script doesn't exist - fallback to regular python
-      console.log(ANALYTICS_PATH);
+      console.log(config.ANALYTICS_PATH);
       cp = childProcess.spawn('python3', ['server.py'], cpOptions);
     }
 
@@ -141,7 +156,7 @@ export class AnalyticsService {
   private async _onAnalyticsDown() {
     console.log('Analytics is down');
     if(process.env.NODE_ENV !== 'development') {
-      await AnalyticsService._runAnalyticsProcess();
+      await AnalyticsService._runAnalyticsProcess(this._zmqConnectionString);
     }
   }
 
@@ -167,7 +182,10 @@ export class AnalyticsService {
   }
 
   private async _runAlalyticsPinger() {
-    setInterval(() => {
+    this._analyticsPinger = setInterval(() => {
+      if(this._isClosed) {
+        return;
+      }
       if(!this._pingResponded && this._ready) {
         this._ready = false;
         this._onAnalyticsDown();
@@ -175,7 +193,16 @@ export class AnalyticsService {
       this._pingResponded = false;
       // TODO: set life limit for this ping
       this.sendMessage('ping');
-    }, ANLYTICS_PING_INTERVAL);
+    }, config.ANLYTICS_PING_INTERVAL);
+  }
+
+  private static async createIPCAddress(): Promise<{ address: string, file: string }> {
+    let filename = 'i' + process.pid.toString() // "i" is necessary because a strange error with all-digits name
+    let p = path.join(config.ZMQ_IPC_PATH, filename); 
+
+    // TODO: decide if we should make it async (no real need)
+    fs.writeFileSync(p, 'x');
+    return Promise.resolve({ address: 'ipc://' + p, file: p });
   }
 
 }

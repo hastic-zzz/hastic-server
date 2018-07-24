@@ -25,6 +25,7 @@ export function checkDataFolders(): void {
     config.ANALYTIC_UNITS_PATH,
     config.MODELS_PATH,
     config.METRICS_PATH,
-    config.SEGMENTS_PATH
+    config.SEGMENTS_PATH,
+    config.ZMQ_IPC_PATH
   ].forEach(maybeCreate);
 }
