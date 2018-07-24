@@ -14,7 +14,6 @@ import * as Router from 'koa-router';
 import * as bodyParser from 'koa-bodyparser';
 
 
-
 Data.checkDataFolders();
 AnalyticsController.init();
 ProcessService.registerExitHandler(AnalyticsController.terminate);

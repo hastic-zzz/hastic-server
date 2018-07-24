@@ -23,6 +23,7 @@ export const SEGMENTS_PATH = path.join(DATA_PATH, 'segments');
 export const HASTIC_PORT = getConfigField('HASTIC_PORT', '8000');
 export const ZMQ_CONNECTION_STRING = getConfigField('ZMQ_CONNECTION_STRING', null);
 export const ZMQ_IPC_PATH = getConfigField('ZMQ_IPC_PATH', path.join('/tmp', 'hastic'));
+export const ZMQ_DEV_PORT = getConfigField('ZMQ_DEV_PORT', '8002');
 export const ANLYTICS_PING_INTERVAL = 500; // ms
 
 

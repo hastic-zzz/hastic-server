@@ -34,4 +34,5 @@ METRICS_FOLDER = os.path.join(DATA_FOLDER, 'metrics')
 
 HASTIC_API_KEY = get_config_field('HASTIC_API_KEY')
 
-ZEROMQ_CONNECTION_STRING = get_config_field('ZEROMQ_CONNECTION_STRING', 'tcp://*:8002')
+ZMQ_DEV_PORT = get_config_field('ZMQ_DEV_PORT', '8002')
+ZMQ_CONNECTION_STRING = get_config_field('ZMQ_CONNECTION_STRING', 'tcp://*:%s' % ZMQ_DEV_PORT)

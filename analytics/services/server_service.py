@@ -14,10 +14,10 @@ class ServerService:
     def __init__(self, on_message_handler):
         self.on_message_handler = on_message_handler
 
-        logger.info("Binding to %s ..." % config.ZEROMQ_CONNECTION_STRING)
+        logger.info("Binding to %s ..." % config.ZMQ_CONNECTION_STRING)
         self.context = zmq.asyncio.Context()
         self.socket = self.context.socket(zmq.PAIR)
-        self.socket.bind(config.ZEROMQ_CONNECTION_STRING)
+        self.socket.bind(config.ZMQ_CONNECTION_STRING)
 
     async def handle_loop(self):
         while True:
