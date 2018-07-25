@@ -100,7 +100,19 @@ docker run -d --name hastic-server -p 80:8000 -e HASTIC_API_KEY=<your_grafana_ap
 ### Changelog
 
 ### [0.2.0-alpha] - Not released yet
-`Please note: hastic-panels of older versions are not supported`
+> NOTE: hastic-panels of older versions are not supported
+
+#### Added
+- Return version of server [#66](https://github.com/hastic/hastic-server/issues/66)
+- Return analytic status [#71](https://github.com/hastic/hastic-server/issues/71)
+
+#### Fixed
+- Case-sensitive anomaly name [#41](https://github.com/hastic/hastic-server/issues/41)
+- ImportError: cannot import name 'isna' [#59](https://github.com/hastic/hastic-server/issues/59)
+- Handle analytics connection failure on server [#74](https://github.com/hastic/hastic-server/issues/74)
+- Analytics wont start in production mode [#77](https://github.com/hastic/hastic-server/issues/77)
+- Basic creation of analytic unit fails [#79](https://github.com/hastic/hastic-server/issues/79)
+- Missing communication between analytics and server in production [#91](https://github.com/hastic/hastic-server/issues/91) - thx [@petrk94](https://github.com/petrk94) for [bugreport](https://github.com/hastic/hastic-server/issues/90)
 
 ### [0.1.4-alpha] - 2018-06-29
 #### Changed

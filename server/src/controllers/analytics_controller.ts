@@ -7,7 +7,7 @@ import { AnalyticsService } from '../services/analytics_service'
 const taskMap = {};
 let nextTaskId = 0;
 
-const analyticsService = new AnalyticsService(onResponse);
+let analyticsService = undefined;
 
 function onResponse(response: any) {
   let taskId = response._taskId;
@@ -19,6 +19,14 @@ function onResponse(response: any) {
       delete taskMap[taskId];
     }
   }
+}
+
+export function init() {
+  analyticsService = new AnalyticsService(onResponse);
+}
+
+export function terminate() {
+  analyticsService.close();
 }
 
 async function runTask(task): Promise<any> {

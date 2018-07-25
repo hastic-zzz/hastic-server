@@ -104,7 +104,7 @@ def find_jump_center(cen_ind):
     for i in range(len(cen_ind)):
         x = cen_ind[i]
         cx = scipy.signal.fftconvolve(pat_sigm, flat_data[x - WINDOW_SIZE : x + WINDOW_SIZE])
-        c.append(cx[2*WINDOW_SIZE])
+        c.append(cx[2 * WINDOW_SIZE])
         if i > 0 and cx > c[i - 1]:
             jump_center = x
     return jump_center
