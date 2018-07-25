@@ -93,7 +93,7 @@ def findOneJump(data, x, size, height, err):
 
 def findAllJumps(data, size, height):
     possible_jump_list = []
-    for i in range(len(data - size):
+    for i in range(len(data - size)):
         x = findOneJump(data, i, size, height, 0.9)
         if x > 0:
             possible_jump_list.append(x)
