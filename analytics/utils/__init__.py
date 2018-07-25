@@ -76,7 +76,7 @@ def intersection_segment(data, median):
     return [x for (idx, x) in enumerate(cen_ind) if idx not in del_ind]
 
 def logistic_sigmoid_distribution(self, x1, x2, alpha, height):
-    return map(lambda: x => logistic_sigmoid(x, alpha, height), range(x1, x2))
+    return map(lambda x: logistic_sigmoid(x, alpha, height), range(x1, x2))
 
 def logistic_sigmoid(x, alpha, height):
     return height / (1 + math.exp(-x * alpha))
@@ -93,7 +93,7 @@ def find_one_jump(data, x, size, height, err):
 
 def find_all_jumps(data, size, height):
     possible_jump_list = []
-    for i in range(len(data - size):
+    for i in range(len(data - size)):
         x = find_one_jump(data, i, size, height, 0.9)
         if x > 0:
             possible_jump_list.append(x)
