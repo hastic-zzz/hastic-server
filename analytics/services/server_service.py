@@ -29,13 +29,16 @@ class ServerService:
             else:
                 asyncio.ensure_future(self.__handle_message(text))
 
-    async def send_message(self, string):
+    async def send_message(self, text: str):
         await self.socket.send_string(string)
+    
+    async def send_request(self, method: str, payload: object) -> object:
+        pass
 
     async def __handle_ping(self):
         await self.socket.send(b'pong')
 
-    async def __handle_message(self, text):
+    async def __handle_message(self, text: str):
         try:
             asyncio.ensure_future(self.on_message_handler(text))
         except Exception as e:

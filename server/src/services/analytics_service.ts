@@ -17,7 +17,6 @@ export class AnalyticsService {
   private _analyticsPinger: NodeJS.Timer = null;
   private _isClosed = false;
 
-
   constructor(private _onResponse: (response: any) => void) {
     this._init();
   }
