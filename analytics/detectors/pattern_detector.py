@@ -16,7 +16,7 @@ logger = logging.getLogger('analytic_toolset')
 
 
 
-def resolve_model_by_pattern(pattern):
+def resolve_model_by_pattern(pattern: str) -> models.Model:
     if pattern == 'peak':
         return models.PeaksModel()
     if pattern == 'drop':
