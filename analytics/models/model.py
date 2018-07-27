@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from pandas import DataFrame
 import pickle
 
 class Model(ABC):
@@ -13,17 +14,17 @@ class Model(ABC):
         self.segments = []
 
     @abstractmethod
-    async def fit(self, dataframe, segments):
+    async def fit(self, dataframe: DataFrame, segments: list):
         pass
 
     @abstractmethod
-    async def predict(self, dataframe):
+    async def predict(self, dataframe: DataFrame) -> list:
         pass
 
-    def save(self, model_filename):
+    def save(self, model_filename: str):
         with open(model_filename, 'wb') as file:
             pickle.dump(self.state, file)
 
-    def load(self, model_filename):
+    def load(self, model_filename: str):
         with open(model_filename, 'rb') as f:
             self.state = pickle.load(f)
