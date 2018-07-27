@@ -10,19 +10,20 @@ class Model(ABC):
         in order to be saved in model file
         """
         self.state = {}
+        self.segments = []
 
     @abstractmethod
-    def fit(self, dataframe, segments):
+    async def fit(self, dataframe, segments):
         pass
 
     @abstractmethod
-    def predict(self, dataframe):
+    async def predict(self, dataframe):
         pass
 
-    def save(model_filename):
+    def save(self, model_filename):
         with open(model_filename, 'wb') as file:
             pickle.dump(self.state, file)
 
-    def load(model_filename):
+    def load(self, model_filename):
         with open(model_filename, 'rb') as f:
             self.state = pickle.load(f)
