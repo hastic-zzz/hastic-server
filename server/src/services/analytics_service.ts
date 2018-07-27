@@ -7,6 +7,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 
+export type AnalyticsMessage = {
+  method: string,
+  payload?: string
+}
+
 export class AnalyticsService {
 
   private _requester: any;
@@ -25,13 +30,20 @@ export class AnalyticsService {
     if(!this._ready) {
       return Promise.reject("Analytics is not ready");
     }
-    let message = JSON.stringify(msgObj);
+    let message = {
+      method: 'task',
+      payload: JSON.stringify(msgObj)
+    }
     return this.sendMessage(message);
   }
 
-  public async sendMessage(message: string): Promise<void> {
+  public async sendMessage(message: AnalyticsMessage): Promise<void> {
+    let strMessage = JSON.stringify(message);
+    if(message.method === 'ping') {
+      strMessage = 'ping';
+    }
     return new Promise<void>((resolve, reject) => {
-      this._requester.send(message, undefined, (err) => {
+      this._requester.send(strMessage, undefined, (err) => {
         if(err) {
           reject(err);
         } else {
@@ -191,7 +203,7 @@ export class AnalyticsService {
       }
       this._pingResponded = false;
       // TODO: set life limit for this ping
-      this.sendMessage('ping');
+      this.sendMessage({ method: 'ping' });
     }, config.ANLYTICS_PING_INTERVAL);
   }
 

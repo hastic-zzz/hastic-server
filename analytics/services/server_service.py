@@ -2,11 +2,19 @@ import config
 
 import zmq
 import zmq.asyncio
-import logging
 
+import logging
+import json
 import asyncio
 
 logger = logging.getLogger('SERVER_SERVICE')
+
+
+class ServerMessage:
+    def __init__(self, method: str, payload: object = None):
+        self.method = method
+        if payload is not None:
+            self.payload = payload
 
 
 class ServerService:
@@ -29,17 +37,22 @@ class ServerService:
             else:
                 asyncio.ensure_future(self.__handle_message(text))
 
-    async def send_message(self, text: str):
+    async def send_message(self, message: ServerMessage):
         await self.socket.send_string(string)
     
-    async def send_request(self, method: str, payload: object) -> object:
-        pass
+    async def send_request(self, message: ServerMessage) -> object:
+        return '{ "result": "ok" }'
 
     async def __handle_ping(self):
         await self.socket.send(b'pong')
 
     async def __handle_message(self, text: str):
         try:
-            asyncio.ensure_future(self.on_message_handler(text))
+            messageObject = json.loads(text)
+            payload = None
+            if 'payload' is in messageObject:
+                payload = messageObject.payload
+            message = ServerMessage(messageObject.method, payload)
+            asyncio.ensure_future(self.on_message_handler(message))
         except Exception as e:
-            logger.error("Exception: '%s'" % str(e))
+            logger.error("__handle_message Exception: '%s'" % str(e))

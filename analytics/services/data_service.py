@@ -1,5 +1,6 @@
-from services.server_service import ServerService
+from services.server_service import ServerMessage, ServerService
 
+import json
 import asyncio
 
 
@@ -10,13 +11,13 @@ class FileDescriptor:
         self.filename = filename
         self.data_service = data_service
 
-    async def write(self, text: str):
+    async def write(self, obj: object):
         # TODO raise exception if not in lock
-        await self.data_service.save_file(self, text)
+        await self.data_service.save_file_obj(self, text)
 
-    async def load(self) -> str:
+    async def load(self) -> object:
         # TODO raise exception if not in lock
-        return await self.data_service.load_file(self)
+        return await self.data_service.load_file_obj(self)
 
     async def __aenter__(self):
         await self.data_service.wait_and_lock(self)
@@ -50,20 +51,26 @@ class DataService:
         filename = file_descriptor.filename
         self.locks.remove(filename)
 
-    async def save_file(self, file_descriptor: FileDescriptor, text: str):
+    async def save_file_obj(self, file_descriptor: FileDescriptor, obj: object):
+        """ Saves json - serializable obj with file_descriptor.name """
         self.__check_lock(file_descriptor)
-        await self.server_service.send_request({
-            method: 'saveFile',
-            paylod: { text: text }
-        })
+        message_payload = {
+            'name': file_descriptor.filename,
+            'data': json.dumps(obj)
+        }
+        message = ServerMessage('saveFile', message_payload)
+        await self.server_service.send_request(message)
 
-    async def load_file(self, file_descriptor: FileDescriptor) -> str:
+    async def load_file_obj(self, file_descriptor: FileDescriptor) -> str:
         self.__check_lock(file_descriptor)
-        return 'txt'
+        message_payload = { 'name': file_descriptor.filename }
+        message = ServerMessage('getFile', message_payload)
+        data = await self.server_service.send_request(message)
+        return json.loads(data)
 
     def __check_lock(self, file_descriptor: FileDescriptor):
         filename = file_descriptor.filename
         if filename not in self.locks:
-            raise RuntimeError('Can save to file %s without lock' % filename)
+            raise RuntimeError('No lock for file %s' % filename)
 
 
