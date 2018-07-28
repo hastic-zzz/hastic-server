@@ -11,10 +11,12 @@ logger = logging.getLogger('SERVER_SERVICE')
 
 
 class ServerMessage:
-    def __init__(self, method: str, payload: object = None):
+    def __init__(self, method: str, payload: object = None, request_id: int = None):
         self.method = method
         if payload is not None:
             self.payload = payload
+        if request_id is not None:
+            self.request_id = request_id
 
 
 class ServerService:
@@ -26,6 +28,8 @@ class ServerService:
         self.context = zmq.asyncio.Context()
         self.socket = self.context.socket(zmq.PAIR)
         self.socket.bind(config.ZMQ_CONNECTION_STRING)
+        self.request_next_id = 1
+        self = dict()
 
     async def handle_loop(self):
         while True:
@@ -41,6 +45,11 @@ class ServerService:
         await self.socket.send_string(string)
     
     async def send_request(self, message: ServerMessage) -> object:
+        if message.request_id is not None:
+            raise ValueError('Message can`t have request_id before it is scheduled')
+        message.request_id = self.request_next_id
+        self.request_next_id = self.request_next_id + 1
+        asyncio.ensure_future(self.send_message(message))
         return '{ "result": "ok" }'
 
     async def __handle_ping(self):
