@@ -1,3 +1,4 @@
+import * as DataService from '../services/data_service'
 import { getTarget } from './metrics_controler';
 import { getLabeledSegments, insertSegments, removeSegments } from './segments_controller'
 import * as AnalyticUnit from '../models/analytic_unit'
@@ -23,13 +24,13 @@ function onTaskResult(taskResult: any) {
 }
 
 async function onFileSave(payload: any): Promise<any> {
-  // TODO: implement saving
-  return 'ok';
+  let payloadObj = JSON.parse(payload);
+  return DataService.saveFile(payloadObj.filename, payloadObj.content);
 }
 
 async function onFileLoad(payload: any): Promise<any> {
-  // TODO: implement loading
-  return 'SOME_TEXT_STRING';
+  let payloadObj = JSON.parse(payload);
+  return DataService.loadFile(payloadObj.filename);
 }
 
 async function onMessage(message: AnalyticsMessage) {

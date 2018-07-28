@@ -21,6 +21,15 @@ function maybeCreate(path: string): void {
   console.log('exists: ' + fs.existsSync(path));
 }
 
+export async function saveFile(filename: string, conent: string): Promise<void> {
+  // TODO: implement me
+}
+
+export async function loadFile(filename: string): Promise<string> {
+  // TODO: implement me
+  return "I am file content of " + filename;
+}
+
 export function checkDataFolders(): void {
   [
     config.DATA_PATH,
