@@ -36,7 +36,7 @@ rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMetho
 rootRouter.use('/alerts', alertsRouter.routes(), alertsRouter.allowedMethods());
 rootRouter.get('/', async (ctx) => {
   ctx.response.body = { 
-    server: 'Ok', 
+    server: 'Ok',
     analyticsReady: AnalyticsController.isAnalyticReady(),
     version: process.env.npm_package_version
   };

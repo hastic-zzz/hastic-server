@@ -11,13 +11,11 @@ class FileDescriptor:
         self.filename = filename
         self.data_service = data_service
 
-    async def write(self, obj: object):
-        # TODO raise exception if not in lock
-        await self.data_service.save_file_obj(self, text)
+    async def write(self, content: str):
+        await self.data_service.save_file_content(self, content)
 
-    async def load(self) -> object:
-        # TODO raise exception if not in lock
-        return await self.data_service.load_file_obj(self)
+    async def load(self) -> str:
+        return await self.data_service.load_file_content(self)
 
     async def __aenter__(self):
         await self.data_service.wait_and_lock(self)
@@ -51,22 +49,21 @@ class DataService:
         filename = file_descriptor.filename
         self.locks.remove(filename)
 
-    async def save_file_obj(self, file_descriptor: FileDescriptor, obj: object):
+    async def save_file_content(self, file_descriptor: FileDescriptor, content: str):
         """ Saves json - serializable obj with file_descriptor.name """
         self.__check_lock(file_descriptor)
         message_payload = {
             'name': file_descriptor.filename,
             'data': json.dumps(obj)
         }
-        message = ServerMessage('saveFile', message_payload)
+        message = ServerMessage('FILE_SAVE', message_payload)
         await self.server_service.send_request(message)
 
-    async def load_file_obj(self, file_descriptor: FileDescriptor) -> str:
+    async def load_file_content(self, file_descriptor: FileDescriptor) -> str:
         self.__check_lock(file_descriptor)
         message_payload = { 'name': file_descriptor.filename }
-        message = ServerMessage('getFile', message_payload)
-        data = await self.server_service.send_request(message)
-        return json.loads(data)
+        message = ServerMessage('FILE_GET', message_payload)
+        return await self.server_service.send_request(message)
 
     def __check_lock(self, file_descriptor: FileDescriptor):
         filename = file_descriptor.filename

@@ -40,7 +40,7 @@ async def handle_task(payload: str):
             'status': "in progress"
         })
 
-        message = services.server_service.ServerMessage('task_result', response_task_payload)
+        message = services.server_service.ServerMessage('TASK_RESULT', response_task_payload)
 
         await server_service.send_message(message)
 
@@ -89,5 +89,3 @@ if __name__ == "__main__":
     sys.stdout.flush()                    # because node.js expects it
 
     loop.run_until_complete(app_loop())
-
-    print('loooping')

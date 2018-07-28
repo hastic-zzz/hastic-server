@@ -9,7 +9,8 @@ import * as path from 'path';
 
 export type AnalyticsMessage = {
   method: string,
-  payload?: string
+  payload?: string,
+  requestId?: number
 }
 
 export class AnalyticsService {
@@ -22,7 +23,7 @@ export class AnalyticsService {
   private _analyticsPinger: NodeJS.Timer = null;
   private _isClosed = false;
 
-  constructor(private _onResponse: (response: any) => void) {
+  constructor(private _onMessage: (message: AnalyticsMessage) => void) {
     this._init();
   }
 
@@ -39,8 +40,8 @@ export class AnalyticsService {
 
   public async sendMessage(message: AnalyticsMessage): Promise<void> {
     let strMessage = JSON.stringify(message);
-    if(message.method === 'ping') {
-      strMessage = 'ping';
+    if(message.method === 'PING') {
+      strMessage = 'PING';
     }
     return new Promise<void>((resolve, reject) => {
       this._requester.send(strMessage, undefined, (err) => {
@@ -172,7 +173,7 @@ export class AnalyticsService {
   }
 
   private _onAnalyticsMessage(text: any, error) {
-    if(text.toString() === 'pong') {
+    if(text.toString() === 'PONG') {
       this._pingResponded = true;
       if(!this._ready) {
         this._ready = true;
@@ -189,7 +190,7 @@ export class AnalyticsService {
       console.error(text);
       throw new Error('Unexpected response');
     }
-    this._onResponse(response);
+    this._onMessage(response);
   }
 
   private async _runAlalyticsPinger() {
@@ -203,7 +204,7 @@ export class AnalyticsService {
       }
       this._pingResponded = false;
       // TODO: set life limit for this ping
-      this.sendMessage({ method: 'ping' });
+      this.sendMessage({ method: 'PING' });
     }, config.ANLYTICS_PING_INTERVAL);
   }
 
