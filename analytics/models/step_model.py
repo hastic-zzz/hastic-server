@@ -1,3 +1,5 @@
+from models import Model
+
 import scipy.signal
 from scipy.fftpack import fft
 from scipy.signal import argrelextrema
@@ -7,14 +9,18 @@ import numpy as np
 import pickle
 
 
-class StepDetector:
+class StepModel(Model):
 
     def __init__(self):
+        super()
         self.segments = []
-        self.confidence = 1.5
-        self.convolve_max = 570000
+        self.state = {
+            'confidence': 1.5,
+            'convolve_max': 570000
+        }
 
     async def fit(self, dataframe, segments):
+        self.segments = segments
         data = dataframe['value']
         confidences = []
         convolve_list = []
@@ -32,14 +38,14 @@ class StepDetector:
                 convolve_list.append(max(convolve))
 
         if len(confidences) > 0:
-            self.confidence = min(confidences)
+            self.state['confidence'] = min(confidences)
         else:
-            self.confidence = 1.5
+            self.state['confidence'] = 1.5
 
         if len(convolve_list) > 0:
-            self.convolve_max = max(convolve_list)
+            self.state['convolve_max'] = max(convolve_list)
         else:
-            self.convolve_max = 570000
+            self.state['convolve_max'] = 570000
 
     async def predict(self, dataframe):
         data = dataframe['value']
@@ -57,7 +63,7 @@ class StepDetector:
         all_mins = argrelextrema(np.array(all_max_flatten_data), np.less)[0]
         extrema_list = []
 
-        for i in utils.exponential_smoothing(data - self.confidence, 0.03):
+        for i in utils.exponential_smoothing(data - self.state['confidence'], 0.03):
             extrema_list.append(i)
 
         segments = []
@@ -83,20 +89,9 @@ class StepDetector:
         for segment in segments:
             convol_data = all_max_flatten_data[segment - 120 : segment + 120]
             conv = scipy.signal.fftconvolve(pattern_data, convol_data)
-            if max(conv) > self.convolve_max * 1.1 or max(conv) < self.convolve_max * 0.9:
+            if max(conv) > self.state['convolve_max'] * 1.1 or max(conv) < self.state['convolve_max'] * 0.9:
                 delete_list.append(segment)
         for item in delete_list:
             segments.remove(item)
 
         return segments
-
-    def save(self, model_filename):
-        with open(model_filename, 'wb') as file:
-            pickle.dump((self.confidence, self.convolve_max), file)
-
-    def load(self, model_filename):
-        try:
-            with open(model_filename, 'rb') as file:
-                (self.confidence, self.convolve_max) = pickle.load(file)
-        except:
-            pass

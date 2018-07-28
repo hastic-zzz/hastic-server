@@ -1,11 +1,14 @@
+from models import Model
+
 import utils
 from scipy import signal
 import numpy as np
 
 
-class PeaksDetector:
+class PeaksModel(Model):
+
     def __init__(self):
-        pass
+        super()
 
     async def fit(self, dataset, contamination=0.005):
         pass
@@ -53,13 +56,3 @@ class PeaksDetector:
 
         result = utils.find_steps(data, 0.1)
         return [(dataframe.index[x], dataframe.index[x + window_size]) for x in result]
-
-    def save(self, model_filename):
-        pass
-        # with open(model_filename, 'wb') as file:
-        #     pickle.dump((self.clf, self.scaler), file)
-
-    def load(self, model_filename):
-        pass
-        # with open(model_filename, 'rb') as file:
-        #     self.clf, self.scaler = pickle.load(file)

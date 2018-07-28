@@ -1,22 +1,26 @@
+from models import Model
+
 import utils
 import numpy as np
-import pickle
 import scipy.signal
 from scipy.fftpack import fft
 from scipy.signal import argrelextrema
 import math
 
+
 WINDOW_SIZE = 120
 
-class JumpDetector:
+class JumpModel(Model):
 
     def __init__(self):
-        self.segments = []
-        self.confidence = 1.5
-        self.convolve_max = WINDOW_SIZE
-        self.size = 50
+        super()
+        self.state = {
+            'confidence': 1.5,
+            'convolve_max': WINDOW_SIZE
+        }
     
     async def fit(self, dataframe, segments):
+        self.segments = segments
         #self.alpha_finder()
         data = dataframe['value']
         confidences = []
@@ -59,14 +63,14 @@ class JumpDetector:
 
 
         if len(confidences) > 0:
-            self.confidence = min(confidences)
+            self.state['confidence'] = min(confidences)
         else:
-            self.confidence = 1.5
+            self.state['confidence'] = 1.5
 
         if len(convolve_list) > 0:
-            self.convolve_max = max(convolve_list)
+            self.state['convolve_max'] = max(convolve_list)
         else:
-            self.convolve_max = WINDOW_SIZE # макс метрика свертки равна отступу(WINDOW_SIZE), вау!
+            self.state['convolve_max'] = WINDOW_SIZE # макс метрика свертки равна отступу(WINDOW_SIZE), вау!
     
     async def predict(self, dataframe):
         data = dataframe['value']
@@ -82,10 +86,10 @@ class JumpDetector:
         window_size = 24
         all_max_flatten_data = data.rolling(window=window_size).mean()
         all_mins = argrelextrema(np.array(all_max_flatten_data), np.less)[0]        
-        possible_jumps = utils.find_all_jumps(all_max_flatten_data, 50, self.confidence)
+        possible_jumps = utils.find_all_jumps(all_max_flatten_data, 50, self.state['confidence'])
 
         '''
-        for i in utils.exponential_smoothing(data + self.confidence, 0.02):
+        for i in utils.exponential_smoothing(data + self.state['confidence'], 0.02):
             extrema_list.append(i)
 
         segments = []
@@ -117,23 +121,12 @@ class JumpDetector:
         for segment in segments:
             convol_data = all_max_flatten_data[segment - WINDOW_SIZE : segment + WINDOW_SIZE]
             conv = scipy.signal.fftconvolve(pattern_data, convol_data)
-            if max(conv) > self.convolve_max * 1.1 or max(conv) < self.convolve_max * 0.9:
+            if max(conv) > self.state['convolve_max'] * 1.1 or max(conv) < self.state['convolve_max'] * 0.9:
                 delete_list.append(segment)
         for item in delete_list:
             segments.remove(item)
 
         return segments
-
-    def save(self, model_filename):
-        with open(model_filename, 'wb') as file:
-            pickle.dump((self.confidence, self.convolve_max), file)
-
-    def load(self, model_filename):
-        try:
-            with open(model_filename, 'rb') as file:
-                (self.confidence, self.convolve_max) = pickle.load(file)
-        except:
-            pass
 
     def alpha_finder(self, data):
         """
