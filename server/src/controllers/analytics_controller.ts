@@ -34,17 +34,24 @@ async function onFileLoad(payload: any): Promise<any> {
 
 async function onMessage(message: AnalyticsMessage) {
   let responsePayload = null;
+  let resolvedMethod = false;
 
   if(message.method === 'TASK_RESULT') {
     onTaskResult(JSON.parse(message.payload));
+    resolvedMethod = true;
   }
 
   if(message.method === 'FILE_SAVE') {
     responsePayload = await onFileSave(message.payload);
+    resolvedMethod = true;
   }
   if(message.method === 'FILE_LOAD') {
-    responsePayload = await onFileLoad(message.payload);
-    
+    responsePayload = await onFileLoad(message.payload); 
+    resolvedMethod = true;
+  }
+
+  if(!resolvedMethod) {
+    throw new TypeError('Unknown method ' + message.method);
   }
 
   // TODO: catch exception and send error in this case
