@@ -29,7 +29,7 @@ class ServerService:
         self.socket = self.context.socket(zmq.PAIR)
         self.socket.bind(config.ZMQ_CONNECTION_STRING)
         self.request_next_id = 1
-        self = dict()
+        self.responses = dist()
 
     async def handle_loop(self):
         while True:
@@ -48,20 +48,28 @@ class ServerService:
         if message.request_id is not None:
             raise ValueError('Message can`t have request_id before it is scheduled')
         message.request_id = self.request_next_id
-        self.request_next_id = self.request_next_id + 1
+        request_id = self.request_next_id = self.request_next_id + 1
         asyncio.ensure_future(self.send_message(message))
-        return '{ "result": "ok" }'
+        while request_id not in self.responses:
+            await asyncio.sleep(1)
+        response = self.responses[request_id]
+        response = json.loads(response)
+        del self.responses[request_id]
+        return response
 
     async def __handle_ping(self):
         await self.socket.send(b'pong')
 
     async def __handle_message(self, text: str):
         try:
-            messageObject = json.loads(text)
+            message_object = json.loads(text)
             payload = None
-            if 'payload' is in messageObject:
-                payload = messageObject.payload
-            message = ServerMessage(messageObject.method, payload)
+            if 'payload' is in message_object:
+                payload = message_object.payload
+            message = ServerMessage(message_object.method, payload)
+            if message_object.request_id is not None:
+                self.responses[message_object.request_id] = payload
+                return
             asyncio.ensure_future(self.on_message_handler(message))
         except Exception as e:
             logger.error("__handle_message Exception: '%s'" % str(e))
