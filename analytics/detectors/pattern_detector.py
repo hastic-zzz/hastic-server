@@ -1,4 +1,4 @@
-import detectors
+import models
 import utils
 
 from grafana_data_provider import GrafanaDataProvider
@@ -16,13 +16,13 @@ logger = logging.getLogger('analytic_toolset')
 
 
 
-def resolve_detector_by_pattern(pattern):
+def resolve_model_by_pattern(pattern: str) -> models.Model:
     if pattern == 'peak':
-        return detectors.PeaksDetector()
+        return models.PeaksModel()
     if pattern == 'drop':
-        return detectors.StepDetector()
+        return models.StepModel()
     if pattern == 'jump':
-        return detectors.JumpDetector()
+        return models.JumpModel()
     raise ValueError('Unknown pattern "%s"' % pattern)
 
 
@@ -53,7 +53,7 @@ class PatternDetector:
         self.__load_model(pattern_type)
 
     async def learn(self, segments):
-        self.model = resolve_detector_by_pattern(self.pattern_type)
+        self.model = resolve_model_by_pattern(self.pattern_type)
         window_size = 200
 
         dataframe = self.data_prov.get_dataframe()
@@ -109,5 +109,5 @@ class PatternDetector:
         logger.info("Load model '%s'" % self.analytic_unit_id)
         model_filename = os.path.join(config.MODELS_FOLDER, self.pattern_type + ".m")
         if os.path.exists(model_filename):
-            self.model = resolve_detector_by_pattern(pattern)
+            self.model = resolve_model_by_pattern(pattern)
             self.model.load(model_filename)

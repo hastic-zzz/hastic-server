@@ -94,7 +94,13 @@ docker build -t hastic-server .
 
 #### Run
 ```bash
-docker run -d --name hastic-server -p 80:8000 -e HASTIC_API_KEY=<your_grafana_api_key> hastic-server
+docker run -d \
+  --name hastic-server \
+  --ipc host \
+  -p 80:8000 \
+  -e HASTIC_API_KEY=<your_grafana_api_key> \
+  -v /tmp:/tmp \
+  hastic-server
 ```
 
 ### Changelog
