@@ -81,6 +81,13 @@ def logistic_sigmoid_distribution(self, x1, x2, alpha, height):
 def logistic_sigmoid(x, alpha, height):
     return height / (1 + math.exp(-x * alpha))
 
+def MyLogisticSigmoid(interval, alpha, heigh):
+    distribution = []
+    for i in range(-interval, interval):
+        F = height / (1 + math.exp(-i * alpha))
+        distribution.append(F)
+    return distribution
+
 def find_one_jump(data, x, size, height, err):
     l = []
     for i in range(x + 1, x + size):
