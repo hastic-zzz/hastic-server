@@ -18,7 +18,9 @@
     "url": "https://github.com/hastic/hastic-server/issues"
   },
   "homepage": "https://github.com/hastic/hastic-server#readme",
-  "dependencies": {},
+  "dependencies": {
+    "@types/es6-promisify": "^6.0.0"
+  },
   "devDependencies": {
     "@types/koa": "^2.0.45",
     "@types/koa-bodyparser": "^4.2.0",

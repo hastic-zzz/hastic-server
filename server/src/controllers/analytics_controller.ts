@@ -24,13 +24,11 @@ function onTaskResult(taskResult: any) {
 }
 
 async function onFileSave(payload: any): Promise<any> {
-  let payloadObj = JSON.parse(payload);
-  return DataService.saveFile(payloadObj.filename, payloadObj.content);
+  return DataService.saveFile(payload.filename, payload.content);
 }
 
 async function onFileLoad(payload: any): Promise<any> {
-  let payloadObj = JSON.parse(payload);
-  return DataService.loadFile(payloadObj.filename);
+  return DataService.loadFile(payload.filename);
 }
 
 async function onMessage(message: AnalyticsMessage) {

@@ -69,14 +69,9 @@ def init_services():
 
     return server_service, data_service
 
-async def test_file_save():
-    async with data_service.open('filename') as f:
-        content = await f.load()
-        print(content)
-    print('test file ok')
-
 async def app_loop():
-    await asyncio.gather(server_service.handle_loop(), test_file_save())
+    server_service.handle_loop()
+    # await asyncio.gather(server_service.handle_loop(), test_file_save())
 
 
 if __name__ == "__main__":

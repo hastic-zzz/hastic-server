@@ -7,10 +7,21 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 
-export type AnalyticsMessage = {
-  method: string,
-  payload?: string,
-  requestId?: number
+export class AnalyticsMessage {
+  public constructor(public method: string, public payload?: string, public requestId?: number) {
+
+  }
+
+  static fromJSON(obj: any): AnalyticsMessage {
+    if(obj.method === undefined) {
+      throw new Error('No method in obJ:' + obj);
+    }
+    return new AnalyticsMessage(obj.method, obj.payload, obj.requestId);
+  }
+}
+
+function analyticsMessageFromJson(obj: any): AnalyticsMessage {
+  return new AnalyticsMessage(obj);
 }
 
 export class AnalyticsService {
@@ -172,8 +183,8 @@ export class AnalyticsService {
     }
   }
 
-  private _onAnalyticsMessage(text: any, error) {
-    if(text.toString() === 'PONG') {
+  private _onAnalyticsMessage(data: any, error) {
+    if(data.toString() === 'PONG') {
       this._pingResponded = true;
       if(!this._ready) {
         this._ready = true;
@@ -181,7 +192,9 @@ export class AnalyticsService {
       }
       return;
     }
-    console.log(`analytics message: "${text}"`);
+
+    
+    let text = data.toString();
     let response;
     try {
       response = JSON.parse(text);
@@ -190,7 +203,7 @@ export class AnalyticsService {
       console.error(text);
       throw new Error('Unexpected response');
     }
-    this._onMessage(response);
+    this._onMessage(AnalyticsMessage.fromJSON(response));
   }
 
   private async _runAlalyticsPinger() {
