@@ -23,6 +23,8 @@ def resolve_model_by_pattern(pattern: str) -> models.Model:
         return models.StepModel()
     if pattern == 'jump':
         return models.JumpModel()
+    if pattern == 'custom':
+        return models.CustomModel()
     raise ValueError('Unknown pattern "%s"' % pattern)
 
 
