@@ -14,7 +14,7 @@ export class AnalyticsMessage {
 
   static fromJSON(obj: any): AnalyticsMessage {
     if(obj.method === undefined) {
-      throw new Error('No method in obJ:' + obj);
+      throw new Error('No method in obj:' + obj);
     }
     return new AnalyticsMessage(obj.method, obj.payload, obj.requestId);
   }

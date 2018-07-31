@@ -3,17 +3,19 @@ from services.server_service import ServerMessage, ServerService
 import json
 import asyncio
 
-# # This is how you can save a file:
+"""
+This is how you can save a file:
 
-# async def test_file_save():
-#     async with data_service.open('shit-filename') as f:
-#         print('write content')
-#         await f.write('test string')
+async def test_file_save():
+    async with data_service.open('filename') as f:
+        print('write content')
+        await f.write('test string')
 
-#     async with data_service.open('shit-filename') as f:
-#         content = await f.load()
-#         print(content)
-#     print('test file ok')
+    async with data_service.open('filename') as f:
+        content = await f.load()
+        print(content)
+    print('test file ok')
+"""
 
 
 LOCK_WAIT_SLEEP_TIMESPAN = 100 # mc
@@ -62,7 +64,7 @@ class DataService:
         self.locks.remove(filename)
 
     async def save_file_content(self, file_descriptor: FileDescriptor, content: str):
-        """ Saves json - serializable obj with file_descriptor.name """
+        """ Saves json - serializable obj with file_descriptor.filename """
         self.__check_lock(file_descriptor)
         message_payload = {
             'filename': file_descriptor.filename,

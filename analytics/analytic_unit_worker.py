@@ -34,7 +34,7 @@ class AnalyticUnitWorker(object):
         except Exception as e:
             #traceback.extract_stack()
             error_text = traceback.format_exc()
-            logger.error("do_task Excpetion: Exception: '%s'" % error_text)
+            logger.error("do_task Exception: '%s'" % error_text)
             # TODO: move result to a class which renders to json for messaging to analytics
             result = {
                 'task': type,

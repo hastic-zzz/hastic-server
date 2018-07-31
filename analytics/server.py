@@ -13,7 +13,7 @@ logger = logging.getLogger('SERVER')
 
 worker: AnalyticUnitWorker = None
 server_service: services.ServerService = None
-data_servic: services.DataService = None
+data_service: services.DataService = None
 
 root.setLevel(logging.DEBUG)
 

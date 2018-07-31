@@ -1,8 +1,8 @@
-import * as DataService from '../services/data_service'
+import * as DataService from '../services/data_service';
 import { getTarget } from './metrics_controler';
-import { getLabeledSegments, insertSegments, removeSegments } from './segments_controller'
+import { getLabeledSegments, insertSegments, removeSegments } from './segments_controller';
 import * as AnalyticUnit from '../models/analytic_unit'
-import { AnalyticsService, AnalyticsMessage } from '../services/analytics_service'
+import { AnalyticsService, AnalyticsMessage } from '../services/analytics_service';
 
 
 const taskMap = {};
