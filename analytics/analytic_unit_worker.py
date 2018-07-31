@@ -28,7 +28,7 @@ class AnalyticUnitWorker(object):
                 result = await self.do_learn(analytic_unit_id, segments, pattern)
             else:
                 result = {
-                    'status': "failed",
+                    'status': "FAILED",
                     'error': "unknown type " + str(type)
                 }
         except Exception as e:
@@ -50,7 +50,7 @@ class AnalyticUnitWorker(object):
         last_prediction_time = await model.learn(segments)
         # TODO: we should not do predict before labeling in all models, not just in drops
         
-        if pattern == 'drop' and len(segments) == 0:
+        if pattern == 'DROP' and len(segments) == 0:
             # TODO: move result to a class which renders to json for messaging to analytics
             result = {
                 'status': 'SUCCESS',
@@ -61,7 +61,7 @@ class AnalyticUnitWorker(object):
         else:
             result = await self.do_predict(analytic_unit_id, last_prediction_time, pattern)
 
-        result['task'] = 'learn'
+        result['task'] = 'LEARN'
         return result
 
     async def do_predict(self, analytic_unit_id, last_prediction_time, pattern):

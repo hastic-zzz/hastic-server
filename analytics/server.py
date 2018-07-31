@@ -46,7 +46,8 @@ async def handle_task(task: object):
         res = await worker.do_task(task)
         res['_taskId'] = task['_taskId']
         
-        await server_service.send_message(json.dumps(res))
+        message = services.server_service.ServerMessage('TASK_RESULT', res)
+        await server_service.send_message(message)
 
     except Exception as e:
         logger.error("handle_task Exception: '%s'" % str(e))
