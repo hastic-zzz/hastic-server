@@ -14,11 +14,11 @@ class Model(ABC):
         self.segments = []
 
     @abstractmethod
-    async def fit(self, dataframe: DataFrame, segments: list):
+    def fit(self, dataframe: DataFrame, segments: list):
         pass
 
     @abstractmethod
-    async def predict(self, dataframe: DataFrame) -> list:
+    def predict(self, dataframe: DataFrame) -> list:
         pass
 
     def save(self, model_filename: str):

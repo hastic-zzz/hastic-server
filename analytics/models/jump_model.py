@@ -19,7 +19,7 @@ class JumpModel(Model):
             'convolve_max': WINDOW_SIZE
         }
     
-    async def fit(self, dataframe, segments):
+    def fit(self, dataframe, segments):
         self.segments = segments
         #self.alpha_finder()
         data = dataframe['value']
@@ -72,17 +72,17 @@ class JumpModel(Model):
         else:
             self.state['convolve_max'] = WINDOW_SIZE # макс метрика свертки равна отступу(WINDOW_SIZE), вау!
     
-    async def predict(self, dataframe):
+    def predict(self, dataframe):
         data = dataframe['value']
 
-        result = await self.__predict(data)
+        result = self.__predict(data)
         result.sort()
 
         if len(self.segments) > 0:
             result = [segment for segment in result if not utils.is_intersect(segment, self.segments)]
         return result
 
-    async def __predict(self, data):
+    def __predict(self, data):
         window_size = 24
         all_max_flatten_data = data.rolling(window=window_size).mean()
         all_mins = argrelextrema(np.array(all_max_flatten_data), np.less)[0]        

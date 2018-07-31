@@ -62,7 +62,7 @@ class PatternDetector:
 
         segments = self.data_prov.transform_anomalies(segments)
         # TODO: pass only part of dataframe that has segments
-        await self.model.fit(dataframe, segments)
+        self.model.fit(dataframe, segments)
         self.__save_model()
         return 0
 
@@ -77,7 +77,7 @@ class PatternDetector:
         start_index = max(0, start_index - window_size)
         dataframe = self.data_prov.get_data_range(start_index)
 
-        predicted_indexes = await self.model.predict(dataframe)
+        predicted_indexes = self.model.predict(dataframe)
         predicted_indexes = [(x, y) for (x, y) in predicted_indexes if x >= start_index and y >= start_index]
 
         predicted_times = self.data_prov.inverse_transform_indexes(predicted_indexes)
