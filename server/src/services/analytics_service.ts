@@ -38,13 +38,13 @@ export class AnalyticsService {
     this._init();
   }
 
-  public async sendTask(msgObj: any): Promise<void> {
+  public async sendTask(taskObj: any): Promise<void> {
     if(!this._ready) {
       return Promise.reject("Analytics is not ready");
     }
     let message = {
-      method: 'task',
-      payload: JSON.stringify(msgObj)
+      method: 'TASK',
+      payload: taskObj
     }
     return this.sendMessage(message);
   }

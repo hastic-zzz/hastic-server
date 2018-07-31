@@ -18,11 +18,11 @@ class AnalyticUnitWorker(object):
         try:
             type = task['type']
             analytic_unit_id = task['analyticUnitId']
-            if type == "predict":
+            if type == "PREDICT":
                 last_prediction_time = task['lastPredictionTime']
                 pattern = task['pattern']
                 result = await self.do_predict(analytic_unit_id, last_prediction_time, pattern)
-            elif type == "learn":
+            elif type == "LEARN":
                 segments = task['segments']
                 pattern = task['pattern']
                 result = await self.do_learn(analytic_unit_id, segments, pattern)
@@ -38,7 +38,7 @@ class AnalyticUnitWorker(object):
             # TODO: move result to a class which renders to json for messaging to analytics
             result = {
                 'task': type,
-                'status': "failed",
+                'status': "FAILED",
                 'analyticUnitId': analytic_unit_id,
                 'error': str(e)
             }

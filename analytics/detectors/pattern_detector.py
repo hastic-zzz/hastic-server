@@ -17,13 +17,13 @@ logger = logging.getLogger('analytic_toolset')
 
 
 def resolve_model_by_pattern(pattern: str) -> models.Model:
-    if pattern == 'peak':
+    if pattern == 'PEAK':
         return models.PeaksModel()
-    if pattern == 'drop':
+    if pattern == 'DROP':
         return models.StepModel()
-    if pattern == 'jump':
+    if pattern == 'JUMP':
         return models.JumpModel()
-    if pattern == 'custom':
+    if pattern == 'CUSTOM':
         return models.CustomModel()
     raise ValueError('Unknown pattern "%s"' % pattern)
 

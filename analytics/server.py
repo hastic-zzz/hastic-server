@@ -28,24 +28,24 @@ logging_handler.setFormatter(logging_formatter)
 root.addHandler(logging_handler)
 
 
-async def handle_task(payload: str):
+async def handle_task(task: object):
     try:
-        task = json.loads(payload)
+
         logger.info("Command is OK")
 
-        response_task_payload = json.dumps({
+        response_task_payload = {
             '_taskId': task['_taskId'],
             'task': task['type'],
             'analyticUnitId': task['analyticUnitId'],
-            'status': "in progress"
-        })
+            'status': "IN_PROGRESS"
+        }
 
         message = services.server_service.ServerMessage('TASK_RESULT', response_task_payload)
-
         await server_service.send_message(message)
 
         res = await worker.do_task(task)
         res['_taskId'] = task['_taskId']
+        
         await server_service.send_message(json.dumps(res))
 
     except Exception as e:
@@ -53,10 +53,9 @@ async def handle_task(payload: str):
 
 async def handle_message(message: services.ServerMessage):
     payload = None
-    if message.payload is not None:
-        payload = json.loads(message.payload)
-    if message.method == 'task':
-        await handle_task(payload)
+    if message.method == 'TASK':
+        await handle_task(message.payload)
+    
 
 def init_services():
     logger.info("Starting services...")
@@ -70,7 +69,7 @@ def init_services():
     return server_service, data_service
 
 async def app_loop():
-    server_service.handle_loop()
+    await server_service.handle_loop()
     # await asyncio.gather(server_service.handle_loop(), test_file_save())
 
 

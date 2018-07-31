@@ -36,7 +36,7 @@ async function onMessage(message: AnalyticsMessage) {
   let resolvedMethod = false;
 
   if(message.method === 'TASK_RESULT') {
-    onTaskResult(JSON.parse(message.payload));
+    onTaskResult(message.payload);
     resolvedMethod = true;
   }
 
@@ -85,7 +85,7 @@ async function runTask(task): Promise<any> {
 
 export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
   let segments = getLabeledSegments(id);
-  AnalyticUnit.setStatus(id, 'learning');
+  AnalyticUnit.setStatus(id, 'LEARNING');
   let unit = AnalyticUnit.findById(id);
   let pattern = unit.type;
   let task = {
