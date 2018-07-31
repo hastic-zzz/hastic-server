@@ -35,8 +35,8 @@ rootRouter.use('/analyticUnits', anomaliesRouter.routes(), anomaliesRouter.allow
 rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
 rootRouter.use('/alerts', alertsRouter.routes(), alertsRouter.allowedMethods());
 rootRouter.get('/', async (ctx) => {
-  ctx.response.body = { 
-    server: 'Ok', 
+  ctx.response.body = {
+    server: 'OK',
     analyticsReady: AnalyticsController.isAnalyticReady(),
     version: process.env.npm_package_version
   };

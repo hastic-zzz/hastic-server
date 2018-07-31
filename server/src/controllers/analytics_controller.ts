@@ -1,7 +1,8 @@
+import * as DataService from '../services/data_service';
 import { getTarget } from './metrics_controler';
-import { getLabeledSegments, insertSegments, removeSegments } from './segments_controller'
+import { getLabeledSegments, insertSegments, removeSegments } from './segments_controller';
 import * as AnalyticUnit from '../models/analytic_unit'
-import { AnalyticsService } from '../services/analytics_service'
+import { AnalyticsService, AnalyticsMessage } from '../services/analytics_service';
 
 
 const taskMap = {};
@@ -9,20 +10,58 @@ let nextTaskId = 0;
 
 let analyticsService = undefined;
 
-function onResponse(response: any) {
-  let taskId = response._taskId;
-  let status = response.status;
-  if(status === 'success' || status === 'failed') {
+
+function onTaskResult(taskResult: any) {
+  let taskId = taskResult._taskId;
+  let status = taskResult.status;
+  if(status === 'SUCCESS' || status === 'FAILED') {
     if(taskId in taskMap) {
       let resolver = taskMap[taskId];
-      resolver(response);
+      resolver(taskResult);
       delete taskMap[taskId];
     }
   }
 }
 
+async function onFileSave(payload: any): Promise<any> {
+  return DataService.saveFile(payload.filename, payload.content);
+}
+
+async function onFileLoad(payload: any): Promise<any> {
+  return DataService.loadFile(payload.filename);
+}
+
+async function onMessage(message: AnalyticsMessage) {
+  let responsePayload = null;
+  let resolvedMethod = false;
+
+  if(message.method === 'TASK_RESULT') {
+    onTaskResult(JSON.parse(message.payload));
+    resolvedMethod = true;
+  }
+
+  if(message.method === 'FILE_SAVE') {
+    responsePayload = await onFileSave(message.payload);
+    resolvedMethod = true;
+  }
+  if(message.method === 'FILE_LOAD') {
+    responsePayload = await onFileLoad(message.payload); 
+    resolvedMethod = true;
+  }
+
+  if(!resolvedMethod) {
+    throw new TypeError('Unknown method ' + message.method);
+  }
+
+  // TODO: catch exception and send error in this case
+  if(message.requestId !== undefined) {
+    message.payload = responsePayload;
+    analyticsService.sendMessage(message);
+  }
+}
+
 export function init() {
-  analyticsService = new AnalyticsService(onResponse);
+  analyticsService = new AnalyticsService(onMessage);
 }
 
 export function terminate() {
@@ -51,19 +90,19 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
   let pattern = unit.type;
   let task = {
     analyticUnitId: id,
-    type: 'learn',
+    type: 'LEARN',
     pattern,
     segments: segments
   };
 
   let result = await runTask(task);
 
-  if (result.status === 'success') {
-    AnalyticUnit.setStatus(id, 'ready');
+  if (result.status === 'SUCCESS') {
+    AnalyticUnit.setStatus(id, 'READY');
     insertSegments(id, result.segments, false);
     AnalyticUnit.setPredictionTime(id, result.lastPredictionTime);
   } else {
-    AnalyticUnit.setStatus(id, 'failed', result.error);
+    AnalyticUnit.setStatus(id, 'FAILED', result.error);
   }
 }
 
@@ -79,7 +118,7 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
   };
   let result = await runTask(task);
 
-  if(result.status === 'failed') {
+  if(result.status === 'FAILED') {
     return [];
   }
   // Merging segments

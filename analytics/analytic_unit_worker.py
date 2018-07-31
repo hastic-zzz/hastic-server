@@ -34,7 +34,7 @@ class AnalyticUnitWorker(object):
         except Exception as e:
             #traceback.extract_stack()
             error_text = traceback.format_exc()
-            logger.error("Exception: '%s'" % error_text)
+            logger.error("do_task Exception: '%s'" % error_text)
             # TODO: move result to a class which renders to json for messaging to analytics
             result = {
                 'task': type,
@@ -53,7 +53,7 @@ class AnalyticUnitWorker(object):
         if pattern == 'drop' and len(segments) == 0:
             # TODO: move result to a class which renders to json for messaging to analytics
             result = {
-                'status': 'success',
+                'status': 'SUCCESS',
                 'analyticUnitId': analytic_unit_id,
                 'segments': [],
                 'lastPredictionTime': last_prediction_time
@@ -69,8 +69,8 @@ class AnalyticUnitWorker(object):
         model.synchronize_data()
         segments, last_prediction_time = await model.predict(last_prediction_time)
         return {
-            'task': "predict",
-            'status': "success",
+            'task': 'PREDICT',
+            'status': 'SUCCESS',
             'analyticUnitId': analytic_unit_id,
             'segments': segments,
             'lastPredictionTime': last_prediction_time
@@ -78,7 +78,7 @@ class AnalyticUnitWorker(object):
 
     def get_model(self, analytic_unit_id, pattern_type):
         if analytic_unit_id not in self.models_cache:
-            if pattern_type == 'general':
+            if pattern_type == 'GENERAL':
                 model = detectors.GeneralDetector(analytic_unit_id)
             else:
                 model = detectors.PatternDetector(analytic_unit_id, pattern_type)

@@ -7,6 +7,23 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 
+export class AnalyticsMessage {
+  public constructor(public method: string, public payload?: string, public requestId?: number) {
+
+  }
+
+  static fromJSON(obj: any): AnalyticsMessage {
+    if(obj.method === undefined) {
+      throw new Error('No method in obj:' + obj);
+    }
+    return new AnalyticsMessage(obj.method, obj.payload, obj.requestId);
+  }
+}
+
+function analyticsMessageFromJson(obj: any): AnalyticsMessage {
+  return new AnalyticsMessage(obj);
+}
+
 export class AnalyticsService {
 
   private _requester: any;
@@ -17,8 +34,7 @@ export class AnalyticsService {
   private _analyticsPinger: NodeJS.Timer = null;
   private _isClosed = false;
 
-
-  constructor(private _onResponse: (response: any) => void) {
+  constructor(private _onMessage: (message: AnalyticsMessage) => void) {
     this._init();
   }
 
@@ -26,13 +42,20 @@ export class AnalyticsService {
     if(!this._ready) {
       return Promise.reject("Analytics is not ready");
     }
-    let message = JSON.stringify(msgObj);
+    let message = {
+      method: 'task',
+      payload: JSON.stringify(msgObj)
+    }
     return this.sendMessage(message);
   }
 
-  public async sendMessage(message: string): Promise<void> {
+  public async sendMessage(message: AnalyticsMessage): Promise<void> {
+    let strMessage = JSON.stringify(message);
+    if(message.method === 'PING') {
+      strMessage = 'PING';
+    }
     return new Promise<void>((resolve, reject) => {
-      this._requester.send(message, undefined, (err) => {
+      this._requester.send(strMessage, undefined, (err) => {
         if(err) {
           reject(err);
         } else {
@@ -160,8 +183,8 @@ export class AnalyticsService {
     }
   }
 
-  private _onAnalyticsMessage(text: any, error) {
-    if(text.toString() === 'pong') {
+  private _onAnalyticsMessage(data: any, error) {
+    if(data.toString() === 'PONG') {
       this._pingResponded = true;
       if(!this._ready) {
         this._ready = true;
@@ -169,7 +192,9 @@ export class AnalyticsService {
       }
       return;
     }
-    console.log(`analytics message: "${text}"`);
+
+    
+    let text = data.toString();
     let response;
     try {
       response = JSON.parse(text);
@@ -178,7 +203,7 @@ export class AnalyticsService {
       console.error(text);
       throw new Error('Unexpected response');
     }
-    this._onResponse(response);
+    this._onMessage(AnalyticsMessage.fromJSON(response));
   }
 
   private async _runAlalyticsPinger() {
@@ -192,7 +217,7 @@ export class AnalyticsService {
       }
       this._pingResponded = false;
       // TODO: set life limit for this ping
-      this.sendMessage('ping');
+      this.sendMessage({ method: 'PING' });
     }, config.ANLYTICS_PING_INTERVAL);
   }
 
