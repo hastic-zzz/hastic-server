@@ -70,6 +70,7 @@ export class AnalyticsService {
     console.log('Terminating analytics service...');
     clearInterval(this._analyticsPinger);
     if(this._ipcPath !== null) {
+      console.log('Remove ipc path: ' + this._ipcPath);
       fs.unlinkSync(this._ipcPath);
     }
     this._requester.close();

@@ -46,11 +46,7 @@ app
   .use(rootRouter.routes())
   .use(rootRouter.allowedMethods());
 
-let server = app.listen(HASTIC_PORT, () => {
+app.listen(HASTIC_PORT, () => {
   console.log(`Server is running on :${HASTIC_PORT}`);
 });
 
-ProcessService.registerExitHandler(() => {
-  console.log('Stopping server...');
-  server.close();
-})

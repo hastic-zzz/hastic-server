@@ -8,7 +8,7 @@ import { AnalyticsService, AnalyticsMessage } from '../services/analytics_servic
 const taskMap = {};
 let nextTaskId = 0;
 
-let analyticsService = undefined;
+let analyticsService: AnalyticsService = undefined;
 
 
 function onTaskResult(taskResult: any) {

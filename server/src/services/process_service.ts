@@ -1,4 +1,5 @@
 
+
 var exitHandlers = []
 var exitHandled = false;
 
@@ -19,6 +20,8 @@ function exitHandler(options, err) {
   for(let i = 0; i < exitHandlers.length; i++) {
     exitHandlers[i]();
   }
+  console.log('process exit');
+  process.exit();
 }
 
 //do something when app is closing
