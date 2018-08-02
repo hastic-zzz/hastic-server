@@ -16,7 +16,7 @@ export const SEGMENTS_DATABASE_PATH = path.join(DATA_PATH, 'segments.db');
 export const FILES_DATABASE_PATH = path.join(DATA_PATH, 'files.db');
 
 export const DATASETS_PATH = path.join(DATA_PATH, 'datasets');
-export const ANALYTIC_UNITS_PATH = path.join(DATA_PATH, 'analytic_units');
+//export const ANALYTIC_UNITS_PATH = path.join(DATA_PATH, 'analytic_units');
 export const MODELS_PATH = path.join(DATA_PATH, 'models');
 export const METRICS_PATH = path.join(DATA_PATH, 'metrics');
 export const SEGMENTS_PATH = path.join(DATA_PATH, 'segments');
