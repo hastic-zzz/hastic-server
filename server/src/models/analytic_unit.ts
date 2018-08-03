@@ -1,5 +1,4 @@
-import { getJsonDataSync, writeJsonDataSync } from '../services/json_service'
-import { ANALYTIC_UNITS_PATH } from '../config'
+import { loadFile, saveFile } from '../services/data_service';
 
 import * as crypto from 'crypto';
 
@@ -38,7 +37,7 @@ export type AnalyticUnit = {
 export function createItem(item: AnalyticUnit): AnalyticUnitId {
   const hashString = item.name + (new Date()).toString();
   const newId: AnalyticUnitId = crypto.createHash('md5').update(hashString).digest('hex');
-  let filename = path.join(ANALYTIC_UNITS_PATH, `${newId}.json`);
+  let filename = `${newId}.json`;
   if(fs.existsSync(filename)) {
     throw new Error(`Can't create item with id ${newId}`);
   }
@@ -48,26 +47,27 @@ export function createItem(item: AnalyticUnit): AnalyticUnitId {
 }
 
 export function remove(id: AnalyticUnitId) {
-  let filename = path.join(ANALYTIC_UNITS_PATH, `${id}.json`);
+  let filename = `${id}.json`;
   fs.unlinkSync(filename);
 }
 
 export function save(id: AnalyticUnitId, unit: AnalyticUnit) {
-  let filename = path.join(ANALYTIC_UNITS_PATH, `${id}.json`);
-  return writeJsonDataSync(filename, unit);
+  let filename = `${id}.json`;
+  return saveFile(filename, JSON.stringify(unit));
 }
 
 // TODO: make async
-export function findById(id: AnalyticUnitId): AnalyticUnit {
-  let filename = path.join(ANALYTIC_UNITS_PATH, `${id}.json`);
+export async function findById(id: AnalyticUnitId): Promise<AnalyticUnit> {
+  let filename = `${id}.json`;
   if(!fs.existsSync(filename)) {
     throw new Error(`Can't find Analytic Unit with id ${id}`);
   }
-  return getJsonDataSync(filename);
+  let result = await loadFile(filename);
+  return JSON.parse(result);
 }
 
-export function setStatus(predictorId: AnalyticUnitId, status: string, error?: string) {
-  let info = findById(predictorId);
+export async function setStatus(predictorId: AnalyticUnitId, status: string, error?: string) {
+  let info = await findById(predictorId);
   info.status = status;
   if(error !== undefined) {
     info.error = error;
@@ -77,8 +77,8 @@ export function setStatus(predictorId: AnalyticUnitId, status: string, error?: s
   save(predictorId, info);
 }
 
-export function setPredictionTime(id: AnalyticUnitId, time: number) {
-  let info = findById(id);
+export async function setPredictionTime(id: AnalyticUnitId, time: number) {
+  let info = await findById(id);
   info.lastPredictionTime = time;
   save(id, info);
 }

@@ -68,7 +68,6 @@ export function checkDataFolders(): void {
   [
     config.DATA_PATH,
     config.DATASETS_PATH,
-    config.ANALYTIC_UNITS_PATH,
     config.MODELS_PATH,
     config.METRICS_PATH,
     config.SEGMENTS_PATH,
