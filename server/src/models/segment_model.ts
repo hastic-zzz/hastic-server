@@ -1,6 +1,5 @@
-import { getJsonDataSync, writeJsonDataSync }  from '../services/json_service';
-import { AnalyticUnitId, findById, save } from '../models/analytic_unit';
-import { SEGMENTS_PATH } from '../config';
+import * as AnalyticUnit from './analytic_unit_model';
+
 
 import * as _ from 'lodash';
 
@@ -8,7 +7,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 
-export function getLabeledSegments(id: AnalyticUnitId) {
+export function getLabeledSegments(id: AnalyticUnit.AnalyticUnitId) {
   let filename = path.join(SEGMENTS_PATH, `${id}_labeled.json`);
 
   if(!fs.existsSync(filename)) {
@@ -24,7 +23,7 @@ export function getLabeledSegments(id: AnalyticUnitId) {
   }
 }
 
-export function getPredictedSegments(id: AnalyticUnitId) {
+export function getPredictedSegments(id: AnalyticUnit.AnalyticUnitId) {
   let filename = path.join(SEGMENTS_PATH, `${id}_segments.json`);
 
   let jsonData;
@@ -37,7 +36,7 @@ export function getPredictedSegments(id: AnalyticUnitId) {
   return jsonData;
 }
 
-export function saveSegments(id: AnalyticUnitId, segments) {
+export function saveSegments(id: AnalyticUnit.AnalyticUnitId, segments) {
   let filename = path.join(SEGMENTS_PATH, `${id}_labeled.json`);
 
   try {
@@ -48,9 +47,9 @@ export function saveSegments(id: AnalyticUnitId, segments) {
   }
 }
 
-export function insertSegments(id: AnalyticUnitId, addedSegments, labeled: boolean) {
+export async function insertSegments(id: AnalyticUnit.AnalyticUnitId, addedSegments, labeled: boolean) {
   // Set status
-  let info = findById(id);
+  let info = await AnalyticUnit.findById(id);
   let segments = getLabeledSegments(id);
 
   let nextId = info.nextId;
@@ -64,11 +63,11 @@ export function insertSegments(id: AnalyticUnitId, addedSegments, labeled: boole
   }
   info.nextId = nextId;
   saveSegments(id, segments);
-  save(id, info);
+  await AnalyticUnit.update(id, info);
   return addedIds;
 }
 
-export function removeSegments(id: AnalyticUnitId, removedSegments) {
+export function removeSegments(id: AnalyticUnit.AnalyticUnitId, removedSegments) {
   let segments = getLabeledSegments(id);
   for (let segmentId of removedSegments) {
     segments = segments.filter(el => el.id !== segmentId);

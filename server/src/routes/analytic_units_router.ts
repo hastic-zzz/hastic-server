@@ -1,9 +1,9 @@
 import * as Router from 'koa-router';
 
-import * as AnalyticUnit from '../models/analytic_unit';
+import * as AnalyticUnit from '../models/analytic_unit_model';
 
-import { runLearning } from '../controllers/analytics_controller'
-import { saveTargets } from '../controllers/metrics_controler';
+import { createAnalyticUnitFromObject } from '../controllers/analytics_controller'
+
 
 async function sendStatus(ctx: Router.IRouterContext) {
   try {
@@ -11,7 +11,7 @@ async function sendStatus(ctx: Router.IRouterContext) {
     if(id === undefined) {
       throw new Error('Id is undefined');
     }
-    let unit = AnalyticUnit.findById(id);
+    let unit = await AnalyticUnit.findById(id);
 
     if(unit.status === undefined) {
       throw new Error('status is undefined');
@@ -34,7 +34,7 @@ async function findItem(ctx: Router.IRouterContext) {
       throw new Error('No id param in query');
     }
 
-    let unit: AnalyticUnit.AnalyticUnit = AnalyticUnit.findById(id);
+    let unit: AnalyticUnit.AnalyticUnit = await AnalyticUnit.findById(id);
 
     ctx.response.body = {
       name: unit.name,
@@ -55,53 +55,13 @@ async function createItem(ctx: Router.IRouterContext) {
 
     let body = ctx.request.body;
 
-    if(body.type === undefined) {
-      throw new Error(`Missing field "type"`);
-    }
-    if(body.name === undefined) {
-      throw new Error(`Missing field "name"`);
-    }
-    if(body.panelUrl === undefined) {
-      throw new Error(`Missing field "panelUrl"`);
-    }
-    if(body.metric === undefined) {
-      throw new Error(`Missing field "datasource"`);
-    }
-    if(body.metric.datasource === undefined) {
-      throw new Error(`Missing field "metric.datasource"`);
-    }
-    if(body.metric.targets === undefined) {
-      throw new Error(`Missing field "metric.targets"`);
-    }
+    await createAnalyticUnitFromObject(body);
 
-    const metric: AnalyticUnit.Metric = {
-      datasource: body.metric.datasource,
-      targets: saveTargets(body.metric.targets)
-    };
 
-    const unit: AnalyticUnit.AnalyticUnit = {
-      name: body.name,
-      panelUrl: body.panelUrl,
-      type: body.type,
-      datasource: body.datasource,
-      metric: metric,
-      status: 'learning',
-      lastPredictionTime: 0,
-      nextId: 0
-    };
-
-    let newId = AnalyticUnit.createItem(unit);
-    if(newId === null) {
-      ctx.response.status = 403;
-      ctx.response.body = {
-        code: 403,
-        message: 'Item exists'
-      };
-    }
-
+    let newId = await AnalyticUnit.create(unit);
     ctx.response.body = { id: newId };
 
-    runLearning(newId);
+    
   } catch(e) {
     ctx.response.status = 500;
     ctx.response.body = {

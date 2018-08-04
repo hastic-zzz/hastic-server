@@ -1,7 +1,5 @@
-import * as DataService from '../services/data_service';
-import { getTarget } from './metrics_controler';
-import { getLabeledSegments, insertSegments, removeSegments } from './segments_controller';
-import * as AnalyticUnit from '../models/analytic_unit'
+import * as SegmentsController from '../models/segment_model';
+import * as AnalyticUnit from '../models/analytic_unit_model'
 import { AnalyticsService, AnalyticsMessage } from '../services/analytics_service';
 
 
@@ -21,14 +19,6 @@ function onTaskResult(taskResult: any) {
       delete taskMap[taskId];
     }
   }
-}
-
-async function onFileSave(payload: any): Promise<any> {
-  return DataService.saveFile(payload.filename, payload.content);
-}
-
-async function onFileLoad(payload: any): Promise<any> {
-  return DataService.loadFile(payload.filename);
 }
 
 async function onMessage(message: AnalyticsMessage) {
@@ -69,7 +59,7 @@ export function terminate() {
 }
 
 async function runTask(task): Promise<any> {
-  let anomaly: AnalyticUnit.AnalyticUnit = AnalyticUnit.findById(task.analyticUnitId);
+  let anomaly: AnalyticUnit.AnalyticUnit = await AnalyticUnit.findById(task.analyticUnitId);
   task.metric = {
     datasource: anomaly.metric.datasource,
     targets: anomaly.metric.targets.map(getTarget)
@@ -86,7 +76,7 @@ async function runTask(task): Promise<any> {
 export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
   let segments = getLabeledSegments(id);
   AnalyticUnit.setStatus(id, 'LEARNING');
-  let unit = AnalyticUnit.findById(id);
+  let unit = await AnalyticUnit.findById(id);
   let pattern = unit.type;
   let task = {
     analyticUnitId: id,
@@ -106,12 +96,11 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
   }
 }
 
-
 export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
-  let unit = AnalyticUnit.findById(id);
+  let unit = await AnalyticUnit.findById(id);
   let pattern = unit.type;
   let task = {
-    type: 'predict',
+    type: 'PREDICT',
     analyticUnitId: id,
     pattern,
     lastPredictionTime: unit.lastPredictionTime
@@ -140,4 +129,15 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
 
 export function isAnalyticReady(): boolean {
   return analyticsService.ready;
+}
+
+export async function createAnalyticUnitFromObject(obj: any): Promise<AnalyticUnit.AnalyticUnitId> {
+
+  
+  
+
+
+  runLearning(newId);
+
+  return 
 }

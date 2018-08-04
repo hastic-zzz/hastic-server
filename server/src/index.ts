@@ -4,7 +4,6 @@ import { router as segmentsRouter } from './routes/segments_router';
 
 import * as AnalyticsController from './controllers/analytics_controller';
 
-import * as Data from './services/data_service';
 import * as ProcessService from './services/process_service';
 
 import { HASTIC_PORT } from './config';
@@ -14,7 +13,6 @@ import * as Router from 'koa-router';
 import * as bodyParser from 'koa-bodyparser';
 
 
-Data.checkDataFolders();
 AnalyticsController.init();
 ProcessService.registerExitHandler(AnalyticsController.terminate);
 
