@@ -12,38 +12,35 @@ export type Datasource = {
   url: string
 }
 
+export type MetricId = string;
+
 export type Metric = {
+  id?: MetricId,
   datasource: Datasource,
   targets: string[]
 }
 
 export function metricFromObj(obj: any): Metric {
-  const metric: Metric = {
+  return {
     datasource: obj.datasource,
-    targets: obj.targets;
+    targets: obj.targets
   };
-  return metric;
 }
 
-export async function saveTargets(targets: string[]) {
-  let metrics = [];
-  for (let target of targets) {
-    metrics.push(saveTarget(target));
-  }
-  return metrics;
+// export async function saveTargets(targets: string[]) {
+//   let metrics = [];
+//   for (let target of targets) {
+//     metrics.push(create(target));
+//   }
+//   return metrics;
+// }
+
+export async function create(metric: Metric): Promise<MetricId> {
+  return metric.id = await db.insert(metric);
 }
 
-export async function saveTarget(target: string) {
-  //const md5 = crypto.createHash('md5')
-  const targetId = crypto.createHash('md5').update(JSON.stringify(target)).digest('hex');
-  let filename = path.join(METRICS_PATH, `${targetId}.json`);
-  writeJsonDataSync(filename, target);
-  return targetId;
-}
-
-export async function getTarget(targetId) {
-  let filename = path.join(METRICS_PATH, `${targetId}.json`);
-  return getJsonDataSync(filename);
+export async function findMetric(id: MetricId): Promise<Metric> {
+  return db.findOne(id);
 }
 
 

@@ -12,7 +12,6 @@ async function sendStatus(ctx: Router.IRouterContext) {
       throw new Error('Id is undefined');
     }
     let unit = await AnalyticUnit.findById(id);
-
     if(unit.status === undefined) {
       throw new Error('status is undefined');
     }
@@ -52,16 +51,8 @@ async function findItem(ctx: Router.IRouterContext) {
 
 async function createItem(ctx: Router.IRouterContext) {
   try {
-
-    let body = ctx.request.body;
-
-    await createAnalyticUnitFromObject(body);
-
-
-    let newId = await AnalyticUnit.create(unit);
+    let newId = await createAnalyticUnitFromObject(ctx.request.body);
     ctx.response.body = { id: newId };
-
-    
   } catch(e) {
     ctx.response.status = 500;
     ctx.response.body = {

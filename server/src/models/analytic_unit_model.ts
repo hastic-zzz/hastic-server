@@ -1,9 +1,8 @@
-import { Metric, metricFromObj } from './metric_model';
+import { Metric } from './metric_model';
 import { Collection, makeDBQ } from '../services/data_service';
 
 
 let db = makeDBQ(Collection.ANALYTIC_UNITS);
-
 
 
 export type AnalyticUnitId = string;
@@ -16,10 +15,8 @@ export type AnalyticUnit = {
   metric: Metric
   status: string,
   error?: string,
-  lastPredictionTime: number,
-  nextId: number
+  lastPredictionTime: number
 }
-
 
 export function analyticUnitFromObj(obj: any): AnalyticUnit {
   if(obj === undefined) {
@@ -48,11 +45,9 @@ export function analyticUnitFromObj(obj: any): AnalyticUnit {
     name: obj.name,
     panelUrl: obj.panelUrl,
     type: obj.type,
-    datasource: obj.datasource,
-    metric: metric,
+    metric: obj.metric,
     status: 'LEARNING',
-    lastPredictionTime: 0,
-    nextId: 0
+    lastPredictionTime: 0
   };
 
   return unit;
@@ -62,8 +57,14 @@ export async function findById(id: AnalyticUnitId): Promise<AnalyticUnit> {
   return db.findOne(id);
 }
 
+/**
+ * Creates and updates new unit.id
+ * 
+ * @param unit to create
+ * @returns unit.id
+ */
 export async function create(unit: AnalyticUnit): Promise<AnalyticUnitId> {
-  return db.insert(unit);
+  return unit.id = await db.insert(unit);
 }
 
 export async function remove(id: AnalyticUnitId): Promise<void> {

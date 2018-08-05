@@ -14,6 +14,7 @@ export enum Collection { ANALYTIC_UNITS, METRICS, SEGMENTS };
  */
 export type DBQ = {
   insert: (document: object) => string,
+  insertMany: (documents: object[]) => string[],
   update: (query: string | object, updateQuery: any) => void,
   findOne: (query: string | object) => any,
   remove: (query: string | object) => number
@@ -22,6 +23,7 @@ export type DBQ = {
 export function makeDBQ(collection: Collection): DBQ {
   return {
     insert: dbInsert.bind(null, collection),
+    insertMany: dbInsertMany.bind(null, collection),
     update: dbUpdate.bind(null, collection),
     findOne: dbFindOne.bind(null, collection),
     remove: dbRemove.bind(null, collection)
@@ -44,6 +46,18 @@ let dbInsert = (collection: Collection, doc: object) => {
         reject(err);
       } else {
         resolve(newDoc._id);
+      }
+    });
+  });
+}
+
+let dbInsertMany = (collection: Collection, docs: object[]) => {
+  return new Promise<string[]>((resolve, reject) => {
+    db[collection].insert(docs, (err, newDocs: any[]) => {
+      if(err) {
+        reject(err);
+      } else {
+        resolve(newDocs.map(d => d._id));
       }
     });
   });
@@ -88,7 +102,7 @@ let dbRemove = (collection: Collection, query: string | object) => {
   });
 }
 
-function maybeCreate(path: string): void {
+function maybeCreateDir(path: string): void {
   if(fs.existsSync(path)) {
     return;
   }
@@ -100,7 +114,7 @@ function checkDataFolders(): void {
   [
     config.DATA_PATH,
     config.ZMQ_IPC_PATH
-  ].forEach(maybeCreate);
+  ].forEach(maybeCreateDir);
 }
 checkDataFolders();
 

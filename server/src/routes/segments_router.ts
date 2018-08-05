@@ -17,21 +17,21 @@ async function sendSegments(ctx: Router.IRouterContext) {
   let timeFrom = ctx.request.query.from;
   let timeTo = ctx.request.query.to;
 
-  let segments = getLabeledSegments(id);
+  let segments = await getLabeledSegments(id);
 
-  // Id filtering
-  if(lastSegmentId !== undefined) {
-    segments = segments.filter(el => el.id > lastSegmentId);
-  }
+  // // Id filtering
+  // if(lastSegmentId !== undefined) {
+  //   segments = segments.filter(el => el.id > lastSegmentId);
+  // }
 
-  // Time filtering
-  if(timeFrom !== undefined) {
-    segments = segments.filter(el => el.finish > timeFrom);
-  }
+  // // Time filtering
+  // if(timeFrom !== undefined) {
+  //   segments = segments.filter(el => el.finish > timeFrom);
+  // }
 
-  if(timeTo !== undefined) {
-    segments = segments.filter(el => el.start < timeTo);
-  }
+  // if(timeTo !== undefined) {
+  //   segments = segments.filter(el => el.start < timeTo);
+  // }
 
   ctx.response.body = { segments }
 
@@ -42,7 +42,7 @@ async function updateSegments(ctx: Router.IRouterContext) {
     let segmentsUpdate = ctx.request.body;
     let id = segmentsUpdate.id;
     let addedIds = insertSegments(id, segmentsUpdate.addedSegments, true);
-    removeSegments(id, segmentsUpdate.removedSegments);
+    // removeSegments(id, segmentsUpdate.removedSegments);
     ctx.response.body = { addedIds };
     runLearning(id);
   } catch(e) {

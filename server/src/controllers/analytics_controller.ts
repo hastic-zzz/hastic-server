@@ -30,15 +30,6 @@ async function onMessage(message: AnalyticsMessage) {
     resolvedMethod = true;
   }
 
-  if(message.method === 'FILE_SAVE') {
-    responsePayload = await onFileSave(message.payload);
-    resolvedMethod = true;
-  }
-  if(message.method === 'FILE_LOAD') {
-    responsePayload = await onFileLoad(message.payload); 
-    resolvedMethod = true;
-  }
-
   if(!resolvedMethod) {
     throw new TypeError('Unknown method ' + message.method);
   }
@@ -59,72 +50,72 @@ export function terminate() {
 }
 
 async function runTask(task): Promise<any> {
-  let anomaly: AnalyticUnit.AnalyticUnit = await AnalyticUnit.findById(task.analyticUnitId);
-  task.metric = {
-    datasource: anomaly.metric.datasource,
-    targets: anomaly.metric.targets.map(getTarget)
-  };
+  // let anomaly: AnalyticUnit.AnalyticUnit = await AnalyticUnit.findById(task.analyticUnitId);
+  // task.metric = {
+  //   datasource: anomaly.metric.datasource,
+  //   targets: anomaly.metric.targets.map(getTarget)
+  // };
 
-  task._taskId = nextTaskId++;
-  await analyticsService.sendTask(task);
+  // task._taskId = nextTaskId++;
+  // await analyticsService.sendTask(task);
 
-  return new Promise<void>(resolve => {
-    taskMap[task._taskId] = resolve;
-  })
+  // return new Promise<void>(resolve => {
+  //   taskMap[task._taskId] = resolve;
+  // })
 }
 
 export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
-  let segments = getLabeledSegments(id);
-  AnalyticUnit.setStatus(id, 'LEARNING');
-  let unit = await AnalyticUnit.findById(id);
-  let pattern = unit.type;
-  let task = {
-    analyticUnitId: id,
-    type: 'LEARN',
-    pattern,
-    segments: segments
-  };
+  // let segments = getLabeledSegments(id);
+  // AnalyticUnit.setStatus(id, 'LEARNING');
+  // let unit = await AnalyticUnit.findById(id);
+  // let pattern = unit.type;
+  // let task = {
+  //   analyticUnitId: id,
+  //   type: 'LEARN',
+  //   pattern,
+  //   segments: segments
+  // };
 
-  let result = await runTask(task);
+  // let result = await runTask(task);
 
-  if (result.status === 'SUCCESS') {
-    AnalyticUnit.setStatus(id, 'READY');
-    insertSegments(id, result.segments, false);
-    AnalyticUnit.setPredictionTime(id, result.lastPredictionTime);
-  } else {
-    AnalyticUnit.setStatus(id, 'FAILED', result.error);
-  }
+  // if (result.status === 'SUCCESS') {
+  //   AnalyticUnit.setStatus(id, 'READY');
+  //   insertSegments(id, result.segments, false);
+  //   AnalyticUnit.setPredictionTime(id, result.lastPredictionTime);
+  // } else {
+  //   AnalyticUnit.setStatus(id, 'FAILED', result.error);
+  // }
 }
 
 export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
-  let unit = await AnalyticUnit.findById(id);
-  let pattern = unit.type;
-  let task = {
-    type: 'PREDICT',
-    analyticUnitId: id,
-    pattern,
-    lastPredictionTime: unit.lastPredictionTime
-  };
-  let result = await runTask(task);
+  // let unit = await AnalyticUnit.findById(id);
+  // let pattern = unit.type;
+  // let task = {
+  //   type: 'PREDICT',
+  //   analyticUnitId: id,
+  //   pattern,
+  //   lastPredictionTime: unit.lastPredictionTime
+  // };
+  // let result = await runTask(task);
 
-  if(result.status === 'FAILED') {
-    return [];
-  }
-  // Merging segments
-  let segments = getLabeledSegments(id);
-  if(segments.length > 0 && result.segments.length > 0) {
-    let lastOldSegment = segments[segments.length - 1];
-    let firstNewSegment = result.segments[0];
+  // if(result.status === 'FAILED') {
+  //   return [];
+  // }
+  // // Merging segments
+  // let segments = getLabeledSegments(id);
+  // if(segments.length > 0 && result.segments.length > 0) {
+  //   let lastOldSegment = segments[segments.length - 1];
+  //   let firstNewSegment = result.segments[0];
 
-    if(firstNewSegment.start <= lastOldSegment.finish) {
-      result.segments[0].start = lastOldSegment.start;
-      removeSegments(id, [lastOldSegment.id]);
-    }
-  }
+  //   if(firstNewSegment.start <= lastOldSegment.finish) {
+  //     result.segments[0].start = lastOldSegment.start;
+  //     removeSegments(id, [lastOldSegment.id]);
+  //   }
+  // }
 
-  insertSegments(id, result.segments, false);
-  AnalyticUnit.setPredictionTime(id, result.lastPredictionTime);
-  return result.segments;
+  // insertSegments(id, result.segments, false);
+  // AnalyticUnit.setPredictionTime(id, result.lastPredictionTime);
+  // return result.segments;
 }
 
 export function isAnalyticReady(): boolean {
@@ -132,12 +123,8 @@ export function isAnalyticReady(): boolean {
 }
 
 export async function createAnalyticUnitFromObject(obj: any): Promise<AnalyticUnit.AnalyticUnitId> {
-
-  
-  
-
-
-  runLearning(newId);
-
+  let unit: AnalyticUnit.AnalyticUnit = AnalyticUnit.analyticUnitFromObj(obj);
+  AnalyticUnit.create(unit);
+  // runLearning(unit);
   return 
 }
