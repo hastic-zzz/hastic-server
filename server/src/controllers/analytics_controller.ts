@@ -123,8 +123,8 @@ export function isAnalyticReady(): boolean {
 }
 
 export async function createAnalyticUnitFromObject(obj: any): Promise<AnalyticUnit.AnalyticUnitId> {
-  let unit: AnalyticUnit.AnalyticUnit = AnalyticUnit.analyticUnitFromObj(obj);
-  AnalyticUnit.create(unit);
+  let unit: AnalyticUnit.AnalyticUnit = AnalyticUnit.AnalyticUnit.fromObject(obj);
+  let id = await AnalyticUnit.create(unit);
   // runLearning(unit);
-  return 
+  return id;
 }

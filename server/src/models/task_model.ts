@@ -1,3 +1,3 @@
-class Task {
+export class Task {
   
 }

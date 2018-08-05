@@ -4,7 +4,7 @@ import * as nedb from 'nedb';
 import * as fs from 'fs';
 
 
-export enum Collection { ANALYTIC_UNITS, METRICS, SEGMENTS };
+export enum Collection { ANALYTIC_UNITS, SEGMENTS };
 
 
 /**
@@ -13,20 +13,20 @@ export enum Collection { ANALYTIC_UNITS, METRICS, SEGMENTS };
  * @param { string | object } query: a key as a string or mongodb-style query
  */
 export type DBQ = {
-  insert: (document: object) => string,
+  insertOne: (document: object) => string,
   insertMany: (documents: object[]) => string[],
-  update: (query: string | object, updateQuery: any) => void,
+  updateOne: (query: string | object, updateQuery: any) => void,
   findOne: (query: string | object) => any,
-  remove: (query: string | object) => number
+  removeOne: (query: string | object) => number
 }
 
 export function makeDBQ(collection: Collection): DBQ {
   return {
-    insert: dbInsert.bind(null, collection),
+    insertOne: dbInsert.bind(null, collection),
     insertMany: dbInsertMany.bind(null, collection),
-    update: dbUpdate.bind(null, collection),
+    updateOne: dbUpdate.bind(null, collection),
     findOne: dbFindOne.bind(null, collection),
-    remove: dbRemove.bind(null, collection)
+    removeOne: dbRemove.bind(null, collection)
   }
 }
 
@@ -120,5 +120,4 @@ checkDataFolders();
 
 // TODO: it's better if models request db which we create if it`s needed
 db[Collection.ANALYTIC_UNITS] = new nedb({ filename: config.ANALYTIC_UNITS_DATABASE_PATH, autoload: true });
-db[Collection.METRICS] = new nedb({ filename: config.METRICS_DATABASE_PATH, autoload: true });
 db[Collection.SEGMENTS] = new nedb({ filename: config.SEGMENTS_DATABASE_PATH, autoload: true });
