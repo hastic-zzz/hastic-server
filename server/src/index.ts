@@ -1,6 +1,6 @@
 import { router as anomaliesRouter } from './routes/analytic_units_router';
 import { router as segmentsRouter } from './routes/segments_router';
-//import { router as alertsRouter } from './routes/alerts_router';
+
 
 import * as AnalyticsController from './controllers/analytics_controller';
 

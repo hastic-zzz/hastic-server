@@ -120,5 +120,5 @@ checkDataFolders();
 
 // TODO: it's better if models request db which we create if it`s needed
 db[Collection.ANALYTIC_UNITS] = new nedb({ filename: config.ANALYTIC_UNITS_DATABASE_PATH, autoload: true });
-db[Collection.METRICS] = new nedb({ filename: config.ANALYTIC_UNITS_DATABASE_PATH, autoload: true });
+db[Collection.METRICS] = new nedb({ filename: config.METRICS_DATABASE_PATH, autoload: true });
 db[Collection.SEGMENTS] = new nedb({ filename: config.SEGMENTS_DATABASE_PATH, autoload: true });
