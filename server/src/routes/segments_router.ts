@@ -3,35 +3,21 @@ import * as Router from 'koa-router';
 import { AnalyticUnitId } from '../models/analytic_unit_model';
 
 import {
-  getLabeledSegments,
+  findMany,
   insertSegments,
   removeSegments,
 } from '../models/segment_model';
 import { runLearning } from '../controllers/analytics_controller';
 
 
-async function sendSegments(ctx: Router.IRouterContext) {
+async function getSegments(ctx: Router.IRouterContext) {
   let id: AnalyticUnitId = ctx.request.query.id;
 
-  let lastSegmentId = ctx.request.query.lastSegmentId;
-  let timeFrom = ctx.request.query.from;
-  let timeTo = ctx.request.query.to;
-
-  let segments = await getLabeledSegments(id);
-
-  // // Id filtering
-  // if(lastSegmentId !== undefined) {
-  //   segments = segments.filter(el => el.id > lastSegmentId);
-  // }
-
-  // // Time filtering
-  // if(timeFrom !== undefined) {
-  //   segments = segments.filter(el => el.finish > timeFrom);
-  // }
-
-  // if(timeTo !== undefined) {
-  //   segments = segments.filter(el => el.start < timeTo);
-  // }
+  let segments = await findMany(id, {
+    intexGT: ctx.request.query.lastSegmentId, 
+    timeFromGTE:  ctx.request.query.from, 
+    timeToLTE: ctx.request.query.to
+  });
 
   ctx.response.body = { segments }
 
@@ -56,5 +42,5 @@ async function updateSegments(ctx: Router.IRouterContext) {
 
 export const router = new Router();
 
-router.get('/', sendSegments);
+router.get('/', getSegments);
 router.patch('/', updateSegments);

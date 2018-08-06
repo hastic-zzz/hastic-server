@@ -61,22 +61,21 @@ export class AnalyticUnit {
     );
   }
 
-
 }
 
 
 export async function findById(id: AnalyticUnitId): Promise<AnalyticUnit> {
-  return AnalyticUnit.fromObject(db.findOne(id));
+  return AnalyticUnit.fromObject(await db.findOne(id));
 }
 
 /**
  * Creates and updates new unit.id
- * 
+ *
  * @param unit to create
  * @returns unit.id
  */
 export async function create(unit: AnalyticUnit): Promise<AnalyticUnitId> {
-  return unit.id = await db.insertOne(unit);
+  return unit.id = await db.insertOne(unit.toObject());
 }
 
 export async function remove(id: AnalyticUnitId): Promise<void> {

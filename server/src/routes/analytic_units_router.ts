@@ -25,7 +25,7 @@ async function sendStatus(ctx: Router.IRouterContext) {
 
 }
 
-async function findItem(ctx: Router.IRouterContext) {
+async function getUnit(ctx: Router.IRouterContext) {
   try {
     let id = ctx.request.query.id;
 
@@ -49,7 +49,7 @@ async function findItem(ctx: Router.IRouterContext) {
   }
 }
 
-async function createItem(ctx: Router.IRouterContext) {
+async function createUnit(ctx: Router.IRouterContext) {
   try {
     let newId = await createAnalyticUnitFromObject(ctx.request.body);
     ctx.response.body = { id: newId };
@@ -62,14 +62,9 @@ async function createItem(ctx: Router.IRouterContext) {
   }
 }
 
-function deleteItem(ctx: Router.IRouterContext) {
+async function deleteUnit(ctx: Router.IRouterContext) {
   try {
-    let id = ctx.request.query.id;
-
-    if(id !== undefined) {
-      AnalyticUnit.remove(id);
-    }
-
+    await AnalyticUnit.remove(ctx.request.query.id);
     ctx.response.body = {
       code: 200,
       message: 'Success'
@@ -86,7 +81,7 @@ function deleteItem(ctx: Router.IRouterContext) {
 
 export var router = new Router();
 
+router.get('/', getUnit);
 router.get('/status', sendStatus);
-router.get('/', findItem);
-router.post('/', createItem);
-router.delete('/', deleteItem);
+router.post('/', createUnit);
+router.delete('/', deleteUnit);

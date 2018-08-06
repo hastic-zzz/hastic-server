@@ -17,7 +17,8 @@
       //"outFiles": [ "/home/alex/Projects/hastic-server/server.js" ],
       "port": 9229,
       "restart": true,
-      "trace": true
+      "trace": true,
+      "timeout": 100000
     }
   ]
 }
