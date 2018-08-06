@@ -41,7 +41,7 @@ async function updateSegments(ctx: Router.IRouterContext) {
   try {
     let segmentsUpdate = ctx.request.body;
     let id = segmentsUpdate.id;
-    let addedIds = insertSegments(id, segmentsUpdate.addedSegments, true);
+    let addedIds = insertSegments(id, segmentsUpdate.addedSegments);
     // removeSegments(id, segmentsUpdate.removedSegments);
     ctx.response.body = { addedIds };
     runLearning(id);

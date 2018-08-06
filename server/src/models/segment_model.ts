@@ -46,7 +46,7 @@ export class Segment {
 }
 
 
-export function getLabeled(id: AnalyticUnitId) {
+export function getLabeledSegments(id: AnalyticUnitId) {
   //return db.
 }
 
@@ -54,9 +54,9 @@ export function getPredicted(id: AnalyticUnitId) {
 
 }
 
-export async function create(segments: Segment[]) {
+export async function insertSegments(id: any, segments: Segment[]) {
 }
 
-export function remove(idsToRemove: SegmentId[]) {
+export function removeSegments(idsToRemove: SegmentId[]) {
   
 }
