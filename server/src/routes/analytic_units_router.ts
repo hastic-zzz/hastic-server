@@ -5,24 +5,15 @@ import * as AnalyticUnit from '../models/analytic_unit_model';
 import { createAnalyticUnitFromObject } from '../controllers/analytics_controller'
 
 
-async function sendStatus(ctx: Router.IRouterContext) {
+async function getStatus(ctx: Router.IRouterContext) {
   try {
-    let id = ctx.request.query.id;
-    if(id === undefined) {
-      throw new Error('Id is undefined');
-    }
-    let unit = await AnalyticUnit.findById(id);
-    if(unit.status === undefined) {
-      throw new Error('status is undefined');
-    }
-    ctx.response.body = { status: unit.status, errorMessage: unit.error };
+    ctx.response.body = { status: 'READY', errorMessage: undefined };
   } catch(e) {
     console.error(e);
     // TODO: better send 404 when we know than isn`t found
     ctx.response.status = 500;
     ctx.response.body = { error: 'Can`t return anything' };
   }
-
 }
 
 async function getUnit(ctx: Router.IRouterContext) {
@@ -60,6 +51,7 @@ async function createUnit(ctx: Router.IRouterContext) {
       message: `Creation error: ${e.message}`
     };
   }
+  
 }
 
 async function deleteUnit(ctx: Router.IRouterContext) {
@@ -82,6 +74,6 @@ async function deleteUnit(ctx: Router.IRouterContext) {
 export var router = new Router();
 
 router.get('/', getUnit);
-router.get('/status', sendStatus);
+router.get('/status', getStatus);
 router.post('/', createUnit);
 router.delete('/', deleteUnit);

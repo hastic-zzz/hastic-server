@@ -11,15 +11,15 @@ import { runLearning } from '../controllers/analytics_controller';
 
 
 async function getSegments(ctx: Router.IRouterContext) {
-  let id: AnalyticUnitId = ctx.request.query.id;
+  // let id: AnalyticUnitId = ctx.request.query.id;
 
-  let segments = await findMany(id, {
-    intexGT: ctx.request.query.lastSegmentId, 
-    timeFromGTE:  ctx.request.query.from, 
-    timeToLTE: ctx.request.query.to
-  });
+  // let segments = await findMany(id, {
+  //   intexGT: ctx.request.query.lastSegmentId, 
+  //   timeFromGTE:  ctx.request.query.from, 
+  //   timeToLTE: ctx.request.query.to
+  // });
 
-  ctx.response.body = { segments }
+  ctx.response.body = { segments: [] };
 
 }
 

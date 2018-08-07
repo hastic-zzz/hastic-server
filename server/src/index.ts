@@ -18,13 +18,19 @@ ProcessService.registerExitHandler(AnalyticsController.terminate);
 
 var app = new Koa();
 
+app.on('error', (err, ctx) => {
+  console.log('got server error:');
+  console.log(err);
+});
+
+
 app.use(bodyParser())
 
 app.use(async function(ctx, next) {
   ctx.set('Access-Control-Allow-Origin', '*');
   ctx.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
   ctx.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
+  await next();
 });
 
 

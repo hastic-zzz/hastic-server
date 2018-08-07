@@ -13,13 +13,13 @@ export enum Collection { ANALYTIC_UNITS, SEGMENTS };
  * @param { string | object } query: a key as a string or mongodb-style query
  */
 export type DBQ = {
-  findOne: (query: string | object) => any,
-  findMany: (query: string[] | object) => any[],
-  insertOne: (document: object) => string,
-  insertMany: (documents: object[]) => string[],
-  updateOne: (query: string | object, updateQuery: any) => void,
-  removeOne: (query: string) => boolean
-  removeMany: (query: string[] | object) => number
+  findOne: (query: string | object) => Promise<any>,
+  findMany: (query: string[] | object) => Promise<any[]>,
+  insertOne: (document: object) => Promise<string>,
+  insertMany: (documents: object[]) => Promise<string[]>,
+  updateOne: (query: string | object, updateQuery: any) => Promise<void>,
+  removeOne: (query: string) => Promise<boolean>
+  removeMany: (query: string[] | object) => Promise<number>
 }
 
 export function makeDBQ(collection: Collection): DBQ {

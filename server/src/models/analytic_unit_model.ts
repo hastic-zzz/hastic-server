@@ -75,7 +75,9 @@ export async function findById(id: AnalyticUnitId): Promise<AnalyticUnit> {
  * @returns unit.id
  */
 export async function create(unit: AnalyticUnit): Promise<AnalyticUnitId> {
-  return unit.id = await db.insertOne(unit.toObject());
+  var obj = unit.toObject();
+  var r = await db.insertOne(obj);
+  return r;
 }
 
 export async function remove(id: AnalyticUnitId): Promise<void> {
