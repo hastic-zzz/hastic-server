@@ -2,7 +2,7 @@
  * Alarting is not supported yet
  */
 
-throw new console.error("Not supported");
+throw new Error('not supported');
 
 
 // import { runPredict } from './analytics_controller';

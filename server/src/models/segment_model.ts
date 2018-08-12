@@ -68,7 +68,7 @@ export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promis
   return segs.map(Segment.fromObject);
 }
 
-export async function insertSegments(id: AnalyticUnitId, segments: Segment[]) {
+export async function insertSegments(segments: Segment[]) {
   return db.insertMany(segments.map(s => s.toObject()));
 }
 

@@ -21,7 +21,7 @@ export const ZMQ_DEV_PORT = getConfigField('ZMQ_DEV_PORT', '8002');
 export const ANLYTICS_PING_INTERVAL = 500; // ms
 
 
-function getConfigField(field, defaultVal?) {
+function getConfigField(field: string, defaultVal?: any) {
   let val = defaultVal;
 
   if(process.env[field] !== undefined) {

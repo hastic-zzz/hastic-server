@@ -52,7 +52,7 @@ const db = new Map<Collection, nedb>();
 
 let dbInsertOne = (collection: Collection, doc: object) => {
   return new Promise<string>((resolve, reject) => {
-    db[collection].insert(doc, (err, newDoc) => {
+    db.get(collection).insert(doc, (err, newDoc: any) => {
       if(err) {
         reject(err);
       } else {
@@ -64,7 +64,7 @@ let dbInsertOne = (collection: Collection, doc: object) => {
 
 let dbInsertMany = (collection: Collection, docs: object[]) => {
   return new Promise<string[]>((resolve, reject) => {
-    db[collection].insert(docs, (err, newDocs: any[]) => {
+    db.get(collection).insert(docs, (err, newDocs: any[]) => {
       if(err) {
         reject(err);
       } else {
@@ -77,7 +77,7 @@ let dbInsertMany = (collection: Collection, docs: object[]) => {
 let dbUpdateOne = (collection: Collection, query: string | object, updateQuery: object) => {
   query = wrapIdToQuery(query);
   return new Promise<void>((resolve, reject) => {
-    db[collection].update(query, updateQuery, { /* options */ }, (err: Error) => {
+    db.get(collection).update(query, updateQuery, { /* options */ }, (err: Error) => {
       if(err) {
         reject(err);
       } else {
@@ -90,7 +90,7 @@ let dbUpdateOne = (collection: Collection, query: string | object, updateQuery: 
 let dbFindOne = (collection: Collection, query: string | object) => {
   query = wrapIdToQuery(query);
   return new Promise<any>((resolve, reject) => {
-    db[collection].findOne(query, (err, doc) => {
+    db.get(collection).findOne(query, (err, doc) => {
       if(err) {
         reject(err);
       } else {
@@ -103,7 +103,7 @@ let dbFindOne = (collection: Collection, query: string | object) => {
 let dbFindMany = (collection: Collection, query: string[] | object) => {
   query = wrapIdsToQuery(query);
   return new Promise<any[]>((resolve, reject) => {
-    db[collection].findOne(query, (err, docs) => {
+    db.get(collection).findOne(query, (err, docs: any[]) => {
       if(err) {
         reject(err);
       } else {
@@ -116,7 +116,7 @@ let dbFindMany = (collection: Collection, query: string[] | object) => {
 let dbRemoveOne = (collection: Collection, id: string) => {
   let query = { _id: id };
   return new Promise<boolean>((resolve, reject) => {
-    db[collection].remove(query, (err, numRemoved) => {
+    db.get(collection).remove(query, (err, numRemoved) => {
       if(err) {
         reject(err);
       } else {
@@ -133,7 +133,7 @@ let dbRemoveOne = (collection: Collection, id: string) => {
 let dbRemoveMany = (collection: Collection, query: string[] | object) => {
   query = wrapIdsToQuery(query);
   return new Promise<number>((resolve, reject) => {
-    db[collection].remove(query, (err, numRemoved) => {
+    db.get(collection).remove(query, (err, numRemoved) => {
       if(err) {
         reject(err);
       } else {
@@ -161,5 +161,5 @@ function checkDataFolders(): void {
 checkDataFolders();
 
 // TODO: it's better if models request db which we create if it`s needed
-db[Collection.ANALYTIC_UNITS] = new nedb({ filename: config.ANALYTIC_UNITS_DATABASE_PATH, autoload: true });
-db[Collection.SEGMENTS] = new nedb({ filename: config.SEGMENTS_DATABASE_PATH, autoload: true });
+db.set(Collection.ANALYTIC_UNITS, new nedb({ filename: config.ANALYTIC_UNITS_DATABASE_PATH, autoload: true }));
+db.set(Collection.SEGMENTS, new nedb({ filename: config.SEGMENTS_DATABASE_PATH, autoload: true }));

@@ -3,7 +3,7 @@ import * as AnalyticUnit from '../models/analytic_unit_model'
 import { AnalyticsService, AnalyticsMessage } from '../services/analytics_service';
 
 
-const taskMap = {};
+const taskMap = new Map<string, any>();
 let nextTaskId = 0;
 
 let analyticsService: AnalyticsService = undefined;
@@ -14,9 +14,9 @@ function onTaskResult(taskResult: any) {
   let status = taskResult.status;
   if(status === 'SUCCESS' || status === 'FAILED') {
     if(taskId in taskMap) {
-      let resolver = taskMap[taskId];
+      let resolver: any = taskMap.get(taskId);
       resolver(taskResult);
-      delete taskMap[taskId];
+      taskMap.delete(taskId);
     }
   }
 }
@@ -49,7 +49,7 @@ export function terminate() {
   analyticsService.close();
 }
 
-async function runTask(task): Promise<any> {
+async function runTask(task: any): Promise<any> {
   // let anomaly: AnalyticUnit.AnalyticUnit = await AnalyticUnit.findById(task.analyticUnitId);
   // task.metric = {
   //   datasource: anomaly.metric.datasource,

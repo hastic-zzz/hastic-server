@@ -1,6 +1,6 @@
 
 
-var exitHandlers = []
+var exitHandlers: (() => void)[] = [];
 var exitHandled = false;
 
 /**
@@ -12,7 +12,7 @@ export function registerExitHandler(callback: () => void) {
   exitHandlers.push(callback);
 }
 
-function exitHandler(options, err?) {
+function exitHandler(options: any, err?: any) {
   if(exitHandled) {
     return;
   }
@@ -24,7 +24,7 @@ function exitHandler(options, err?) {
   process.exit();
 }
 
-function catchException(options, err) {
+function catchException(options: any, err: any) {
   console.log('Server exception:');
   console.log(err);
   exitHandler({ exit: true });
