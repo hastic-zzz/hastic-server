@@ -63,6 +63,9 @@ let dbInsertOne = (collection: Collection, doc: object) => {
 }
 
 let dbInsertMany = (collection: Collection, docs: object[]) => {
+  if(docs.length === 0) {
+    return Promise.resolve([]);
+  }
   return new Promise<string[]>((resolve, reject) => {
     db.get(collection).insert(docs, (err, newDocs: any[]) => {
       if(err) {

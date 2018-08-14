@@ -2,11 +2,7 @@ import * as Router from 'koa-router';
 
 import { AnalyticUnitId } from '../models/analytic_unit_model';
 
-import {
-  findMany,
-  insertSegments,
-  removeSegments,
-} from '../models/segment_model';
+import * as SegmentModel from '../models/segment_model';
 import { runLearning } from '../controllers/analytics_controller';
 
 
@@ -25,9 +21,14 @@ async function getSegments(ctx: Router.IRouterContext) {
 
 async function updateSegments(ctx: Router.IRouterContext) {
   try {
-    let segmentsUpdate = ctx.request.body;
-    let id = segmentsUpdate.id;
-    let addedIds = insertSegments(segmentsUpdate.addedSegments);
+    
+    let { addedSegments, id } = ctx.request.body as { addedSegments: any[], id: AnalyticUnitId };
+
+    let segmentsToInsert: SegmentModel.Segment[] = addedSegments.map(
+      s => SegmentModel.Segment.fromObject({ analyticUnitId: id, labeled: true, ...s })
+    );
+    
+    let addedIds = await SegmentModel.insertSegments(segmentsToInsert);
     // removeSegments(id, segmentsUpdate.removedSegments);
     ctx.response.body = { addedIds };
     runLearning(id);

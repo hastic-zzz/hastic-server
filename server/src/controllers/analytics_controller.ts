@@ -1,5 +1,6 @@
+import { Task } from '../models/task_model';
 import * as SegmentsController from '../models/segment_model';
-import * as AnalyticUnit from '../models/analytic_unit_model'
+import * as AnalyticUnit from '../models/analytic_unit_model';
 import { AnalyticsService, AnalyticsMessage } from '../services/analytics_service';
 
 
@@ -49,7 +50,7 @@ export function terminate() {
   analyticsService.close();
 }
 
-async function runTask(task: any): Promise<any> {
+async function runTask(task: Task): Promise<any> {
   // let anomaly: AnalyticUnit.AnalyticUnit = await AnalyticUnit.findById(task.analyticUnitId);
   // task.metric = {
   //   datasource: anomaly.metric.datasource,

@@ -56,7 +56,7 @@ export class AnalyticUnit {
       Metric.fromObject(obj.metric),
       obj.status,
       obj.lastPredictionTime,
-      obj.id || obj._id,
+      obj._id,
       obj.error,
     );
   }

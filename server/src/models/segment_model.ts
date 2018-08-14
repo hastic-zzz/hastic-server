@@ -9,20 +9,26 @@ type SegmentId = string;
 
 export class Segment {
   constructor(
-    public auId: AnalyticUnitId,
+    public analyticUnitId: AnalyticUnitId,
     public from: number,
     public to: number,
     public labeled: boolean,
     public id?: SegmentId
   ) {
-    if(auId === undefined) {
+    if(analyticUnitId === undefined) {
       throw new Error('AnalyticUnitId is undefined');
     }
     if(from === undefined) {
       throw new Error('from is undefined');
     }
+    if(isNaN(from)) {
+      throw new Error('from is NaN');
+    }
     if(to === undefined) {
       throw new Error('to is undefined');
+    }
+    if(isNaN(to)) {
+      throw new Error('to is NaN');
     }
     if(labeled === undefined) {
       throw new Error('labeled is undefined');
@@ -32,7 +38,7 @@ export class Segment {
   public toObject() {
     return {
       _id: this.id,
-      auId: this.auId,
+      analyticUnitId: this.analyticUnitId,
       from: this.from,
       to: this.to,
       labeled: this.labeled
@@ -44,8 +50,9 @@ export class Segment {
       throw new Error('obj is undefined');
     }
     return new Segment(
-      obj.auId, +obj.from, +obj.to,
-      obj.labeled, obj.id || obj._id
+      obj.analyticUnitId, 
+      +obj.from, +obj.to,
+      obj.labeled, obj._id
     );
   }
 }
