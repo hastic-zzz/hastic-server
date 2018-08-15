@@ -48,6 +48,13 @@ function wrapIdsToQuery(query: string[] | object): any {
   return query;
 }
 
+function isEmptyArray(obj: any): boolean {
+  if(!Array.isArray(obj)) {
+    return false;
+  }
+  return obj.length == 0;
+}
+
 const db = new Map<Collection, nedb>();
 
 let dbInsertOne = (collection: Collection, doc: object) => {
@@ -104,9 +111,12 @@ let dbFindOne = (collection: Collection, query: string | object) => {
 }
 
 let dbFindMany = (collection: Collection, query: string[] | object) => {
+  if(isEmptyArray(query)) {
+    return Promise.resolve([]);
+  }
   query = wrapIdsToQuery(query);
   return new Promise<any[]>((resolve, reject) => {
-    db.get(collection).findOne(query, (err, docs: any[]) => {
+    db.get(collection).find(query, (err, docs: any[]) => {
       if(err) {
         reject(err);
       } else {
@@ -116,15 +126,15 @@ let dbFindMany = (collection: Collection, query: string[] | object) => {
   });
 }
 
-let dbRemoveOne = (collection: Collection, id: string) => {
-  let query = { _id: id };
+let dbRemoveOne = (collection: Collection, query: string | object) => {
+  query = wrapIdToQuery(query);
   return new Promise<boolean>((resolve, reject) => {
-    db.get(collection).remove(query, (err, numRemoved) => {
+    db.get(collection).remove(query, { /* options */ }, (err, numRemoved) => {
       if(err) {
         reject(err);
       } else {
         if(numRemoved > 1) {
-          throw new Error(`Removed ${numRemoved} elements with id: ${id}. Only one is Ok.`);
+          throw new Error(`Removed ${numRemoved} elements with query: ${JSON.stringify(query)}. Only one is Ok.`);
         } else {
           resolve(numRemoved == 1);
         }
@@ -134,9 +144,12 @@ let dbRemoveOne = (collection: Collection, id: string) => {
 }
 
 let dbRemoveMany = (collection: Collection, query: string[] | object) => {
+  if(isEmptyArray(query)) {
+    return Promise.resolve([]);
+  }
   query = wrapIdsToQuery(query);
   return new Promise<number>((resolve, reject) => {
-    db.get(collection).remove(query, (err, numRemoved) => {
+    db.get(collection).remove(query, { multi: true }, (err, numRemoved) => {
       if(err) {
         reject(err);
       } else {
@@ -145,7 +158,6 @@ let dbRemoveMany = (collection: Collection, query: string[] | object) => {
     });
   });
 }
-
 
 function maybeCreateDir(path: string): void {
   if(fs.existsSync(path)) {

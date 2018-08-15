@@ -5,7 +5,7 @@ import { Collection, makeDBQ } from '../services/data_service';
 let db = makeDBQ(Collection.SEGMENTS);
 
 
-type SegmentId = string;
+export type SegmentId = string;
 
 export class Segment {
   constructor(
@@ -64,7 +64,7 @@ export type FindManyQuery = {
 }
 
 export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promise<Segment[]> {
-  var dbQuery: any = { auId: id };
+  var dbQuery: any = { analyticUnitId: id };
   if(query.timeFromGTE !== undefined) {
     dbQuery.from = { $gte: query.timeFromGTE };
   }
@@ -72,6 +72,9 @@ export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promis
     dbQuery.to = { $lte: query.timeToLTE };
   }
   let segs = await db.findMany(dbQuery);
+  if(segs === null) {
+    return [];
+  }
   return segs.map(Segment.fromObject);
 }
 
