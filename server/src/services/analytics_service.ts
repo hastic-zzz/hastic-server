@@ -29,8 +29,8 @@ export class AnalyticsService {
   private _requester: any;
   private _ready: boolean = false;
   private _pingResponded = false;
-  private _zmqConnectionString = null;
-  private _ipcPath = null;
+  private _zmqConnectionString: string = null;
+  private _ipcPath: string = null;
   private _analyticsPinger: NodeJS.Timer = null;
   private _isClosed = false;
 
@@ -55,7 +55,7 @@ export class AnalyticsService {
       strMessage = 'PING';
     }
     return new Promise<void>((resolve, reject) => {
-      this._requester.send(strMessage, undefined, (err) => {
+      this._requester.send(strMessage, undefined, (err: any) => {
         if(err) {
           reject(err);
         } else {
@@ -184,7 +184,7 @@ export class AnalyticsService {
     }
   }
 
-  private _onAnalyticsMessage(data: any, error) {
+  private _onAnalyticsMessage(data: any) {
     if(data.toString() === 'PONG') {
       this._pingResponded = true;
       if(!this._ready) {

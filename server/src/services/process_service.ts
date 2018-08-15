@@ -1,6 +1,6 @@
 
 
-var exitHandlers = []
+var exitHandlers: (() => void)[] = [];
 var exitHandled = false;
 
 /**
@@ -12,7 +12,7 @@ export function registerExitHandler(callback: () => void) {
   exitHandlers.push(callback);
 }
 
-function exitHandler(options, err) {
+function exitHandler(options: any, err?: any) {
   if(exitHandled) {
     return;
   }
@@ -24,15 +24,21 @@ function exitHandler(options, err) {
   process.exit();
 }
 
+function catchException(options: any, err: any) {
+  console.log('Server exception:');
+  console.log(err);
+  exitHandler({ exit: true });
+}
+
 //do something when app is closing
-process.on('exit', exitHandler.bind(null,{cleanup:true}));
+process.on('exit', exitHandler.bind(null, { cleanup:true }));
 
 //catches ctrl+c event
-process.on('SIGINT', exitHandler.bind(null, {exit:true}));
+process.on('SIGINT', exitHandler.bind(null, { exit:true }));
 
 // catches "kill pid" (for example: nodemon restart)
-process.on('SIGUSR1', exitHandler.bind(null, {exit:true}));
-process.on('SIGUSR2', exitHandler.bind(null, {exit:true}));
+process.on('SIGUSR1', exitHandler.bind(null, { exit:true }));
+process.on('SIGUSR2', exitHandler.bind(null, { exit:true }));
 
 //catches uncaught exceptions
-process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
+process.on('uncaughtException', catchException.bind(null, { exit:true }));

@@ -1,32 +1,22 @@
 import * as Router from 'koa-router';
 
-import * as AnalyticUnit from '../models/analytic_unit';
+import * as AnalyticUnit from '../models/analytic_unit_model';
 
-import { runLearning } from '../controllers/analytics_controller'
-import { saveTargets } from '../controllers/metrics_controler';
+import { createAnalyticUnitFromObject } from '../controllers/analytics_controller'
 
-async function sendStatus(ctx: Router.IRouterContext) {
+
+async function getStatus(ctx: Router.IRouterContext) {
   try {
-    let id = ctx.request.query.id;
-    if(id === undefined) {
-      throw new Error('Id is undefined');
-    }
-    let unit = AnalyticUnit.findById(id);
-
-    if(unit.status === undefined) {
-      throw new Error('status is undefined');
-    }
-    ctx.response.body = { status: unit.status, errorMessage: unit.error };
+    ctx.response.body = { status: 'READY', errorMessage: undefined };
   } catch(e) {
     console.error(e);
     // TODO: better send 404 when we know than isn`t found
     ctx.response.status = 500;
     ctx.response.body = { error: 'Can`t return anything' };
   }
-
 }
 
-async function findItem(ctx: Router.IRouterContext) {
+async function getUnit(ctx: Router.IRouterContext) {
   try {
     let id = ctx.request.query.id;
 
@@ -34,7 +24,7 @@ async function findItem(ctx: Router.IRouterContext) {
       throw new Error('No id param in query');
     }
 
-    let unit: AnalyticUnit.AnalyticUnit = AnalyticUnit.findById(id);
+    let unit: AnalyticUnit.AnalyticUnit = await AnalyticUnit.findById(id);
 
     ctx.response.body = {
       name: unit.name,
@@ -50,58 +40,10 @@ async function findItem(ctx: Router.IRouterContext) {
   }
 }
 
-async function createItem(ctx: Router.IRouterContext) {
+async function createUnit(ctx: Router.IRouterContext) {
   try {
-
-    let body = ctx.request.body;
-
-    if(body.type === undefined) {
-      throw new Error(`Missing field "type"`);
-    }
-    if(body.name === undefined) {
-      throw new Error(`Missing field "name"`);
-    }
-    if(body.panelUrl === undefined) {
-      throw new Error(`Missing field "panelUrl"`);
-    }
-    if(body.metric === undefined) {
-      throw new Error(`Missing field "datasource"`);
-    }
-    if(body.metric.datasource === undefined) {
-      throw new Error(`Missing field "metric.datasource"`);
-    }
-    if(body.metric.targets === undefined) {
-      throw new Error(`Missing field "metric.targets"`);
-    }
-
-    const metric: AnalyticUnit.Metric = {
-      datasource: body.metric.datasource,
-      targets: saveTargets(body.metric.targets)
-    };
-
-    const unit: AnalyticUnit.AnalyticUnit = {
-      name: body.name,
-      panelUrl: body.panelUrl,
-      type: body.type,
-      datasource: body.datasource,
-      metric: metric,
-      status: 'learning',
-      lastPredictionTime: 0,
-      nextId: 0
-    };
-
-    let newId = AnalyticUnit.createItem(unit);
-    if(newId === null) {
-      ctx.response.status = 403;
-      ctx.response.body = {
-        code: 403,
-        message: 'Item exists'
-      };
-    }
-
+    let newId = await createAnalyticUnitFromObject(ctx.request.body);
     ctx.response.body = { id: newId };
-
-    runLearning(newId);
   } catch(e) {
     ctx.response.status = 500;
     ctx.response.body = {
@@ -109,16 +51,12 @@ async function createItem(ctx: Router.IRouterContext) {
       message: `Creation error: ${e.message}`
     };
   }
+  
 }
 
-function deleteItem(ctx: Router.IRouterContext) {
+async function deleteUnit(ctx: Router.IRouterContext) {
   try {
-    let id = ctx.request.query.id;
-
-    if(id !== undefined) {
-      AnalyticUnit.remove(id);
-    }
-
+    await AnalyticUnit.remove(ctx.request.query.id);
     ctx.response.body = {
       code: 200,
       message: 'Success'
@@ -135,7 +73,7 @@ function deleteItem(ctx: Router.IRouterContext) {
 
 export var router = new Router();
 
-router.get('/status', sendStatus);
-router.get('/', findItem);
-router.post('/', createItem);
-router.delete('/', deleteItem);
+router.get('/', getUnit);
+router.get('/status', getStatus);
+router.post('/', createUnit);
+router.delete('/', deleteUnit);

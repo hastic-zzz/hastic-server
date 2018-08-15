@@ -1,11 +1,10 @@
-import * as DataService from '../services/data_service';
-import { getTarget } from './metrics_controler';
-import { getLabeledSegments, insertSegments, removeSegments } from './segments_controller';
-import * as AnalyticUnit from '../models/analytic_unit'
+import { Task } from '../models/task_model';
+import * as SegmentsController from '../models/segment_model';
+import * as AnalyticUnit from '../models/analytic_unit_model';
 import { AnalyticsService, AnalyticsMessage } from '../services/analytics_service';
 
 
-const taskMap = {};
+const taskMap = new Map<string, any>();
 let nextTaskId = 0;
 
 let analyticsService: AnalyticsService = undefined;
@@ -16,19 +15,11 @@ function onTaskResult(taskResult: any) {
   let status = taskResult.status;
   if(status === 'SUCCESS' || status === 'FAILED') {
     if(taskId in taskMap) {
-      let resolver = taskMap[taskId];
+      let resolver: any = taskMap.get(taskId);
       resolver(taskResult);
-      delete taskMap[taskId];
+      taskMap.delete(taskId);
     }
   }
-}
-
-async function onFileSave(payload: any): Promise<any> {
-  return DataService.saveFile(payload.filename, payload.content);
-}
-
-async function onFileLoad(payload: any): Promise<any> {
-  return DataService.loadFile(payload.filename);
 }
 
 async function onMessage(message: AnalyticsMessage) {
@@ -37,15 +28,6 @@ async function onMessage(message: AnalyticsMessage) {
 
   if(message.method === 'TASK_RESULT') {
     onTaskResult(message.payload);
-    resolvedMethod = true;
-  }
-
-  if(message.method === 'FILE_SAVE') {
-    responsePayload = await onFileSave(message.payload);
-    resolvedMethod = true;
-  }
-  if(message.method === 'FILE_LOAD') {
-    responsePayload = await onFileLoad(message.payload); 
     resolvedMethod = true;
   }
 
@@ -68,76 +50,82 @@ export function terminate() {
   analyticsService.close();
 }
 
-async function runTask(task): Promise<any> {
-  let anomaly: AnalyticUnit.AnalyticUnit = AnalyticUnit.findById(task.analyticUnitId);
-  task.metric = {
-    datasource: anomaly.metric.datasource,
-    targets: anomaly.metric.targets.map(getTarget)
-  };
+async function runTask(task: Task): Promise<any> {
+  // let anomaly: AnalyticUnit.AnalyticUnit = await AnalyticUnit.findById(task.analyticUnitId);
+  // task.metric = {
+  //   datasource: anomaly.metric.datasource,
+  //   targets: anomaly.metric.targets.map(getTarget)
+  // };
 
-  task._taskId = nextTaskId++;
-  await analyticsService.sendTask(task);
+  // task._taskId = nextTaskId++;
+  // await analyticsService.sendTask(task);
 
-  return new Promise<void>(resolve => {
-    taskMap[task._taskId] = resolve;
-  })
+  // return new Promise<void>(resolve => {
+  //   taskMap[task._taskId] = resolve;
+  // })
 }
 
 export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
-  let segments = getLabeledSegments(id);
-  AnalyticUnit.setStatus(id, 'LEARNING');
-  let unit = AnalyticUnit.findById(id);
-  let pattern = unit.type;
-  let task = {
-    analyticUnitId: id,
-    type: 'LEARN',
-    pattern,
-    segments: segments
-  };
+  // let segments = getLabeledSegments(id);
+  // AnalyticUnit.setStatus(id, 'LEARNING');
+  // let unit = await AnalyticUnit.findById(id);
+  // let pattern = unit.type;
+  // let task = {
+  //   analyticUnitId: id,
+  //   type: 'LEARN',
+  //   pattern,
+  //   segments: segments
+  // };
 
-  let result = await runTask(task);
+  // let result = await runTask(task);
 
-  if (result.status === 'SUCCESS') {
-    AnalyticUnit.setStatus(id, 'READY');
-    insertSegments(id, result.segments, false);
-    AnalyticUnit.setPredictionTime(id, result.lastPredictionTime);
-  } else {
-    AnalyticUnit.setStatus(id, 'FAILED', result.error);
-  }
+  // if (result.status === 'SUCCESS') {
+  //   AnalyticUnit.setStatus(id, 'READY');
+  //   insertSegments(id, result.segments, false);
+  //   AnalyticUnit.setPredictionTime(id, result.lastPredictionTime);
+  // } else {
+  //   AnalyticUnit.setStatus(id, 'FAILED', result.error);
+  // }
 }
 
-
 export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
-  let unit = AnalyticUnit.findById(id);
-  let pattern = unit.type;
-  let task = {
-    type: 'predict',
-    analyticUnitId: id,
-    pattern,
-    lastPredictionTime: unit.lastPredictionTime
-  };
-  let result = await runTask(task);
+  // let unit = await AnalyticUnit.findById(id);
+  // let pattern = unit.type;
+  // let task = {
+  //   type: 'PREDICT',
+  //   analyticUnitId: id,
+  //   pattern,
+  //   lastPredictionTime: unit.lastPredictionTime
+  // };
+  // let result = await runTask(task);
 
-  if(result.status === 'FAILED') {
-    return [];
-  }
-  // Merging segments
-  let segments = getLabeledSegments(id);
-  if(segments.length > 0 && result.segments.length > 0) {
-    let lastOldSegment = segments[segments.length - 1];
-    let firstNewSegment = result.segments[0];
+  // if(result.status === 'FAILED') {
+  //   return [];
+  // }
+  // // Merging segments
+  // let segments = getLabeledSegments(id);
+  // if(segments.length > 0 && result.segments.length > 0) {
+  //   let lastOldSegment = segments[segments.length - 1];
+  //   let firstNewSegment = result.segments[0];
 
-    if(firstNewSegment.start <= lastOldSegment.finish) {
-      result.segments[0].start = lastOldSegment.start;
-      removeSegments(id, [lastOldSegment.id]);
-    }
-  }
+  //   if(firstNewSegment.start <= lastOldSegment.finish) {
+  //     result.segments[0].start = lastOldSegment.start;
+  //     removeSegments(id, [lastOldSegment.id]);
+  //   }
+  // }
 
-  insertSegments(id, result.segments, false);
-  AnalyticUnit.setPredictionTime(id, result.lastPredictionTime);
-  return result.segments;
+  // insertSegments(id, result.segments, false);
+  // AnalyticUnit.setPredictionTime(id, result.lastPredictionTime);
+  // return result.segments;
 }
 
 export function isAnalyticReady(): boolean {
   return analyticsService.ready;
+}
+
+export async function createAnalyticUnitFromObject(obj: any): Promise<AnalyticUnit.AnalyticUnitId> {
+  let unit: AnalyticUnit.AnalyticUnit = AnalyticUnit.AnalyticUnit.fromObject(obj);
+  let id = await AnalyticUnit.create(unit);
+  // runLearning(unit);
+  return id;
 }
