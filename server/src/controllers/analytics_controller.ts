@@ -1,5 +1,5 @@
 import { Task } from '../models/task_model';
-import * as SegmentsController from '../models/segment_model';
+import * as Segments from '../models/segment_model';
 import * as AnalyticUnit from '../models/analytic_unit_model';
 import { AnalyticsService, AnalyticsMessage } from '../services/analytics_service';
 
@@ -66,26 +66,26 @@ async function runTask(task: Task): Promise<any> {
 }
 
 export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
-  // let segments = getLabeledSegments(id);
-  // AnalyticUnit.setStatus(id, 'LEARNING');
-  // let unit = await AnalyticUnit.findById(id);
-  // let pattern = unit.type;
-  // let task = {
-  //   analyticUnitId: id,
-  //   type: 'LEARN',
-  //   pattern,
-  //   segments: segments
-  // };
+  let segments = Segments.findMany(id, { labeled: true });
+  AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
+  let unit = await AnalyticUnit.findById(id);
+  let pattern = unit.type;
+  let task = {
+    analyticUnitId: id,
+    type: 'LEARN',
+    pattern,
+    segments: segments
+  };
 
-  // let result = await runTask(task);
+  let result = await runTask(task);
 
-  // if (result.status === 'SUCCESS') {
-  //   AnalyticUnit.setStatus(id, 'READY');
-  //   insertSegments(id, result.segments, false);
-  //   AnalyticUnit.setPredictionTime(id, result.lastPredictionTime);
-  // } else {
-  //   AnalyticUnit.setStatus(id, 'FAILED', result.error);
-  // }
+  if (result.status === 'SUCCESS') {
+    AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
+    insertSegments(id, result.segments, false);
+    AnalyticUnit.setPredictionTime(id, result.lastPredictionTime);
+  } else {
+    AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.FAILED, result.error);
+  }
 }
 
 export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
