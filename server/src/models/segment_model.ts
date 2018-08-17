@@ -60,7 +60,8 @@ export class Segment {
 export type FindManyQuery = {
   timeFromGTE?: number,
   timeToLTE?: number,
-  intexGT?: number
+  intexGT?: number,
+  labeled?: boolean
 }
 
 export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promise<Segment[]> {
@@ -70,6 +71,9 @@ export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promis
   }
   if(query.timeToLTE !== undefined) {
     dbQuery.to = { $lte: query.timeToLTE };
+  }
+  if(query.labeled !== undefined) {
+    dbQuery.labeled = query.labeled;
   }
   let segs = await db.findMany(dbQuery);
   if(segs === null) {

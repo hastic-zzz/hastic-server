@@ -20,9 +20,6 @@ export class AnalyticsMessage {
   }
 }
 
-function analyticsMessageFromJson(obj: any): AnalyticsMessage {
-  return new AnalyticsMessage(obj);
-}
 
 export class AnalyticsService {
 
@@ -194,7 +191,6 @@ export class AnalyticsService {
       return;
     }
 
-    
     let text = data.toString();
     let response;
     try {

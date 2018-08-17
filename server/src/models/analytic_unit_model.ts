@@ -5,7 +5,14 @@ import { Collection, makeDBQ } from '../services/data_service';
 let db = makeDBQ(Collection.ANALYTIC_UNITS);
 
 
+
 export type AnalyticUnitId = string;
+export enum AnalyticUnitStatus { 
+  LEARNING = 'LEARNING',
+  SUCCESS = 'SUCCESS',
+  READY = 'READY',
+  FAILED = 'FAILED'
+}
 
 export class AnalyticUnit {
   constructor(
@@ -15,7 +22,7 @@ export class AnalyticUnit {
     public metric: Metric,
     public id?: AnalyticUnitId,
     public lastPredictionTime?: number,
-    public status?: string,
+    public status?: AnalyticUnitStatus,
     public error?: string,
   ) {
     if(name === undefined) {
@@ -54,7 +61,7 @@ export class AnalyticUnit {
       obj.panelUrl,
       obj.type,
       Metric.fromObject(obj.metric),
-      obj.status,
+      obj.status as AnalyticUnitStatus,
       obj.lastPredictionTime,
       obj._id,
       obj.error,
