@@ -1,3 +1,4 @@
+import { AnalyticsMessageMethod, AnalyticsMessage } from '../models/analytics_message_model'
 import * as config from '../config';
 
 const zmq = require('zeromq');
@@ -5,20 +6,6 @@ const zmq = require('zeromq');
 import * as childProcess from 'child_process'
 import * as fs from 'fs';
 import * as path from 'path';
-
-
-export class AnalyticsMessage {
-  public constructor(public method: string, public payload?: string, public requestId?: number) {
-
-  }
-
-  static fromJSON(obj: any): AnalyticsMessage {
-    if(obj.method === undefined) {
-      throw new Error('No method in obj:' + obj);
-    }
-    return new AnalyticsMessage(obj.method, obj.payload, obj.requestId);
-  }
-}
 
 
 export class AnalyticsService {
@@ -40,7 +27,7 @@ export class AnalyticsService {
       return Promise.reject("Analytics is not ready");
     }
     let message = {
-      method: 'TASK',
+      method: AnalyticsMessageMethod.TASK,
       payload: taskObj
     }
     return this.sendMessage(message);
@@ -48,7 +35,7 @@ export class AnalyticsService {
 
   public async sendMessage(message: AnalyticsMessage): Promise<void> {
     let strMessage = JSON.stringify(message);
-    if(message.method === 'PING') {
+    if(message.method === AnalyticsMessageMethod.PING) {
       strMessage = 'PING';
     }
     return new Promise<void>((resolve, reject) => {
@@ -200,7 +187,7 @@ export class AnalyticsService {
       console.error(text);
       throw new Error('Unexpected response');
     }
-    this._onMessage(AnalyticsMessage.fromJSON(response));
+    this._onMessage(AnalyticsMessage.fromObject(response));
   }
 
   private async _runAlalyticsPinger() {
@@ -214,7 +201,7 @@ export class AnalyticsService {
       }
       this._pingResponded = false;
       // TODO: set life limit for this ping
-      this.sendMessage({ method: 'PING' });
+      this.sendMessage({ method: AnalyticsMessageMethod.PING });
     }, config.ANLYTICS_PING_INTERVAL);
   }
 

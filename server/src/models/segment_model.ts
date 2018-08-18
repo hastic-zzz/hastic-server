@@ -12,7 +12,7 @@ export class Segment {
     public analyticUnitId: AnalyticUnitId,
     public from: number,
     public to: number,
-    public labeled: boolean,
+    public labeled: boolean = false,
     public id?: SegmentId
   ) {
     if(analyticUnitId === undefined) {
@@ -29,9 +29,6 @@ export class Segment {
     }
     if(isNaN(to)) {
       throw new Error('to is NaN');
-    }
-    if(labeled === undefined) {
-      throw new Error('labeled is undefined');
     }
   }
 

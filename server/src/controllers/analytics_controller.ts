@@ -1,11 +1,11 @@
-import { Task } from '../models/task_model';
+import { AnalyticsMessageMethod, AnalyticsMessage } from '../models/analytics_message_model'
+import { AnalyticsTask, AnalyticsTaskType } from '../models/analytics_task_model';
 import * as Segments from '../models/segment_model';
 import * as AnalyticUnit from '../models/analytic_unit_model';
-import { AnalyticsService, AnalyticsMessage } from '../services/analytics_service';
+import { AnalyticsService } from '../services/analytics_service';
 
 
 const taskMap = new Map<string, any>();
-let nextTaskId = 0;
 
 let analyticsService: AnalyticsService = undefined;
 
@@ -26,7 +26,7 @@ async function onMessage(message: AnalyticsMessage) {
   let responsePayload = null;
   let resolvedMethod = false;
 
-  if(message.method === 'TASK_RESULT') {
+  if(message.method === AnalyticsMessageMethod.TASK_RESULT) {
     onTaskResult(message.payload);
     resolvedMethod = true;
   }
@@ -50,7 +50,7 @@ export function terminate() {
   analyticsService.close();
 }
 
-async function runTask(task: Task): Promise<any> {
+async function runTask(task: AnalyticsTask): Promise<any> {
   // let anomaly: AnalyticUnit.AnalyticUnit = await AnalyticUnit.findById(task.analyticUnitId);
   // task.metric = {
   //   datasource: anomaly.metric.datasource,
@@ -66,26 +66,59 @@ async function runTask(task: Task): Promise<any> {
 }
 
 export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
-  let segments = Segments.findMany(id, { labeled: true });
+  let segments = await Segments.findMany(id, { labeled: true });
+  let segmentObjs = segments.map(s => s.toObject());
+
+  let analyticUnit = await AnalyticUnit.findById(id);
+  if(analyticUnit.status === AnalyticUnit.AnalyticUnitStatus.LEARNING) {
+    throw new Error('Can`t starn learning when it`s already started [' + id + ']');
+  }
+
   AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
-  let unit = await AnalyticUnit.findById(id);
-  let pattern = unit.type;
-  let task = {
-    analyticUnitId: id,
-    type: 'LEARN',
-    pattern,
-    segments: segments
+  let previousLastPredictionTime = analyticUnit.lastPredictionTime;
+
+  try {
+    let pattern = analyticUnit.type;
+    let task = new AnalyticsTask(
+      id, AnalyticsTaskType.LEARN, { pattern, segments: segmentObjs }
+    );
+    let result = await runTask(task);
+    let { lastPredictionTime, segments } = await processLearningResult(result);
+
+    await Promise.all([
+      Segments.insertSegments(segments),
+      AnalyticUnit.setPredictionTime(id, lastPredictionTime)
+    ]);
+    await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
+
+  } catch (err) {
+    await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.FAILED, err);
+    await AnalyticUnit.setPredictionTime(id, previousLastPredictionTime);
+  }
+
+}
+
+async function processLearningResult(taskResult: any): Promise<{
+  lastPredictionTime: number,
+  segments: Segments.Segment[]
+}> {
+  if(taskResult.status !== 'SUCCESS') {
+    return Promise.reject(taskResult.error);
+  }
+  if(taskResult.segments === undefined || !Array.isArray(taskResult.segments)) {
+    throw new Error('Missing segments is result or it is corrupted: ' + taskResult);
+  }
+  if(taskResult.lastPredictionTime === undefined || isNaN(+taskResult.lastPredictionTime)) {
+    throw new Error(
+      'Missing lastPredictionTime is result or it is corrupted: ' + taskResult.lastPredictionTime
+    );
+  }
+
+  return {
+    lastPredictionTime: +taskResult.lastPredictionTime,
+    segments: taskResult.segments.map(Segments.Segment.fromObject)
   };
 
-  let result = await runTask(task);
-
-  if (result.status === 'SUCCESS') {
-    AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
-    insertSegments(id, result.segments, false);
-    AnalyticUnit.setPredictionTime(id, result.lastPredictionTime);
-  } else {
-    AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.FAILED, result.error);
-  }
 }
 
 export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {

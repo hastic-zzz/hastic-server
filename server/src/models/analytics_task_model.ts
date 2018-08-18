@@ -1,14 +1,18 @@
 import { AnalyticUnitId } from "./analytic_unit_model";
 
 
-export type TaskId = string;
-export enum TaskType { LEARN = 'LEARN' };
+export type AnalyticsTaskId = string;
+export enum AnalyticsTaskType { 
+  LEARN = 'LEARN',
+  PREDICT = 'PREDICT'
+};
 
-export class Task {
+export class AnalyticsTask {
   constructor(
     public analyticUnitId: AnalyticUnitId,
-    public type: TaskType,
-    public id?: TaskId
+    public type: AnalyticsTaskType,
+    public payload?: any,
+    public id?: AnalyticsTaskId
   ) {
     if(analyticUnitId === undefined) {
       throw new Error('analyticUnitId is undefined');
@@ -21,17 +25,18 @@ export class Task {
   public toObject() {
     return {
       _id: this.id,
-      analyticUnitId: this.analyticUnitId
+      analyticUnitId: this.analyticUnitId,
+      type: this.type
     };
   }
 
-  static fromObject(obj: any): Task {
+  static fromObject(obj: any): AnalyticsTask {
     if(obj === undefined) {
       throw new Error('obj is undefined');
     }
-    return new Task(
+    return new AnalyticsTask(
       obj.analyticUnitId,
-      obj.type as TaskType,
+      obj.type as AnalyticsTaskType,
       obj._id,
     );
   }
