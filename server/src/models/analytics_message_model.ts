@@ -1,13 +1,12 @@
 export enum AnalyticsMessageMethod {
   TASK = 'TASK',
-  PING = 'PING',
   TASK_RESULT = 'TASK_RESULT'
 }
 
 export class AnalyticsMessage {
   public constructor(
     public method: AnalyticsMessageMethod,
-    public payload?: string, 
+    public payload?: any,
     public requestId?: number
   ) {
 

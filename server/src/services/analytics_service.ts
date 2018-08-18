@@ -1,4 +1,5 @@
-import { AnalyticsMessageMethod, AnalyticsMessage } from '../models/analytics_message_model'
+import { AnalyticsTask } from '../models/analytics_task_model';
+import { AnalyticsMessageMethod, AnalyticsMessage } from '../models/analytics_message_model';
 import * as config from '../config';
 
 const zmq = require('zeromq');
@@ -22,24 +23,25 @@ export class AnalyticsService {
     this._init();
   }
 
-  public async sendTask(taskObj: any): Promise<void> {
+  public async sendTask(task: AnalyticsTask): Promise<void> {
     if(!this._ready) {
       return Promise.reject("Analytics is not ready");
     }
-    let message = {
-      method: AnalyticsMessageMethod.TASK,
-      payload: taskObj
-    }
+    let message = new AnalyticsMessage(
+      AnalyticsMessageMethod.TASK,
+      task.toObject()
+    );
     return this.sendMessage(message);
   }
 
   public async sendMessage(message: AnalyticsMessage): Promise<void> {
     let strMessage = JSON.stringify(message);
-    if(message.method === AnalyticsMessageMethod.PING) {
-      strMessage = 'PING';
-    }
+    return this.sendText(strMessage);
+  }
+
+  public async sendText(text: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      this._requester.send(strMessage, undefined, (err: any) => {
+      this._requester.send(text, undefined, (err: any) => {
         if(err) {
           reject(err);
         } else {
@@ -169,7 +171,8 @@ export class AnalyticsService {
   }
 
   private _onAnalyticsMessage(data: any) {
-    if(data.toString() === 'PONG') {
+    let text = data.toString();
+    if(text === 'PONG') {
       this._pingResponded = true;
       if(!this._ready) {
         this._ready = true;
@@ -178,7 +181,6 @@ export class AnalyticsService {
       return;
     }
 
-    let text = data.toString();
     let response;
     try {
       response = JSON.parse(text);
@@ -201,7 +203,7 @@ export class AnalyticsService {
       }
       this._pingResponded = false;
       // TODO: set life limit for this ping
-      this.sendMessage({ method: AnalyticsMessageMethod.PING });
+      this.sendText('PING');
     }, config.ANLYTICS_PING_INTERVAL);
   }
 

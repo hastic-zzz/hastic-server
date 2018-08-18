@@ -1,5 +1,9 @@
 import { AnalyticUnitId } from "./analytic_unit_model";
 
+import { uid } from "../utils/uid";
+
+
+const UID_LENGTH = 16;
 
 export type AnalyticsTaskId = string;
 export enum AnalyticsTaskType { 
@@ -20,13 +24,17 @@ export class AnalyticsTask {
     if(type === undefined || type === null) {
       throw new Error('type is undefined or null');
     }
+    if(id === undefined) {
+      this.id = uid(UID_LENGTH);
+    }
   }
 
   public toObject() {
     return {
       _id: this.id,
       analyticUnitId: this.analyticUnitId,
-      type: this.type
+      type: this.type,
+      payload: this.payload
     };
   }
 
@@ -37,6 +45,7 @@ export class AnalyticsTask {
     return new AnalyticsTask(
       obj.analyticUnitId,
       obj.type as AnalyticsTaskType,
+      obj.payload,
       obj._id,
     );
   }
