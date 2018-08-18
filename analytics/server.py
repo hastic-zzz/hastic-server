@@ -33,18 +33,18 @@ async def handle_task(task: object):
 
         logger.info("Command is OK")
 
-        response_task_payload = {
-            '_taskId': task['_taskId'],
+        task_result_payload = {
+            '_id': task['_id'],
             'task': task['type'],
             'analyticUnitId': task['analyticUnitId'],
             'status': "IN_PROGRESS"
         }
 
-        message = services.server_service.ServerMessage('TASK_RESULT', response_task_payload)
+        message = services.server_service.ServerMessage('TASK_RESULT', task_result_payload)
         await server_service.send_message(message)
 
         res = await worker.do_task(task)
-        res['_taskId'] = task['_taskId']
+        res['_id'] = task['_id']
         
         message = services.server_service.ServerMessage('TASK_RESULT', res)
         await server_service.send_message(message)

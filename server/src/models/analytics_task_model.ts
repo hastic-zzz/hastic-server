@@ -12,11 +12,12 @@ export enum AnalyticsTaskType {
 };
 
 export class AnalyticsTask {
+
   constructor(
     public analyticUnitId: AnalyticUnitId,
     public type: AnalyticsTaskType,
     public payload?: any,
-    public id?: AnalyticsTaskId
+    private _id?: AnalyticsTaskId
   ) {
     if(analyticUnitId === undefined) {
       throw new Error('analyticUnitId is undefined');
@@ -24,9 +25,14 @@ export class AnalyticsTask {
     if(type === undefined || type === null) {
       throw new Error('type is undefined or null');
     }
-    if(id === undefined) {
-      this.id = uid(UID_LENGTH);
+    
+  }
+
+  public get id(): AnalyticsTaskId {
+    if(this._id === undefined) {
+      this._id = uid(UID_LENGTH);
     }
+    return this._id;
   }
 
   public toObject() {

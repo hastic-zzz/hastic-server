@@ -1,23 +1,23 @@
 import { AnalyticsMessageMethod, AnalyticsMessage } from '../models/analytics_message_model'
-import { AnalyticsTask, AnalyticsTaskType } from '../models/analytics_task_model';
+import { AnalyticsTask, AnalyticsTaskType, AnalyticsTaskId } from '../models/analytics_task_model';
 import * as Segments from '../models/segment_model';
 import * as AnalyticUnit from '../models/analytic_unit_model';
 import { AnalyticsService } from '../services/analytics_service';
 
 
-const taskMap = new Map<string, any>();
+const taskResolvers = new Map<AnalyticsTaskId, any>();
 
 let analyticsService: AnalyticsService = undefined;
 
 
 function onTaskResult(taskResult: any) {
-  let taskId = taskResult._taskId;
+  let taskId = taskResult._id;
   let status = taskResult.status;
   if(status === 'SUCCESS' || status === 'FAILED') {
-    if(taskId in taskMap) {
-      let resolver: any = taskMap.get(taskId);
+    if(taskId in taskResolvers) {
+      let resolver: any = taskResolvers.get(taskId);
       resolver(taskResult);
-      taskMap.delete(taskId);
+      taskResolvers.delete(taskId);
     }
   }
 }
@@ -58,11 +58,12 @@ async function runTask(task: AnalyticsTask): Promise<any> {
   // };
 
   // task._taskId = nextTaskId++;
-  // await analyticsService.sendTask(task);
+  // await ;
 
-  // return new Promise<void>(resolve => {
-  //   taskMap[task._taskId] = resolve;
-  // })
+  return new Promise<void>(resolve => {
+    taskResolvers[task.id] = resolve;
+  })
+    .then(() => analyticsService.sendTask(task));
 }
 
 export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
