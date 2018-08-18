@@ -5,19 +5,27 @@ import * as AnalyticUnit from '../models/analytic_unit_model';
 import { AnalyticsService } from '../services/analytics_service';
 
 
-const taskResolvers = new Map<AnalyticsTaskId, any>();
+type TaskResult = any;
+export type TaskResolver = (taskResult: TaskResult) => void;
+
+const taskResolvers = new Map<AnalyticsTaskId, TaskResolver>();
 
 let analyticsService: AnalyticsService = undefined;
 
 
-function onTaskResult(taskResult: any) {
-  let taskId = taskResult._id;
+function onTaskResult(taskResult: TaskResult) {
+  let id = taskResult._id;
+  if(id === undefined) {
+    throw new Error('id of task is undefined');
+  }
   let status = taskResult.status;
   if(status === 'SUCCESS' || status === 'FAILED') {
-    if(taskId in taskResolvers) {
-      let resolver: any = taskResolvers.get(taskId);
+    if(id in taskResolvers) {
+      let resolver: any = taskResolvers.get(id);
       resolver(taskResult);
-      taskResolvers.delete(taskId);
+      taskResolvers.delete(id);
+    } else {
+      throw new Error(`TaskResut [${id}] has no resolver`);
     }
   }
 }
@@ -50,51 +58,52 @@ export function terminate() {
   analyticsService.close();
 }
 
-async function runTask(task: AnalyticsTask): Promise<any> {
-  // let anomaly: AnalyticUnit.AnalyticUnit = await AnalyticUnit.findById(task.analyticUnitId);
+async function runTask(task: AnalyticsTask): Promise<TaskResult> {
   // task.metric = {
   //   datasource: anomaly.metric.datasource,
   //   targets: anomaly.metric.targets.map(getTarget)
   // };
-
-  // task._taskId = nextTaskId++;
-  // await ;
-
-  return new Promise<void>(resolve => {
-    taskResolvers[task.id] = resolve;
-  })
-    .then(() => analyticsService.sendTask(task));
+  
+  return new Promise<TaskResult>((resolver: TaskResolver) => {
+    taskResolvers.set(task.id, resolver); // it will be resolved in onTaskResult()
+    analyticsService.sendTask(task);      // we dont wait for result here
+  });
 }
 
 export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
-  let segments = await Segments.findMany(id, { labeled: true });
-  let segmentObjs = segments.map(s => s.toObject());
-
-  let analyticUnit = await AnalyticUnit.findById(id);
-  if(analyticUnit.status === AnalyticUnit.AnalyticUnitStatus.LEARNING) {
-    throw new Error('Can`t starn learning when it`s already started [' + id + ']');
-  }
-
-  AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
-  let previousLastPredictionTime = analyticUnit.lastPredictionTime;
+  
+  let previousLastPredictionTime: number = undefined;
 
   try {
+    let segments = await Segments.findMany(id, { labeled: true });
+    let segmentObjs = segments.map(s => s.toObject());
+
+    let analyticUnit = await AnalyticUnit.findById(id);
+    if(analyticUnit.status === AnalyticUnit.AnalyticUnitStatus.LEARNING) {
+      throw new Error('Can`t starn learning when it`s already started [' + id + ']');
+    }
+
+    AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
+
     let pattern = analyticUnit.type;
     let task = new AnalyticsTask(
       id, AnalyticsTaskType.LEARN, { pattern, segments: segmentObjs }
     );
     let result = await runTask(task);
-    let { lastPredictionTime, segments } = await processLearningResult(result);
+    let { lastPredictionTime, segments: predictedSegments } = await processLearningResult(result);
+    previousLastPredictionTime = analyticUnit.lastPredictionTime;
 
     await Promise.all([
-      Segments.insertSegments(segments),
+      Segments.insertSegments(predictedSegments),
       AnalyticUnit.setPredictionTime(id, lastPredictionTime)
     ]);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
 
   } catch (err) {
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.FAILED, err);
-    await AnalyticUnit.setPredictionTime(id, previousLastPredictionTime);
+    if(previousLastPredictionTime !== undefined) {
+      await AnalyticUnit.setPredictionTime(id, previousLastPredictionTime);
+    }
   }
 
 }

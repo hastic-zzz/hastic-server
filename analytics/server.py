@@ -45,7 +45,7 @@ async def handle_task(task: object):
 
         res = await worker.do_task(task)
         res['_id'] = task['_id']
-        
+
         message = services.server_service.ServerMessage('TASK_RESULT', res)
         await server_service.send_message(message)
 
@@ -56,7 +56,7 @@ async def handle_message(message: services.ServerMessage):
     payload = None
     if message.method == 'TASK':
         await handle_task(message.payload)
-    
+
 
 def init_services():
     logger.info("Starting services...")

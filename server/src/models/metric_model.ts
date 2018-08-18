@@ -1,5 +1,11 @@
+export type MetricId = string;
+
 export class Metric {
-  constructor(public datasource: string, public targets: any[]) {
+  constructor(
+    public datasource: string,
+    public targets: any[],
+    public id?: MetricId
+  ) {
     if(datasource === undefined) {
       throw new Error('datasource is undefined');
     }
@@ -14,7 +20,8 @@ export class Metric {
   public toObject() {
     return {
       datasource: this.datasource,
-      targets: this.targets
+      targets: this.targets,
+      _id: this.id
     };
   }
 
@@ -24,9 +31,8 @@ export class Metric {
     }
     return new Metric(
       obj.datasource,
-      obj.targets
+      obj.targets,
+      obj._id
     );
   }
 }
-
-
