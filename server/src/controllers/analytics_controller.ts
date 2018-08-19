@@ -1,4 +1,4 @@
-import { AnalyticsMessageMethod, AnalyticsMessage } from '../models/analytics_message_model'
+import { AnalyticsMessageMethod, AnalyticsMessage } from '../models/analytics_message_model';
 import { AnalyticsTask, AnalyticsTaskType, AnalyticsTaskId } from '../models/analytics_task_model';
 import * as Segment from '../models/segment_model';
 import * as AnalyticUnit from '../models/analytic_unit_model';
@@ -181,6 +181,8 @@ export async function updateSegments(
     Segment.insertSegments(segmentsToInsert),
     Segment.removeSegments(removedIds)
   ]);
+  // TODO: move setting status somehow "inside" learning
+  await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.PENDING);
   runLearning(id);
-  return { addedIds, removed }
+  return { addedIds, removed };
 }

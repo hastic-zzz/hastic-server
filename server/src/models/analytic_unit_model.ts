@@ -6,7 +6,7 @@ let db = makeDBQ(Collection.ANALYTIC_UNITS);
 
 
 export type AnalyticUnitId = string;
-export enum AnalyticUnitStatus { 
+export enum AnalyticUnitStatus {
   LEARNING = 'LEARNING',
   SUCCESS = 'SUCCESS',
   READY = 'READY',
@@ -88,6 +88,7 @@ export async function create(unit: AnalyticUnit): Promise<AnalyticUnitId> {
 }
 
 export async function remove(id: AnalyticUnitId): Promise<void> {
+  // TODO: remove it`s segments
   await db.removeOne(id);
 }
 

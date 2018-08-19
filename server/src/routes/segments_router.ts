@@ -1,6 +1,6 @@
 import * as AnalyticsController from '../controllers/analytics_controller';
 
-import { AnalyticUnitId, AnalyticUnit, AnalyticUnitStatus } from '../models/analytic_unit_model';
+import { AnalyticUnitId, AnalyticUnitStatus } from '../models/analytic_unit_model';
 import * as Segment from '../models/segment_model';
 
 import * as Router from 'koa-router';
@@ -46,7 +46,7 @@ async function updateSegments(ctx: Router.IRouterContext) {
       id, segmentsToInsert, removedIds
     );
 
-    ctx.response.body = { addedIds, removed, status: AnalyticUnitStatus.PENDING };
+    ctx.response.body = { addedIds, removed };
     
   } catch(e) {
     ctx.response.status = 500;

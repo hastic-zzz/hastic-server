@@ -85,9 +85,11 @@ let dbInsertMany = (collection: Collection, docs: object[]) => {
 }
 
 let dbUpdateOne = (collection: Collection, query: string | object, updateQuery: object) => {
+  // https://github.com/louischatriot/nedb#updating-documents
+  let nedbUpdateQuery = { $set: updateQuery }
   query = wrapIdToQuery(query);
   return new Promise<void>((resolve, reject) => {
-    db.get(collection).update(query, updateQuery, { /* options */ }, (err: Error) => {
+    db.get(collection).update(query, nedbUpdateQuery, { /* options */ }, (err: Error) => {
       if(err) {
         reject(err);
       } else {
