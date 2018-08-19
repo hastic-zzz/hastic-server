@@ -11,21 +11,18 @@ logger = logging.getLogger('WORKER')
 
 
 class AnalyticUnitWorker(object):
-    models_cache = {}
+    detectors_cache = {}
 
     # TODO: get task as an object built from json
     async def do_task(self, task):
         try:
             type = task['type']
             analytic_unit_id = task['analyticUnitId']
+            payload = task['payload']
             if type == "PREDICT":
-                last_prediction_time = task['lastPredictionTime']
-                pattern = task['pattern']
-                result = await self.do_predict(analytic_unit_id, last_prediction_time, pattern)
+                result = await self.do_predict(analytic_unit_id, payload)
             elif type == "LEARN":
-                segments = task['segments']
-                pattern = task['pattern']
-                result = await self.do_learn(analytic_unit_id, segments, pattern)
+                result = await self.do_learn(analytic_unit_id, payload)
             else:
                 result = {
                     'status': "FAILED",
@@ -44,7 +41,10 @@ class AnalyticUnitWorker(object):
             }
         return result
 
-    async def do_learn(self, analytic_unit_id, segments, pattern):
+    async def do_learn(self, analytic_unit_id, payload):
+        pattern = payload['pattern']
+        segments = payload['segments']
+
         model = self.get_model(analytic_unit_id, pattern)
         model.synchronize_data()
         last_prediction_time = await model.learn(segments)
@@ -64,7 +64,10 @@ class AnalyticUnitWorker(object):
         result['task'] = 'LEARN'
         return result
 
-    async def do_predict(self, analytic_unit_id, last_prediction_time, pattern):
+    async def do_predict(self, analytic_unit_id, payload):
+        pattern = payload['pattern']
+        last_prediction_time = payload['lastPredictionTime']
+
         model = self.get_model(analytic_unit_id, pattern)
         model.synchronize_data()
         segments, last_prediction_time = await model.predict(last_prediction_time)
@@ -76,11 +79,11 @@ class AnalyticUnitWorker(object):
             'lastPredictionTime': last_prediction_time
         }
 
-    def get_model(self, analytic_unit_id, pattern_type):
-        if analytic_unit_id not in self.models_cache:
+    def get_detector(self, analytic_unit_id, pattern_type):
+        if analytic_unit_id not in self.detectors_cache:
             if pattern_type == 'GENERAL':
-                model = detectors.GeneralDetector(analytic_unit_id)
+                detector = detectors.GeneralDetector(analytic_unit_id)
             else:
-                model = detectors.PatternDetector(analytic_unit_id, pattern_type)
-            self.models_cache[analytic_unit_id] = model
-        return self.models_cache[analytic_unit_id]
+                detector = detectors.PatternDetector(analytic_unit_id, pattern_type)
+            self.detectors_cache[analytic_unit_id] = detector
+        return self.detectors_cache[analytic_unit_id]
