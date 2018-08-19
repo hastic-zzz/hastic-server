@@ -1,8 +1,8 @@
-import * as Router from 'koa-router';
-
 import * as AnalyticUnit from '../models/analytic_unit_model';
 
 import { createAnalyticUnitFromObject } from '../controllers/analytics_controller'
+
+import * as Router from 'koa-router';
 
 
 async function getStatus(ctx: Router.IRouterContext) {
@@ -42,8 +42,8 @@ async function getUnit(ctx: Router.IRouterContext) {
 
 async function createUnit(ctx: Router.IRouterContext) {
   try {
-    let newId = await createAnalyticUnitFromObject(ctx.request.body);
-    ctx.response.body = { id: newId };
+    let id = await createAnalyticUnitFromObject(ctx.request.body);
+    ctx.response.body = { id };
   } catch(e) {
     ctx.response.status = 500;
     ctx.response.body = {

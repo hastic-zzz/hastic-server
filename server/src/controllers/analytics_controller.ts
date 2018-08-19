@@ -1,6 +1,6 @@
 import { AnalyticsMessageMethod, AnalyticsMessage } from '../models/analytics_message_model'
 import { AnalyticsTask, AnalyticsTaskType, AnalyticsTaskId } from '../models/analytics_task_model';
-import * as Segments from '../models/segment_model';
+import * as Segment from '../models/segment_model';
 import * as AnalyticUnit from '../models/analytic_unit_model';
 import { AnalyticsService } from '../services/analytics_service';
 
@@ -75,7 +75,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
   let previousLastPredictionTime: number = undefined;
 
   try {
-    let segments = await Segments.findMany(id, { labeled: true });
+    let segments = await Segment.findMany(id, { labeled: true });
     let segmentObjs = segments.map(s => s.toObject());
 
     let analyticUnit = await AnalyticUnit.findById(id);
@@ -94,7 +94,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
     previousLastPredictionTime = analyticUnit.lastPredictionTime;
 
     await Promise.all([
-      Segments.insertSegments(predictedSegments),
+      Segment.insertSegments(predictedSegments),
       AnalyticUnit.setPredictionTime(id, lastPredictionTime)
     ]);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
@@ -110,7 +110,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
 
 async function processLearningResult(taskResult: any): Promise<{
   lastPredictionTime: number,
-  segments: Segments.Segment[]
+  segments: Segment.Segment[]
 }> {
   if(taskResult.status !== 'SUCCESS') {
     return Promise.reject(taskResult.error);
@@ -126,7 +126,7 @@ async function processLearningResult(taskResult: any): Promise<{
 
   return {
     lastPredictionTime: +taskResult.lastPredictionTime,
-    segments: taskResult.segments.map(Segments.Segment.fromObject)
+    segments: taskResult.segments.map(Segment.Segment.fromObject)
   };
 
 }
@@ -169,6 +169,18 @@ export function isAnalyticReady(): boolean {
 export async function createAnalyticUnitFromObject(obj: any): Promise<AnalyticUnit.AnalyticUnitId> {
   let unit: AnalyticUnit.AnalyticUnit = AnalyticUnit.AnalyticUnit.fromObject(obj);
   let id = await AnalyticUnit.create(unit);
-  // runLearning(unit);
   return id;
+}
+
+export async function updateSegments(
+  id: AnalyticUnit.AnalyticUnitId,
+  segmentsToInsert: Segment.Segment[],
+  removedIds: Segment.SegmentId[]
+) {
+  let [addedIds, removed] = await Promise.all([
+    Segment.insertSegments(segmentsToInsert),
+    Segment.removeSegments(removedIds)
+  ]);
+  runLearning(id);
+  return { addedIds, removed }
 }

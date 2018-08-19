@@ -5,13 +5,13 @@ import { Collection, makeDBQ } from '../services/data_service';
 let db = makeDBQ(Collection.ANALYTIC_UNITS);
 
 
-
 export type AnalyticUnitId = string;
 export enum AnalyticUnitStatus { 
   LEARNING = 'LEARNING',
   SUCCESS = 'SUCCESS',
   READY = 'READY',
-  FAILED = 'FAILED'
+  FAILED = 'FAILED',
+  PENDING = 'PENDING'
 }
 
 export class AnalyticUnit {
@@ -72,7 +72,8 @@ export class AnalyticUnit {
 
 
 export async function findById(id: AnalyticUnitId): Promise<AnalyticUnit> {
-  return AnalyticUnit.fromObject(await db.findOne(id));
+  let obj = await db.findOne(id);
+  return AnalyticUnit.fromObject(obj);
 }
 
 /**
@@ -82,14 +83,12 @@ export async function findById(id: AnalyticUnitId): Promise<AnalyticUnit> {
  * @returns unit.id
  */
 export async function create(unit: AnalyticUnit): Promise<AnalyticUnitId> {
-  var obj = unit.toObject();
-  var r = await db.insertOne(obj);
-  return r;
+  let obj = unit.toObject();
+  return db.insertOne(obj);
 }
 
 export async function remove(id: AnalyticUnitId): Promise<void> {
   await db.removeOne(id);
-  return;
 }
 
 export async function update(id: AnalyticUnitId, unit: AnalyticUnit) {

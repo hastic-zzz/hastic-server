@@ -1,9 +1,9 @@
+import * as AnalyticsController from '../controllers/analytics_controller';
+
+import { AnalyticUnitId, AnalyticUnit, AnalyticUnitStatus } from '../models/analytic_unit_model';
+import * as Segment from '../models/segment_model';
+
 import * as Router from 'koa-router';
-
-import { AnalyticUnitId } from '../models/analytic_unit_model';
-
-import * as SegmentModel from '../models/segment_model';
-import { runLearning } from '../controllers/analytics_controller';
 
 
 async function getSegments(ctx: Router.IRouterContext) {
@@ -11,7 +11,7 @@ async function getSegments(ctx: Router.IRouterContext) {
   if(id === undefined || id === '') {
     throw new Error('analyticUnitId (id) is missing');
   }
-  let query: SegmentModel.FindManyQuery = {};
+  let query: Segment.FindManyQuery = {};
 
   if(!isNaN(+ctx.request.query.lastSegmentId)) {
     query.intexGT = +ctx.request.query.lastSegmentId;
@@ -23,7 +23,7 @@ async function getSegments(ctx: Router.IRouterContext) {
     query.timeToLTE = +ctx.request.query.to;
   }
 
-  let segments = await SegmentModel.findMany(id, query);
+  let segments = await Segment.findMany(id, query);
 
   ctx.response.body = { segments };
 
@@ -35,20 +35,19 @@ async function updateSegments(ctx: Router.IRouterContext) {
     let {
       addedSegments, id, removedSegments: removedIds
     } = ctx.request.body as {
-      addedSegments: any[], id: AnalyticUnitId, removedSegments: SegmentModel.SegmentId[]
+      addedSegments: any[], id: AnalyticUnitId, removedSegments: Segment.SegmentId[]
     };
 
-    let segmentsToInsert: SegmentModel.Segment[] = addedSegments.map(
-      s => SegmentModel.Segment.fromObject({ analyticUnitId: id, labeled: true, ...s })
+    let segmentsToInsert: Segment.Segment[] = addedSegments.map(
+      s => Segment.Segment.fromObject({ analyticUnitId: id, labeled: true, ...s })
     );
 
-    let [addedIds, removed] = await Promise.all([
-      SegmentModel.insertSegments(segmentsToInsert),
-      SegmentModel.removeSegments(removedIds)
-    ]);
+    let { addedIds, removed } = await AnalyticsController.updateSegments(
+      id, segmentsToInsert, removedIds
+    );
 
-    ctx.response.body = { addedIds, removed };
-    runLearning(id);
+    ctx.response.body = { addedIds, removed, status: AnalyticUnitStatus.PENDING };
+    
   } catch(e) {
     ctx.response.status = 500;
     ctx.response.body = {
