@@ -3,6 +3,7 @@ import { AnalyticsTask, AnalyticsTaskType, AnalyticsTaskId } from '../models/ana
 import * as Segment from '../models/segment_model';
 import * as AnalyticUnit from '../models/analytic_unit_model';
 import { AnalyticsService } from '../services/analytics_service';
+import { queryByMetric } from '../services/grafana_service';
 
 
 type TaskResult = any;
@@ -75,10 +76,17 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
   let previousLastPredictionTime: number = undefined;
 
   try {
+    
     let segments = await Segment.findMany(id, { labeled: true });
-    let segmentObjs = segments.map(s => s.toObject());
-
     let analyticUnit = await AnalyticUnit.findById(id);
+
+    let segmentObjs = segments.map(s => s.toObject());
+    let data = await queryByMetric(analyticUnit.metric);
+    
+    if(data.length === 0) {
+      throw new Error('Empty data to learn on');
+    }
+
     if(analyticUnit.status === AnalyticUnit.AnalyticUnitStatus.LEARNING) {
       throw new Error('Can`t starn learning when it`s already started [' + id + ']');
     }

@@ -18,6 +18,7 @@ export const HASTIC_PORT = getConfigField('HASTIC_PORT', '8000');
 export const ZMQ_CONNECTION_STRING = getConfigField('ZMQ_CONNECTION_STRING', null);
 export const ZMQ_IPC_PATH = getConfigField('ZMQ_IPC_PATH', path.join(os.tmpdir(), 'hastic'));
 export const ZMQ_DEV_PORT = getConfigField('ZMQ_DEV_PORT', '8002');
+export const HASTIC_API_KEY = getConfigField('HASTIC_API_KEY');
 export const ANLYTICS_PING_INTERVAL = 500; // ms
 
 
