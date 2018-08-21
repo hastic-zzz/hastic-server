@@ -98,10 +98,6 @@ class PatternDetector:
     def synchronize_data(self):
         self.data_prov.synchronize()
 
-    def __load_anomaly_config(self):
-        with open(os.path.join(config.ANALYTIC_UNITS_FOLDER, self.analytic_unit_id + ".json"), 'r') as config_file:
-            self.anomaly_config = json.load(config_file)
-
     def __save_model(self):
         logger.info("Save model '%s'" % self.analytic_unit_id)
         model_filename = os.path.join(config.MODELS_FOLDER, self.analytic_unit_id + ".m")
