@@ -61,9 +61,9 @@ export class AnalyticUnit {
       obj.panelUrl,
       obj.type,
       Metric.fromObject(obj.metric),
-      obj.status as AnalyticUnitStatus,
-      obj.lastPredictionTime,
       obj._id,
+      obj.lastPredictionTime,
+      obj.status as AnalyticUnitStatus,
       obj.error,
     );
   }
