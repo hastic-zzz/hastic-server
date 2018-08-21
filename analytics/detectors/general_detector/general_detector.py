@@ -17,28 +17,9 @@ logger = logging.getLogger('analytic_toolset')
 
 class GeneralDetector:
 
-    def __init__(self, anomaly_name):
+    def __init__(self, anomaly_name, data):
         self.anomaly_name = anomaly_name
-
-        parsedUrl = urlparse(self.anomaly_config['panelUrl'])
-        origin = parsedUrl.scheme + '://' + parsedUrl.netloc
-
-        datasource = self.anomaly_config['datasource']
-        datasource['origin'] = origin
-        metric_name = self.anomaly_config['metric']['targets'][0]
-
-        target_filename = os.path.join(config.METRICS_FOLDER, metric_name + ".json")
-
-        dataset_filename = os.path.join(config.DATASET_FOLDER, metric_name + ".csv")
-        augmented_path = os.path.join(config.DATASET_FOLDER, metric_name + "_augmented.csv")
-
-        with open(target_filename, 'r') as file:
-            target = json.load(file)
-
-        self.data_prov = GrafanaDataProvider(datasource, target, dataset_filename)
-        self.preprocessor = data_preprocessor(self.data_prov, augmented_path)
         self.model = None
-
         self.__load_model()
 
     async def learn(self, segments):
@@ -112,13 +93,7 @@ class GeneralDetector:
         return SupervisedAlgorithm()
 
     def __save_model(self):
-        logger.info("Save model '%s'" % self.anomaly_name)
-        model_filename = os.path.join(config.MODELS_FOLDER, self.anomaly_name + ".m")
-        self.model.save(model_filename)
+        # TODO: use data_service to save anything
 
     def __load_model(self):
-        logger.info("Load model '%s'" % self.anomaly_name)
-        model_filename = os.path.join(config.MODELS_FOLDER, self.anomaly_name + ".m")
-        if os.path.exists(model_filename):
-            self.model = self.create_algorithm()
-            self.model.load(model_filename)
+        # TODO: use data_service to save anything

@@ -34,23 +34,6 @@ class PatternDetector:
         self.analytic_unit_id = analytic_unit_id
         self.pattern_type = pattern_type
 
-        self.__load_anomaly_config()
-
-        parsedUrl = urlparse(self.anomaly_config['panelUrl'])
-        origin = parsedUrl.scheme + '://' + parsedUrl.netloc
-
-        datasource = self.anomaly_config['datasource']
-        metric_name = self.anomaly_config['metric']['targets'][0]
-
-        target_filename = os.path.join(config.METRICS_FOLDER, metric_name + ".json")
-        datasource['origin'] = origin
-        dataset_filename = os.path.join(config.DATASET_FOLDER, metric_name + ".csv")
-
-        with open(target_filename, 'r') as file:
-            target = json.load(file)
-
-        self.data_prov = GrafanaDataProvider(datasource, target, dataset_filename)
-
         self.model = None
         self.__load_model(pattern_type)
 
@@ -99,13 +82,7 @@ class PatternDetector:
         self.data_prov.synchronize()
 
     def __save_model(self):
-        logger.info("Save model '%s'" % self.analytic_unit_id)
-        model_filename = os.path.join(config.MODELS_FOLDER, self.analytic_unit_id + ".m")
-        self.model.save(model_filename)
+        # TODO: use data_service to save anything
 
     def __load_model(self, pattern):
-        logger.info("Load model '%s'" % self.analytic_unit_id)
-        model_filename = os.path.join(config.MODELS_FOLDER, self.pattern_type + ".m")
-        if os.path.exists(model_filename):
-            self.model = resolve_model_by_pattern(pattern)
-            self.model.load(model_filename)
+        # TODO: use data_service to save anything
