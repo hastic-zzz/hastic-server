@@ -76,12 +76,12 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
   let previousLastPredictionTime: number = undefined;
 
   try {
-    
+
     let segments = await Segment.findMany(id, { labeled: true });
     let analyticUnit = await AnalyticUnit.findById(id);
 
     let segmentObjs = segments.map(s => s.toObject());
-    let data = await queryByMetric(analyticUnit.metric);
+    let data = await queryByMetric(analyticUnit.metric, analyticUnit.panelUrl);
     
     if(data.length === 0) {
       throw new Error('Empty data to learn on');
@@ -175,6 +175,9 @@ export function isAnalyticReady(): boolean {
 }
 
 export async function createAnalyticUnitFromObject(obj: any): Promise<AnalyticUnit.AnalyticUnitId> {
+  if(obj.datasource !== undefined) {
+    obj.metric.datasource = obj.datasource;
+  }
   let unit: AnalyticUnit.AnalyticUnit = AnalyticUnit.AnalyticUnit.fromObject(obj);
   let id = await AnalyticUnit.create(unit);
   return id;

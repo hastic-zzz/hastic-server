@@ -1,8 +1,18 @@
+type Datasource = {
+  url: string,
+  type: string,
+  params: {
+    db: string,
+    q: string,
+    epoch: string
+  }
+}
+
 export type MetricId = string;
 
 export class Metric {
   constructor(
-    public datasource: string,
+    public datasource: Datasource,
     public targets: any[],
     public id?: MetricId
   ) {

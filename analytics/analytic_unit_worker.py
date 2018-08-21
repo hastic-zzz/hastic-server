@@ -45,7 +45,7 @@ class AnalyticUnitWorker(object):
         pattern = payload['pattern']
         segments = payload['segments']
 
-        model = self.get_model(analytic_unit_id, pattern)
+        model = self.get_detector(analytic_unit_id, pattern)
         model.synchronize_data()
         last_prediction_time = await model.learn(segments)
         # TODO: we should not do predict before labeling in all models, not just in drops
@@ -68,7 +68,7 @@ class AnalyticUnitWorker(object):
         pattern = payload['pattern']
         last_prediction_time = payload['lastPredictionTime']
 
-        model = self.get_model(analytic_unit_id, pattern)
+        model = self.get_detector(analytic_unit_id, pattern)
         model.synchronize_data()
         segments, last_prediction_time = await model.predict(last_prediction_time)
         return {
