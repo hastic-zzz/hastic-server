@@ -19,7 +19,6 @@ class GeneralDetector:
 
     def __init__(self, anomaly_name):
         self.anomaly_name = anomaly_name
-        self.load_anomaly_config()
 
         parsedUrl = urlparse(self.anomaly_config['panelUrl'])
         origin = parsedUrl.scheme + '://' + parsedUrl.netloc
@@ -108,17 +107,6 @@ class GeneralDetector:
         self.data_prov.synchronize()
         self.preprocessor.set_data_provider(self.data_prov)
         self.preprocessor.synchronize()
-
-    def load_anomaly_config(self):
-        with open(os.path.join(config.ANALYTIC_UNITS_FOLDER, self.anomaly_name + ".json"), 'r') as config_file:
-            self.anomaly_config = json.load(config_file)
-
-    def get_anomalies(self):
-        labeled_anomalies_file = os.path.join(config.ANALYTIC_UNITS_FOLDER, self.anomaly_name + "_labeled.json")
-        if not os.path.exists(labeled_anomalies_file):
-            return []
-        with open(labeled_anomalies_file) as file:
-            return json.load(file)
 
     def create_algorithm(self):
         return SupervisedAlgorithm()

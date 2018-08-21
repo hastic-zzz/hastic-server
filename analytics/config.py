@@ -28,7 +28,6 @@ def get_config_field(field, default_val = None):
 
 
 DATASET_FOLDER = os.path.join(DATA_FOLDER, 'datasets')
-ANALYTIC_UNITS_FOLDER = os.path.join(DATA_FOLDER, 'analytic_units')
 MODELS_FOLDER = os.path.join(DATA_FOLDER, 'models')
 METRICS_FOLDER = os.path.join(DATA_FOLDER, 'metrics')
 
