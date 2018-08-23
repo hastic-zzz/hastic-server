@@ -7,12 +7,25 @@ import * as Router from 'koa-router';
 
 async function getStatus(ctx: Router.IRouterContext) {
   try {
-    ctx.response.body = { status: 'READY', errorMessage: undefined };
+    let id = ctx.request.query.id;
+
+    if(id === undefined) {
+      throw new Error('Cannot get status of undefined id')
+    }
+
+    let unit: AnalyticUnit.AnalyticUnit = await AnalyticUnit.findById(id);
+    let errorMsg
+    if(unit.status === 'FAILED') {
+      errorMsg = unit.error;
+    } else {
+      errorMsg = '';
+    }
+    ctx.response.body = { 
+      status: unit.status,
+      errorMessage: errorMsg };
+
   } catch(e) {
-    console.error(e);
-    // TODO: better send 404 when we know than isn`t found
-    ctx.response.status = 500;
-    ctx.response.body = { error: 'Can`t return anything' };
+    console.error(e)
   }
 }
 
