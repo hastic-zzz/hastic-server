@@ -21,7 +21,7 @@ function onTaskResult(taskResult: TaskResult) {
   }
   let status = taskResult.status;
   if(status === 'SUCCESS' || status === 'FAILED') {
-    if(id in taskResolvers) {
+    if(taskResolvers.has(id)) {
       let resolver: any = taskResolvers.get(id);
       resolver(taskResult);
       taskResolvers.delete(id);
