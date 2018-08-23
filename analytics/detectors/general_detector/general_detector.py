@@ -1,6 +1,6 @@
 from detectors.general_detector.supervised_algorithm import SupervisedAlgorithm
 import utils
-from grafana_data_provider import GrafanaDataProvider
+# from grafana_data_provider import GrafanaDataProvider
 from data_preprocessor import data_preprocessor
 import pandas as pd
 import logging
@@ -93,7 +93,9 @@ class GeneralDetector:
         return SupervisedAlgorithm()
 
     def __save_model(self):
+        pass
         # TODO: use data_service to save anything
 
     def __load_model(self):
+        pass
         # TODO: use data_service to save anything

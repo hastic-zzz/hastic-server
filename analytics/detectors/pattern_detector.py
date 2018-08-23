@@ -1,7 +1,7 @@
 import models
 import utils
 
-from grafana_data_provider import GrafanaDataProvider
+# from grafana_data_provider import GrafanaDataProvider
 
 import logging
 from urllib.parse import urlparse
@@ -82,7 +82,9 @@ class PatternDetector:
         self.data_prov.synchronize()
 
     def __save_model(self):
+        pass
         # TODO: use data_service to save anything
 
     def __load_model(self, pattern):
+        pass
         # TODO: use data_service to save anything
