@@ -14,18 +14,17 @@ async function getStatus(ctx: Router.IRouterContext) {
     }
 
     let unit: AnalyticUnit.AnalyticUnit = await AnalyticUnit.findById(id);
-    let errorMsg
-    if(unit.status === 'FAILED') {
-      errorMsg = unit.error;
-    } else {
-      errorMsg = '';
-    }
-    ctx.response.body = { 
+    let errorMessage = unit.error || '';
+
+    ctx.response.body = {
       status: unit.status,
-      errorMessage: errorMsg };
+      errorMessage
+    };
 
   } catch(e) {
-    console.error(e)
+    console.error(e);
+    ctx.response.status = 404;
+    ctx.response.body = 'Can`t find anything';
   }
 }
 
@@ -64,7 +63,7 @@ async function createUnit(ctx: Router.IRouterContext) {
       message: `Creation error: ${e.message}`
     };
   }
-  
+
 }
 
 async function deleteUnit(ctx: Router.IRouterContext) {
