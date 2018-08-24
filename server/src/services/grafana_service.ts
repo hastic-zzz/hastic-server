@@ -1,14 +1,12 @@
 import { Metric } from '../models/metric_model';
-
 import { HASTIC_API_KEY } from '../config';
-
 import { URL } from 'url';
 import axios from 'axios';
 
 
 const CHUNK_SIZE = 50000;
+const QUERY_TIME_REPLACE_REGEX = /(WHERE time >[^A-Z]+)/;
 
-export type Timestamp = number;
 /**
  * @param metric to query to Grafana
  * @returns [time, value][] array
@@ -32,7 +30,11 @@ export async function queryByMetric(metric: Metric, panelUrl: string): Promise<[
   let data = [];
   while (offset <= records) {
     let paramsClone = Object.assign({}, params);
-    paramsClone.q = paramsClone.q.replace(/(WHERE time >[^A-Z]+)/, `LIMIT ${limit} OFFSET ${offset}`);
+    let replacedQ = paramsClone.q.replace(QUERY_TIME_REPLACE_REGEX, `LIMIT ${limit} OFFSET ${offset}`);
+    if(replacedQ === paramsClone.q) {
+      throw new Error(`Query "${paramsClone.q}" is not replaced with LIMIT/OFFSET oeprators`)
+    }
+    paramsClone.q = replacedQ;
 
     let chunk = await queryGrafana(url, paramsClone);
     data = data.concat(chunk);
@@ -61,7 +63,10 @@ async function queryGrafana(url: string, params: any) {
   try {
     res = await axios.get(url, { params, headers });
   } catch (e) {
-    console.error(`Error while getting data from Grafana: ${e}`);
+    if(e.response.status === 401) {
+      throw new Error('Unauthorized. Check the $HASTIC_API_KEY');
+    }
+    throw new Error(e.message);
   }
 
   if (res.data.results === undefined) {
