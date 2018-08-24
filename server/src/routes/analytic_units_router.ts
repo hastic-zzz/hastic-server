@@ -1,35 +1,47 @@
 import * as AnalyticUnit from '../models/analytic_unit_model';
 
-import { createAnalyticUnitFromObject } from '../controllers/analytics_controller'
+import { createAnalyticUnitFromObject } from '../controllers/analytics_controller';
 
 import * as Router from 'koa-router';
 
 
 async function getStatus(ctx: Router.IRouterContext) {
   try {
-    ctx.response.body = { status: 'READY', errorMessage: undefined };
+    let analyticUnitId = ctx.request.query.id;
+    if(analyticUnitId === undefined) {
+      throw new Error('Cannot get status of undefined id');
+    }
+
+    let analyticUnit = await AnalyticUnit.findById(analyticUnitId);
+
+    ctx.response.body = {
+      status: analyticUnit.status
+    };
+
+    if(analyticUnit.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
+      ctx.response.body.errorMessage = analyticUnit.error;
+    }
   } catch(e) {
     console.error(e);
-    // TODO: better send 404 when we know than isn`t found
-    ctx.response.status = 500;
-    ctx.response.body = { error: 'Can`t return anything' };
+    ctx.response.status = 404;
+    ctx.response.body = 'Can`t find anything';
   }
 }
 
 async function getUnit(ctx: Router.IRouterContext) {
   try {
-    let id = ctx.request.query.id;
+    let analyticUnitId = ctx.request.query.id;
 
-    if(id === undefined) {
+    if(analyticUnitId === undefined) {
       throw new Error('No id param in query');
     }
 
-    let unit: AnalyticUnit.AnalyticUnit = await AnalyticUnit.findById(id);
+    let analyticUnit = await AnalyticUnit.findById(analyticUnitId);
 
     ctx.response.body = {
-      name: unit.name,
-      metric: unit.metric,
-      status: unit.status
+      name: analyticUnit.name,
+      metric: analyticUnit.metric,
+      status: analyticUnit.status
     };
 
   } catch(e) {
@@ -51,7 +63,7 @@ async function createUnit(ctx: Router.IRouterContext) {
       message: `Creation error: ${e.message}`
     };
   }
-  
+
 }
 
 async function deleteUnit(ctx: Router.IRouterContext) {
