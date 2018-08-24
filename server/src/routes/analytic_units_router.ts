@@ -7,20 +7,20 @@ import * as Router from 'koa-router';
 
 async function getStatus(ctx: Router.IRouterContext) {
   try {
-    let id = ctx.request.query.id;
-
-    if(id === undefined) {
+    let analyticUnitId = ctx.request.query.id;
+    if(analyticUnitId === undefined) {
       throw new Error('Cannot get status of undefined id');
     }
 
-    let unit: AnalyticUnit.AnalyticUnit = await AnalyticUnit.findById(id);
-    let errorMessage = unit.error || '';
+    let analyticUnit: AnalyticUnit.AnalyticUnit = await AnalyticUnit.findById(analyticUnitId);
 
     ctx.response.body = {
-      status: unit.status,
-      errorMessage
+      status: analyticUnit.status
     };
 
+    if(analyticUnit.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
+      ctx.response.body.errorMessage = analyticUnit.error;
+    }
   } catch(e) {
     console.error(e);
     ctx.response.status = 404;
@@ -30,18 +30,18 @@ async function getStatus(ctx: Router.IRouterContext) {
 
 async function getUnit(ctx: Router.IRouterContext) {
   try {
-    let id = ctx.request.query.id;
+    let analyticUnitId = ctx.request.query.id;
 
-    if(id === undefined) {
+    if(analyticUnitId === undefined) {
       throw new Error('No id param in query');
     }
 
-    let unit: AnalyticUnit.AnalyticUnit = await AnalyticUnit.findById(id);
+    let analyticUnit: AnalyticUnit.AnalyticUnit = await AnalyticUnit.findById(analyticUnitId);
 
     ctx.response.body = {
-      name: unit.name,
-      metric: unit.metric,
-      status: unit.status
+      name: analyticUnit.name,
+      metric: analyticUnit.metric,
+      status: analyticUnit.status
     };
 
   } catch(e) {
