@@ -1,6 +1,6 @@
 import * as AnalyticUnit from '../models/analytic_unit_model';
 
-import { createAnalyticUnitFromObject } from '../controllers/analytics_controller'
+import { createAnalyticUnitFromObject } from '../controllers/analytics_controller';
 
 import * as Router from 'koa-router';
 
@@ -10,7 +10,7 @@ async function getStatus(ctx: Router.IRouterContext) {
     let id = ctx.request.query.id;
 
     if(id === undefined) {
-      throw new Error('Cannot get status of undefined id')
+      throw new Error('Cannot get status of undefined id');
     }
 
     let unit: AnalyticUnit.AnalyticUnit = await AnalyticUnit.findById(id);
