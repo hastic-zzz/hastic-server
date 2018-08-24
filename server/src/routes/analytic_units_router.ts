@@ -12,7 +12,7 @@ async function getStatus(ctx: Router.IRouterContext) {
       throw new Error('Cannot get status of undefined id');
     }
 
-    let analyticUnit: AnalyticUnit.AnalyticUnit = await AnalyticUnit.findById(analyticUnitId);
+    let analyticUnit = await AnalyticUnit.findById(analyticUnitId);
 
     ctx.response.body = {
       status: analyticUnit.status
@@ -36,7 +36,7 @@ async function getUnit(ctx: Router.IRouterContext) {
       throw new Error('No id param in query');
     }
 
-    let analyticUnit: AnalyticUnit.AnalyticUnit = await AnalyticUnit.findById(analyticUnitId);
+    let analyticUnit = await AnalyticUnit.findById(analyticUnitId);
 
     ctx.response.body = {
       name: analyticUnit.name,
