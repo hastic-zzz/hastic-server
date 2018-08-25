@@ -1,4 +1,4 @@
-import { Metric } from './metric_model';
+import { GrafanaMetric } from './grafana_metric_model';
 import { Collection, makeDBQ } from '../services/data_service';
 
 
@@ -19,7 +19,7 @@ export class AnalyticUnit {
     public name: string,
     public panelUrl: string,
     public type: string,
-    public metric: Metric,
+    public metric: GrafanaMetric,
     public id?: AnalyticUnitId,
     public lastPredictionTime?: number,
     public status?: AnalyticUnitStatus,
@@ -60,7 +60,7 @@ export class AnalyticUnit {
       obj.name,
       obj.panelUrl,
       obj.type,
-      Metric.fromObject(obj.metric),
+      GrafanaMetric.fromObject(obj.metric),
       obj._id,
       obj.lastPredictionTime,
       obj.status as AnalyticUnitStatus,

@@ -1,22 +1,18 @@
-import { Metric } from '../models/metric_model';
+import { GrafanaMetric } from '../models/grafana_metric_model';
 import { HASTIC_API_KEY } from '../config';
 import { URL } from 'url';
 import axios from 'axios';
 
 
 const CHUNK_SIZE = 50000;
-const QUERY_TIME_REPLACE_REGEX = /(WHERE time >[^A-Z]+)/;
+
 
 /**
  * @param metric to query to Grafana
  * @returns [time, value][] array
  */
-export async function queryByMetric(metric: Metric, panelUrl: string): Promise<[number, number][]> {
+export async function queryByMetric(metric: GrafanaMetric, panelUrl: string): Promise<[number, number][]> {
   let datasource = metric.datasource;
-
-  if (datasource.type !== 'influxdb') {
-    throw new Error(`${datasource.type} queries are not supported yet`);
-  }
 
   let origin = new URL(panelUrl).origin;
   let url = `${origin}/${datasource.url}`;
@@ -30,15 +26,9 @@ export async function queryByMetric(metric: Metric, panelUrl: string): Promise<[
   let data = [];
   while (offset <= records) {
     let paramsClone = Object.assign({}, params);
-    let replacedQ = paramsClone.q.replace(QUERY_TIME_REPLACE_REGEX, `LIMIT ${limit} OFFSET ${offset}`);
-    if(replacedQ === paramsClone.q) {
-      throw new Error(`Query "${paramsClone.q}" is not replaced with LIMIT/OFFSET oeprators`)
-    }
-    paramsClone.q = replacedQ;
-
+    paramsClone.q = metric.metricQuery.getQuery(limit, offset);
     let chunk = await queryGrafana(url, paramsClone);
     data = data.concat(chunk);
-
     offset += CHUNK_SIZE;
   }
 
@@ -64,13 +54,13 @@ async function queryGrafana(url: string, params: any) {
     res = await axios.get(url, { params, headers });
   } catch (e) {
     if(e.response.status === 401) {
-      throw new Error('Unauthorized. Check the $HASTIC_API_KEY');
+      throw new Error('Unauthorized. Check the $HASTIC_API_KEY.');
     }
     throw new Error(e.message);
   }
 
   if (res.data.results === undefined) {
-    throw new Error('results field is undefined in response');
+    throw new Error('results field is undefined in response.');
   }
 
   // TODO: support more than 1 metric (each res.data.results item is a metric)
