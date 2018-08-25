@@ -84,10 +84,6 @@ class GeneralDetector:
         logger.info("Predicting is finished for anomaly type='%s'" % self.anomaly_name)
         return predicted_anomalies, last_prediction_time
 
-    def synchronize_data(self):
-        self.data_prov.synchronize()
-        self.preprocessor.set_data_provider(self.data_prov)
-        self.preprocessor.synchronize()
 
     def create_algorithm(self):
         return SupervisedAlgorithm()

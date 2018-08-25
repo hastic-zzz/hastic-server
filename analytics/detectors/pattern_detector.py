@@ -37,19 +37,16 @@ class PatternDetector:
         self.model = None
         self.__load_model(pattern_type)
 
-    async def learn(self, segments):
+    async def learn(self, segments, data):
         self.model = resolve_model_by_pattern(self.pattern_type)
         window_size = 200
 
-        dataframe = self.data_prov.get_dataframe()
-
-        segments = self.data_prov.transform_anomalies(segments)
         # TODO: pass only part of dataframe that has segments
-        self.model.fit(dataframe, segments)
+        self.model.fit(dataframe, segments, data)
         self.__save_model()
         return 0
 
-    async def predict(self, last_prediction_time):
+    async def predict(self, last_prediction_time, data):
         if self.model is None:
             return [], last_prediction_time
 
@@ -77,9 +74,6 @@ class PatternDetector:
         last_prediction_time = int(last_dataframe_time.timestamp() * 1000)
         return segments, last_prediction_time
         # return predicted_anomalies, last_prediction_time
-
-    def synchronize_data(self):
-        self.data_prov.synchronize()
 
     def __save_model(self):
         pass

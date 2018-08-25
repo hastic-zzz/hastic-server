@@ -44,12 +44,13 @@ class AnalyticUnitWorker(object):
     async def do_learn(self, analytic_unit_id, payload):
         pattern = payload['pattern']
         segments = payload['segments']
+        data = payload['data'] # [time, value][]
 
-        model = self.get_detector(analytic_unit_id, pattern)
-        model.synchronize_data()
-        last_prediction_time = await model.learn(segments)
+        detector = self.get_detector(analytic_unit_id, pattern)
+        detector.synchronize_data()
+        last_prediction_time = await detector.learn(segments)
         # TODO: we should not do predict before labeling in all models, not just in drops
-        
+
         if pattern == 'DROP' and len(segments) == 0:
             # TODO: move result to a class which renders to json for messaging to analytics
             result = {
@@ -68,9 +69,9 @@ class AnalyticUnitWorker(object):
         pattern = payload['pattern']
         last_prediction_time = payload['lastPredictionTime']
 
-        model = self.get_detector(analytic_unit_id, pattern)
-        model.synchronize_data()
-        segments, last_prediction_time = await model.predict(last_prediction_time)
+        detector = self.get_detector(analytic_unit_id, pattern)
+        detector.synchronize_data()
+        segments, last_prediction_time = await detector.predict(last_prediction_time)
         return {
             'task': 'PREDICT',
             'status': 'SUCCESS',

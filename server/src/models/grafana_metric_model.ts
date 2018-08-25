@@ -62,9 +62,11 @@ export class MetricQuery {
   private static INFLUX_QUERY_TIME_REGEX = /time >[^A-Z]+/;
 
   private _queryParts: string[];
+  private _type: string;
 
   constructor(metric: GrafanaMetric) {
-    if (metric.datasource.type !== 'influxdb') {
+    this._type = metric.datasource.type;
+    if (this._type !== 'influxdb') {
       throw new Error(`Queries of type "${metric.datasource.type}" are not supported yet.`);
     }
     var queryStr = metric.datasource.params.q;
@@ -79,7 +81,8 @@ export class MetricQuery {
     }
   }
 
-  getQuery(limit: number, offset: number): string {
-    return `${this._queryParts[0]} TRUE ${this._queryParts[1]} LIMIT ${limit} OFFSET ${offset}`;
+  getQuery(from: number, to: number, limit: number, offset: number): string {
+    let timeClause = `time >= ${from}ms AND time <= ${to}ms`;
+    return `${this._queryParts[0]} ${timeClause} ${this._queryParts[1]} LIMIT ${limit} OFFSET ${offset}`;
   }
 }

@@ -11,47 +11,37 @@ const CHUNK_SIZE = 50000;
  * @param metric to query to Grafana
  * @returns [time, value][] array
  */
-export async function queryByMetric(metric: GrafanaMetric, panelUrl: string): Promise<[number, number][]> {
+export async function queryByMetric(
+  metric: GrafanaMetric, panelUrl: string, from: number, to: number
+): Promise<[number, number][]> {
+
   let datasource = metric.datasource;
 
   let origin = new URL(panelUrl).origin;
   let url = `${origin}/${datasource.url}`;
 
   let params = datasource.params
-  let records = await getRecordsCount(url, params);
-
-  let limit = Math.min(records, CHUNK_SIZE);
-  let offset = 0;
-
   let data = [];
-  while (offset <= records) {
-    let paramsClone = Object.assign({}, params);
-    paramsClone.q = metric.metricQuery.getQuery(limit, offset);
-    let chunk = await queryGrafana(url, paramsClone);
+
+  let chunkParams = Object.assign({}, params);
+  while(true) {
+    chunkParams.q = metric.metricQuery.getQuery(from, to, CHUNK_SIZE, data.length);
+    var chunk = await queryGrafana(url, chunkParams);
     data = data.concat(chunk);
-    offset += CHUNK_SIZE;
+    if(chunk.length < CHUNK_SIZE) {
+      // because if we get less that we could, then there is nothing more
+      break;
+    }
   }
 
   return data;
 }
 
-async function getRecordsCount(url: string, params: any) {
-  let paramsClone = Object.assign({}, params);
-  let query = paramsClone.q;
-
-  let field = query.match(/"(\w+)"\)*\sFROM/)[1];
-  let measurement = query.match(/FROM\s"(\w+)"/)[1];
-  paramsClone.q = `SELECT COUNT(${field}) FROM ${measurement}`;
-  let result = await queryGrafana(url, paramsClone);
-  return result[0][1];
-}
-
 async function queryGrafana(url: string, params: any) {
   let headers = { Authorization: `Bearer ${HASTIC_API_KEY}` };
 
-  let res;
   try {
-    res = await axios.get(url, { params, headers });
+    var res = await axios.get(url, { params, headers });
   } catch (e) {
     if(e.response.status === 401) {
       throw new Error('Unauthorized. Check the $HASTIC_API_KEY.');
@@ -69,5 +59,5 @@ async function queryGrafana(url: string, params: any) {
     return [];
   }
 
-  return results.series[0].values;
+  return results.series[0].values as [number, number][];
 }

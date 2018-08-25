@@ -5,6 +5,8 @@ import * as AnalyticUnit from '../models/analytic_unit_model';
 import { AnalyticsService } from '../services/analytics_service';
 import { queryByMetric } from '../services/grafana_service';
 
+import * as _ from 'lodash';
+
 
 type TaskResult = any;
 export type TaskResolver = (taskResult: TaskResult) => void;
@@ -60,43 +62,59 @@ export function terminate() {
 }
 
 async function runTask(task: AnalyticsTask): Promise<TaskResult> {
-  // task.metric = {
-  //   datasource: anomaly.metric.datasource,
-  //   targets: anomaly.metric.targets.map(getTarget)
-  // };
-  
   return new Promise<TaskResult>((resolver: TaskResolver) => {
     taskResolvers.set(task.id, resolver); // it will be resolved in onTaskResult()
     analyticsService.sendTask(task);      // we dont wait for result here
   });
 }
 
+/**
+ * Finds range for selecting subset for learning
+ * @param segments labeled segments
+ */
+function getQueryRangeForLearningBySegments(segments: Segment.Segment[]) {
+  if(segments.length < 2) {
+    throw new Error('Need at least 2 labeled segments');
+  }
+
+  let from = _.minBy(segments, s => s.from).from;
+  let to = _.maxBy(segments, s => s.to).to;
+  let diff = to - from;
+  from -= Math.round(diff * 0.1);
+  to += Math.round(diff * 0.1);
+
+  return { from, to };
+}
+
 export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
-  
+
   let previousLastPredictionTime: number = undefined;
 
   try {
 
-    let segments = await Segment.findMany(id, { labeled: true });
     let analyticUnit = await AnalyticUnit.findById(id);
-
-    let segmentObjs = segments.map(s => s.toObject());
-    let data = await queryByMetric(analyticUnit.metric, analyticUnit.panelUrl);
-    
-    if(data.length === 0) {
-      throw new Error('Empty data to learn on');
-    }
-
     if(analyticUnit.status === AnalyticUnit.AnalyticUnitStatus.LEARNING) {
       throw new Error('Can`t starn learning when it`s already started [' + id + ']');
     }
 
-    AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
+    let segments = await Segment.findMany(id, { labeled: true });
+    if(segments.length < 2) {
+      throw new Error('Need at least 2 labeled segments');
+    }
+
+    let segmentObjs = segments.map(s => s.toObject());
+
+    let { from, to } = getQueryRangeForLearningBySegments(segments);
+    let data = await queryByMetric(analyticUnit.metric, analyticUnit.panelUrl, from, to);
+    if(data.length === 0) {
+      throw new Error('Empty data to learn on');
+    }
 
     let pattern = analyticUnit.type;
     let task = new AnalyticsTask(
-      id, AnalyticsTaskType.LEARN, { pattern, segments: segmentObjs }
+      id, AnalyticsTaskType.LEARN, { pattern, segments: segmentObjs, data }
     );
+    AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
     let result = await runTask(task);
     let { lastPredictionTime, segments: predictedSegments } = await processLearningResult(result);
     previousLastPredictionTime = analyticUnit.lastPredictionTime;
