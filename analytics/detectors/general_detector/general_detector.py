@@ -17,16 +17,16 @@ logger = logging.getLogger('analytic_toolset')
 
 class GeneralDetector:
 
-    def __init__(self, anomaly_name, data):
+    def __init__(self, anomaly_name):
         self.anomaly_name = anomaly_name
         self.model = None
         self.__load_model()
 
-    async def learn(self, segments):
+    async def learn(self, segments, data):
         logger.info("Start to learn for anomaly_name='%s'" % self.anomaly_name)
 
         confidence = 0.02
-        dataframe = self.data_prov.get_dataframe()
+        dataframe = data # make dataframae from array
         start_index, stop_index = 0, len(dataframe)
         if len(segments) > 0:
             confidence = 0.0
