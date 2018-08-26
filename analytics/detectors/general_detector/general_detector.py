@@ -1,4 +1,5 @@
 from detectors.general_detector.supervised_algorithm import SupervisedAlgorithm
+from detectors import Detector
 import utils
 # from grafana_data_provider import GrafanaDataProvider
 from data_preprocessor import data_preprocessor
@@ -15,15 +16,13 @@ NANOSECONDS_IN_MS = 1000000
 logger = logging.getLogger('analytic_toolset')
 
 
-class GeneralDetector:
+class GeneralDetector(Detector):
 
-    def __init__(self, anomaly_name):
-        self.anomaly_name = anomaly_name
+    def __init__(self):
         self.model = None
         self.__load_model()
 
-    async def learn(self, segments, data):
-        logger.info("Start to learn for anomaly_name='%s'" % self.anomaly_name)
+    async def train(self, segments, data):
 
         confidence = 0.02
         dataframe = data # make dataframae from array
@@ -40,7 +39,7 @@ class GeneralDetector:
             segments
         )
 
-        self.model = self.create_algorithm()
+        self.model = SupervisedAlgorithm()
         await self.model.fit(train_augmented, confidence)
         if len(segments) > 0:
             last_dataframe_time = dataframe.iloc[-1]['timestamp']
@@ -52,7 +51,7 @@ class GeneralDetector:
         logger.info("Learning is finished for anomaly_name='%s'" % self.anomaly_name)
         return last_prediction_time
 
-    async def predict(self, last_prediction_time):
+    async def predict(self, data):
         logger.info("Start to predict for anomaly type='%s'" % self.anomaly_name)
         last_prediction_time = pd.to_datetime(last_prediction_time, unit='ms')
 
@@ -83,15 +82,3 @@ class GeneralDetector:
 
         logger.info("Predicting is finished for anomaly type='%s'" % self.anomaly_name)
         return predicted_anomalies, last_prediction_time
-
-
-    def create_algorithm(self):
-        return SupervisedAlgorithm()
-
-    def __save_model(self):
-        pass
-        # TODO: use data_service to save anything
-
-    def __load_model(self):
-        pass
-        # TODO: use data_service to save anything

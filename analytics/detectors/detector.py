@@ -5,9 +5,9 @@ from pandas import DataFrame
 class Detector(ABC):
 
     @abstractmethod
-    def fit(self, dataframe: DataFrame, segments: list):
+    async def train(self, dataframe: DataFrame, segments: list):
         pass
 
     @abstractmethod
-    def predict(self, dataframe: DataFrame) -> list:
+    async def predict(self, dataframe: DataFrame) -> list:
         pass

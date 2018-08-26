@@ -5,13 +5,13 @@ import sys
 import asyncio
 
 import services
-from analytic_unit_worker import AnalyticUnitWorker
+from analytic_unit_manager import handle_analytic_task
 
 
 root = logging.getLogger()
 logger = logging.getLogger('SERVER')
 
-worker: AnalyticUnitWorker = None
+
 server_service: services.ServerService = None
 data_service: services.DataService = None
 
@@ -26,6 +26,8 @@ logging_handler.setLevel(logging.DEBUG)
 logging_handler.setFormatter(logging_formatter)
 
 root.addHandler(logging_handler)
+
+
 
 
 async def handle_task(task: object):
@@ -43,7 +45,7 @@ async def handle_task(task: object):
         message = services.server_service.ServerMessage('TASK_RESULT', task_result_payload)
         await server_service.send_message(message)
 
-        res = await worker.do_task(task)
+        res = await handle_analytic_task(task)
         res['_id'] = task['_id']
 
         message = services.server_service.ServerMessage('TASK_RESULT', res)

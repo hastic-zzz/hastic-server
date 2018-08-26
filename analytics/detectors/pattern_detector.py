@@ -11,9 +11,10 @@ import config
 
 import pandas as pd
 
+from detectors import Detector
+
 
 logger = logging.getLogger('analytic_toolset')
-
 
 
 def resolve_model_by_pattern(pattern: str) -> models.Model:
@@ -28,30 +29,20 @@ def resolve_model_by_pattern(pattern: str) -> models.Model:
     raise ValueError('Unknown pattern "%s"' % pattern)
 
 
-class PatternDetector:
+class PatternDetector(Detector):
 
-    def __init__(self, analytic_unit_id, pattern_type):
-        self.analytic_unit_id = analytic_unit_id
+    def __init__(self, pattern_type):
         self.pattern_type = pattern_type
-
-        self.model = None
-        self.__load_model(pattern_type)
-
-    async def learn(self, segments, data):
         self.model = resolve_model_by_pattern(self.pattern_type)
-        window_size = 200
+        window_size = 100
 
+    async def train(self, dataframe: pd.DataFrame, segments: list):
         # TODO: pass only part of dataframe that has segments
-        self.model.fit(dataframe, segments, data)
+        self.model.fit(dataframe, data, segments)
         self.__save_model()
         return 0
 
-    async def predict(self, last_prediction_time, data):
-        if self.model is None:
-            return [], last_prediction_time
-
-        window_size = 100
-        last_prediction_time = pd.to_datetime(last_prediction_time, unit='ms')
+    async def predict(self, data):
 
         start_index = self.data_prov.get_upper_bound(last_prediction_time)
         start_index = max(0, start_index - window_size)
@@ -73,12 +64,3 @@ class PatternDetector:
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_prediction_time = int(last_dataframe_time.timestamp() * 1000)
         return segments, last_prediction_time
-        # return predicted_anomalies, last_prediction_time
-
-    def __save_model(self):
-        pass
-        # TODO: use data_service to save anything
-
-    def __load_model(self, pattern):
-        pass
-        # TODO: use data_service to save anything
