@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from pandas import DataFrame
 
 
-class Model(ABC):
+class Detector(ABC):
 
     @abstractmethod
     def fit(self, dataframe: DataFrame, segments: list):
