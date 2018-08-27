@@ -1,7 +1,6 @@
 from detectors.general_detector.supervised_algorithm import SupervisedAlgorithm
 from detectors import Detector
 import utils
-# from grafana_data_provider import GrafanaDataProvider
 from data_preprocessor import data_preprocessor
 import pandas as pd
 import logging
@@ -20,12 +19,10 @@ class GeneralDetector(Detector):
 
     def __init__(self):
         self.model = None
-        self.__load_model()
 
-    async def train(self, segments, data):
+    async def train(self, dataframe, segments):
 
         confidence = 0.02
-        dataframe = data # make dataframae from array
         start_index, stop_index = 0, len(dataframe)
         if len(segments) > 0:
             confidence = 0.0
@@ -47,7 +44,6 @@ class GeneralDetector(Detector):
         else:
             last_prediction_time = 0
 
-        self.__save_model()
         logger.info("Learning is finished for anomaly_name='%s'" % self.anomaly_name)
         return last_prediction_time
 

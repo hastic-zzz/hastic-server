@@ -26,21 +26,21 @@ class StepModel(Model):
         for i in range(0,len(dataframe['value'])):
             dataframe.loc[i, 'value'] = dataframe.loc[i, 'value'] - d_min 
         data = dataframe['value']       
-        new_data = []
-        for val in data:
-            new_data.append(val)
         confidences = []
         convolve_list = []
         for segment in segments:
             if segment['labeled']:
-                segment_data = new_data[segment['start'] : segment['finish'] + 1]
+                segment_from_index = utils.timestamp_to_index(dataframe, segment['from'])
+                segment_to_index = utils.timestamp_to_index(dataframe, segment['to'])
+
+                segment_data = data[segment_from_index : segment_to_index + 1]
                 segment_min = min(segment_data)
                 segment_max = max(segment_data)
                 confidences.append( 0.4*(segment_max - segment_min))
                 flat_segment = segment_data #.rolling(window=5).mean()
-                segment_min_index = flat_segment.index(min(flat_segment)) - 5 + segment['start']
+                segment_min_index = flat_segment.idxmin() - 5
                 self.idrops.append(segment_min_index)
-                labeled_drop = new_data[segment_min_index - 240 : segment_min_index + 240]
+                labeled_drop = data[segment_min_index - 240 : segment_min_index + 240]
                 convolve = scipy.signal.fftconvolve(labeled_drop, labeled_drop)
                 convolve_list.append(max(convolve))
 

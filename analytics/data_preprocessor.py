@@ -74,8 +74,8 @@ class data_preprocessor:
         anomaly_index = None
         dataframe = self.data_provider.get_dataframe(None)
         for anomaly in anomalies:
-            start_time = pd.to_datetime(anomaly['start'], unit='ms')
-            finish_time = pd.to_datetime(anomaly['finish'], unit='ms')
+            start_time = pd.to_datetime(anomaly['from'], unit='ms')
+            finish_time = pd.to_datetime(anomaly['to'], unit='ms')
             current_index = (dataframe['timestamp'] >= start_time) & (dataframe['timestamp'] <= finish_time)
             if anomaly_index is not None:
                 anomaly_index = (anomaly_index | current_index)
@@ -97,12 +97,12 @@ class data_preprocessor:
                 start = source_dataframe['timestamp'][start_frame_index]
                 finish = source_dataframe['timestamp'][finish_frame_index]
                 if cur_anomaly is None:
-                    if len(anomalies) > 0 and start <= anomalies[len(anomalies) - 1]['finish']:
+                    if len(anomalies) > 0 and start <= anomalies[len(anomalies) - 1]['to']:
                         cur_anomaly = anomalies[len(anomalies) - 1]
                         anomalies.pop()
                     else:
                         cur_anomaly = {'start': start, 'finish': finish}
-                cur_anomaly['finish'] = finish
+                cur_anomaly['to'] = finish
             elif cur_anomaly is not None:
                 anomalies.append(cur_anomaly)
                 cur_anomaly = None

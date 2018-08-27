@@ -1,8 +1,6 @@
 import models
 import utils
 
-# from grafana_data_provider import GrafanaDataProvider
-
 import logging
 from urllib.parse import urlparse
 import os.path
@@ -38,8 +36,8 @@ class PatternDetector(Detector):
 
     async def train(self, dataframe: pd.DataFrame, segments: list):
         # TODO: pass only part of dataframe that has segments
-        self.model.fit(dataframe, data, segments)
-        self.__save_model()
+        self.model.fit(dataframe, segments)
+        # TODO: save model after fit
         return 0
 
     async def predict(self, data):

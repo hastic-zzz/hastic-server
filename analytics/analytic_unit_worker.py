@@ -22,8 +22,7 @@ class AnalyticUnitWorker:
         pattern = payload['pattern']
         data = payload['data'] # [time, value][]
 
-        detector = self.get_detector(analytic_unit_id, pattern)
-        segments, last_prediction_time = await detector.predict(data)
+        segments, last_prediction_time = await self.detector.predict(data)
         return {
             'segments': segments,
             'lastPredictionTime': last_prediction_time

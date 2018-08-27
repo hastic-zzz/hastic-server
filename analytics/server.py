@@ -3,6 +3,7 @@ import json
 import logging
 import sys
 import asyncio
+import traceback
 
 import services
 from analytic_unit_manager import handle_analytic_task
@@ -52,7 +53,8 @@ async def handle_task(task: object):
         await server_service.send_message(message)
 
     except Exception as e:
-        logger.error("handle_task Exception: '%s'" % str(e))
+        error_text = traceback.format_exc()
+        logger.error("handle_task Exception: '%s'" % error_text)
 
 async def handle_message(message: services.ServerMessage):
     payload = None
