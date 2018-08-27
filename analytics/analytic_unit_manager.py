@@ -1,10 +1,13 @@
 from typing import Dict
+import logging
 
 import detectors
 from analytic_unit_worker import AnalyticUnitWorker
 
+logger = logging.getLogger('AnalyticUnitManager')
+
 analytic_unit_id = str
-analytic_workers: Dict[analytic_unit_id, AnalyticUnitWorker] = Dict()
+analytic_workers: Dict[analytic_unit_id, AnalyticUnitWorker] = dict()
 
 def get_detector(self, analytic_unit_type) -> detectors.Detector:
     if analytic_unit_type == 'GENERAL':
@@ -34,9 +37,7 @@ async def handle_analytic_task(task):
             raise ValueError('Unknown task type "%s"' % type)
 
     except Exception as e:
-        #traceback.extract_stack()
-        error_text = traceback.format_exc()
-        logger.error("do_task Exception: '%s'" % error_text)
+        logger.error("handle_analytic_task exception: '%s'" % error_text)
         # TODO: move result to a class which renders to json for messaging to analytics
         result = {
             'status': "FAILED",

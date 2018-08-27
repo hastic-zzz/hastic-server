@@ -1,10 +1,6 @@
 import config
 import detectors
-import json
 import logging
-import sys
-import traceback
-import time
 
 
 logger = logging.getLogger('AnalyticUnitWorker')

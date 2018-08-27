@@ -78,8 +78,6 @@ async def app_loop():
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
-    logger.info("Starting worker...")
-    worker = AnalyticUnitWorker()
     logger.info("Ok")
     server_service, data_service = init_services()
     print('Analytics process is running') # we need to print to stdout and flush
