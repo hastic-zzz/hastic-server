@@ -1,11 +1,11 @@
-import { findById } from '../models/analytic_unit';
+import { findById, AnalyticUnitId } from '../models/analytic_unit_model';
 
 import axios from 'axios';
 
 
 // TODO: send notification with payload without dep to AnalyticUnit
-export async function sendNotification(predictorId, active) {
-  let anomalyName = findById(predictorId).name;
+export async function sendNotification(id: AnalyticUnitId, active: boolean) {
+  let anomalyName = (await findById(id)).name
   console.log('Notification ' + anomalyName);
 
   let notification = {

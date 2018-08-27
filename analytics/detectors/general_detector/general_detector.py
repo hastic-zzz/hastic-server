@@ -1,6 +1,7 @@
 from detectors.general_detector.supervised_algorithm import SupervisedAlgorithm
+from detectors import Detector
 import utils
-from grafana_data_provider import GrafanaDataProvider
+# from grafana_data_provider import GrafanaDataProvider
 from data_preprocessor import data_preprocessor
 import pandas as pd
 import logging
@@ -15,38 +16,16 @@ NANOSECONDS_IN_MS = 1000000
 logger = logging.getLogger('analytic_toolset')
 
 
-class GeneralDetector:
+class GeneralDetector(Detector):
 
-    def __init__(self, anomaly_name):
-        self.anomaly_name = anomaly_name
-        self.load_anomaly_config()
-
-        parsedUrl = urlparse(self.anomaly_config['panelUrl'])
-        origin = parsedUrl.scheme + '://' + parsedUrl.netloc
-
-        datasource = self.anomaly_config['datasource']
-        datasource['origin'] = origin
-        metric_name = self.anomaly_config['metric']['targets'][0]
-
-        target_filename = os.path.join(config.METRICS_FOLDER, metric_name + ".json")
-
-        dataset_filename = os.path.join(config.DATASET_FOLDER, metric_name + ".csv")
-        augmented_path = os.path.join(config.DATASET_FOLDER, metric_name + "_augmented.csv")
-
-        with open(target_filename, 'r') as file:
-            target = json.load(file)
-
-        self.data_prov = GrafanaDataProvider(datasource, target, dataset_filename)
-        self.preprocessor = data_preprocessor(self.data_prov, augmented_path)
+    def __init__(self):
         self.model = None
-
         self.__load_model()
 
-    async def learn(self, segments):
-        logger.info("Start to learn for anomaly_name='%s'" % self.anomaly_name)
+    async def train(self, segments, data):
 
         confidence = 0.02
-        dataframe = self.data_prov.get_dataframe()
+        dataframe = data # make dataframae from array
         start_index, stop_index = 0, len(dataframe)
         if len(segments) > 0:
             confidence = 0.0
@@ -60,7 +39,7 @@ class GeneralDetector:
             segments
         )
 
-        self.model = self.create_algorithm()
+        self.model = SupervisedAlgorithm()
         await self.model.fit(train_augmented, confidence)
         if len(segments) > 0:
             last_dataframe_time = dataframe.iloc[-1]['timestamp']
@@ -72,7 +51,7 @@ class GeneralDetector:
         logger.info("Learning is finished for anomaly_name='%s'" % self.anomaly_name)
         return last_prediction_time
 
-    async def predict(self, last_prediction_time):
+    async def predict(self, data):
         logger.info("Start to predict for anomaly type='%s'" % self.anomaly_name)
         last_prediction_time = pd.to_datetime(last_prediction_time, unit='ms')
 
@@ -103,34 +82,3 @@ class GeneralDetector:
 
         logger.info("Predicting is finished for anomaly type='%s'" % self.anomaly_name)
         return predicted_anomalies, last_prediction_time
-
-    def synchronize_data(self):
-        self.data_prov.synchronize()
-        self.preprocessor.set_data_provider(self.data_prov)
-        self.preprocessor.synchronize()
-
-    def load_anomaly_config(self):
-        with open(os.path.join(config.ANALYTIC_UNITS_FOLDER, self.anomaly_name + ".json"), 'r') as config_file:
-            self.anomaly_config = json.load(config_file)
-
-    def get_anomalies(self):
-        labeled_anomalies_file = os.path.join(config.ANALYTIC_UNITS_FOLDER, self.anomaly_name + "_labeled.json")
-        if not os.path.exists(labeled_anomalies_file):
-            return []
-        with open(labeled_anomalies_file) as file:
-            return json.load(file)
-
-    def create_algorithm(self):
-        return SupervisedAlgorithm()
-
-    def __save_model(self):
-        logger.info("Save model '%s'" % self.anomaly_name)
-        model_filename = os.path.join(config.MODELS_FOLDER, self.anomaly_name + ".m")
-        self.model.save(model_filename)
-
-    def __load_model(self):
-        logger.info("Load model '%s'" % self.anomaly_name)
-        model_filename = os.path.join(config.MODELS_FOLDER, self.anomaly_name + ".m")
-        if os.path.exists(model_filename):
-            self.model = self.create_algorithm()
-            self.model.load(model_filename)
