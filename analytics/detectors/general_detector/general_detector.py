@@ -1,18 +1,16 @@
 from detectors.general_detector.supervised_algorithm import SupervisedAlgorithm
 from detectors import Detector
 import utils
-from data_preprocessor import data_preprocessor
+
 import pandas as pd
 import logging
-from urllib.parse import urlparse
 import config
-import os.path
 import json
 
 
 NANOSECONDS_IN_MS = 1000000
 
-logger = logging.getLogger('analytic_toolset')
+logger = logging.getLogger('GENERAL_DETECTOR')
 
 
 class GeneralDetector(Detector):

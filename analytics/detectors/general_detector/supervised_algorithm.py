@@ -53,14 +53,6 @@ class SupervisedAlgorithm(object):
         prediction = [x < 0.0 for x in prediction]
         return pd.Series(prediction, index=dataframe.index)
 
-    def save(self, model_filename):
-        with open(model_filename, 'wb') as file:
-            pickle.dump((self.clf, self.scaler), file)
-
-    def load(self, model_filename):
-        with open(model_filename, 'rb') as file:
-            self.clf, self.scaler = pickle.load(file)
-
     def __select_features(self, x, y):
         # feature_selector = FeatureSelector()
         feature_selector = FeatureSelector()

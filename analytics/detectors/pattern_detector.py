@@ -1,10 +1,6 @@
 import models
-import utils
 
 import logging
-from urllib.parse import urlparse
-import os.path
-import json
 import config
 
 import pandas as pd
@@ -12,7 +8,7 @@ import pandas as pd
 from detectors import Detector
 
 
-logger = logging.getLogger('analytic_toolset')
+logger = logging.getLogger('PATTERN_DETECTOR')
 
 
 def resolve_model_by_pattern(pattern: str) -> models.Model:

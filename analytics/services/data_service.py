@@ -83,5 +83,3 @@ class DataService:
         filename = file_descriptor.filename
         if filename not in self.locks:
             raise RuntimeError('No lock for file %s' % filename)
-
-

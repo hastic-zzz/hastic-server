@@ -7,10 +7,11 @@ from analytic_unit_worker import AnalyticUnitWorker
 
 logger = logging.getLogger('AnalyticUnitManager')
 
-analytic_unit_id = str
-analytic_workers: Dict[analytic_unit_id, AnalyticUnitWorker] = dict()
+AnalyticUnitId = str
+analytic_workers: Dict[AnalyticUnitId, AnalyticUnitWorker] = dict()
 
-def get_detector(analytic_unit_type) -> detectors.Detector:
+
+def get_detector_by_type(analytic_unit_type) -> detectors.Detector:
     if analytic_unit_type == 'GENERAL':
         detector = detectors.GeneralDetector()
     else:
@@ -21,7 +22,7 @@ def ensure_worker(analytic_unit_id, analytic_unit_type) -> AnalyticUnitWorker:
     if analytic_unit_id in analytic_workers:
         # TODO: check that type is the same
         return analytic_workers[analytic_unit_id]
-    detector = get_detector(analytic_unit_type)
+    detector = get_detector_by_type(analytic_unit_type)
     worker = AnalyticUnitWorker(analytic_unit_id, detector)
     analytic_workers[analytic_unit_id] = worker
     return worker
@@ -33,15 +34,12 @@ async def handle_analytic_task(task):
         worker = ensure_worker(task['analyticUnitId'], payload['pattern'])
 
         result_payload = {}
-        print(task['type'])
-        if task['type'] == "PREDICT":
-            result_payload = await worker.do_predict(analytic_unit_id, payload)
-            print(result_payload)
-        elif task['type'] == "LEARN":
-            await worker.do_learn(analytic_unit_id, payload)
+        if task['type'] == "LEARN":
+            await worker.do_learn(AnalyticUnitId, payload)
+        elif task['type'] == "PREDICT":
+            result_payload = await worker.do_predict(AnalyticUnitId, payload)
         else:
             raise ValueError('Unknown task type "%s"' % task['type'])
-        print(result_payload)
         return {
             'status': 'SUCCESS',
             'payload': result_payload
