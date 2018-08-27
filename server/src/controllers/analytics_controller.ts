@@ -142,14 +142,15 @@ async function processLearningResult(taskResult: any): Promise<{
   if(taskResult.status !== 'SUCCESS') {
     return Promise.reject(taskResult.error);
   }
-  if(taskResult.segments === undefined || !Array.isArray(taskResult.segments)) {
-    throw new Error('Missing segments is result or it is corrupted: ' + taskResult);
-  }
-  if(taskResult.lastPredictionTime === undefined || isNaN(+taskResult.lastPredictionTime)) {
-    throw new Error(
-      'Missing lastPredictionTime is result or it is corrupted: ' + taskResult.lastPredictionTime
-    );
-  }
+  console.log(taskResult)
+  // if(taskResult.segments === undefined || !Array.isArray(taskResult.segments)) {
+  //   throw new Error('Missing segments in result or it is corrupted: ' + taskResult);
+  // }
+  // if(taskResult.lastPredictionTime === undefined || isNaN(+taskResult.lastPredictionTime)) {
+  //   throw new Error(
+  //     'Missing lastPredictionTime is result or it is corrupted: ' + taskResult.lastPredictionTime
+  //   );
+  // }
 
   return {
     lastPredictionTime: +taskResult.lastPredictionTime,
@@ -159,34 +160,34 @@ async function processLearningResult(taskResult: any): Promise<{
 }
 
 export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
-  // let unit = await AnalyticUnit.findById(id);
-  // let pattern = unit.type;
-  // let task = {
-  //   type: 'PREDICT',
-  //   analyticUnitId: id,
-  //   pattern,
-  //   lastPredictionTime: unit.lastPredictionTime
-  // };
-  // let result = await runTask(task);
+  let unit = await AnalyticUnit.findById(id);
+  let pattern = unit.type;
 
-  // if(result.status === 'FAILED') {
-  //   return [];
-  // }
-  // // Merging segments
-  // let segments = getLabeledSegments(id);
-  // if(segments.length > 0 && result.segments.length > 0) {
-  //   let lastOldSegment = segments[segments.length - 1];
-  //   let firstNewSegment = result.segments[0];
+  let task = new AnalyticsTask(
+    id,
+    AnalyticsTaskType.PREDICT,
+    { pattern, lastPredictionTime: unit.lastPredictionTime }
+  );
+  let result = await runTask(task);
 
-  //   if(firstNewSegment.start <= lastOldSegment.finish) {
-  //     result.segments[0].start = lastOldSegment.start;
-  //     removeSegments(id, [lastOldSegment.id]);
-  //   }
-  // }
+  if(result.status === 'FAILED') {
+    return [];
+  }
+  // Merging segments
+  let segments = await Segment.findMany(id, { labeled: true });
+  if(segments.length > 0 && result.segments.length > 0) {
+    let lastOldSegment = segments[segments.length - 1];
+    let firstNewSegment = result.segments[0];
 
-  // insertSegments(id, result.segments, false);
-  // AnalyticUnit.setPredictionTime(id, result.lastPredictionTime);
-  // return result.segments;
+    if(firstNewSegment.from <= lastOldSegment.to) {
+      result.segments[0].from = lastOldSegment.from;
+      Segment.removeSegments([lastOldSegment.id])
+    }
+  }
+
+  Segment.insertSegments(result.segments);
+  AnalyticUnit.setPredictionTime(id, result.lastPredictionTime);
+  return result.segments;
 }
 
 export function isAnalyticReady(): boolean {

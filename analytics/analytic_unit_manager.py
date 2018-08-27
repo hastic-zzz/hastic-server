@@ -1,5 +1,6 @@
 from typing import Dict
-import logging
+import pandas as pd
+import logging, traceback
 
 import detectors
 from analytic_unit_worker import AnalyticUnitWorker
@@ -9,7 +10,7 @@ logger = logging.getLogger('AnalyticUnitManager')
 analytic_unit_id = str
 analytic_workers: Dict[analytic_unit_id, AnalyticUnitWorker] = dict()
 
-def get_detector(self, analytic_unit_type) -> detectors.Detector:
+def get_detector(analytic_unit_type) -> detectors.Detector:
     if analytic_unit_type == 'GENERAL':
         detector = detectors.GeneralDetector()
     else:
@@ -27,25 +28,32 @@ def ensure_worker(analytic_unit_id, analytic_unit_type) -> AnalyticUnitWorker:
 
 async def handle_analytic_task(task):
     try:
-        worker = ensure_worker(task['analyticUnitId'], task['type'])
         payload = task['payload']
-        if type == "PREDICT":
+        payload['data'] = pd.DataFrame(payload['data'], columns = ['timestamp', 'value'])
+        worker = ensure_worker(task['analyticUnitId'], payload['pattern'])
+
+        result_payload = {}
+        print(task['type'])
+        if task['type'] == "PREDICT":
             result_payload = await worker.do_predict(analytic_unit_id, payload)
-        elif type == "LEARN":
-            result_payload = await worker.do_learn(analytic_unit_id, payload)
+            print(result_payload)
+        elif task['type'] == "LEARN":
+            await worker.do_learn(analytic_unit_id, payload)
         else:
-            raise ValueError('Unknown task type "%s"' % type)
+            raise ValueError('Unknown task type "%s"' % task['type'])
+        print(result_payload)
+        return {
+            'status': 'SUCCESS',
+            'payload': result_payload
+        }
 
     except Exception as e:
+        error_text = traceback.format_exc()
         logger.error("handle_analytic_task exception: '%s'" % error_text)
         # TODO: move result to a class which renders to json for messaging to analytics
-        result = {
+        return {
             'status': "FAILED",
             'error': str(e)
         }
-    return {
-        'status': 'SUCCESS',
-        'payload': result_payload
-    }
 
 

@@ -1,10 +1,11 @@
 import numpy as np
+import pandas as pd
 
 
 def is_intersect(target_segment, segments):
     for segment in segments:
-        start = max(segment['start'], target_segment[0])
-        finish = min(segment['finish'], target_segment[1])
+        start = max(segment['from'], target_segment[0])
+        finish = min(segment['to'], target_segment[1])
         if start <= finish:
             return True
     return False
@@ -46,16 +47,16 @@ def find_steps(array, threshold):
 
 def anomalies_to_timestamp(anomalies):
     for anomaly in anomalies:
-        anomaly['start'] = int(anomaly['start'].timestamp() * 1000)
-        anomaly['finish'] = int(anomaly['finish'].timestamp() * 1000)
+        anomaly['from'] = int(anomaly['from'].timestamp() * 1000)
+        anomaly['to'] = int(anomaly['to'].timestamp() * 1000)
     return anomalies
 
 def segments_box(segments):
     max_time = 0
     min_time = float("inf")
     for segment in segments:
-        min_time = min(min_time, segment['start'])
-        max_time = max(max_time, segment['finish'])
+        min_time = min(min_time, segment['from'])
+        max_time = max(max_time, segment['to'])
     min_time = pd.to_datetime(min_time, unit='ms')
     max_time = pd.to_datetime(max_time, unit='ms')
     return min_time, max_time
@@ -156,3 +157,11 @@ def find_jump(data, height, lenght):
             if(data[i+x] > data[i] + height):
                 j_list.append(i)
     return(j_list)
+
+
+def timestamp_to_index(dataframe, timestamp):
+    data = dataframe['timestamp']
+
+    for i in range(len(data)):
+        if data[i] >= timestamp:
+            return i

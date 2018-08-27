@@ -32,9 +32,10 @@ class JumpModel(Model):
         convolve_list = []
         jump_height_list = []
         jump_length_list = []
+        print(segments)
         for segment in segments:
             if segment['labeled']:
-                segment_data = data[segment['start'] : segment['finish'] + 1].reset_index(drop=True)
+                segment_data = data.loc[segment['from'] : segment['to'] + 1].reset_index(drop=True)
                 segment_min = min(segment_data)
                 segment_max = max(segment_data)
                 confidences.append(0.20 * (segment_max - segment_min))
@@ -60,7 +61,7 @@ class JumpModel(Model):
                 cen_ind = utils.intersection_segment(flat_segment, segment_median) #finds all interseprions with median
                 #cen_ind =  utils.find_ind_median(segment_median, flat_segment)
                 jump_center = cen_ind[0]
-                segment_cent_index = jump_center - 5 + segment['start']
+                segment_cent_index = jump_center - 5 + segment['from']
                 self.ijumps.append(segment_cent_index)
                 labeled_drop = data[segment_cent_index - WINDOW_SIZE : segment_cent_index + WINDOW_SIZE]
                 labeled_min = min(labeled_drop)

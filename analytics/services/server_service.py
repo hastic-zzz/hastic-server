@@ -6,6 +6,7 @@ import zmq.asyncio
 import logging
 import json
 import asyncio
+import traceback
 
 logger = logging.getLogger('SERVER_SERVICE')
 
@@ -88,4 +89,5 @@ class ServerService:
 
             asyncio.ensure_future(self.on_message_handler(message))
         except Exception as e:
-            logger.error("__handle_message Exception: '%s'" % str(e))
+            error_text = traceback.format_exc()
+            logger.error("__handle_message Exception: '%s'" % error_text)
