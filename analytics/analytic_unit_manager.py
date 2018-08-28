@@ -30,14 +30,16 @@ def ensure_worker(analytic_unit_id, analytic_unit_type) -> AnalyticUnitWorker:
 async def handle_analytic_task(task):
     try:
         payload = task['payload']
-        payload['data'] = pd.DataFrame(payload['data'], columns = ['timestamp', 'value'])
+
         worker = ensure_worker(task['analyticUnitId'], payload['pattern'])
 
+        data = pd.DataFrame(payload['data'], columns=['timestamp', 'value'])
+        data['timestamp'] = pd.to_datetime(data['timestamp'])
         result_payload = {}
         if task['type'] == "LEARN":
-            await worker.do_learn(AnalyticUnitId, payload)
+            await worker.do_learn(payload['segments'], data)
         elif task['type'] == "PREDICT":
-            result_payload = await worker.do_predict(AnalyticUnitId, payload)
+            result_payload = await worker.do_predict(data)
         else:
             raise ValueError('Unknown task type "%s"' % task['type'])
         return {

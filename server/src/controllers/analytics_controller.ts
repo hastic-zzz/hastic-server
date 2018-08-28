@@ -28,7 +28,7 @@ function onTaskResult(taskResult: TaskResult) {
       resolver(taskResult);
       taskResolvers.delete(id);
     } else {
-      throw new Error(`TaskResut [${id}] has no resolver`);
+      throw new Error(`TaskResult [${id}] has no resolver`);
     }
   }
 }
@@ -124,7 +124,6 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
       AnalyticUnit.setPredictionTime(id, lastPredictionTime)
     ]);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
-
   } catch (err) {
     let message = err.message || JSON.stringify(err);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
@@ -139,7 +138,7 @@ async function processLearningResult(taskResult: any): Promise<{
   lastPredictionTime: number,
   segments: Segment.Segment[]
 }> {
-  if(taskResult.status !== 'SUCCESS') {
+  if(taskResult.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
     return Promise.reject(taskResult.error);
   }
   console.log(taskResult)
@@ -153,8 +152,8 @@ async function processLearningResult(taskResult: any): Promise<{
   // }
 
   return {
-    lastPredictionTime: +taskResult.lastPredictionTime,
-    segments: taskResult.segments.map(Segment.Segment.fromObject)
+    lastPredictionTime: 0,
+    segments: []
   };
 
 }
@@ -163,18 +162,27 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
   let unit = await AnalyticUnit.findById(id);
   let pattern = unit.type;
 
+  let segments = await Segment.findMany(id, { labeled: true });
+  if (segments.length < 2) {
+    throw new Error('Need at least 2 labeled segments');
+  }
+
+  let { from, to } = getQueryRangeForLearningBySegments(segments);
+  let data = await queryByMetric(unit.metric, unit.panelUrl, from, to);
+  if (data.length === 0) {
+    throw new Error('Empty data to predict on');
+  }
+
   let task = new AnalyticsTask(
     id,
     AnalyticsTaskType.PREDICT,
-    { pattern, lastPredictionTime: unit.lastPredictionTime }
+    { pattern, lastPredictionTime: unit.lastPredictionTime, data }
   );
   let result = await runTask(task);
-
-  if(result.status === 'FAILED') {
+  if(result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
     return [];
   }
   // Merging segments
-  let segments = await Segment.findMany(id, { labeled: true });
   if(segments.length > 0 && result.segments.length > 0) {
     let lastOldSegment = segments[segments.length - 1];
     let firstNewSegment = result.segments[0];
@@ -214,6 +222,6 @@ export async function updateSegments(
   ]);
   // TODO: move setting status somehow "inside" learning
   await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.PENDING);
-  runLearning(id);
+  runLearning(id).then(() => runPredict(id));
   return { addedIds, removed };
 }

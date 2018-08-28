@@ -1,6 +1,7 @@
 import config
 import detectors
 import logging
+import pandas as pd
 
 
 logger = logging.getLogger('AnalyticUnitWorker')
@@ -12,16 +13,10 @@ class AnalyticUnitWorker:
         self.analytic_unit_id = analytic_unit_id
         self.detector = detector
 
-    async def do_learn(self, analytic_unit_id, payload) -> None:
-        pattern = payload['pattern']
-        segments = payload['segments']
-        data = payload['data'] # [time, value][]
+    async def do_learn(self, segments: list, data: pd.DataFrame) -> None:
         await self.detector.train(data, segments)
 
-    async def do_predict(self, analytic_unit_id, payload):
-        pattern = payload['pattern']
-        data = payload['data'] # [time, value][]
-
+    async def do_predict(self, data: pd.DataFrame):
         segments, last_prediction_time = await self.detector.predict(data)
         return {
             'segments': segments,

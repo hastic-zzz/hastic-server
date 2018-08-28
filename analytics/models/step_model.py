@@ -6,7 +6,7 @@ from scipy.signal import argrelextrema
 
 import utils
 import numpy as np
-import pickle
+import pandas as pd
 
 
 class StepModel(Model):
@@ -30,8 +30,8 @@ class StepModel(Model):
         convolve_list = []
         for segment in segments:
             if segment['labeled']:
-                segment_from_index = utils.timestamp_to_index(dataframe, segment['from'])
-                segment_to_index = utils.timestamp_to_index(dataframe, segment['to'])
+                segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from']))
+                segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to']))
 
                 segment_data = data[segment_from_index : segment_to_index + 1]
                 segment_min = min(segment_data)
