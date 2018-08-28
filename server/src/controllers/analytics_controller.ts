@@ -151,10 +151,10 @@ async function processLearningResult(taskResult: any): Promise<{
   //   );
   // }
 
-  return Promise.resolve({
+  return {
     lastPredictionTime: 0,
     segments: []
-  })
+  }
 
 }
 
