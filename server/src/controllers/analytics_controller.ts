@@ -178,9 +178,7 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
     AnalyticsTaskType.PREDICT,
     { pattern, lastPredictionTime: unit.lastPredictionTime, data }
   );
-  console.log(task)
   let result = await runTask(task);
-  console.log(result)
   if(result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
     return [];
   }

@@ -29,7 +29,7 @@ def ensure_worker(analytic_unit_id, analytic_unit_type) -> AnalyticUnitWorker:
 
 async def handle_analytic_task(task):
     try:
-        payload = task['payload']
+        payload = task['payload'].copy()
         payload['data'] = pd.DataFrame(payload['data'], columns = ['timestamp', 'value'])
         payload['data']['timestamp'] = pd.to_datetime(payload['data']['timestamp'])
         worker = ensure_worker(task['analyticUnitId'], payload['pattern'])
