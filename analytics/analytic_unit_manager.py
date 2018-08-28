@@ -31,6 +31,7 @@ async def handle_analytic_task(task):
     try:
         payload = task['payload']
         payload['data'] = pd.DataFrame(payload['data'], columns = ['timestamp', 'value'])
+        payload['data']['timestamp'] = pd.to_datetime(payload['data']['timestamp'])
         worker = ensure_worker(task['analyticUnitId'], payload['pattern'])
 
         result_payload = {}

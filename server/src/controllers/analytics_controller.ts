@@ -124,15 +124,12 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
       AnalyticUnit.setPredictionTime(id, lastPredictionTime)
     ]);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
-    return Promise.resolve()
   } catch (err) {
     let message = err.message || JSON.stringify(err);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
     if(previousLastPredictionTime !== undefined) {
       await AnalyticUnit.setPredictionTime(id, previousLastPredictionTime);
     }
-
-    return Promise.reject()
   }
 
 }
