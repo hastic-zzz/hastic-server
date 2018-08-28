@@ -29,6 +29,28 @@ export class AnalyticUnitCache {
     if(obj.method === undefined) {
       throw new Error('No method in obj:' + obj);
     }
-    return new AnalyticUnitCache(obj.method, obj.data);
+    return new AnalyticUnitCache(
+      obj.method,
+      obj.data,
+      obj._id
+    );
   }
+}
+
+export async function findById(id: AnalyticUnitCacheId): Promise<AnalyticUnitCache> {
+  let obj = await db.findOne(id);
+  return AnalyticUnitCache.fromObject(obj);
+}
+
+export async function create(unit: AnalyticUnitCache): Promise<AnalyticUnitCacheId> {
+  let obj = unit.toObject();
+  return db.insertOne(obj);
+}
+
+export async function setData(id: AnalyticUnitCacheId, data: any) {
+  return db.updateOne(id, { data });
+}
+
+export async function remove(id: AnalyticUnitCacheId): Promise<void> {
+  await db.removeOne(id);
 }

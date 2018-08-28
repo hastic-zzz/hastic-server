@@ -111,12 +111,14 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
     }
 
     let pattern = analyticUnit.type;
+    // TODO: add cache
     let task = new AnalyticsTask(
       id, AnalyticsTaskType.LEARN, { pattern, segments: segmentObjs, data }
     );
     AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
     let result = await runTask(task);
-    let { lastPredictionTime, segments: predictedSegments } = await processLearningResult(result);
+    let { lastPredictionTime, segments: predictedSegments, cache } = await processLearningResult(result);
+    // TODO: save cache
     previousLastPredictionTime = analyticUnit.lastPredictionTime;
 
     await Promise.all([
@@ -136,7 +138,8 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
 
 async function processLearningResult(taskResult: any): Promise<{
   lastPredictionTime: number,
-  segments: Segment.Segment[]
+  segments: Segment.Segment[],
+  cache: any
 }> {
   if(taskResult.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
     return Promise.reject(taskResult.error);
@@ -153,7 +156,8 @@ async function processLearningResult(taskResult: any): Promise<{
 
   return {
     lastPredictionTime: 0,
-    segments: []
+    segments: [],
+    cache: {}
   };
 
 }
