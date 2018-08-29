@@ -7,11 +7,11 @@ let db = makeDBQ(Collection.ANALYTIC_UNITS);
 
 export type AnalyticUnitId = string;
 export enum AnalyticUnitStatus {
+  READY = 'READY',
+  PENDING = 'PENDING',
   LEARNING = 'LEARNING',
   SUCCESS = 'SUCCESS',
-  READY = 'READY',
-  FAILED = 'FAILED',
-  PENDING = 'PENDING'
+  FAILED = 'FAILED'
 }
 
 export class AnalyticUnit {
@@ -73,6 +73,9 @@ export class AnalyticUnit {
 
 export async function findById(id: AnalyticUnitId): Promise<AnalyticUnit> {
   let obj = await db.findOne(id);
+  if(obj === null) {
+    return null;
+  }
   return AnalyticUnit.fromObject(obj);
 }
 
