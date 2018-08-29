@@ -1,5 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
 import { getJsonDataSync } from './services/json_service';
 
 
@@ -10,24 +11,18 @@ export const ANALYTICS_PATH = path.join(__dirname, '../../analytics');
 
 export const DATA_PATH = path.join(__dirname, '../../data');
 
-export const ANALYTIC_UNITS_DATABASE_PATH = path.join(DATA_PATH, 'analyticUnits.db');
-export const METRICS_DATABASE_PATH = path.join(DATA_PATH, 'metrics.db');
+export const ANALYTIC_UNITS_DATABASE_PATH = path.join(DATA_PATH, 'analytic_units.db');
 export const SEGMENTS_DATABASE_PATH = path.join(DATA_PATH, 'segments.db');
-
-export const DATASETS_PATH = path.join(DATA_PATH, 'datasets');
-export const ANALYTIC_UNITS_PATH = path.join(DATA_PATH, 'analytic_units');
-export const MODELS_PATH = path.join(DATA_PATH, 'models');
-export const METRICS_PATH = path.join(DATA_PATH, 'metrics');
-export const SEGMENTS_PATH = path.join(DATA_PATH, 'segments');
 
 export const HASTIC_PORT = getConfigField('HASTIC_PORT', '8000');
 export const ZMQ_CONNECTION_STRING = getConfigField('ZMQ_CONNECTION_STRING', null);
-export const ZMQ_IPC_PATH = getConfigField('ZMQ_IPC_PATH', path.join('/tmp', 'hastic'));
+export const ZMQ_IPC_PATH = getConfigField('ZMQ_IPC_PATH', path.join(os.tmpdir(), 'hastic'));
 export const ZMQ_DEV_PORT = getConfigField('ZMQ_DEV_PORT', '8002');
+export const HASTIC_API_KEY = getConfigField('HASTIC_API_KEY');
 export const ANLYTICS_PING_INTERVAL = 500; // ms
 
 
-function getConfigField(field, defaultVal?) {
+function getConfigField(field: string, defaultVal?: any) {
   let val = defaultVal;
 
   if(process.env[field] !== undefined) {

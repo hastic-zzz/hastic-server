@@ -3,17 +3,18 @@ import json
 import logging
 import sys
 import asyncio
+import traceback
 
 import services
-from analytic_unit_worker import AnalyticUnitWorker
+from analytic_unit_manager import handle_analytic_task
 
 
 root = logging.getLogger()
 logger = logging.getLogger('SERVER')
 
-worker = None
-server_service = None
-data_service = None
+
+server_service: services.ServerService = None
+data_service: services.DataService = None
 
 root.setLevel(logging.DEBUG)
 
@@ -28,29 +29,43 @@ logging_handler.setFormatter(logging_formatter)
 root.addHandler(logging_handler)
 
 
-async def handle_task(text):
+
+
+async def handle_task(task: object):
     try:
-        task = json.loads(text)
+
         logger.info("Command is OK")
 
-        await server_service.send_message(json.dumps({
-            '_taskId': task['_taskId'],
+        task_result_payload = {
+            '_id': task['_id'],
             'task': task['type'],
             'analyticUnitId': task['analyticUnitId'],
-            'status': "in progress"
-        }))
+            'status': "IN_PROGRESS"
+        }
 
-        res = await worker.do_task(task)
-        res['_taskId'] = task['_taskId']
-        await server_service.send_message(json.dumps(res))
+        message = services.server_service.ServerMessage('TASK_RESULT', task_result_payload)
+        await server_service.send_message(message)
+
+        res = await handle_analytic_task(task)
+        res['_id'] = task['_id']
+
+        message = services.server_service.ServerMessage('TASK_RESULT', res)
+        await server_service.send_message(message)
 
     except Exception as e:
-        logger.error("Exception: '%s'" % str(e))
+        error_text = traceback.format_exc()
+        logger.error("handle_task Exception: '%s'" % error_text)
+
+async def handle_message(message: services.ServerMessage):
+    payload = None
+    if message.method == 'TASK':
+        await handle_task(message.payload)
+
 
 def init_services():
     logger.info("Starting services...")
     logger.info("Server...")
-    server_service = services.ServerService(handle_task)
+    server_service = services.ServerService(handle_message)
     logger.info("Ok")
     logger.info("Data service...")
     data_service = services.DataService(server_service)
@@ -58,12 +73,16 @@ def init_services():
 
     return server_service, data_service
 
+async def app_loop():
+    await server_service.handle_loop()
+    # await asyncio.gather(server_service.handle_loop(), test_file_save())
+
+
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
-    logger.info("Starting worker...")
-    worker = AnalyticUnitWorker()
     logger.info("Ok")
     server_service, data_service = init_services()
     print('Analytics process is running') # we need to print to stdout and flush
     sys.stdout.flush()                    # because node.js expects it
-    loop.run_until_complete(server_service.handle_loop())
+
+    loop.run_until_complete(app_loop())

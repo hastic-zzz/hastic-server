@@ -1,36 +1,43 @@
-import * as AnalyticUnit from '../models/analytic_unit';
-import { getAlertsAnomalies, saveAlertsAnomalies } from '../controllers/alerts_controller';
+// /**
+//  * Alarting is not supported yet
+//  */
 
-import * as Router from 'koa-router';
+// throw new console.error("Not supported");
 
 
-function getAlert(ctx: Router.IRouterContext) {
-  let id: AnalyticUnit.AnalyticUnitId = ctx.request.query.id;
+// import * as AnalyticUnit from '../models/analytic_unit';
+// import { getAlertsAnomalies, saveAlertsAnomalies } from '../controllers/alerts_controller';
 
-  let alertsAnomalies = getAlertsAnomalies();
-  let pos = alertsAnomalies.indexOf(id);
+// import * as Router from 'koa-router';
 
-  let enabled: boolean = (pos !== -1);
-  ctx.response.body = { enabled };
-}
 
-function setAlertEnabled(ctx: Router.IRouterContext) {
-  let id: AnalyticUnit.AnalyticUnitId = ctx.request.body.id;
-  let enabled: boolean = ctx.request.body.enabled;
+// function getAlert(ctx: Router.IRouterContext) {
+//   let id: AnalyticUnit.AnalyticUnitId = ctx.request.query.id;
 
-  let alertsAnomalies = getAlertsAnomalies();
-  let pos: number = alertsAnomalies.indexOf(id);
-  if(enabled && pos == -1) {
-    alertsAnomalies.push(id);
-    saveAlertsAnomalies(alertsAnomalies);
-  } else if(!enabled && pos > -1) {
-    alertsAnomalies.splice(pos, 1);
-    saveAlertsAnomalies(alertsAnomalies);
-  }
-  ctx.response.body = { status: 'OK' };
-}
+//   let alertsAnomalies = getAlertsAnomalies();
+//   let pos = alertsAnomalies.indexOf(id);
 
-export const router = new Router();
+//   let enabled: boolean = (pos !== -1);
+//   ctx.response.body = { enabled };
+// }
 
-router.get('/', getAlert);
-router.post('/', setAlertEnabled);
+// function setAlertEnabled(ctx: Router.IRouterContext) {
+//   let id: AnalyticUnit.AnalyticUnitId = ctx.request.body.id;
+//   let enabled: boolean = ctx.request.body.enabled;
+
+//   let alertsAnomalies = getAlertsAnomalies();
+//   let pos: number = alertsAnomalies.indexOf(id);
+//   if(enabled && pos == -1) {
+//     alertsAnomalies.push(id);
+//     saveAlertsAnomalies(alertsAnomalies);
+//   } else if(!enabled && pos > -1) {
+//     alertsAnomalies.splice(pos, 1);
+//     saveAlertsAnomalies(alertsAnomalies);
+//   }
+//   ctx.response.body = { status: 'OK' };
+// }
+
+// export const router = new Router();
+
+// router.get('/', getAlert);
+// router.post('/', setAlertEnabled);

@@ -25,16 +25,17 @@ class JumpModel(Model):
             'JUMP_LENGTH': 1,
         }
     
-    async def fit(self, dataframe, segments):
+    def fit(self, dataframe, segments):
         self.segments = segments
         data = dataframe['value']
         confidences = []
         convolve_list = []
         jump_height_list = []
         jump_length_list = []
+
         for segment in segments:
             if segment['labeled']:
-                segment_data = data[segment['start'] : segment['finish'] + 1].reset_index(drop=True)
+                segment_data = data.loc[segment['from'] : segment['to'] + 1].reset_index(drop=True)
                 segment_min = min(segment_data)
                 segment_max = max(segment_data)
                 confidences.append(0.20 * (segment_max - segment_min))
@@ -60,7 +61,9 @@ class JumpModel(Model):
                 cen_ind = utils.intersection_segment(flat_segment, segment_median) #finds all interseprions with median
                 #cen_ind =  utils.find_ind_median(segment_median, flat_segment)
                 jump_center = cen_ind[0]
-                segment_cent_index = jump_center - 5 + segment['start']
+
+                segment_cent_index = jump_center - 5 + segment['from']
+
                 self.ijumps.append(segment_cent_index)
                 labeled_drop = data[segment_cent_index - WINDOW_SIZE : segment_cent_index + WINDOW_SIZE]
                 labeled_min = min(labeled_drop)
@@ -89,7 +92,7 @@ class JumpModel(Model):
         else:
             self.state['JUMP_LENGTH'] = 1   
     
-    async def predict(self, dataframe):
+    def predict(self, dataframe):
         data = dataframe['value']
 
         result = self.__predict(data)
@@ -99,7 +102,7 @@ class JumpModel(Model):
         return result
 
     def __predict(self, data):
-        window_size = 24
+        #window_size = 24
         #all_max_flatten_data = data.rolling(window=window_size).mean()
         #all_mins = argrelextrema(np.array(all_max_flatten_data), np.less)[0]        
         possible_jumps = utils.find_jump(data, self.state['JUMP_HEIGHT'], self.state['JUMP_LENGTH'] + 1)
@@ -109,6 +112,7 @@ class JumpModel(Model):
     def __filter_prediction(self, segments, data):
         delete_list = []
         variance_error = int(0.004 * len(data))
+
         if variance_error > 50:
             variance_error = 50
         for i in range(1, len(segments)):
@@ -120,10 +124,12 @@ class JumpModel(Model):
         if len(segments) == 0 or len(self.ijumps) == 0 :
             segments = []
             return segments
+
         pattern_data = data[self.ijumps[0] - WINDOW_SIZE : self.ijumps[0] + WINDOW_SIZE]
         for segment in segments:
             if segment > WINDOW_SIZE and segment < (len(data) - WINDOW_SIZE):
                 convol_data = data[segment - WINDOW_SIZE : segment + WINDOW_SIZE]
+
                 conv = scipy.signal.fftconvolve(pattern_data, convol_data)
                 if max(conv) > self.state['convolve_max'] * 1.2 or max(conv) < self.state['convolve_max'] * 0.8:
                     delete_list.append(segment)
@@ -134,5 +140,6 @@ class JumpModel(Model):
         
         for ijump in self.ijumps:
             segments.append(ijump)
+
 
         return segments

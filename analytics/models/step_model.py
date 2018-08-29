@@ -7,12 +7,11 @@ from scipy.stats import gaussian_kde
 
 import utils
 import numpy as np
-import pickle
+import pandas as pd
 
 WINDOW_SIZE = 400
 
 class StepModel(Model):
-
     def __init__(self):
         super()
         self.segments = []
@@ -24,19 +23,23 @@ class StepModel(Model):
             'DROP_LENGTH': 1,
         }
 
-    async def fit(self, dataframe, segments):
+    def fit(self, dataframe, segments):
         self.segments = segments
         d_min = min(dataframe['value'])
         for i in range(0,len(dataframe['value'])):
             dataframe.loc[i, 'value'] = dataframe.loc[i, 'value'] - d_min
         data = dataframe['value']
+
         confidences = []
         convolve_list = []
         drop_height_list = []
         drop_length_list = []
         for segment in segments:
             if segment['labeled']:
-                segment_data = data[segment['start'] : segment['finish'] + 1].reset_index(drop=True)
+                segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from']))
+                segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to']))
+    
+                segment_data = data[segment_from_index : segment_to_index + 1].reset_index(drop=True)
                 segment_min = min(segment_data)
                 segment_max = max(segment_data)
                 confidences.append(0.20 * (segment_max - segment_min))
@@ -69,6 +72,7 @@ class StepModel(Model):
                 labeled_min = min(labeled_drop)
                 for value in labeled_drop:
                     value = value - labeled_min
+
                 convolve = scipy.signal.fftconvolve(labeled_drop, labeled_drop)
                 convolve_list.append(max(convolve)) 
 
@@ -92,21 +96,23 @@ class StepModel(Model):
         else:
             self.state['DROP_LENGTH'] = 1
 
+
     async def predict(self, dataframe):
         d_min = min(dataframe['value'])
         for i in range(0,len(dataframe['value'])):
             dataframe.loc[i, 'value'] = dataframe.loc[i, 'value'] - d_min 
+
         data = dataframe['value']
 
-        result = await self.__predict(data)
+        result = self.__predict(data)
         result.sort()
 
         if len(self.segments) > 0:
             result = [segment for segment in result if not utils.is_intersect(segment, self.segments)]
         return result
 
-    async def __predict(self, data):
-        window_size = 24
+    def __predict(self, data):
+        #window_size = 24
         #all_max_flatten_data = data.rolling(window=window_size).mean()
         #all_mins = argrelextrema(np.array(all_max_flatten_data), np.less)[0]        
         #print(self.state['DROP_HEIGHT'],self.state['DROP_LENGTH'] )
@@ -118,6 +124,7 @@ class StepModel(Model):
         variance_error = int(0.004 * len(data))
         if variance_error > 50:
             variance_error = 50
+
         for i in range(1, len(segments)):
             if segments[i] < segments[i - 1] + variance_error:
                 delete_list.append(segments[i])

@@ -1,6 +1,10 @@
+# Type hints
+
+Please use: https://www.python.org/dev/peps/pep-0484/
+
 # Line endings
 
-We use CRLS everywhere
+We use LF everywhere
 
 # Imports
 

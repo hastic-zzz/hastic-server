@@ -1,3 +1,5 @@
+import { AnalyticsTask } from '../models/analytics_task_model';
+import { AnalyticsMessageMethod, AnalyticsMessage } from '../models/analytics_message_model';
 import * as config from '../config';
 
 const zmq = require('zeromq');
@@ -12,27 +14,34 @@ export class AnalyticsService {
   private _requester: any;
   private _ready: boolean = false;
   private _pingResponded = false;
-  private _zmqConnectionString = null;
-  private _ipcPath = null;
+  private _zmqConnectionString: string = null;
+  private _ipcPath: string = null;
   private _analyticsPinger: NodeJS.Timer = null;
   private _isClosed = false;
 
-
-  constructor(private _onResponse: (response: any) => void) {
+  constructor(private _onMessage: (message: AnalyticsMessage) => void) {
     this._init();
   }
 
-  public async sendTask(msgObj: any): Promise<void> {
+  public async sendTask(task: AnalyticsTask): Promise<void> {
     if(!this._ready) {
       return Promise.reject("Analytics is not ready");
     }
-    let message = JSON.stringify(msgObj);
+    let message = new AnalyticsMessage(
+      AnalyticsMessageMethod.TASK,
+      task.toObject()
+    );
     return this.sendMessage(message);
   }
 
-  public async sendMessage(message: string): Promise<void> {
+  public async sendMessage(message: AnalyticsMessage): Promise<void> {
+    let strMessage = JSON.stringify(message);
+    return this.sendText(strMessage);
+  }
+
+  public async sendText(text: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      this._requester.send(message, undefined, (err) => {
+      this._requester.send(text, undefined, (err: any) => {
         if(err) {
           reject(err);
         } else {
@@ -47,6 +56,7 @@ export class AnalyticsService {
     console.log('Terminating analytics service...');
     clearInterval(this._analyticsPinger);
     if(this._ipcPath !== null) {
+      console.log('Remove ipc path: ' + this._ipcPath);
       fs.unlinkSync(this._ipcPath);
     }
     this._requester.close();
@@ -160,8 +170,9 @@ export class AnalyticsService {
     }
   }
 
-  private _onAnalyticsMessage(text: any, error) {
-    if(text.toString() === 'pong') {
+  private _onAnalyticsMessage(data: any) {
+    let text = data.toString();
+    if(text === 'PONG') {
       this._pingResponded = true;
       if(!this._ready) {
         this._ready = true;
@@ -169,7 +180,7 @@ export class AnalyticsService {
       }
       return;
     }
-    console.log(`analytics message: "${text}"`);
+
     let response;
     try {
       response = JSON.parse(text);
@@ -178,7 +189,7 @@ export class AnalyticsService {
       console.error(text);
       throw new Error('Unexpected response');
     }
-    this._onResponse(response);
+    this._onMessage(AnalyticsMessage.fromObject(response));
   }
 
   private async _runAlalyticsPinger() {
@@ -192,7 +203,7 @@ export class AnalyticsService {
       }
       this._pingResponded = false;
       // TODO: set life limit for this ping
-      this.sendMessage('ping');
+      this.sendText('PING');
     }, config.ANLYTICS_PING_INTERVAL);
   }
 

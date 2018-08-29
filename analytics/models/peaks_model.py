@@ -10,10 +10,10 @@ class PeaksModel(Model):
     def __init__(self):
         super()
 
-    async def fit(self, dataset, contamination=0.005):
+    def fit(self, dataset, contamination=0.005):
         pass
 
-    async def predict(self, dataframe):
+    def predict(self, dataframe):
         array = dataframe['value'].as_matrix()
         window_size = 20
         # window = np.ones(101)
