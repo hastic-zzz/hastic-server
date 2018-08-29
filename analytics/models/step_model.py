@@ -38,12 +38,12 @@ class StepModel(Model):
             if segment['labeled']:
                 segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from']))
                 segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to']))
-    
+
                 segment_data = data[segment_from_index : segment_to_index + 1].reset_index(drop=True)
                 segment_min = min(segment_data)
                 segment_max = max(segment_data)
                 confidences.append(0.20 * (segment_max - segment_min))
-                flat_segment = segment_data.rolling(window=5).mean() 
+                flat_segment = segment_data.rolling(window=5).mean()
                 pdf = gaussian_kde(flat_segment.dropna())
                 x = np.linspace(flat_segment.dropna().min(), flat_segment.dropna().max(), len(flat_segment.dropna()))
                 y = pdf(x)
@@ -51,11 +51,11 @@ class StepModel(Model):
                 for i in range(len(x)):
                     ax_list.append([x[i], y[i]])
                 ax_list = np.array(ax_list, np.float32)
-                antipeaks_kde = argrelextrema(np.array(ax_list), np.less)[0] 
+                antipeaks_kde = argrelextrema(np.array(ax_list), np.less)[0]
                 peaks_kde = argrelextrema(np.array(ax_list), np.greater)[0]
                 min_peak_index = peaks_kde[0]
                 max_peak_index = peaks_kde[1]
-                segment_median = ax_list[antipeaks_kde[0], 0]                
+                segment_median = ax_list[antipeaks_kde[0], 0]
                 segment_min_line = ax_list[min_peak_index, 0]
                 segment_max_line = ax_list[max_peak_index, 0]
                 #print(segment_min_line, segment_max_line)
@@ -74,7 +74,7 @@ class StepModel(Model):
                     value = value - labeled_min
 
                 convolve = scipy.signal.fftconvolve(labeled_drop, labeled_drop)
-                convolve_list.append(max(convolve)) 
+                convolve_list.append(max(convolve))
 
         if len(confidences) > 0:
             self.state['confidence'] = min(confidences)
@@ -85,12 +85,12 @@ class StepModel(Model):
             self.state['convolve_max'] = max(convolve_list)
         else:
             self.state['convolve_max'] = WINDOW_SIZE
-            
+
         if len(drop_height_list) > 0:
             self.state['DROP_HEIGHT'] = min(drop_height_list)
         else:
             self.state['DROP_HEIGHT'] = 1
-            
+
         if len(drop_length_list) > 0:
             self.state['DROP_LENGTH'] = max(drop_length_list)
         else:
@@ -100,7 +100,7 @@ class StepModel(Model):
     async def predict(self, dataframe):
         d_min = min(dataframe['value'])
         for i in range(0,len(dataframe['value'])):
-            dataframe.loc[i, 'value'] = dataframe.loc[i, 'value'] - d_min 
+            dataframe.loc[i, 'value'] = dataframe.loc[i, 'value'] - d_min
 
         data = dataframe['value']
 
@@ -114,7 +114,7 @@ class StepModel(Model):
     def __predict(self, data):
         #window_size = 24
         #all_max_flatten_data = data.rolling(window=window_size).mean()
-        #all_mins = argrelextrema(np.array(all_max_flatten_data), np.less)[0]        
+        #all_mins = argrelextrema(np.array(all_max_flatten_data), np.less)[0]
         #print(self.state['DROP_HEIGHT'],self.state['DROP_LENGTH'] )
         possible_drops = utils.find_drop(data, self.state['DROP_HEIGHT'], self.state['DROP_LENGTH'] + 1)
         return [(x - 1, x + 1) for x in self.__filter_prediction(possible_drops, data)]
