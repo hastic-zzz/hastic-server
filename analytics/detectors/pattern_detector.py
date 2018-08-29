@@ -30,13 +30,13 @@ class PatternDetector(Detector):
         self.model = resolve_model_by_pattern(self.pattern_type)
         window_size = 100
 
-    async def train(self, dataframe: pd.DataFrame, segments: list, cache: dict)):
+    async def train(self, dataframe: pd.DataFrame, segments: list, cache: dict):
         # TODO: pass only part of dataframe that has segments
         self.model.fit(dataframe, segments)
         # TODO: save model after fit
         return cache
 
-    async def predict(self, dataframe: pd.DataFrame, cache: dict)):
+    async def predict(self, dataframe: pd.DataFrame, cache: dict):
         predicted_indexes = await self.model.predict(dataframe)
 
         segments = []
