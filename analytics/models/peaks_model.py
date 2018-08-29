@@ -3,6 +3,7 @@ from models import Model
 import utils
 from scipy import signal
 import numpy as np
+import pandas as pd
 
 
 class PeaksModel(Model):
@@ -10,10 +11,10 @@ class PeaksModel(Model):
     def __init__(self):
         super()
 
-    def fit(self, dataset, contamination=0.005):
+    def fit(self, dataframe: pd.DataFrame, segments: list, cache: dict) -> dict:
         pass
 
-    def predict(self, dataframe):
+    def predict(self, dataframe: pd.DataFrame, cache: dict) -> dict:
         array = dataframe['value'].as_matrix()
         window_size = 20
         # window = np.ones(101)

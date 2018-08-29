@@ -19,7 +19,7 @@ class StepModel(Model):
             'convolve_max': 570000
         }
 
-    def fit(self, dataframe, segments):
+    def fit(self, dataframe: pd.DataFrame, segments: list, cache: dict) -> dict:
         self.segments = segments
         #dataframe = dataframe.iloc[::-1]
         d_min = min(dataframe['value'])
@@ -54,8 +54,7 @@ class StepModel(Model):
         else:
             self.state['convolve_max'] = 570000
 
-
-    async def predict(self, dataframe):
+    async def predict(self, dataframe: pd.DataFrame, cache: dict) -> dict:
         #dataframe = dataframe.iloc[::-1]
         d_min = min(dataframe['value'])
         for i in range(0,len(dataframe['value'])):

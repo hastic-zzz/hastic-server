@@ -10,8 +10,8 @@ class CustomModel(Model):
         # It will be saved in filesystem and loaded after server restart
         self.state = {}
     
-    def fit(self, dataframe, segments):
+    def fit(self, dataframe, segments, cache: dict):
         pass
     
-    def predict(self, dataframe):
+    def predict(self, dataframe, cache: dict):
         return []

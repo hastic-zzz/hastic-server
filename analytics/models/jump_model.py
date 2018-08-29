@@ -25,7 +25,7 @@ class JumpModel(Model):
             'JUMP_LENGTH': 1,
         }
     
-    def fit(self, dataframe, segments):
+    def fit(self, dataframe: pd.DataFrame, segments: list, cache: dict):
         self.segments = segments
         data = dataframe['value']
         confidences = []
@@ -90,7 +90,7 @@ class JumpModel(Model):
         else:
             self.state['JUMP_LENGTH'] = 1   
     
-    def predict(self, dataframe):
+    def predict(self, dataframe: pd.DataFrame, cache: dict):
         data = dataframe['value']
 
         result = self.__predict(data)
