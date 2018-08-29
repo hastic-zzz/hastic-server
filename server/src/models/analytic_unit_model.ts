@@ -89,6 +89,7 @@ export async function create(unit: AnalyticUnit): Promise<AnalyticUnitId> {
 
 export async function remove(id: AnalyticUnitId): Promise<void> {
   // TODO: remove it`s segments
+  // TODO: remove it`s cache
   await db.removeOne(id);
 }
 

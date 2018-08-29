@@ -18,7 +18,7 @@ class GeneralDetector(Detector):
     def __init__(self):
         self.model = None
 
-    async def train(self, dataframe, segments):
+    async def train(self, dataframe: pd.DataFrame, segments: list, cache: dict):
 
         confidence = 0.02
         start_index, stop_index = 0, len(dataframe)
@@ -45,7 +45,7 @@ class GeneralDetector(Detector):
         logger.info("Learning is finished for anomaly_name='%s'" % self.anomaly_name)
         return last_prediction_time
 
-    async def predict(self, data):
+    async def predict(self, dataframe: pd.DataFrame, cache: dict):
         logger.info("Start to predict for anomaly type='%s'" % self.anomaly_name)
         last_prediction_time = pd.to_datetime(last_prediction_time, unit='ms')
 

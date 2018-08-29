@@ -37,9 +37,9 @@ async def handle_analytic_task(task):
         data['timestamp'] = pd.to_datetime(data['timestamp'])
         result_payload = {}
         if task['type'] == "LEARN":
-            await worker.do_learn(payload['segments'], data)
+            result_payload = await worker.do_learn(payload['segments'], data, payload['cache'])
         elif task['type'] == "PREDICT":
-            result_payload = await worker.do_predict(data)
+            result_payload = await worker.do_predict(data, payload['cache'])
         else:
             raise ValueError('Unknown task type "%s"' % task['type'])
         return {

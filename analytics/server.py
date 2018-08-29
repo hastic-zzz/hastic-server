@@ -40,6 +40,7 @@ async def handle_task(task: object):
             '_id': task['_id'],
             'task': task['type'],
             'analyticUnitId': task['analyticUnitId'],
+            'cache': task['cache'],
             'status': "IN_PROGRESS"
         }
 

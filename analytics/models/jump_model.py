@@ -2,6 +2,7 @@ from models import Model
 
 import utils
 import numpy as np
+import pandas as pd
 import scipy.signal
 from scipy.fftpack import fft
 from scipy.signal import argrelextrema
@@ -25,7 +26,7 @@ class JumpModel(Model):
             'JUMP_LENGTH': 1,
         }
 
-    def fit(self, dataframe, segments):
+    def fit(self, dataframe: pd.DataFrame, segments: list, cache: dict) -> dict:
         self.segments = segments
         data = dataframe['value']
         confidences = []
@@ -87,9 +88,9 @@ class JumpModel(Model):
         if len(jump_length_list) > 0:
             self.state['JUMP_LENGTH'] = max(jump_length_list)
         else:
-            self.state['JUMP_LENGTH'] = 1
-
-    def predict(self, dataframe):
+            self.state['JUMP_LENGTH'] = 1   
+    
+    def predict(self, dataframe: pd.DataFrame, cache: dict) -> dict:
         data = dataframe['value']
 
         result = self.__predict(data)

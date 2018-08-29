@@ -5,9 +5,9 @@ from pandas import DataFrame
 class Model(ABC):
 
     @abstractmethod
-    def fit(self, dataframe: DataFrame, segments: list):
+    def fit(self, dataframe: DataFrame, segments: list, cache: dict) -> dict:
         pass
 
     @abstractmethod
-    def predict(self, dataframe: DataFrame) -> list:
+    def predict(self, dataframe: DataFrame, cache: dict) -> dict:
         pass

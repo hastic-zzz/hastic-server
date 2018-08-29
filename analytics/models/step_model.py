@@ -23,7 +23,7 @@ class StepModel(Model):
             'DROP_LENGTH': 1,
         }
 
-    def fit(self, dataframe, segments):
+    def fit(self, dataframe: pd.DataFrame, segments: list, cache: dict) -> dict:
         self.segments = segments
         d_min = min(dataframe['value'])
         for i in range(0,len(dataframe['value'])):
@@ -96,8 +96,7 @@ class StepModel(Model):
         else:
             self.state['DROP_LENGTH'] = 1
 
-
-    async def predict(self, dataframe):
+    async def predict(self, dataframe: pd.DataFrame, cache: dict) -> dict:
         d_min = min(dataframe['value'])
         for i in range(0,len(dataframe['value'])):
             dataframe.loc[i, 'value'] = dataframe.loc[i, 'value'] - d_min
