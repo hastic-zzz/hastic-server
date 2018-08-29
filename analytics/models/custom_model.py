@@ -1,5 +1,6 @@
 from models import Model
 import utils
+import pandas as pd
 
 # Paste your model here:
 class CustomModel(Model):
