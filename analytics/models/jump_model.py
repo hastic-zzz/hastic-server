@@ -10,7 +10,7 @@ from scipy.stats import gaussian_kde
 from scipy.stats import norm
 
 
-WINDOW_SIZE = 240
+WINDOW_SIZE = 400
 
 class JumpModel(Model):
 
@@ -100,16 +100,15 @@ class JumpModel(Model):
 
     def __predict(self, data):
         window_size = 24
-        all_max_flatten_data = data.rolling(window=window_size).mean()
-        all_mins = argrelextrema(np.array(all_max_flatten_data), np.less)[0]        
-       
+        #all_max_flatten_data = data.rolling(window=window_size).mean()
+        #all_mins = argrelextrema(np.array(all_max_flatten_data), np.less)[0]        
         possible_jumps = utils.find_jump(data, self.state['JUMP_HEIGHT'], self.state['JUMP_LENGTH'] + 1)
 
-        return [(x - 1, x + 1) for x in self.__filter_prediction(possible_jumps, all_max_flatten_data)]
+        return [(x - 1, x + 1) for x in self.__filter_prediction(possible_jumps, data)]
 
-    def __filter_prediction(self, segments, all_max_flatten_data):
+    def __filter_prediction(self, segments, data):
         delete_list = []
-        variance_error = int(0.004 * len(all_max_flatten_data))
+        variance_error = int(0.004 * len(data))
         if variance_error > 50:
             variance_error = 50
         for i in range(1, len(segments)):
@@ -121,10 +120,10 @@ class JumpModel(Model):
         if len(segments) == 0 or len(self.ijumps) == 0 :
             segments = []
             return segments
-        pattern_data = all_max_flatten_data[self.ijumps[0] - WINDOW_SIZE : self.ijumps[0] + WINDOW_SIZE]
+        pattern_data = data[self.ijumps[0] - WINDOW_SIZE : self.ijumps[0] + WINDOW_SIZE]
         for segment in segments:
-            if segment > WINDOW_SIZE:
-                convol_data = all_max_flatten_data[segment - WINDOW_SIZE : segment + WINDOW_SIZE]
+            if segment > WINDOW_SIZE and segment < (len(data) - WINDOW_SIZE):
+                convol_data = data[segment - WINDOW_SIZE : segment + WINDOW_SIZE]
                 conv = scipy.signal.fftconvolve(pattern_data, convol_data)
                 if max(conv) > self.state['convolve_max'] * 1.2 or max(conv) < self.state['convolve_max'] * 0.8:
                     delete_list.append(segment)

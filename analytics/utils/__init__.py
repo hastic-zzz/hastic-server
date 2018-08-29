@@ -156,3 +156,44 @@ def find_jump(data, height, lenght):
             if(data[i+x] > data[i] + height):
                 j_list.append(i)
     return(j_list)
+
+def find_drop_length(segment_data, min_line, max_line):
+    x = np.arange(0, len(segment_data))
+    f = []
+    l = []
+    for i in range(len(segment_data)):
+        f.append(min_line)
+        l.append(max_line)
+    f = np.array(f)
+    l = np.array(l)
+    g = []    
+    for i in segment_data:
+        g.append(i)
+    g = np.array(g)
+    idx = np.argwhere(np.diff(np.sign(f - g)) != 0).reshape(-1) + 0 #min_line
+    idl = np.argwhere(np.diff(np.sign(l - g)) != 0).reshape(-1) + 0 #max_line
+    if (idx[0] - idl[-1] + 1) > 0:
+        return idx[0] - idl[-1] + 1
+    else:
+        return print("retard alert!")
+
+def drop_intersection(segment_data, median_line):
+    x = np.arange(0, len(segment_data))
+    f = []
+    for i in range(len(segment_data)):
+        f.append(median_line)
+    f = np.array(f)
+    g = []    
+    for i in segment_data:
+        g.append(i)
+    g = np.array(g)
+    idx = np.argwhere(np.diff(np.sign(f - g)) != 0).reshape(-1) + 0 
+    return idx
+
+def find_drop(data, height, lenght):
+    d_list = []
+    for i in range(len(data)-lenght-1):
+        for x in range(1, lenght):
+            if(data[i+x] < data[i] - height):
+                d_list.append(i+36)
+    return(d_list)
