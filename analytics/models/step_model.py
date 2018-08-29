@@ -61,12 +61,11 @@ class StepModel(Model):
                 #print(segment_min_line, segment_max_line)
                 drop_height = 0.95 * (segment_max_line - segment_min_line)
                 drop_height_list.append(drop_height)
-                drop_lenght = utils.find_drop_length(segment_data, segment_min_line, segment_max_line)
-                #print(drop_lenght)
-                drop_length_list.append(drop_lenght)
+                drop_length = utils.find_drop_length(segment_data, segment_min_line, segment_max_line)
+                drop_length_list.append(drop_length)
                 cen_ind = utils.drop_intersection(flat_segment, segment_median) #finds all interseprions with median
                 drop_center = cen_ind[0]
-                segment_cent_index = drop_center - 5 + segment['start']
+                segment_cent_index = drop_center - 5 + segment_from_index
                 self.idrops.append(segment_cent_index)
                 labeled_drop = data[segment_cent_index - WINDOW_SIZE : segment_cent_index + WINDOW_SIZE]
                 labeled_min = min(labeled_drop)
@@ -101,22 +100,20 @@ class StepModel(Model):
         for i in range(0,len(dataframe['value'])):
             dataframe.loc[i, 'value'] = dataframe.loc[i, 'value'] - d_min
 
-        data = dataframe['value']
-
-        result = self.__predict(data)
-        result.sort()
+        result = await self.__predict(dataframe)
 
         if len(self.segments) > 0:
-            result = [segment for segment in result if not utils.is_intersect(segment, self.segments)]
-        return result
+            return [segment for segment in result if not utils.is_intersect(segment, self.segments)]
 
-    def __predict(self, data):
+    async def __predict(self, dataframe):
         #window_size = 24
         #all_max_flatten_data = data.rolling(window=window_size).mean()
         #all_mins = argrelextrema(np.array(all_max_flatten_data), np.less)[0]
-        #print(self.state['DROP_HEIGHT'],self.state['DROP_LENGTH'] )
+        #print(self.state['DROP_HEIGHT'],self.state['DROP_LENGTH'])
+        data = dataframe['value']
         possible_drops = utils.find_drop(data, self.state['DROP_HEIGHT'], self.state['DROP_LENGTH'] + 1)
-        return [(x - 1, x + 1) for x in self.__filter_prediction(possible_drops, data)]
+        filtered = self.__filter_prediction(possible_drops, data)
+        return [(dataframe['timestamp'][x - 1].value, dataframe['timestamp'][x + 1].value) for x in filtered]
 
     def __filter_prediction(self, segments, data):
         delete_list = []

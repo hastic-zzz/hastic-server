@@ -19,9 +19,8 @@ export class AnalyticUnitCache {
   public toObject() {
     return {
       _id: this.id,
-      analyticUnitId: self.analyticUnitId,
-      data: self.data,
-      obj._id
+      analyticUnitId: this.analyticUnitId,
+      data: this.data
     };
   }
 

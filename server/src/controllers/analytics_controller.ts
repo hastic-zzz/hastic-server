@@ -87,9 +87,6 @@ function getQueryRangeForLearningBySegments(segments: Segment.Segment[]) {
 }
 
 export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
-
-  let previousLastPredictionTime: number = undefined;
-
   try {
 
     let analyticUnit = await AnalyticUnit.findById(id);
@@ -113,93 +110,101 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
     let pattern = analyticUnit.type;
     // TODO: add cache
     let task = new AnalyticsTask(
-      id, AnalyticsTaskType.LEARN, { pattern, segments: segmentObjs, data }
+      id, AnalyticsTaskType.LEARN, { pattern, segments: segmentObjs, data, cache: {} }
     );
     AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
     let result = await runTask(task);
-    let { lastPredictionTime, segments: predictedSegments, cache } = await processLearningResult(result);
     // TODO: save cache
-    previousLastPredictionTime = analyticUnit.lastPredictionTime;
-
-    await Promise.all([
-      Segment.insertSegments(predictedSegments),
-      AnalyticUnit.setPredictionTime(id, lastPredictionTime)
-    ]);
-    await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
+    if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
+      throw new Error(result.error)
+    }
   } catch (err) {
     let message = err.message || JSON.stringify(err);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
-    if(previousLastPredictionTime !== undefined) {
-      await AnalyticUnit.setPredictionTime(id, previousLastPredictionTime);
-    }
   }
 
 }
 
-async function processLearningResult(taskResult: any): Promise<{
+function processPredictionResult(analyticUnitId: AnalyticUnit.AnalyticUnitId, taskResult: any): {
   lastPredictionTime: number,
   segments: Segment.Segment[],
   cache: any
-}> {
-  if(taskResult.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
-    return Promise.reject(taskResult.error);
+} {
+  let payload = taskResult.payload;
+  if(payload === undefined) {
+    throw new Error(`Missing payload in result: ${taskResult}`);
   }
-  console.log(taskResult)
-  // if(taskResult.segments === undefined || !Array.isArray(taskResult.segments)) {
-  //   throw new Error('Missing segments in result or it is corrupted: ' + taskResult);
-  // }
-  // if(taskResult.lastPredictionTime === undefined || isNaN(+taskResult.lastPredictionTime)) {
-  //   throw new Error(
-  //     'Missing lastPredictionTime is result or it is corrupted: ' + taskResult.lastPredictionTime
-  //   );
-  // }
+  if(payload.segments === undefined || !Array.isArray(payload.segments)) {
+    throw new Error(`Missing segments in result or it is corrupted: ${JSON.stringify(payload)}`);
+  }
+  if(payload.lastPredictionTime === undefined || isNaN(+payload.lastPredictionTime)) {
+    throw new Error(
+      `Missing lastPredictionTime is result or it is corrupted: ${JSON.stringify(payload)}`
+    );
+  }
+
+  let segments = payload.segments.map(segment => new Segment.Segment(analyticUnitId, segment.from, segment.to, false));
 
   return {
-    lastPredictionTime: 0,
-    segments: [],
+    lastPredictionTime: payload.lastPredictionTime,
+    segments: segments,
     cache: {}
   };
 
 }
 
 export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
-  let unit = await AnalyticUnit.findById(id);
-  let pattern = unit.type;
+  let previousLastPredictionTime: number = undefined;
 
-  let segments = await Segment.findMany(id, { labeled: true });
-  if (segments.length < 2) {
-    throw new Error('Need at least 2 labeled segments');
-  }
+  try {
+    let unit = await AnalyticUnit.findById(id);
+    previousLastPredictionTime = unit.lastPredictionTime;
+    let pattern = unit.type;
 
-  let { from, to } = getQueryRangeForLearningBySegments(segments);
-  let data = await queryByMetric(unit.metric, unit.panelUrl, from, to);
-  if (data.length === 0) {
-    throw new Error('Empty data to predict on');
-  }
+    let segments = await Segment.findMany(id, { labeled: true });
+    if (segments.length < 2) {
+      throw new Error('Need at least 2 labeled segments');
+    }
 
-  let task = new AnalyticsTask(
-    id,
-    AnalyticsTaskType.PREDICT,
-    { pattern, lastPredictionTime: unit.lastPredictionTime, data }
-  );
-  let result = await runTask(task);
-  if(result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
-    return [];
-  }
-  // Merging segments
-  if(segments.length > 0 && result.segments.length > 0) {
-    let lastOldSegment = segments[segments.length - 1];
-    let firstNewSegment = result.segments[0];
+    let { from, to } = getQueryRangeForLearningBySegments(segments);
+    let data = await queryByMetric(unit.metric, unit.panelUrl, from, to);
+    if (data.length === 0) {
+      throw new Error('Empty data to predict on');
+    }
 
-    if(firstNewSegment.from <= lastOldSegment.to) {
-      result.segments[0].from = lastOldSegment.from;
-      Segment.removeSegments([lastOldSegment.id])
+    let task = new AnalyticsTask(
+      id,
+      AnalyticsTaskType.PREDICT,
+      { pattern, lastPredictionTime: unit.lastPredictionTime, data, cache: {} }
+    );
+    let result = await runTask(task);
+    if(result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
+      return [];
+    }
+
+    let payload = processPredictionResult(id, result);
+
+    // Merging segments
+    if(segments.length > 0 && payload.segments.length > 0) {
+      let lastOldSegment = segments[segments.length - 1];
+      let firstNewSegment = payload.segments[0];
+
+      if(firstNewSegment.from <= lastOldSegment.to) {
+        payload.segments[0].from = lastOldSegment.from;
+        Segment.removeSegments([lastOldSegment.id])
+      }
+    }
+
+    Segment.insertSegments(payload.segments);
+    AnalyticUnit.setPredictionTime(id, payload.lastPredictionTime);
+    AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
+  } catch(err) {
+    let message = err.message || JSON.stringify(err);
+    await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
+    if(previousLastPredictionTime !== undefined) {
+      await AnalyticUnit.setPredictionTime(id, previousLastPredictionTime);
     }
   }
-
-  Segment.insertSegments(result.segments);
-  AnalyticUnit.setPredictionTime(id, result.lastPredictionTime);
-  return result.segments;
 }
 
 export function isAnalyticReady(): boolean {
