@@ -32,26 +32,19 @@ class PatternDetector(Detector):
 
     async def train(self, dataframe: pd.DataFrame, segments: list, cache: dict):
         # TODO: pass only part of dataframe that has segments
-        self.model.fit(dataframe, segments)
+        self.model.fit(dataframe, segments, cache)
         # TODO: save model after fit
         return cache
 
     async def predict(self, dataframe: pd.DataFrame, cache: dict):
-        predicted_indexes = await self.model.predict(dataframe)
+        predicted = await self.model.predict(dataframe, cache)
 
-        segments = []
-        # for time_value in predicted_times:
-        #     ts1 = int(time_value[0].timestamp() * 1000)
-        #     ts2 = int(time_value[1].timestamp() * 1000)
-        #     segments.append({
-        #         'start': min(ts1, ts2),
-        #         'finish': max(ts1, ts2)
-        #     })
+        segments = [{ 'from': segment[0], 'to': segment[1] } for segment in predicted]
 
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
-        last_prediction_time = int(last_dataframe_time.timestamp() * 1000)
+        last_prediction_time = last_dataframe_time.value
         return {
             'cache': cache,
             'segments': segments,
-            'last_prediction_time': last_prediction_time
+            'lastPredictionTime': last_prediction_time
         }

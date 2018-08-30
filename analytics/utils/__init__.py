@@ -176,7 +176,8 @@ def find_drop_length(segment_data, min_line, max_line):
     if (idx[0] - idl[-1] + 1) > 0:
         return idx[0] - idl[-1] + 1
     else:
-        return print("retard alert!")
+        print("retard alert!")
+        return 0
 
 def drop_intersection(segment_data, median_line):
     x = np.arange(0, len(segment_data))
