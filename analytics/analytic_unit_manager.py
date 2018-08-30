@@ -35,9 +35,9 @@ async def handle_analytic_task(task):
 
         data = prepare_data(payload['data'])
         result_payload = {}
-        if task['type'] == "LEARN":
+        if task['type'] == 'LEARN':
             result_payload = await worker.do_learn(payload['segments'], data, payload['cache'])
-        elif task['type'] == "PREDICT":
+        elif task['type'] == 'PREDICT':
             result_payload = await worker.do_predict(data, payload['cache'])
         else:
             raise ValueError('Unknown task type "%s"' % task['type'])
@@ -51,11 +51,17 @@ async def handle_analytic_task(task):
         logger.error("handle_analytic_task exception: '%s'" % error_text)
         # TODO: move result to a class which renders to json for messaging to analytics
         return {
-            'status': "FAILED",
+            'status': 'FAILED',
             'error': str(e)
         }
 
-def prepare_data(data):
+def prepare_data(data: list):
+    """
+        Takes list
+        - converts it into pd.DataFrame,
+        - converts 'timestamp' column to pd.Datetime,
+        - subtracts min value from dataset
+    """
     data = pd.DataFrame(data, columns=['timestamp', 'value'])
 
     data['timestamp'] = pd.to_datetime(data['timestamp'])

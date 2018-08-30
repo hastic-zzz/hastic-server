@@ -1,4 +1,4 @@
-from models import Model
+from models import Model, AnalyticUnitCache
 
 import scipy.signal
 from scipy.fftpack import fft
@@ -22,8 +22,8 @@ class ReversePeakModel(Model):
             'convolve_max': 570000
         }
 
-    def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[dict]) -> dict:
-        if type(cache) is dict:
+    def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[AnalyticUnitCache]) -> AnalyticUnitCache:
+        if type(cache) is AnalyticUnitCache:
             self.state = cache
 
         self.segments = segments 

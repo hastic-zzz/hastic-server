@@ -1,4 +1,4 @@
-from models import Model
+from models import Model, AnalyticUnitCache
 
 import utils
 import numpy as np
@@ -27,8 +27,8 @@ class JumpModel(Model):
             'JUMP_LENGTH': 1,
         }
 
-    def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[dict]) -> dict:
-        if type(cache) is dict:
+    def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[AnalyticUnitCache]) -> AnalyticUnitCache:
+        if type(cache) is AnalyticUnitCache:
             self.state = cache
         self.segments = segments
 
