@@ -1,4 +1,4 @@
-FROM python:3.7
+FROM python:3.6.6
 
 EXPOSE 8000
 
@@ -13,7 +13,7 @@ RUN pip install -r requirements.txt
 RUN apt-get update && apt-get install -y \
   apt-utils \
   gnupg \
-  curl \
+  curl \ 
   python \
   make \
   g++ \
