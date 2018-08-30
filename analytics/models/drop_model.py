@@ -99,8 +99,9 @@ class DropModel(Model):
     async def predict(self, dataframe: pd.DataFrame, cache: dict) -> dict:
         if type(cache) is dict:
             self.state = cache
-        result = await self.__predict(dataframe)
 
+        result = await self.__predict(dataframe)
+        result.sort()
         
         if len(self.segments) > 0:
             result = [segment for segment in result if not utils.is_intersect(segment, self.segments)]
