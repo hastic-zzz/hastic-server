@@ -33,8 +33,7 @@ async def handle_analytic_task(task):
 
         worker = ensure_worker(task['analyticUnitId'], payload['pattern'])
 
-        data = pd.DataFrame(payload['data'], columns=['timestamp', 'value'])
-        data['timestamp'] = pd.to_datetime(data['timestamp'])
+        data = prepare_data(payload['data'])
         result_payload = {}
         if task['type'] == "LEARN":
             result_payload = await worker.do_learn(payload['segments'], data, payload['cache'])
@@ -56,4 +55,14 @@ async def handle_analytic_task(task):
             'error': str(e)
         }
 
+def prepare_data(data):
+    data = pd.DataFrame(payload['data'], columns=['timestamp', 'value'])
+    data['timestamp'] = pd.to_datetime(data['timestamp'])
 
+    d_min = min(data['value'])
+    for i in range(0, len(data['value'])):
+        data.loc[i, 'value'] = data.loc[i, 'value'] - d_min
+
+    data['value'] = data['value'] - d_min
+
+    return data

@@ -25,10 +25,6 @@ class StepModel(Model):
 
     def fit(self, dataframe: pd.DataFrame, segments: list, cache: dict) -> dict:
         self.segments = segments
-        d_min = min(dataframe['value'])
-        for i in range(0,len(dataframe['value'])):
-            dataframe.loc[i, 'value'] = dataframe.loc[i, 'value'] - d_min
-        data = dataframe['value']
 
         confidences = []
         convolve_list = []
@@ -96,10 +92,6 @@ class StepModel(Model):
             self.state['DROP_LENGTH'] = 1
 
     async def predict(self, dataframe: pd.DataFrame, cache: dict) -> dict:
-        d_min = min(dataframe['value'])
-        for i in range(0,len(dataframe['value'])):
-            dataframe.loc[i, 'value'] = dataframe.loc[i, 'value'] - d_min
-
         result = await self.__predict(dataframe)
 
         if len(self.segments) > 0:
