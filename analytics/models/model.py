@@ -9,6 +9,10 @@ class Model(ABC):
     def fit(self, dataframe: DataFrame, segments: list, cache: Optional[dict]) -> dict:
         pass
 
+    @abstractmethod
+    def __predict(self, dataframe: pd.DataFrame):
+        pass
+
     def predict(self, dataframe: DataFrame, cache: Optional[dict]) -> dict:
         if type(cache) is dict:
             self.state = cache
