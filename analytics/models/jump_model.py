@@ -100,7 +100,7 @@ class JumpModel(Model):
 
         return self.state
 
-    def __predict(self, dataframe: pd.DataFrame):
+    def do_predict(self, dataframe: pd.DataFrame):
         data = dataframe['value']
         possible_jumps = utils.find_jump(data, self.state['JUMP_HEIGHT'], self.state['JUMP_LENGTH'] + 1)
         filtered = self.__filter_prediction(possible_jumps, data)

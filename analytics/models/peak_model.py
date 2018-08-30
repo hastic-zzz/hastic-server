@@ -64,7 +64,7 @@ class PeakModel(Model):
 
         return self.state
 
-    def __predict(self, dataframe: pd.DataFrame):
+    def do_predict(self, dataframe: pd.DataFrame):
         data = dataframe['value']
         window_size = 24
         all_max_flatten_data = data.rolling(window=window_size).mean()

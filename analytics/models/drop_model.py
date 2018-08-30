@@ -97,7 +97,7 @@ class DropModel(Model):
 
         return self.state
 
-    def __predict(self, dataframe: pd.DataFrame):
+    def do_predict(self, dataframe: pd.DataFrame):
         data = dataframe['value']
         possible_drops = utils.find_drop(data, self.state['DROP_HEIGHT'], self.state['DROP_LENGTH'] + 1)
         filtered = self.__filter_prediction(possible_drops, data)
