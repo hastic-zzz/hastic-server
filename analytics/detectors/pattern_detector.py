@@ -34,7 +34,9 @@ class PatternDetector(Detector):
         # TODO: pass only part of dataframe that has segments
         self.model.fit(dataframe, segments, cache)
         # TODO: save model after fit
-        return cache
+        return {
+            'cache': cache
+        }
 
     async def predict(self, dataframe: pd.DataFrame, cache: dict):
         predicted = await self.model.predict(dataframe, cache)
