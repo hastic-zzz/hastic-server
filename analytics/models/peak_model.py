@@ -12,7 +12,7 @@ from typing import Optional
 WINDOW_SIZE = 240
 
 
-class PeaksModel(Model):
+class PeakModel(Model):
 
     def __init__(self):
         super()

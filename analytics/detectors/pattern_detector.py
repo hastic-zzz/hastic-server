@@ -14,7 +14,7 @@ logger = logging.getLogger('PATTERN_DETECTOR')
 
 def resolve_model_by_pattern(pattern: str) -> models.Model:
     if pattern == 'PEAK':
-        return models.PeaksModel()
+        return models.PeakModel()
     if pattern == 'DROP':
         return models.DropModel()
     if pattern == 'JUMP':
