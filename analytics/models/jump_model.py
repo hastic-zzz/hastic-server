@@ -9,6 +9,7 @@ from scipy.signal import argrelextrema
 import math
 from scipy.stats import gaussian_kde
 from scipy.stats import norm
+from typing import Optional
 
 
 WINDOW_SIZE = 400
@@ -26,7 +27,7 @@ class JumpModel(Model):
             'JUMP_LENGTH': 1,
         }
 
-    def fit(self, dataframe: pd.DataFrame, segments: list, cache: dict) -> dict:
+    def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[dict]) -> dict:
         if type(cache) is dict:
             self.state = cache
         self.segments = segments
@@ -63,8 +64,8 @@ class JumpModel(Model):
                 segment_max_line = ax_list[max_peak_index, 0]
                 jump_height = 0.9 * (segment_max_line - segment_min_line)
                 jump_height_list.append(jump_height)
-                jump_lenght = utils.find_jump_length(segment_data, segment_min_line, segment_max_line)
-                jump_length_list.append(jump_lenght)
+                jump_length = utils.find_jump_length(segment_data, segment_min_line, segment_max_line)
+                jump_length_list.append(jump_length)
                 cen_ind = utils.intersection_segment(flat_segment, segment_median) #finds all interseprions with median
                 #cen_ind =  utils.find_ind_median(segment_median, flat_segment)
                 jump_center = cen_ind[0]
@@ -99,12 +100,11 @@ class JumpModel(Model):
 
         return self.state
     
-    def predict(self, dataframe: pd.DataFrame, cache: dict) -> dict:
+    def predict(self, dataframe: pd.DataFrame, cache: Optional[dict]) -> dict:
         if type(cache) is dict:
             self.state = cache
-        data = dataframe['value']
 
-        result = self.__predict(data)
+        result = self.__predict(dataframe)
         result.sort()
 
         if len(self.segments) > 0:
@@ -115,10 +115,11 @@ class JumpModel(Model):
             'cache': self.state
         }
 
-    def __predict(self, data):
+    def __predict(self, dataframe):
         #window_size = 24
         #all_max_flatten_data = data.rolling(window=window_size).mean()
         #all_mins = argrelextrema(np.array(all_max_flatten_data), np.less)[0]
+        data = dataframe['value']
         possible_jumps = utils.find_jump(data, self.state['JUMP_HEIGHT'], self.state['JUMP_LENGTH'] + 1)
         filtered = self.__filter_prediction(possible_jumps, data)
 

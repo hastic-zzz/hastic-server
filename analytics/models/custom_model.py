@@ -1,6 +1,7 @@
 from models import Model
 import utils
 import pandas as pd
+from typing import Optional
 
 # Paste your model here:
 class CustomModel(Model):
@@ -11,8 +12,8 @@ class CustomModel(Model):
         # It will be saved in filesystem and loaded after server restart
         self.state = {}
     
-    def fit(self, dataframe: pd.DataFrame, segments: list, cache: dict) -> dict:
+    def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[dict]) -> dict:
         pass
     
-    def predict(self, dataframe, cache: dict):
+    def predict(self, dataframe, cache: Optional[dict]):
         return []

@@ -8,6 +8,7 @@ from scipy.stats import gaussian_kde
 import utils
 import numpy as np
 import pandas as pd
+from typing import Optional
 
 WINDOW_SIZE = 400
 
@@ -23,7 +24,7 @@ class DropModel(Model):
             'DROP_LENGTH': 1,
         }
 
-    def fit(self, dataframe: pd.DataFrame, segments: list, cache: dict) -> dict:
+    def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[dict]) -> dict:
         if type(cache) is dict:
             self.state = cache
         self.segments = segments
@@ -96,11 +97,11 @@ class DropModel(Model):
 
         return self.state
 
-    async def predict(self, dataframe: pd.DataFrame, cache: dict) -> dict:
+    def predict(self, dataframe: pd.DataFrame, cache: Optional[dict]) -> dict:
         if type(cache) is dict:
             self.state = cache
 
-        result = await self.__predict(dataframe)
+        result = self.__predict(dataframe)
         result.sort()
         
         if len(self.segments) > 0:
@@ -110,7 +111,7 @@ class DropModel(Model):
             'cache': self.state
         }
 
-    async def __predict(self, dataframe: pd.DataFrame):
+    def __predict(self, dataframe: pd.DataFrame):
         #window_size = 24
         #all_max_flatten_data = data.rolling(window=window_size).mean()
         #all_mins = argrelextrema(np.array(all_max_flatten_data), np.less)[0]

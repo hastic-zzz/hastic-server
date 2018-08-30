@@ -4,6 +4,7 @@ import utils
 from scipy import signal
 import numpy as np
 import pandas as pd
+from typing import Optional
 
 
 class PeaksModel(Model):
@@ -11,10 +12,10 @@ class PeaksModel(Model):
     def __init__(self):
         super()
 
-    def fit(self, dataframe: pd.DataFrame, segments: list, cache: dict) -> dict:
+    def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[dict]) -> dict:
         pass
 
-    def predict(self, dataframe: pd.DataFrame, cache: dict) -> dict:
+    def predict(self, dataframe: pd.DataFrame, cache: Optional[dict]) -> dict:
         array = dataframe['value'].as_matrix()
         window_size = 20
         # window = np.ones(101)

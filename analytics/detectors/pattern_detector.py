@@ -4,6 +4,7 @@ import logging
 import config
 
 import pandas as pd
+from typing import Optional
 
 from detectors import Detector
 
@@ -30,15 +31,15 @@ class PatternDetector(Detector):
         self.model = resolve_model_by_pattern(self.pattern_type)
         window_size = 100
 
-    async def train(self, dataframe: pd.DataFrame, segments: list, cache: dict):
+    async def train(self, dataframe: pd.DataFrame, segments: list, cache: Optional[dict]):
         # TODO: pass only part of dataframe that has segments
         new_cache = self.model.fit(dataframe, segments, cache)
         return {
             'cache': new_cache
         }
 
-    async def predict(self, dataframe: pd.DataFrame, cache: dict):
-        predicted = await self.model.predict(dataframe, cache)
+    async def predict(self, dataframe: pd.DataFrame, cache: Optional[dict]):
+        predicted = self.model.predict(dataframe, cache)
 
         segments = [{ 'from': segment[0], 'to': segment[1] } for segment in predicted['segments']]
         newCache = predicted['cache']

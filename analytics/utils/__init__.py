@@ -148,7 +148,8 @@ def find_jump_length(segment_data, min_line, max_line):
     if (idl[0] - idx[-1] + 1) > 0:
         return idl[0] - idx[-1] + 1
     else:
-        return print("retard alert!")
+        print("retard alert!")
+        return 0
     
 def find_jump(data, height, lenght):
     j_list = []

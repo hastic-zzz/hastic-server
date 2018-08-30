@@ -6,6 +6,7 @@ import pandas as pd
 import logging
 import config
 import json
+from typing import Optional
 
 
 NANOSECONDS_IN_MS = 1000000
@@ -18,7 +19,7 @@ class GeneralDetector(Detector):
     def __init__(self):
         self.model = None
 
-    async def train(self, dataframe: pd.DataFrame, segments: list, cache: dict):
+    async def train(self, dataframe: pd.DataFrame, segments: list, cache: Optional[dict]):
 
         confidence = 0.02
         start_index, stop_index = 0, len(dataframe)
@@ -45,7 +46,7 @@ class GeneralDetector(Detector):
         logger.info("Learning is finished for anomaly_name='%s'" % self.anomaly_name)
         return last_prediction_time
 
-    async def predict(self, dataframe: pd.DataFrame, cache: dict):
+    async def predict(self, dataframe: pd.DataFrame, cache: Optional[dict]):
         logger.info("Start to predict for anomaly type='%s'" % self.anomaly_name)
         last_prediction_time = pd.to_datetime(last_prediction_time, unit='ms')
 
