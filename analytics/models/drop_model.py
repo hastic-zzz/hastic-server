@@ -1,4 +1,4 @@
-from models import Model
+from models import Model, AnalyticUnitCache
 
 import scipy.signal
 from scipy.fftpack import fft
@@ -8,10 +8,11 @@ from scipy.stats import gaussian_kde
 import utils
 import numpy as np
 import pandas as pd
+from typing import Optional
 
 WINDOW_SIZE = 400
 
-class StepModel(Model):
+class DropModel(Model):
     def __init__(self):
         super()
         self.segments = []
@@ -23,13 +24,12 @@ class StepModel(Model):
             'DROP_LENGTH': 1,
         }
 
-    def fit(self, dataframe: pd.DataFrame, segments: list, cache: dict) -> dict:
+    def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[AnalyticUnitCache]) -> AnalyticUnitCache:
+        if type(cache) is AnalyticUnitCache:
+            self.state = cache
         self.segments = segments
-        d_min = min(dataframe['value'])
-        for i in range(0,len(dataframe['value'])):
-            dataframe.loc[i, 'value'] = dataframe.loc[i, 'value'] - d_min
-        data = dataframe['value']
 
+        data = dataframe['value']
         confidences = []
         convolve_list = []
         drop_height_list = []
@@ -76,46 +76,34 @@ class StepModel(Model):
                 convolve_list.append(max(convolve))
 
         if len(confidences) > 0:
-            self.state['confidence'] = min(confidences)
+            self.state['confidence'] = float(min(confidences))
         else:
             self.state['confidence'] = 1.5
 
         if len(convolve_list) > 0:
-            self.state['convolve_max'] = max(convolve_list)
+            self.state['convolve_max'] = float(max(convolve_list))
         else:
             self.state['convolve_max'] = WINDOW_SIZE
 
         if len(drop_height_list) > 0:
-            self.state['DROP_HEIGHT'] = min(drop_height_list)
+            self.state['DROP_HEIGHT'] = int(min(drop_height_list))
         else:
             self.state['DROP_HEIGHT'] = 1
 
         if len(drop_length_list) > 0:
-            self.state['DROP_LENGTH'] = max(drop_length_list)
+            self.state['DROP_LENGTH'] = int(max(drop_length_list))
         else:
             self.state['DROP_LENGTH'] = 1
 
-    async def predict(self, dataframe: pd.DataFrame, cache: dict) -> dict:
-        d_min = min(dataframe['value'])
-        for i in range(0,len(dataframe['value'])):
-            dataframe.loc[i, 'value'] = dataframe.loc[i, 'value'] - d_min
+        return self.state
 
-        result = await self.__predict(dataframe)
-
-        if len(self.segments) > 0:
-            return [segment for segment in result if not utils.is_intersect(segment, self.segments)]
-
-    async def __predict(self, dataframe):
-        #window_size = 24
-        #all_max_flatten_data = data.rolling(window=window_size).mean()
-        #all_mins = argrelextrema(np.array(all_max_flatten_data), np.less)[0]
-        #print(self.state['DROP_HEIGHT'],self.state['DROP_LENGTH'])
+    def do_predict(self, dataframe: pd.DataFrame):
         data = dataframe['value']
         possible_drops = utils.find_drop(data, self.state['DROP_HEIGHT'], self.state['DROP_LENGTH'] + 1)
         filtered = self.__filter_prediction(possible_drops, data)
         return [(dataframe['timestamp'][x - 1].value, dataframe['timestamp'][x + 1].value) for x in filtered]
 
-    def __filter_prediction(self, segments, data):
+    def __filter_prediction(self, segments: list, data: list):
         delete_list = []
         variance_error = int(0.004 * len(data))
         if variance_error > 50:

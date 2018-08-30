@@ -5,40 +5,32 @@ import { Collection, makeDBQ } from '../services/data_service';
 let db = makeDBQ(Collection.ANALYTIC_UNIT_CACHES);
 
 
-export type AnalyticUnitCacheId = string;
-
 export class AnalyticUnitCache {
   public constructor(
-    public analyticUnitId: AnalyticUnitId,
-    public data?: any,
-    public id?: AnalyticUnitCacheId,
+    public id: AnalyticUnitId,
+    public data?: any
   ) {
-    if(analyticUnitId === undefined) {
-      throw new Error(`Missing field "analyticUnitId"`);
+    if(id === undefined) {
+      throw new Error(`Missing field "id"`);
     }
   }
 
   public toObject() {
     return {
-      _id: this.id,
-      analyticUnitId: this.analyticUnitId,
-      data: this.data
+      data: this.data || null,
+      _id: this.id
     };
   }
 
   static fromObject(obj: any): AnalyticUnitCache {
-    if(obj.method === undefined) {
-      throw new Error('No method in obj:' + obj);
-    }
     return new AnalyticUnitCache(
-      obj.method,
+      obj._id,
       obj.data,
-      obj._id
     );
   }
 }
 
-export async function findById(id: AnalyticUnitCacheId): Promise<AnalyticUnitCache> {
+export async function findById(id: AnalyticUnitId): Promise<AnalyticUnitCache> {
   let obj = await db.findOne(id);
   if(obj === null) {
     return null;
@@ -46,15 +38,15 @@ export async function findById(id: AnalyticUnitCacheId): Promise<AnalyticUnitCac
   return AnalyticUnitCache.fromObject(obj);
 }
 
-export async function create(unit: AnalyticUnitCache): Promise<AnalyticUnitCacheId> {
-  let obj = unit.toObject();
-  return db.insertOne(obj);
+export async function create(id: AnalyticUnitId): Promise<AnalyticUnitId> {
+  let cache = new AnalyticUnitCache(id);
+  return db.insertOne(cache.toObject());
 }
 
-export async function setData(id: AnalyticUnitCacheId, data: any) {
+export async function setData(id: AnalyticUnitId, data: any) {
   return db.updateOne(id, { data });
 }
 
-export async function remove(id: AnalyticUnitCacheId): Promise<void> {
+export async function remove(id: AnalyticUnitId): Promise<void> {
   await db.removeOne(id);
 }

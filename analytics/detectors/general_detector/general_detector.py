@@ -1,11 +1,13 @@
 from detectors.general_detector.supervised_algorithm import SupervisedAlgorithm
 from detectors import Detector
+from models import AnalyticUnitCache
 import utils
 
 import pandas as pd
 import logging
 import config
 import json
+from typing import Optional
 
 
 NANOSECONDS_IN_MS = 1000000
@@ -18,7 +20,7 @@ class GeneralDetector(Detector):
     def __init__(self):
         self.model = None
 
-    async def train(self, dataframe: pd.DataFrame, segments: list, cache: dict):
+    async def train(self, dataframe: pd.DataFrame, segments: list, cache: Optional[AnalyticUnitCache]) -> AnalyticUnitCache:
 
         confidence = 0.02
         start_index, stop_index = 0, len(dataframe)
@@ -43,9 +45,9 @@ class GeneralDetector(Detector):
             last_prediction_time = 0
 
         logger.info("Learning is finished for anomaly_name='%s'" % self.anomaly_name)
-        return last_prediction_time
+        return cache
 
-    async def predict(self, dataframe: pd.DataFrame, cache: dict):
+    async def predict(self, dataframe: pd.DataFrame, cache: Optional[AnalyticUnitCache]) -> dict:
         logger.info("Start to predict for anomaly type='%s'" % self.anomaly_name)
         last_prediction_time = pd.to_datetime(last_prediction_time, unit='ms')
 
