@@ -27,7 +27,10 @@ class JumpModel(Model):
         }
 
     def fit(self, dataframe: pd.DataFrame, segments: list, cache: dict) -> dict:
+        if type(cache) is dict:
+            self.state = cache
         self.segments = segments
+
         data = dataframe['value']
         confidences = []
         convolve_list = []
@@ -35,13 +38,17 @@ class JumpModel(Model):
         jump_length_list = []
         for segment in segments:
             if segment['labeled']:
-                segment_data = data.loc[segment['from'] : segment['to'] + 1].reset_index(drop=True)
+                segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from']))
+                segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to']))
+
+                segment_data = data.loc[segment_from_index : segment_to_index + 1].reset_index(drop=True)
                 segment_min = min(segment_data)
                 segment_max = max(segment_data)
                 confidences.append(0.20 * (segment_max - segment_min))
                 flat_segment = segment_data.rolling(window=5).mean()
-                pdf = gaussian_kde(flat_segment.dropna())
-                x = np.linspace(flat_segment.dropna().min() - 1, flat_segment.dropna().max() + 1, len(flat_segment.dropna()))
+                flat_segment_dropna = flat_segment.dropna()
+                pdf = gaussian_kde(flat_segment_dropna)
+                x = np.linspace(flat_segment_dropna.min() - 1, flat_segment_dropna.max() + 1, len(flat_segment_dropna))
                 y = pdf(x)
                 ax_list = []
                 for i in range(len(x)):
@@ -61,7 +68,7 @@ class JumpModel(Model):
                 cen_ind = utils.intersection_segment(flat_segment, segment_median) #finds all interseprions with median
                 #cen_ind =  utils.find_ind_median(segment_median, flat_segment)
                 jump_center = cen_ind[0]
-                segment_cent_index = jump_center - 5 + segment['from']
+                segment_cent_index = jump_center - 5 + segment_from_index
                 self.ijumps.append(segment_cent_index)
                 labeled_drop = data[segment_cent_index - WINDOW_SIZE : segment_cent_index + WINDOW_SIZE]
                 labeled_min = min(labeled_drop)
@@ -71,41 +78,51 @@ class JumpModel(Model):
                 convolve_list.append(max(convolve))
 
         if len(confidences) > 0:
-            self.state['confidence'] = min(confidences)
+            self.state['confidence'] = float(min(confidences))
         else:
             self.state['confidence'] = 1.5
 
         if len(convolve_list) > 0:
-            self.state['convolve_max'] = max(convolve_list)
+            self.state['convolve_max'] = float(max(convolve_list))
         else:
             self.state['convolve_max'] = WINDOW_SIZE
 
         if len(jump_height_list) > 0:
-            self.state['JUMP_HEIGHT'] = min(jump_height_list)
+            self.state['JUMP_HEIGHT'] = int(min(jump_height_list))
         else:
             self.state['JUMP_HEIGHT'] = 1
 
         if len(jump_length_list) > 0:
-            self.state['JUMP_LENGTH'] = max(jump_length_list)
+            self.state['JUMP_LENGTH'] = int(max(jump_length_list))
         else:
-            self.state['JUMP_LENGTH'] = 1   
+            self.state['JUMP_LENGTH'] = 1  
+
+        return self.state
     
     def predict(self, dataframe: pd.DataFrame, cache: dict) -> dict:
+        if type(cache) is dict:
+            self.state = cache
         data = dataframe['value']
 
         result = self.__predict(data)
         result.sort()
+
         if len(self.segments) > 0:
-            result = [segment for segment in result if not utils.is_intersect(segment, self.segments)]
-        return result
+            result = [segment for segment in result if not utils.is_intersect(
+                segment, self.segments)]
+        return {
+            'segments': result,
+            'cache': self.state
+        }
 
     def __predict(self, data):
         #window_size = 24
         #all_max_flatten_data = data.rolling(window=window_size).mean()
         #all_mins = argrelextrema(np.array(all_max_flatten_data), np.less)[0]
         possible_jumps = utils.find_jump(data, self.state['JUMP_HEIGHT'], self.state['JUMP_LENGTH'] + 1)
+        filtered = self.__filter_prediction(possible_jumps, data)
 
-        return [(x - 1, x + 1) for x in self.__filter_prediction(possible_jumps, data)]
+        return [(dataframe['timestamp'][x - 1].value, dataframe['timestamp'][x + 1].value) for x in filtered]
 
     def __filter_prediction(self, segments, data):
         delete_list = []
@@ -137,6 +154,5 @@ class JumpModel(Model):
 
         for ijump in self.ijumps:
             segments.append(ijump)
-
 
         return segments
