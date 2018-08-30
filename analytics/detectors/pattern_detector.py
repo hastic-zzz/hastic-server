@@ -15,7 +15,7 @@ def resolve_model_by_pattern(pattern: str) -> models.Model:
     if pattern == 'PEAK':
         return models.PeaksModel()
     if pattern == 'DROP':
-        return models.StepModel()
+        return models.DropModel()
     if pattern == 'JUMP':
         return models.JumpModel()
     if pattern == 'CUSTOM':

@@ -11,7 +11,7 @@ import pandas as pd
 
 WINDOW_SIZE = 400
 
-class StepModel(Model):
+class DropModel(Model):
     def __init__(self):
         super()
         self.segments = []
