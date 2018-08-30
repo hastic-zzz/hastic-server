@@ -10,10 +10,12 @@ export type AnalyticUnitCacheId = string;
 export class AnalyticUnitCache {
   public constructor(
     public analyticUnitId: AnalyticUnitId,
-    public data: any,
+    public data?: any,
     public id?: AnalyticUnitCacheId,
   ) {
-
+    if(analyticUnitId === undefined) {
+      throw new Error(`Missing field "analyticUnitId"`);
+    }
   }
 
   public toObject() {
@@ -38,6 +40,9 @@ export class AnalyticUnitCache {
 
 export async function findById(id: AnalyticUnitCacheId): Promise<AnalyticUnitCache> {
   let obj = await db.findOne(id);
+  if(obj === null) {
+    return null;
+  }
   return AnalyticUnitCache.fromObject(obj);
 }
 

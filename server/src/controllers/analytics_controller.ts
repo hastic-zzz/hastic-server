@@ -1,5 +1,6 @@
 import { AnalyticsMessageMethod, AnalyticsMessage } from '../models/analytics_message_model';
 import { AnalyticsTask, AnalyticsTaskType, AnalyticsTaskId } from '../models/analytics_task_model';
+import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import * as Segment from '../models/segment_model';
 import * as AnalyticUnit from '../models/analytic_unit_model';
 import { AnalyticsService } from '../services/analytics_service';
@@ -108,16 +109,19 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
     }
 
     let pattern = analyticUnit.type;
-    // TODO: add cache
+    let oldCache = await AnalyticUnitCache.findById(id);
+    if(oldCache !== null) {
+      oldCache = oldCache.data;
+    }
     let task = new AnalyticsTask(
-      id, AnalyticsTaskType.LEARN, { pattern, segments: segmentObjs, data, cache: {} }
+      id, AnalyticsTaskType.LEARN, { pattern, segments: segmentObjs, data, cache: oldCache }
     );
     AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
     let result = await runTask(task);
-    // TODO: save cache
     if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
       throw new Error(result.error)
     }
+    AnalyticUnitCache.setData(id, result.payload.cache);
   } catch (err) {
     let message = err.message || JSON.stringify(err);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);

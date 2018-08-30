@@ -13,7 +13,7 @@ export enum Collection { ANALYTIC_UNITS, SEGMENTS, ANALYTIC_UNIT_CACHES };
  * @param { string | object } query: a key as a string or mongodb-style query
  */
 export type DBQ = {
-  findOne: (query: string | object) => Promise<any>,
+  findOne: (query: string | object) => Promise<any | null>,
   findMany: (query: string[] | object) => Promise<any[]>,
   insertOne: (document: object) => Promise<string>,
   insertMany: (documents: object[]) => Promise<string[]>,
@@ -101,7 +101,7 @@ let dbUpdateOne = (collection: Collection, query: string | object, updateQuery: 
 
 let dbFindOne = (collection: Collection, query: string | object) => {
   query = wrapIdToQuery(query);
-  return new Promise<any>((resolve, reject) => {
+  return new Promise<any | null>((resolve, reject) => {
     db.get(collection).findOne(query, (err, doc) => {
       if(err) {
         reject(err);
