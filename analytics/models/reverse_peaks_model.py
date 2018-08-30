@@ -22,7 +22,7 @@ class PeaksModel(Model):
         }
 
     async def fit(self, dataframe, segments):
-        self.segments = segments
+        self.segments = segments 
         data = dataframe['value']
         d_min = min(data)
         data = data - d_min       
@@ -37,9 +37,9 @@ class PeaksModel(Model):
                 confidences.append(0.2 * (segment_max - segment_min))
                 flat_segment = segment_data.rolling(window=5).mean()
                 flat_segment = flat_segment.dropna()
-                segment_max_index = flat_segment.idxmax() #+ segment['start']
-                self.ipeaks.append(segment_max_index)
-                labeled_drop = data[segment_max_index - WINDOW_SIZE : segment_max_index + WINDOW_SIZE]
+                segment_min_index = flat_segment.idxmin() #+ segment['start']
+                self.ipeaks.append(segment_min_index)
+                labeled_drop = data[segment_min_index - WINDOW_SIZE : segment_min_index + WINDOW_SIZE]
                 labeled_min = min(labeled_drop)
                 for value in labeled_drop:
                     value = value - labeled_min
@@ -73,15 +73,15 @@ class PeaksModel(Model):
         window_size = 24
         all_max_flatten_data = data.rolling(window=window_size).mean()
         #all_max_flatten_data = all_max_flatten_data.dropna()
-        all_maxs = argrelextrema(np.array(all_max_flatten_data), np.greater)[0]
+        all_mins = argrelextrema(np.array(all_max_flatten_data), np.less)[0]
         
         extrema_list = []
-        for i in utils.exponential_smoothing(data + self.state['confidence'], 0.02):
+        for i in utils.exponential_smoothing(data - self.state['confidence'], 0.02):
             extrema_list.append(i)
 
         segments = []
-        for i in all_maxs:
-            if all_max_flatten_data[i] > extrema_list[i]:
+        for i in all_mins:
+            if all_max_flatten_data[i] < extrema_list[i]:
                 segments.append(i+12)
         
 
@@ -102,7 +102,7 @@ class PeaksModel(Model):
         if len(segments) == 0 or len(self.ipeaks) == 0 :
             segments = []
             return segments
-
+            
         pattern_data = all_max_flatten_data[self.ipeaks[0] - WINDOW_SIZE : self.ipeaks[0] + WINDOW_SIZE]
         for segment in segments:
             if segment > WINDOW_SIZE:
