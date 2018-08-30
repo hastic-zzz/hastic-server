@@ -115,7 +115,7 @@ class JumpModel(Model):
             'cache': self.state
         }
 
-    def __predict(self, dataframe):
+    def __predict(self, dataframe: pd.DataFrame):
         #window_size = 24
         #all_max_flatten_data = data.rolling(window=window_size).mean()
         #all_mins = argrelextrema(np.array(all_max_flatten_data), np.less)[0]
