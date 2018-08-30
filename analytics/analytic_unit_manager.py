@@ -56,13 +56,9 @@ async def handle_analytic_task(task):
         }
 
 def prepare_data(data):
-    data = pd.DataFrame(payload['data'], columns=['timestamp', 'value'])
+    data = pd.DataFrame(data, columns=['timestamp', 'value'])
+
     data['timestamp'] = pd.to_datetime(data['timestamp'])
-
-    d_min = min(data['value'])
-    for i in range(0, len(data['value'])):
-        data.loc[i, 'value'] = data.loc[i, 'value'] - d_min
-
-    data['value'] = data['value'] - d_min
+    data['value'] = data['value'] - min(data['value'])
 
     return data

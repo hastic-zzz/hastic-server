@@ -112,6 +112,8 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
     let oldCache = await AnalyticUnitCache.findById(id);
     if(oldCache !== null) {
       oldCache = oldCache.data;
+    } else {
+      await AnalyticUnitCache.create(id);
     }
     let task = new AnalyticsTask(
       id, AnalyticsTaskType.LEARN, { pattern, segments: segmentObjs, data, cache: oldCache }
@@ -121,39 +123,11 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
     if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
       throw new Error(result.error)
     }
-    AnalyticUnitCache.setData(id, result.payload.cache);
+    await AnalyticUnitCache.setData(id, result.payload.cache);
   } catch (err) {
     let message = err.message || JSON.stringify(err);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
   }
-
-}
-
-function processPredictionResult(analyticUnitId: AnalyticUnit.AnalyticUnitId, taskResult: any): {
-  lastPredictionTime: number,
-  segments: Segment.Segment[],
-  cache: any
-} {
-  let payload = taskResult.payload;
-  if(payload === undefined) {
-    throw new Error(`Missing payload in result: ${taskResult}`);
-  }
-  if(payload.segments === undefined || !Array.isArray(payload.segments)) {
-    throw new Error(`Missing segments in result or it is corrupted: ${JSON.stringify(payload)}`);
-  }
-  if(payload.lastPredictionTime === undefined || isNaN(+payload.lastPredictionTime)) {
-    throw new Error(
-      `Missing lastPredictionTime is result or it is corrupted: ${JSON.stringify(payload)}`
-    );
-  }
-
-  let segments = payload.segments.map(segment => new Segment.Segment(analyticUnitId, segment.from, segment.to, false));
-
-  return {
-    lastPredictionTime: payload.lastPredictionTime,
-    segments: segments,
-    cache: {}
-  };
 
 }
 
@@ -166,20 +140,26 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
     let pattern = unit.type;
 
     let segments = await Segment.findMany(id, { labeled: true });
-    if (segments.length < 2) {
+    if(segments.length < 2) {
       throw new Error('Need at least 2 labeled segments');
     }
 
     let { from, to } = getQueryRangeForLearningBySegments(segments);
     let data = await queryByMetric(unit.metric, unit.panelUrl, from, to);
-    if (data.length === 0) {
+    if(data.length === 0) {
       throw new Error('Empty data to predict on');
     }
 
+    let oldCache = await AnalyticUnitCache.findById(id);
+    if(oldCache !== null) {
+      oldCache = oldCache.data;
+    } else {
+      await AnalyticUnitCache.create(id);
+    }
     let task = new AnalyticsTask(
       id,
       AnalyticsTaskType.PREDICT,
-      { pattern, lastPredictionTime: unit.lastPredictionTime, data, cache: {} }
+      { pattern, lastPredictionTime: unit.lastPredictionTime, data, cache: oldCache }
     );
     let result = await runTask(task);
     if(result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
@@ -200,6 +180,7 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
     }
 
     Segment.insertSegments(payload.segments);
+    AnalyticUnitCache.setData(id, payload.cache);
     AnalyticUnit.setPredictionTime(id, payload.lastPredictionTime);
     AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
   } catch(err) {
@@ -209,6 +190,34 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
       await AnalyticUnit.setPredictionTime(id, previousLastPredictionTime);
     }
   }
+}
+
+function processPredictionResult(analyticUnitId: AnalyticUnit.AnalyticUnitId, taskResult: any): {
+  lastPredictionTime: number,
+  segments: Segment.Segment[],
+  cache: any
+} {
+  let payload = taskResult.payload;
+  if (payload === undefined) {
+    throw new Error(`Missing payload in result: ${taskResult}`);
+  }
+  if (payload.segments === undefined || !Array.isArray(payload.segments)) {
+    throw new Error(`Missing segments in result or it is corrupted: ${JSON.stringify(payload)}`);
+  }
+  if (payload.lastPredictionTime === undefined || isNaN(+payload.lastPredictionTime)) {
+    throw new Error(
+      `Missing lastPredictionTime is result or it is corrupted: ${JSON.stringify(payload)}`
+    );
+  }
+
+  let segments = payload.segments.map(segment => new Segment.Segment(analyticUnitId, segment.from, segment.to, false));
+
+  return {
+    lastPredictionTime: payload.lastPredictionTime,
+    segments: segments,
+    cache: payload.cache
+  };
+
 }
 
 export function isAnalyticReady(): boolean {

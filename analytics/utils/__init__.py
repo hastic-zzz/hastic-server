@@ -192,10 +192,10 @@ def drop_intersection(segment_data, median_line):
     idx = np.argwhere(np.diff(np.sign(f - g)) != 0).reshape(-1) + 0 
     return idx
 
-def find_drop(data, height, lenght):
+def find_drop(data, height, length):
     d_list = []
-    for i in range(len(data)-lenght-1):
-        for x in range(1, lenght):
+    for i in range(len(data)-length-1):
+        for x in range(1, length):
             if(data[i+x] < data[i] - height):
                 d_list.append(i+36)
     return(d_list)
