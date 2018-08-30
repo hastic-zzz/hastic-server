@@ -97,7 +97,7 @@ class PeakModel(Model):
         filtered = self.__filter_prediction(segments, data)
         return [(dataframe['timestamp'][x - 1].value, dataframe['timestamp'][x + 1].value) for x in filtered]
 
-    def __filter_prediction(self, segments, all_max_flatten_data):
+    def __filter_prediction(self, segments: list, all_max_flatten_data: list):
         delete_list = []
         variance_error = int(0.004 * len(all_max_flatten_data))
         if variance_error > 100:
