@@ -1,14 +1,8 @@
-FROM python:3
+FROM python:3.7
 
 EXPOSE 8000
 
-VOLUME [ \
-  "/var/www/data/analytic_units", \
-  "/var/www/data/datasets", \
-  "/var/www/data/metrics", \
-  "/var/www/data/models", \
-  "/var/www/data/segments" \
-]
+VOLUME [ "/var/www/data" ]
 
 COPY . /var/www
 
