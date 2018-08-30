@@ -64,25 +64,10 @@ class PeakModel(Model):
 
         return self.state
 
-    def predict(self, dataframe: pd.DataFrame, cache: Optional[dict]) -> dict:
-        if type(cache) is dict:
-            self.state = cache
-
-        result = self.__predict(dataframe)
-        result.sort()
-
-        if len(self.segments) > 0:
-            result = [segment for segment in result if not utils.is_intersect(segment, self.segments)]
-        return {
-            'segments': result,
-            'cache': self.state
-        }
-
     def __predict(self, dataframe: pd.DataFrame):
         data = dataframe['value']
         window_size = 24
         all_max_flatten_data = data.rolling(window=window_size).mean()
-        #all_max_flatten_data = all_max_flatten_data.dropna()
         all_maxs = argrelextrema(np.array(all_max_flatten_data), np.greater)[0]
 
         extrema_list = []

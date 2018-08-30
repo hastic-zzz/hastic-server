@@ -97,25 +97,7 @@ class DropModel(Model):
 
         return self.state
 
-    def predict(self, dataframe: pd.DataFrame, cache: Optional[dict]) -> dict:
-        if type(cache) is dict:
-            self.state = cache
-
-        result = self.__predict(dataframe)
-        result.sort()
-        
-        if len(self.segments) > 0:
-            result = [segment for segment in result if not utils.is_intersect(segment, self.segments)]
-        return {
-            'segments': result,
-            'cache': self.state
-        }
-
     def __predict(self, dataframe: pd.DataFrame):
-        #window_size = 24
-        #all_max_flatten_data = data.rolling(window=window_size).mean()
-        #all_mins = argrelextrema(np.array(all_max_flatten_data), np.less)[0]
-        #print(self.state['DROP_HEIGHT'],self.state['DROP_LENGTH'])
         data = dataframe['value']
         possible_drops = utils.find_drop(data, self.state['DROP_HEIGHT'], self.state['DROP_LENGTH'] + 1)
         filtered = self.__filter_prediction(possible_drops, data)
