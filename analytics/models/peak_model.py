@@ -79,7 +79,7 @@ class PeakModel(Model):
         segments = []
         for i in all_maxs:
             if all_max_flatten_data[i] > extrema_list[i]:
-                segments.append(i+12)
+                segments.append(i)
 
         filtered = self.__filter_prediction(segments, data)
         return [(dataframe['timestamp'][x - 1].value, dataframe['timestamp'][x + 1].value) for x in filtered]
@@ -97,8 +97,7 @@ class PeakModel(Model):
 
         delete_list = []
         if len(segments) == 0 or len(self.ipeaks) == 0:
-            segments = []
-            return segments
+            return []
 
         pattern_data = all_max_flatten_data[self.ipeaks[0] - WINDOW_SIZE: self.ipeaks[0] + WINDOW_SIZE]
         for segment in segments:

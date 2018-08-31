@@ -60,7 +60,6 @@ class DropModel(Model):
                 segment_median = ax_list[antipeaks_kde[0], 0]
                 segment_min_line = ax_list[min_peak_index, 0]
                 segment_max_line = ax_list[max_peak_index, 0]
-                #print(segment_min_line, segment_max_line)
                 drop_height = 0.95 * (segment_max_line - segment_min_line)
                 drop_height_list.append(drop_height)
                 drop_length = utils.find_drop_length(segment_data, segment_min_line, segment_max_line)
@@ -132,7 +131,7 @@ class DropModel(Model):
                 delete_list.append(segment)
         for item in delete_list:
             segments.remove(item)
-        #print(segments)
+
         for idrop in self.idrops:
             segments.append(idrop)
 
