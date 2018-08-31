@@ -79,7 +79,8 @@ class GeneralModel(Model):
         all_conv_peaks = utils.peak_finder(self.all_conv, WINDOW_SIZE * 2)
 
         filtered = self.__filter_prediction(all_conv_peaks, data)
-        return [(dataframe['timestamp'][x - 1].value, dataframe['timestamp'][x + 1].value) for x in filtered]
+        # TODO: convert from ns to ms more proper way (not dividing by 10^6)
+        return [(dataframe['timestamp'][x - 1].value / 1000000, dataframe['timestamp'][x + 1].value / 1000000) for x in filtered]
 
     def __filter_prediction(self, segments: list, data: list):
         if len(segments) == 0 or len(self.ipats) == 0:

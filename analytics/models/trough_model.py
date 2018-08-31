@@ -79,9 +79,10 @@ class TroughModel(Model):
         for i in all_mins:
             if all_max_flatten_data[i] < extrema_list[i]:
                 segments.append(i)
-        
+        test = dataframe['timestamp'][1].value
         filtered = self.__filter_prediction(segments, data)
-        return [(dataframe['timestamp'][x - 1].value, dataframe['timestamp'][x + 1].value) for x in filtered]
+        # TODO: convert from ns to ms more proper way (not dividing by 10^6)
+        return [(dataframe['timestamp'][x - 1].value / 1000000, dataframe['timestamp'][x + 1].value / 1000000) for x in filtered]
 
     def __filter_prediction(self, segments: list, all_max_flatten_data: list):
         delete_list = []
