@@ -85,11 +85,9 @@ npm start
 
 ### Docker
 
-#### Build 
+#### Fetch image
 ```bash
-git clone https://github.com/hastic/hastic-server.git
-cd hastic-server
-docker build -t hastic-server .
+docker pull hastic/server
 ```
 
 #### Run
@@ -100,7 +98,7 @@ docker run -d \
   -p 80:8000 \
   -e HASTIC_API_KEY=<your_grafana_api_key> \
   -v /tmp:/tmp \
-  hastic-server
+  hastic/server
 ```
 
 ### Changelog
