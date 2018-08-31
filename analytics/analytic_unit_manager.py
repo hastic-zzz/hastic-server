@@ -60,7 +60,7 @@ def prepare_data(data: list):
     """
     data = pd.DataFrame(data, columns=['timestamp', 'value'])
 
-    data['timestamp'] = pd.to_datetime(data['timestamp'])
+    data['timestamp'] = pd.to_datetime(data['timestamp'], unit='ms')
     data['value'] = data['value'] - min(data['value'])
 
     return data

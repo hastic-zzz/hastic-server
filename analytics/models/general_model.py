@@ -35,8 +35,8 @@ class GeneralModel(Model):
         convolve_list = []
         for segment in segments:
             if segment['labeled']:
-                segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from']))
-                segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to']))
+                segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
+                segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
 
                 segment_data = data[segment_from_index: segment_to_index + 1]
                 if len(segment_data) == 0:
