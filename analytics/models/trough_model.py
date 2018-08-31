@@ -11,7 +11,7 @@ from typing import Optional
 
 WINDOW_SIZE = 240
 
-class ReversePeakModel(Model):
+class TroughModel(Model):
 
     def __init__(self):
         super()
