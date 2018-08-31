@@ -39,7 +39,9 @@ class DropModel(Model):
                 segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from']))
                 segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to']))
 
-                segment_data = data[segment_from_index : segment_to_index + 1].reset_index(drop=True)
+                segment_data = data[segment_from_index: segment_to_index + 1]
+                if len(segment_data) == 0:
+                    continue
                 segment_min = min(segment_data)
                 segment_max = max(segment_data)
                 confidences.append(0.20 * (segment_max - segment_min))
