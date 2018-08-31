@@ -13,6 +13,8 @@ logger = logging.getLogger('PATTERN_DETECTOR')
 
 
 def resolve_model_by_pattern(pattern: str) -> models.Model:
+    if pattern == 'GENERAL':
+        return models.GeneralModel()
     if pattern == 'PEAK':
         return models.PeakModel()
     if pattern == 'REVERSE_PEAK':

@@ -1,3 +1,2 @@
 from detectors.detector import Detector
 from detectors.pattern_detector import PatternDetector
-from detectors.general_detector import GeneralDetector
