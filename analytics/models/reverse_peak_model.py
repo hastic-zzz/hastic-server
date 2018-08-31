@@ -54,12 +54,12 @@ class ReversePeakModel(Model):
                 convolve_list.append(max(convolve))
 
         if len(confidences) > 0:
-            self.state['confidence'] = min(confidences)
+            self.state['confidence'] = float(min(confidences))
         else:
             self.state['confidence'] = 1.5
 
         if len(convolve_list) > 0:
-            self.state['convolve_max'] = max(convolve_list)
+            self.state['convolve_max'] = float(max(convolve_list))
         else:
             self.state['convolve_max'] = 570000
         
