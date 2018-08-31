@@ -12,11 +12,7 @@ analytic_workers: Dict[AnalyticUnitId, AnalyticUnitWorker] = dict()
 
 
 def get_detector_by_type(analytic_unit_type) -> detectors.Detector:
-    if analytic_unit_type == 'GENERAL':
-        detector = detectors.GeneralDetector()
-    else:
-        detector = detectors.PatternDetector(analytic_unit_type)
-    return detector
+    return detectors.PatternDetector(analytic_unit_type)
 
 def ensure_worker(analytic_unit_id, analytic_unit_type) -> AnalyticUnitWorker:
     if analytic_unit_id in analytic_workers:

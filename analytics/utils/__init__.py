@@ -207,3 +207,10 @@ def timestamp_to_index(dataframe, timestamp):
     for i in range(len(data)):
         if data[i] >= timestamp:
             return i
+
+def peak_finder(data, size):
+    all_max = []
+    for i in range(size, len(data) - size):
+        if data[i] == max(data[i - size: i + size]) and data[i] > data[i + 1]:
+            all_max.append(i)
+    return all_max
