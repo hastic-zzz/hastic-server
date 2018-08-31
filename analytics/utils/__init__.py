@@ -197,3 +197,10 @@ def find_drop(data, height, lenght):
             if(data[i+x] < data[i] - height):
                 d_list.append(i+36)
     return(d_list)
+
+def peak_finder(data, size):
+    all_max = []
+    for i in range(size, len(data) - size):
+        if data[i] == max(data[i - size: i + size]) and data[i] > data[i + 1]:
+            all_max.append(i)
+    return all_max
