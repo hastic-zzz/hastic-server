@@ -22,10 +22,19 @@ See also:
 
 You need only [nodejs >= 6.14](https://nodejs.org/en/download/) on your machine.
 
+### Node 6
 ```
-wget https://github.com/hastic/hastic-server/releases/download/0.1.4-alpha/hastic-server-0.1.4-alpha.tar.gz
-tar -zxvf hastic-server-0.1.4-alpha.tar.gz
-cd hastic-server-0.1.4-alpha/server/dist
+wget https://github.com/hastic/hastic-server/releases/download/0.2.0-alpha/hastic-server-0.2.0-alpha-node-6.tar.gz
+tar -zxvf hastic-server-0.2.0-alpha-node-6.tar.gz
+cd hastic-server-0.2.0-alpha/server/dist
+node server
+```
+
+### Node 8
+```
+wget https://github.com/hastic/hastic-server/releases/download/0.2.0-alpha/hastic-server-0.2.0-alpha-node-8.tar.gz
+tar -zxvf hastic-server-0.2.0-alpha-node-8.tar.gz
+cd hastic-server-0.2.0-alpha/server/dist
 node server
 ```
 
@@ -104,7 +113,7 @@ docker run -d \
 ### Changelog
 
 ### [0.2.0-alpha] - Not released yet
-> NOTE: hastic-panels of older versions are not supported
+> NOTE: hastic-panels of versions older than 0.2.0 are not supported
 
 #### Added
 - Return version of server [#66](https://github.com/hastic/hastic-server/issues/66)
@@ -117,6 +126,10 @@ docker run -d \
 - Analytics wont start in production mode [#77](https://github.com/hastic/hastic-server/issues/77)
 - Basic creation of analytic unit fails [#79](https://github.com/hastic/hastic-server/issues/79)
 - Missing communication between analytics and server in production [#91](https://github.com/hastic/hastic-server/issues/91) - thx [@petrk94](https://github.com/petrk94) for [bugreport](https://github.com/hastic/hastic-server/issues/90)
+- Server is stopping only after second Ctrl-C [#96](https://github.com/hastic/hastic-server/issues/96)
+- Error: 'value' [#100](https://github.com/hastic/hastic-server/issues/100)
+- Error: Unexpected response [#125](https://github.com/hastic/hastic-server/issues/125)
+- Error: max of an empty sequence in peaks model [#126](https://github.com/hastic/hastic-server/issues/126)
 
 ### [0.1.4-alpha] - 2018-06-29
 #### Changed
