@@ -118,9 +118,9 @@ export class AnalyticsService {
       }
     };
 
-    if(fs.existsSync(path.join(config.ANALYTICS_PATH, 'dist/worker/worker'))) {
-      console.log('dist/worker/worker');
-      cp = childProcess.spawn('dist/worker/worker', [], cpOptions);
+    if(fs.existsSync(path.join(config.ANALYTICS_PATH, 'dist/server/server'))) {
+      console.log('dist/server/server');
+      cp = childProcess.spawn('dist/server/server', [], cpOptions);
     } else {
       console.log('python3 server.py');
       // If compiled analytics script doesn't exist - fallback to regular python
