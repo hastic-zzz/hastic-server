@@ -12,7 +12,7 @@ from scipy.stats import norm
 from typing import Optional
 
 
-WINDOW_SIZE = 400
+WINDOW_SIZE = 150
 
 class JumpModel(Model):
 
@@ -118,8 +118,8 @@ class JumpModel(Model):
         for i in range(1, len(segments)):
             if segments[i] < segments[i - 1] + variance_error:
                 delete_list.append(segments[i])
-        for item in delete_list:
-            segments.remove(item)
+        #for item in delete_list:
+            #segments.remove(item)
         delete_list = []
         if len(segments) == 0 or len(self.ijumps) == 0 :
             segments = []
@@ -131,14 +131,14 @@ class JumpModel(Model):
                 convol_data = data[segment - WINDOW_SIZE : segment + WINDOW_SIZE]
 
                 conv = scipy.signal.fftconvolve(pattern_data, convol_data)
-                if max(conv) > self.state['convolve_max'] * 1.2 or max(conv) < self.state['convolve_max'] * 0.8:
+                if max(conv) > self.state['convolve_max'] * 1.6 or max(conv) < self.state['convolve_max'] * 0.8:
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
         for item in delete_list:
             segments.remove(item)
 
-        for ijump in self.ijumps:
-            segments.append(ijump)
+        #for ijump in self.ijumps:
+            #segments.append(ijump)
 
         return segments

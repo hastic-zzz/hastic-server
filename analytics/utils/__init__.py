@@ -198,7 +198,7 @@ def find_drop(data, height, length):
     for i in range(len(data)-length-1):
         for x in range(1, length):
             if(data[i+x] < data[i] - height):
-                d_list.append(i+36)
+                d_list.append(i)
     return(d_list)
 
 def timestamp_to_index(dataframe, timestamp):
