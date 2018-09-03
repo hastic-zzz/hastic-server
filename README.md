@@ -22,10 +22,19 @@ See also:
 
 You need only [nodejs >= 6.14](https://nodejs.org/en/download/) on your machine.
 
+### Node 6
 ```
-wget https://github.com/hastic/hastic-server/releases/download/0.1.4-alpha/hastic-server-0.1.4-alpha.tar.gz
-tar -zxvf hastic-server-0.1.4-alpha.tar.gz
-cd hastic-server-0.1.4-alpha/server/dist
+wget https://github.com/hastic/hastic-server/releases/download/0.2.0-alpha/hastic-server-0.2.0-alpha-node-6.tar.gz
+tar -zxvf hastic-server-0.2.0-alpha-node-6.tar.gz
+cd hastic-server-0.2.0-alpha/server/dist
+node server
+```
+
+### Node 8
+```
+wget https://github.com/hastic/hastic-server/releases/download/0.2.0-alpha/hastic-server-0.2.0-alpha-node-8.tar.gz
+tar -zxvf hastic-server-0.2.0-alpha-node-8.tar.gz
+cd hastic-server-0.2.0-alpha/server/dist
 node server
 ```
 
@@ -45,15 +54,15 @@ Possible to install on:
 
 * [git](https://git-scm.com/download/linux)
 * [nodejs >= 6.14](https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions)
-* [python >= 3.6.5](https://www.python.org/downloads/) with [pip3](https://packaging.python.org/guides/installing-using-linux-tools/#installing-pip-setuptools-wheel-with-linux-package-managers)
+* [python == 3.6.х](https://www.python.org/downloads/) with [pip3](https://packaging.python.org/guides/installing-using-linux-tools/#installing-pip-setuptools-wheel-with-linux-package-managers)
 
 #### Installation
 ```bash
-pip3 install -r analytics/requirements.txt
-
 git clone https://github.com/hastic/hastic-server.git
-cd ./hastic-server/server
-npm install 
+cd hastic-server
+pip3 install -r analytics/requirements.txt
+cd server
+npm install
 npm run build
 ```
 
@@ -79,7 +88,7 @@ You can also rename `config.example.json` to `config.json` and set your values t
 
 #### Run
 ```bash
-cd ./hastic-server/server
+cd hastic-server/server
 npm start
 ```
 
@@ -103,8 +112,8 @@ docker run -d \
 
 ### Changelog
 
-### [0.2.0-alpha] - Not released yet
-> NOTE: hastic-panels of older versions are not supported
+### [0.2.0-alpha] - 2018-09-03
+> NOTE: hastic-panels of versions older than 0.2.0 are not supported
 
 #### Added
 - Return version of server [#66](https://github.com/hastic/hastic-server/issues/66)
@@ -117,6 +126,10 @@ docker run -d \
 - Analytics wont start in production mode [#77](https://github.com/hastic/hastic-server/issues/77)
 - Basic creation of analytic unit fails [#79](https://github.com/hastic/hastic-server/issues/79)
 - Missing communication between analytics and server in production [#91](https://github.com/hastic/hastic-server/issues/91) - thx [@petrk94](https://github.com/petrk94) for [bugreport](https://github.com/hastic/hastic-server/issues/90)
+- Server is stopping only after second Ctrl-C [#96](https://github.com/hastic/hastic-server/issues/96)
+- Error: 'value' [#100](https://github.com/hastic/hastic-server/issues/100)
+- Error: Unexpected response [#125](https://github.com/hastic/hastic-server/issues/125)
+- Error: max of an empty sequence in peaks model [#126](https://github.com/hastic/hastic-server/issues/126)
 
 ### [0.1.4-alpha] - 2018-06-29
 #### Changed
