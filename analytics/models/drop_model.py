@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from typing import Optional
 
-WINDOW_SIZE = 400
+WINDOW_SIZE = 300
 
 class DropModel(Model):
     def __init__(self):
@@ -115,8 +115,8 @@ class DropModel(Model):
         for i in range(1, len(segments)):
             if segments[i] < segments[i - 1] + variance_error:
                 delete_list.append(segments[i])
-        for item in delete_list:
-            segments.remove(item)
+        #for item in delete_list:
+        #    segments.remove(item)
         delete_list = []
 
         if len(segments) == 0 or len(self.idrops) == 0 :
@@ -133,8 +133,5 @@ class DropModel(Model):
                 delete_list.append(segment)
         for item in delete_list:
             segments.remove(item)
-
-        for idrop in self.idrops:
-            segments.append(idrop)
 
         return segments

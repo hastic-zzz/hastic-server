@@ -12,7 +12,7 @@ from scipy.stats import norm
 from typing import Optional
 
 
-WINDOW_SIZE = 150
+WINDOW_SIZE = 300
 
 class JumpModel(Model):
 
@@ -64,7 +64,7 @@ class JumpModel(Model):
                 segment_median = ax_list[antipeaks_kde[0], 0]
                 segment_min_line = ax_list[min_peak_index, 0]
                 segment_max_line = ax_list[max_peak_index, 0]
-                jump_height = 0.9 * (segment_max_line - segment_min_line)
+                jump_height = 0.95 * (segment_max_line - segment_min_line)
                 jump_height_list.append(jump_height)
                 jump_length = utils.find_jump_length(segment_data, segment_min_line, segment_max_line)
                 jump_length_list.append(jump_length)
@@ -131,7 +131,7 @@ class JumpModel(Model):
                 convol_data = data[segment - WINDOW_SIZE : segment + WINDOW_SIZE]
 
                 conv = scipy.signal.fftconvolve(pattern_data, convol_data)
-                if max(conv) > self.state['convolve_max'] * 1.6 or max(conv) < self.state['convolve_max'] * 0.8:
+                if max(conv) > self.state['convolve_max'] * 1.2 or max(conv) < self.state['convolve_max'] * 0.8:
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
