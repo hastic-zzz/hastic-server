@@ -112,7 +112,7 @@ docker run -d \
 
 ### Changelog
 
-### [0.2.0-alpha] - Not released yet
+### [0.2.0-alpha] - 2018-09-03
 > NOTE: hastic-panels of versions older than 0.2.0 are not supported
 
 #### Added
