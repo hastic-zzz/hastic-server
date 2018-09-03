@@ -16,7 +16,7 @@ def get_config_field(field, default_val = None):
     if field in os.environ:
         return os.environ[field]
 
-    if config_exists and field in config:
+    if config_exists and field in config and config[field] != '':
         return config[field]
 
     if default_val is not None:
