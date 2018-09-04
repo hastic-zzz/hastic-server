@@ -1,5 +1,6 @@
-<p align="center">
-  <img width="30%" height="30%" src="https://github.com/sankerust/hello-world/blob/master/hastic_logo_669x200.png?raw=true" />
+<p align="left">
+  <img  width="auto" height="78px" src="https://github.com/hastic/hastic-server/blob/add-logos/images/hastic_server.png?raw=true" />
+  <img width="30%" height="30%" src="https://github.com/hastic/hastic-server/blob/add-logos/images/hastic_logo.png?raw=true" />
 </p>
 
 [Hastic server](https://hastic.io) [![Travis CI](https://travis-ci.org/hastic/hastic-server.svg?branch=master)](https://travis-ci.org/hastic/hastic-server) 
