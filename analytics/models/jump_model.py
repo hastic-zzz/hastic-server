@@ -12,7 +12,7 @@ from scipy.stats import norm
 from typing import Optional
 
 
-WINDOW_SIZE = 400
+WINDOW_SIZE = 300
 
 class JumpModel(Model):
 
@@ -64,7 +64,7 @@ class JumpModel(Model):
                 segment_median = ax_list[antipeaks_kde[0], 0]
                 segment_min_line = ax_list[min_peak_index, 0]
                 segment_max_line = ax_list[max_peak_index, 0]
-                jump_height = 0.9 * (segment_max_line - segment_min_line)
+                jump_height = 0.95 * (segment_max_line - segment_min_line)
                 jump_height_list.append(jump_height)
                 jump_length = utils.find_jump_length(segment_data, segment_min_line, segment_max_line)
                 jump_length_list.append(jump_length)
@@ -118,8 +118,8 @@ class JumpModel(Model):
         for i in range(1, len(segments)):
             if segments[i] < segments[i - 1] + variance_error:
                 delete_list.append(segments[i])
-        for item in delete_list:
-            segments.remove(item)
+        #for item in delete_list:
+            #segments.remove(item)
         delete_list = []
         if len(segments) == 0 or len(self.ijumps) == 0 :
             segments = []
@@ -138,7 +138,7 @@ class JumpModel(Model):
         for item in delete_list:
             segments.remove(item)
 
-        for ijump in self.ijumps:
-            segments.append(ijump)
+        #for ijump in self.ijumps:
+            #segments.append(ijump)
 
         return segments
