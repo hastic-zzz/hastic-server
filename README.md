@@ -1,6 +1,6 @@
 <p align="left">
-  <img  width="auto" height="78px" src="https://github.com/hastic/hastic-server/blob/add-logos/images/hastic_server.png?raw=true" />
-  <img width="30%" height="30%" src="https://github.com/hastic/hastic-server/blob/add-logos/images/hastic_logo.png?raw=true" />
+  <img width="auto" align="middle" height="120px" src="https://github.com/hastic/hastic-server/blob/add-logos/images/hastic_server.png?raw=true" />
+  <img hspace="50" align="middle" width="30%" height="30%" src="https://github.com/hastic/hastic-server/blob/add-logos/images/hastic_logo.png?raw=true" />
 </p>
 
 [Hastic server](https://hastic.io) [![Travis CI](https://travis-ci.org/hastic/hastic-server.svg?branch=master)](https://travis-ci.org/hastic/hastic-server) 
