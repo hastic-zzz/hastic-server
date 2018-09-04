@@ -13,7 +13,7 @@ class Model(ABC):
         pass
 
     @abstractmethod
-    def do_predict(self, dataframe: DataFrame):
+    def do_predict(self, dataframe: DataFrame) -> list:
         pass
 
     def predict(self, dataframe: DataFrame, cache: Optional[AnalyticUnitCache]) -> dict:
@@ -21,10 +21,7 @@ class Model(ABC):
             self.state = cache
 
         result = self.do_predict(dataframe)
-        result.sort()
 
-        if len(self.segments) > 0:
-            result = [segment for segment in result if not utils.is_intersect(segment, self.segments)]
         return {
             'segments': result,
             'cache': self.state

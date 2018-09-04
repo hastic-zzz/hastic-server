@@ -12,7 +12,7 @@ from scipy.stats import norm
 from typing import Optional
 
 
-WINDOW_SIZE = 300
+WINDOW_SIZE = 200
 
 class JumpModel(Model):
 
@@ -68,16 +68,16 @@ class JumpModel(Model):
                 jump_height_list.append(jump_height)
                 jump_length = utils.find_jump_length(segment_data, segment_min_line, segment_max_line)
                 jump_length_list.append(jump_length)
-                cen_ind = utils.intersection_segment(flat_segment, segment_median) #finds all interseprions with median
+                cen_ind = utils.intersection_segment(flat_segment.tolist(), segment_median) #finds all interseprions with median
                 #cen_ind =  utils.find_ind_median(segment_median, flat_segment)
                 jump_center = cen_ind[0]
                 segment_cent_index = jump_center - 5 + segment_from_index
                 self.ijumps.append(segment_cent_index)
-                labeled_drop = data[segment_cent_index - WINDOW_SIZE : segment_cent_index + WINDOW_SIZE]
-                labeled_min = min(labeled_drop)
-                for value in labeled_drop:
+                labeled_jump = data[segment_cent_index - WINDOW_SIZE : segment_cent_index + WINDOW_SIZE]
+                labeled_min = min(labeled_jump)
+                for value in labeled_jump:
                     value = value - labeled_min
-                convolve = scipy.signal.fftconvolve(labeled_drop, labeled_drop)
+                convolve = scipy.signal.fftconvolve(labeled_jump, labeled_jump)
                 convolve_list.append(max(convolve))
 
         if len(confidences) > 0:
@@ -102,7 +102,7 @@ class JumpModel(Model):
 
         return self.state
 
-    def do_predict(self, dataframe: pd.DataFrame):
+    def do_predict(self, dataframe: pd.DataFrame) -> list:
         data = dataframe['value']
         possible_jumps = utils.find_jump(data, self.state['JUMP_HEIGHT'], self.state['JUMP_LENGTH'] + 1)
 
@@ -138,7 +138,8 @@ class JumpModel(Model):
         for item in delete_list:
             segments.remove(item)
 
+        # TODO: implement filtering
         #for ijump in self.ijumps:
             #segments.append(ijump)
 
-        return segments
+        return set(segments)

@@ -168,16 +168,16 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
 
     let payload = processPredictionResult(id, result);
 
-    // Merging segments
-    if(segments.length > 0 && payload.segments.length > 0) {
-      let lastOldSegment = segments[segments.length - 1];
-      let firstNewSegment = payload.segments[0];
+    // TODO: implement segments merging without removing labeled
+    // if(segments.length > 0 && payload.segments.length > 0) {
+    //   let lastOldSegment = segments[segments.length - 1];
+    //   let firstNewSegment = payload.segments[0];
 
-      if(firstNewSegment.from <= lastOldSegment.to) {
-        payload.segments[0].from = lastOldSegment.from;
-        Segment.removeSegments([lastOldSegment.id])
-      }
-    }
+    //   if(firstNewSegment.from <= lastOldSegment.to) {
+    //     payload.segments[0].from = lastOldSegment.from;
+    //     Segment.removeSegments([lastOldSegment.id])
+    //   }
+    // }
 
     Segment.insertSegments(payload.segments);
     AnalyticUnitCache.setData(id, payload.cache);

@@ -2,14 +2,6 @@ import numpy as np
 import pandas as pd
 
 
-def is_intersect(target_segment, segments):
-    for segment in segments:
-        start = max(segment['from'], target_segment[0])
-        finish = min(segment['to'], target_segment[1])
-        if start <= finish:
-            return True
-    return False
-
 def exponential_smoothing(series, alpha):
     result = [series[0]]
     for n in range(1, len(series)):

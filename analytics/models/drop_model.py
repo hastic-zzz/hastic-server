@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from typing import Optional
 
-WINDOW_SIZE = 300
+WINDOW_SIZE = 200
 
 class DropModel(Model):
     def __init__(self):
@@ -98,7 +98,7 @@ class DropModel(Model):
 
         return self.state
 
-    def do_predict(self, dataframe: pd.DataFrame):
+    def do_predict(self, dataframe: pd.DataFrame) -> list:
         data = dataframe['value']
         possible_drops = utils.find_drop(data, self.state['DROP_HEIGHT'], self.state['DROP_LENGTH'] + 1)
 
@@ -115,7 +115,7 @@ class DropModel(Model):
         for i in range(1, len(segments)):
             if segments[i] < segments[i - 1] + variance_error:
                 delete_list.append(segments[i])
-        #for item in delete_list:
+        # for item in delete_list:
         #    segments.remove(item)
         delete_list = []
 
@@ -131,7 +131,8 @@ class DropModel(Model):
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
-        for item in delete_list:
-            segments.remove(item)
+        # TODO: implement filtering
+        # for item in delete_list:
+        #     segments.remove(item)
 
-        return segments
+        return set(segments)

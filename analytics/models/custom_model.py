@@ -15,5 +15,5 @@ class CustomModel(Model):
     def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[dict]) -> dict:
         pass
     
-    def predict(self, dataframe, cache: Optional[dict]):
+    def do_predict(self, dataframe: pd.DataFrame) -> list:
         return []

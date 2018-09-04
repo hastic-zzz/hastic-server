@@ -69,8 +69,7 @@ class PeakModel(Model):
     def do_predict(self, dataframe: pd.DataFrame):
         data = dataframe['value']
         window_size = 24
-        all_max_flatten_data = data.rolling(window=window_size).mean()
-        all_maxs = argrelextrema(np.array(all_max_flatten_data), np.greater)[0]
+        all_maxs = argrelextrema(np.array(data), np.greater)[0]
 
         extrema_list = []
         for i in utils.exponential_smoothing(data + self.state['confidence'], 0.02):
@@ -78,16 +77,16 @@ class PeakModel(Model):
 
         segments = []
         for i in all_maxs:
-            if all_max_flatten_data[i] > extrema_list[i]:
+            if data[i] > extrema_list[i]:
                 segments.append(i)
 
         filtered = self.__filter_prediction(segments, data)
         # TODO: convert from ns to ms more proper way (not dividing by 10^6)
         return [(dataframe['timestamp'][x - 1].value / 1000000, dataframe['timestamp'][x + 1].value / 1000000) for x in filtered]
 
-    def __filter_prediction(self, segments: list, all_max_flatten_data: list):
+    def __filter_prediction(self, segments: list, data: list) -> list:
         delete_list = []
-        variance_error = int(0.004 * len(all_max_flatten_data))
+        variance_error = int(0.004 * len(data))
         if variance_error > 100:
             variance_error = 100
         for i in range(1, len(segments)):
@@ -100,16 +99,17 @@ class PeakModel(Model):
         if len(segments) == 0 or len(self.ipeaks) == 0:
             return []
 
-        pattern_data = all_max_flatten_data[self.ipeaks[0] - WINDOW_SIZE: self.ipeaks[0] + WINDOW_SIZE]
+        pattern_data = data[self.ipeaks[0] - WINDOW_SIZE: self.ipeaks[0] + WINDOW_SIZE]
         for segment in segments:
             if segment > WINDOW_SIZE:
-                convol_data = all_max_flatten_data[segment - WINDOW_SIZE: segment + WINDOW_SIZE]
+                convol_data = data[segment - WINDOW_SIZE: segment + WINDOW_SIZE]
                 conv = scipy.signal.fftconvolve(pattern_data, convol_data)
                 if max(conv) > self.state['convolve_max'] * 1.2 or max(conv) < self.state['convolve_max'] * 0.8:
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
-        for item in delete_list:
-            segments.remove(item)
+        # TODO: implement filtering
+        # for item in delete_list:
+        #     segments.remove(item)
 
-        return segments
+        return set(segments)
