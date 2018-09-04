@@ -1,5 +1,5 @@
 <p align="left">
-  <img  width="auto" height="78px" src="https://github.com/hastic/hastic-server/blob/add-logos/images/hastic-server-pic.jpg?raw=true" />
+  <img  width="auto" height="78px" src="https://github.com/hastic/hastic-server/blob/add-logos/images/hastic_server.png?raw=true" />
   <img width="30%" height="30%" src="https://github.com/hastic/hastic-server/blob/add-logos/images/hastic_logo.png?raw=true" />
 </p>
 
