@@ -1,4 +1,4 @@
-from models import Model, AnalyticUnitCache
+from models import Model
 
 import utils
 import numpy as np
@@ -9,7 +9,6 @@ from scipy.signal import argrelextrema
 import math
 from scipy.stats import gaussian_kde
 from scipy.stats import norm
-from typing import Optional
 
 
 WINDOW_SIZE = 150
@@ -26,11 +25,7 @@ class GeneralModel(Model):
         }
         self.all_conv = []
 
-    def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[AnalyticUnitCache]) -> AnalyticUnitCache:
-        if type(cache) is AnalyticUnitCache:
-            self.state = cache
-        self.segments = segments
-
+    def do_fit(self, dataframe: DataFrame, segments: list) -> None:
         data = dataframe['value']
         convolve_list = []
         for segment in segments:
@@ -53,8 +48,6 @@ class GeneralModel(Model):
             self.state['convolve_max'] = float(max(convolve_list))
         else:
             self.state['convolve_max'] = WINDOW_SIZE / 3
-
-        return self.state
 
     def do_predict(self, dataframe: pd.DataFrame) -> list:
         data = dataframe['value']

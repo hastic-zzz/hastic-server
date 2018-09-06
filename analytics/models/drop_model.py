@@ -1,4 +1,4 @@
-from models import Model, AnalyticUnitCache
+from models import Model
 
 import scipy.signal
 from scipy.fftpack import fft
@@ -8,7 +8,6 @@ from scipy.stats import gaussian_kde
 import utils
 import numpy as np
 import pandas as pd
-from typing import Optional
 
 WINDOW_SIZE = 200
 
@@ -24,11 +23,7 @@ class DropModel(Model):
             'DROP_LENGTH': 1,
         }
 
-    def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[AnalyticUnitCache]) -> AnalyticUnitCache:
-        if type(cache) is AnalyticUnitCache:
-            self.state = cache
-        self.segments = segments
-
+    def do_fit(self, dataframe: DataFrame, segments: list) -> None:
         data = dataframe['value']
         confidences = []
         convolve_list = []
@@ -95,8 +90,6 @@ class DropModel(Model):
             self.state['DROP_LENGTH'] = int(max(drop_length_list))
         else:
             self.state['DROP_LENGTH'] = 1
-
-        return self.state
 
     def do_predict(self, dataframe: pd.DataFrame) -> list:
         data = dataframe['value']

@@ -1,4 +1,4 @@
-from models import Model, AnalyticUnitCache
+from models import Model
 
 import scipy.signal
 from scipy.fftpack import fft
@@ -7,7 +7,6 @@ from scipy.signal import argrelextrema
 import utils
 import numpy as np
 import pandas as pd
-from typing import Optional
 
 WINDOW_SIZE = 240
 
@@ -23,11 +22,7 @@ class PeakModel(Model):
             'convolve_max': 570000
         }
 
-    def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[AnalyticUnitCache]) -> AnalyticUnitCache:
-        if type(cache) is AnalyticUnitCache:
-            self.state = cache
-
-        self.segments = segments
+    def do_fit(self, dataframe: DataFrame, segments: list, cache: Optional[AnalyticUnitCache]) -> None:
         data = dataframe['value']
 
         confidences = []
@@ -63,8 +58,6 @@ class PeakModel(Model):
             self.state['convolve_max'] = float(max(convolve_list))
         else:
             self.state['convolve_max'] = 570000
-
-        return self.state
 
     def do_predict(self, dataframe: pd.DataFrame):
         data = dataframe['value']
