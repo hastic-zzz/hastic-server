@@ -23,7 +23,7 @@ class DropModel(Model):
             'DROP_LENGTH': 1,
         }
 
-    def do_fit(self, dataframe: DataFrame, segments: list) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
         data = dataframe['value']
         confidences = []
         convolve_list = []

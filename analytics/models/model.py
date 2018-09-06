@@ -1,22 +1,22 @@
 import utils
 
 from abc import ABC, abstractmethod
-from pandas import DataFrame
 from typing import Optional
+import pandas as pd
 
 AnalyticUnitCache = dict
 
 class Model(ABC):
 
     @abstractmethod
-    def do_fit(self, dataframe: DataFrame, segments: list, cache: Optional[AnalyticUnitCache]) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[AnalyticUnitCache]) -> None:
         pass
 
     @abstractmethod
-    def do_predict(self, dataframe: DataFrame) -> list:
+    def do_predict(self, dataframe: pd.DataFrame) -> list:
         pass
 
-    def fit(self, dataframe: DataFrame, segments: list, cache: Optional[AnalyticUnitCache]) -> AnalyticUnitCache:
+    def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[AnalyticUnitCache]) -> AnalyticUnitCache:
         if type(cache) is AnalyticUnitCache:
             self.state = cache
 
@@ -34,7 +34,7 @@ class Model(ABC):
         self.do_fit(dataframe, segments)
         return self.state
 
-    def predict(self, dataframe: DataFrame, cache: Optional[AnalyticUnitCache]) -> dict:
+    def predict(self, dataframe: pd.DataFrame, cache: Optional[AnalyticUnitCache]) -> dict:
         if type(cache) is AnalyticUnitCache:
             self.state = cache
 

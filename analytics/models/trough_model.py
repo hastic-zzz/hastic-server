@@ -21,7 +21,7 @@ class TroughModel(Model):
             'convolve_max': 570000
         }
 
-    def do_fit(self, dataframe: DataFrame, segments: list) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
         data = dataframe['value']
     
         confidences = []

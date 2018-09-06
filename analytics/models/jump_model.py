@@ -25,7 +25,7 @@ class JumpModel(Model):
             'JUMP_LENGTH': 1,
         }
 
-    def do_fit(self, dataframe: DataFrame, segments: list) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
         data = dataframe['value']
         confidences = []
         convolve_list = []
@@ -63,7 +63,6 @@ class JumpModel(Model):
                 jump_length = utils.find_jump_length(segment_data, segment_min_line, segment_max_line)
                 jump_length_list.append(jump_length)
                 cen_ind = utils.intersection_segment(flat_segment.tolist(), segment_median) #finds all interseprions with median
-                #cen_ind =  utils.find_ind_median(segment_median, flat_segment)
                 jump_center = cen_ind[0]
                 segment_cent_index = jump_center - 5 + segment_from_index
                 self.ijumps.append(segment_cent_index)

@@ -22,7 +22,7 @@ class PeakModel(Model):
             'convolve_max': 570000
         }
 
-    def do_fit(self, dataframe: DataFrame, segments: list, cache: Optional[AnalyticUnitCache]) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
         data = dataframe['value']
 
         confidences = []

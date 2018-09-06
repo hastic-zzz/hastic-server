@@ -25,7 +25,7 @@ class GeneralModel(Model):
         }
         self.all_conv = []
 
-    def do_fit(self, dataframe: DataFrame, segments: list) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
         data = dataframe['value']
         convolve_list = []
         for segment in segments:
