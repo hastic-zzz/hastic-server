@@ -98,9 +98,7 @@ class JumpModel(Model):
         data = dataframe['value']
         possible_jumps = utils.find_jump(data, self.state['JUMP_HEIGHT'], self.state['JUMP_LENGTH'] + 1)
 
-        filtered = self.__filter_prediction(possible_jumps, data)
-        # TODO: convert from ns to ms more proper way (not dividing by 10^6)
-        return [(dataframe['timestamp'][x - 1].value / 1000000, dataframe['timestamp'][x + 1].value / 1000000) for x in filtered]
+        return self.__filter_prediction(possible_jumps, data)
 
     def __filter_prediction(self, segments, data):
         delete_list = []

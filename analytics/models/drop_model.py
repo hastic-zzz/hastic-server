@@ -95,9 +95,7 @@ class DropModel(Model):
         data = dataframe['value']
         possible_drops = utils.find_drop(data, self.state['DROP_HEIGHT'], self.state['DROP_LENGTH'] + 1)
 
-        filtered = self.__filter_prediction(possible_drops, data)
-        # TODO: convert from ns to ms more proper way (not dividing by 10^6)
-        return [(dataframe['timestamp'][x - 1].value / 1000000, dataframe['timestamp'][x + 1].value / 1000000) for x in filtered]
+        return self.__filter_prediction(possible_drops, data)
 
     def __filter_prediction(self, segments: list, data: list):
         delete_list = []

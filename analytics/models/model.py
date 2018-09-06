@@ -39,8 +39,13 @@ class Model(ABC):
             self.state = cache
 
         result = self.do_predict(dataframe)
-        
+        # TODO: convert from ns to ms more proper way (not dividing by 10^6)
+        segments = [(
+            dataframe['timestamp'][x - 1].value / 1000000,
+            dataframe['timestamp'][x + 1].value / 1000000
+        ) for x in result]
+
         return {
-            'segments': result,
+            'segments': segments,
             'cache': self.state
         }

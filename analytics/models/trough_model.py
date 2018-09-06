@@ -71,10 +71,8 @@ class TroughModel(Model):
         for i in all_mins:
             if data[i] < extrema_list[i]:
                 segments.append(i)
-        test = dataframe['timestamp'][1].value
-        filtered = self.__filter_prediction(segments, data)
-        # TODO: convert from ns to ms more proper way (not dividing by 10^6)
-        return [(dataframe['timestamp'][x - 1].value / 1000000, dataframe['timestamp'][x + 1].value / 1000000) for x in filtered]
+
+        return self.__filter_prediction(segments, data)
 
     def __filter_prediction(self, segments: list, data: list) -> list:
         delete_list = []
