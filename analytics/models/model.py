@@ -29,8 +29,7 @@ class Model(ABC):
 
                 segment_length = abs(segment_to_index - segment_from_index)
                 segment_length_list.append(segment_length)
-        self.segment_length = max(segment_length_list)
-        
+        self.state['WINDOW_SIZE'] = int(max(segment_length_list)/2)
         self.do_fit(dataframe, segments)
         return self.state
 
