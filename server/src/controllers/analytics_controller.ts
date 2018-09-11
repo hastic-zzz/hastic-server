@@ -82,7 +82,7 @@ function getQueryRangeForLearningBySegments(segments: Segment.Segment[]) {
   let to = _.maxBy(segments, s => s.to).to;
   let diff = to - from;
   from -= Math.round(diff);
-  to += Math.round(diff);
+  to = Date.now();
 
   return { from, to };
 }
