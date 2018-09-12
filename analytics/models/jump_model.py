@@ -1,18 +1,14 @@
-from models import Model, AnalyticUnitCache
+from models import Model
 
 import utils
 import numpy as np
 import pandas as pd
 import scipy.signal
 from scipy.fftpack import fft
-from scipy.signal import argrelextrema
 import math
+from scipy.signal import argrelextrema
 from scipy.stats import gaussian_kde
-from scipy.stats import norm
-from typing import Optional
 
-
-WINDOW_SIZE = 200
 
 class JumpModel(Model):
 
@@ -22,16 +18,12 @@ class JumpModel(Model):
         self.ijumps = []
         self.state = {
             'confidence': 1.5,
-            'convolve_max': WINDOW_SIZE,
+            'convolve_max': 230,
             'JUMP_HEIGHT': 1,
             'JUMP_LENGTH': 1,
         }
 
-    def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[AnalyticUnitCache]) -> AnalyticUnitCache:
-        if type(cache) is AnalyticUnitCache:
-            self.state = cache
-        self.segments = segments
-
+    def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
         data = dataframe['value']
         confidences = []
         convolve_list = []
@@ -69,11 +61,10 @@ class JumpModel(Model):
                 jump_length = utils.find_jump_length(segment_data, segment_min_line, segment_max_line)
                 jump_length_list.append(jump_length)
                 cen_ind = utils.intersection_segment(flat_segment.tolist(), segment_median) #finds all interseprions with median
-                #cen_ind =  utils.find_ind_median(segment_median, flat_segment)
                 jump_center = cen_ind[0]
                 segment_cent_index = jump_center - 5 + segment_from_index
                 self.ijumps.append(segment_cent_index)
-                labeled_jump = data[segment_cent_index - WINDOW_SIZE : segment_cent_index + WINDOW_SIZE]
+                labeled_jump = data[segment_cent_index - self.state['WINDOW_SIZE'] : segment_cent_index + self.state['WINDOW_SIZE']]
                 labeled_min = min(labeled_jump)
                 for value in labeled_jump:
                     value = value - labeled_min
@@ -88,7 +79,7 @@ class JumpModel(Model):
         if len(convolve_list) > 0:
             self.state['convolve_max'] = float(max(convolve_list))
         else:
-            self.state['convolve_max'] = WINDOW_SIZE
+            self.state['convolve_max'] = self.state['WINDOW_SIZE']
 
         if len(jump_height_list) > 0:
             self.state['JUMP_HEIGHT'] = int(min(jump_height_list))
@@ -98,17 +89,13 @@ class JumpModel(Model):
         if len(jump_length_list) > 0:
             self.state['JUMP_LENGTH'] = int(max(jump_length_list))
         else:
-            self.state['JUMP_LENGTH'] = 1  
-
-        return self.state
+            self.state['JUMP_LENGTH'] = 1
 
     def do_predict(self, dataframe: pd.DataFrame) -> list:
         data = dataframe['value']
         possible_jumps = utils.find_jump(data, self.state['JUMP_HEIGHT'], self.state['JUMP_LENGTH'] + 1)
 
-        filtered = self.__filter_prediction(possible_jumps, data)
-        # TODO: convert from ns to ms more proper way (not dividing by 10^6)
-        return [(dataframe['timestamp'][x - 1].value / 1000000, dataframe['timestamp'][x + 1].value / 1000000) for x in filtered]
+        return self.__filter_prediction(possible_jumps, data)
 
     def __filter_prediction(self, segments, data):
         delete_list = []
@@ -125,10 +112,10 @@ class JumpModel(Model):
             segments = []
             return segments
 
-        pattern_data = data[self.ijumps[0] - WINDOW_SIZE : self.ijumps[0] + WINDOW_SIZE]
+        pattern_data = data[self.ijumps[0] - self.state['WINDOW_SIZE'] : self.ijumps[0] + self.state['WINDOW_SIZE']]
         for segment in segments:
-            if segment > WINDOW_SIZE and segment < (len(data) - WINDOW_SIZE):
-                convol_data = data[segment - WINDOW_SIZE : segment + WINDOW_SIZE]
+            if segment > self.state['WINDOW_SIZE'] and segment < (len(data) - self.state['WINDOW_SIZE']):
+                convol_data = data[segment - self.state['WINDOW_SIZE'] : segment + self.state['WINDOW_SIZE']]
 
                 conv = scipy.signal.fftconvolve(pattern_data, convol_data)
                 if max(conv) > self.state['convolve_max'] * 1.2 or max(conv) < self.state['convolve_max'] * 0.8:

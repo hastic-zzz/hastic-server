@@ -1,4 +1,4 @@
-from models import Model, AnalyticUnitCache
+from models import Model
 
 import scipy.signal
 from scipy.fftpack import fft
@@ -8,9 +8,7 @@ from scipy.stats import gaussian_kde
 import utils
 import numpy as np
 import pandas as pd
-from typing import Optional
 
-WINDOW_SIZE = 200
 
 class DropModel(Model):
     def __init__(self):
@@ -19,16 +17,13 @@ class DropModel(Model):
         self.idrops = []
         self.state = {
             'confidence': 1.5,
-            'convolve_max': WINDOW_SIZE,
+            'convolve_max': 200,
             'DROP_HEIGHT': 1,
             'DROP_LENGTH': 1,
+            'WINDOW_SIZE': 240,
         }
 
-    def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[AnalyticUnitCache]) -> AnalyticUnitCache:
-        if type(cache) is AnalyticUnitCache:
-            self.state = cache
-        self.segments = segments
-
+    def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
         data = dataframe['value']
         confidences = []
         convolve_list = []
@@ -68,7 +63,7 @@ class DropModel(Model):
                 drop_center = cen_ind[0]
                 segment_cent_index = drop_center - 5 + segment_from_index
                 self.idrops.append(segment_cent_index)
-                labeled_drop = data[segment_cent_index - WINDOW_SIZE : segment_cent_index + WINDOW_SIZE]
+                labeled_drop = data[segment_cent_index - self.state['WINDOW_SIZE']: segment_cent_index + self.state['WINDOW_SIZE']]
                 labeled_min = min(labeled_drop)
                 for value in labeled_drop:
                     value = value - labeled_min
@@ -84,7 +79,7 @@ class DropModel(Model):
         if len(convolve_list) > 0:
             self.state['convolve_max'] = float(max(convolve_list))
         else:
-            self.state['convolve_max'] = WINDOW_SIZE
+            self.state['convolve_max'] = self.state['WINDOW_SIZE']
 
         if len(drop_height_list) > 0:
             self.state['DROP_HEIGHT'] = int(min(drop_height_list))
@@ -96,15 +91,11 @@ class DropModel(Model):
         else:
             self.state['DROP_LENGTH'] = 1
 
-        return self.state
-
     def do_predict(self, dataframe: pd.DataFrame) -> list:
         data = dataframe['value']
         possible_drops = utils.find_drop(data, self.state['DROP_HEIGHT'], self.state['DROP_LENGTH'] + 1)
 
-        filtered = self.__filter_prediction(possible_drops, data)
-        # TODO: convert from ns to ms more proper way (not dividing by 10^6)
-        return [(dataframe['timestamp'][x - 1].value / 1000000, dataframe['timestamp'][x + 1].value / 1000000) for x in filtered]
+        return self.__filter_prediction(possible_drops, data)
 
     def __filter_prediction(self, segments: list, data: list):
         delete_list = []
@@ -122,12 +113,12 @@ class DropModel(Model):
         if len(segments) == 0 or len(self.idrops) == 0 :
             segments = []
             return segments
-        pattern_data = data[self.idrops[0] - WINDOW_SIZE : self.idrops[0] + WINDOW_SIZE]
+        pattern_data = data[self.idrops[0] - self.state['WINDOW_SIZE'] : self.idrops[0] + self.state['WINDOW_SIZE']]
         for segment in segments:
-            if segment > WINDOW_SIZE and segment < (len(data) - WINDOW_SIZE):
-                convol_data = data[segment - WINDOW_SIZE : segment + WINDOW_SIZE]
+            if segment > self.state['WINDOW_SIZE'] and segment < (len(data) - self.state['WINDOW_SIZE']):
+                convol_data = data[segment - self.state['WINDOW_SIZE'] : segment + self.state['WINDOW_SIZE']]
                 conv = scipy.signal.fftconvolve(pattern_data, convol_data)
-                if conv[WINDOW_SIZE*2] > self.state['convolve_max'] * 1.2 or conv[WINDOW_SIZE*2] < self.state['convolve_max'] * 0.8:
+                if conv[self.state['WINDOW_SIZE']*2] > self.state['convolve_max'] * 1.2 or conv[self.state['WINDOW_SIZE']*2] < self.state['convolve_max'] * 0.8:
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
