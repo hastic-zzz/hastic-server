@@ -37,9 +37,7 @@ class PeakModel(Model):
                 segment_min = min(segment_data)
                 segment_max = max(segment_data)
                 confidences.append(0.2 * (segment_max - segment_min))
-                #flat_segment = segment_data.rolling(window=5).mean()
-                #segment_data = segment_data.dropna()
-                segment_max_index = segment_data.idxmax()  # + segment['start']
+                segment_max_index = segment_data.idxmax()
                 self.ipeaks.append(segment_max_index)
                 labeled_peak = data[segment_max_index - self.state['WINDOW_SIZE']: segment_max_index + self.state['WINDOW_SIZE']]
                 labeled_peak = labeled_peak - min(labeled_peak)
@@ -95,7 +93,6 @@ class PeakModel(Model):
         delete_list = []
         if len(segments) == 0 or len(self.ipeaks) == 0:
             return []
-        print(self.state['convolve_max'] , self.state['convolve_min'] )
         pattern_data = data[self.ipeaks[0] - self.state['WINDOW_SIZE']: self.ipeaks[0] + self.state['WINDOW_SIZE']]
         pattern_data = pattern_data - min(pattern_data)
         for segment in segments:
@@ -103,7 +100,6 @@ class PeakModel(Model):
                 convol_data = data[segment - self.state['WINDOW_SIZE']: segment + self.state['WINDOW_SIZE']]
                 convol_data = convol_data - min(convol_data)
                 conv = scipy.signal.fftconvolve(pattern_data, convol_data)
-                print(max(conv))
                 if max(conv) > self.state['convolve_max'] * 1.05 or max(conv) < self.state['convolve_min'] * 0.95:
                     delete_list.append(segment)
             else:

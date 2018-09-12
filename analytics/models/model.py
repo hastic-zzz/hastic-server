@@ -3,6 +3,7 @@ import utils
 from abc import ABC, abstractmethod
 from typing import Optional
 import pandas as pd
+import math
 
 AnalyticUnitCache = dict
 
@@ -29,7 +30,7 @@ class Model(ABC):
 
                 segment_length = abs(segment_to_index - segment_from_index)
                 segment_length_list.append(segment_length)
-        self.state['WINDOW_SIZE'] = int(max(segment_length_list)/2)
+        self.state['WINDOW_SIZE'] = math.ceil(max(segment_length_list) / 2)
         self.do_fit(dataframe, segments)
         return self.state
 

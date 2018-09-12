@@ -8,22 +8,22 @@ import utils
 import numpy as np
 import pandas as pd
 
-WINDOW_SIZE = 240
 
 class TroughModel(Model):
 
     def __init__(self):
         super()
         self.segments = []
-        self.ipeaks = []
+        self.itroughs = []
         self.state = {
             'confidence': 1.5,
-            'convolve_max': 570000
+            'convolve_max': 570000,
+            'convolve_min': 530000,
+            'WINDOW_SIZE': 240,
         }
 
     def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
         data = dataframe['value']
-    
         confidences = []
         convolve_list = []
         for segment in segments:
@@ -37,16 +37,16 @@ class TroughModel(Model):
                 segment_min = min(segment_data)
                 segment_max = max(segment_data)
                 confidences.append(0.2 * (segment_max - segment_min))
-                flat_segment = segment_data.rolling(window=5).mean()
-                flat_segment = flat_segment.dropna()
-                segment_min_index = flat_segment.idxmin() #+ segment['start']
-                self.ipeaks.append(segment_min_index)
-                labeled_drop = data[segment_min_index - WINDOW_SIZE : segment_min_index + WINDOW_SIZE]
-                labeled_min = min(labeled_drop)
-                for value in labeled_drop:
-                    value = value - labeled_min
-                convolve = scipy.signal.fftconvolve(labeled_drop, labeled_drop)
-                convolve_list.append(max(convolve))
+                segment_min_index = segment_data.idxmin() 
+                self.itroughs.append(segment_min_index)
+                labeled_trough = data[segment_min_index - self.state['WINDOW_SIZE'] : segment_min_index + self.state['WINDOW_SIZE']]
+                labeled_trough = labeled_trough - min(labeled_trough)
+                auto_convolve = scipy.signal.fftconvolve(labeled_trough, labeled_trough)
+                first_trough = data[self.itroughs[0] - self.state['WINDOW_SIZE']: self.itroughs[0] + self.state['WINDOW_SIZE']]
+                first_trough = first_trough - min(first_trough)
+                convolve_trough = scipy.signal.fftconvolve(labeled_trough, first_trough)
+                convolve_list.append(max(auto_convolve))
+                convolve_list.append(max(convolve_trough))
 
         if len(confidences) > 0:
             self.state['confidence'] = float(min(confidences))
@@ -56,7 +56,12 @@ class TroughModel(Model):
         if len(convolve_list) > 0:
             self.state['convolve_max'] = float(max(convolve_list))
         else:
-            self.state['convolve_max'] = 570000
+            self.state['convolve_max'] = self.state['WINDOW_SIZE']
+        
+        if len(convolve_list) > 0:
+            self.state['convolve_min'] = float(min(convolve_list))
+        else:
+            self.state['convolve_min'] = self.state['WINDOW_SIZE']
 
     def do_predict(self, dataframe: pd.DataFrame):
         data = dataframe['value']
@@ -77,8 +82,8 @@ class TroughModel(Model):
     def __filter_prediction(self, segments: list, data: list) -> list:
         delete_list = []
         variance_error = int(0.004 * len(data))
-        if variance_error > 100:
-            variance_error = 100
+        if variance_error > 50:
+            variance_error = 50
         for i in range(1, len(segments)):
             if segments[i] < segments[i - 1] + variance_error:
                 delete_list.append(segments[i])
@@ -86,21 +91,22 @@ class TroughModel(Model):
             segments.remove(item)
 
         delete_list = []
-        if len(segments) == 0 or len(self.ipeaks) == 0 :
+        if len(segments) == 0 or len(self.itroughs) == 0 :
             segments = []
-            return segments
-            
-        pattern_data = data[self.ipeaks[0] - WINDOW_SIZE : self.ipeaks[0] + WINDOW_SIZE]
+            return segments  
+        pattern_data = data[self.itroughs[0] - self.state['WINDOW_SIZE'] : self.itroughs[0] + self.state['WINDOW_SIZE']]
+        pattern_data = pattern_data - min(pattern_data)
         for segment in segments:
-            if segment > WINDOW_SIZE:
-                convol_data = data[segment - WINDOW_SIZE : segment + WINDOW_SIZE]
+            if segment > self.state['WINDOW_SIZE']:
+                convol_data = data[segment - self.state['WINDOW_SIZE'] : segment + self.state['WINDOW_SIZE']]
+                convol_data = convol_data - min(convol_data)
                 conv = scipy.signal.fftconvolve(pattern_data, convol_data)
-                if max(conv) > self.state['convolve_max'] * 1.2 or max(conv) < self.state['convolve_max'] * 0.8:
+                if max(conv) > self.state['convolve_max'] * 1.05 or max(conv) < self.state['convolve_min'] * 0.95:
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
         # TODO: implement filtering
-        # for item in delete_list:
-        #     segments.remove(item)
+        for item in delete_list:
+            segments.remove(item)
 
         return set(segments)
