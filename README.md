@@ -115,6 +115,13 @@ docker run -d \
 
 ### Changelog
 
+### [0.2.2-alpha] - 2018-09-12
+> NOTE: hastic-panels of versions older than 0.2.0 are not supported
+
+#### Changed
+- Consider segment width in models [#136](https://github.com/hastic/hastic-server/issues/136)
+- Increase learning dataset timerange
+
 ### [0.2.1-alpha] - 2018-09-04
 > NOTE: hastic-panels of versions older than 0.2.0 are not supported
 
