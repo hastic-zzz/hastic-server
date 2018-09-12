@@ -113,6 +113,9 @@ docker run -d \
   hastic/server
 ```
 
+
+**Make sure, that HASTIC_PORT is opened in your system. Default value is ```8000```.**
+
 ### Changelog
 
 ### [0.2.2-alpha] - 2018-09-12
