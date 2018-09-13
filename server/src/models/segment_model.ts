@@ -2,6 +2,8 @@ import { AnalyticUnitId } from './analytic_unit_model';
 
 import { Collection, makeDBQ } from '../services/data_service';
 
+import * as _ from 'lodash';
+
 let db = makeDBQ(Collection.SEGMENTS);
 
 
@@ -13,6 +15,7 @@ export class Segment {
     public from: number,
     public to: number,
     public labeled: boolean = false,
+    public deleted: boolean = false,
     public id?: SegmentId
   ) {
     if(analyticUnitId === undefined) {
@@ -38,7 +41,8 @@ export class Segment {
       analyticUnitId: this.analyticUnitId,
       from: this.from,
       to: this.to,
-      labeled: this.labeled
+      labeled: this.labeled,
+      deleted: this.deleted
     };
   }
 
@@ -49,7 +53,7 @@ export class Segment {
     return new Segment(
       obj.analyticUnitId, 
       +obj.from, +obj.to,
-      obj.labeled, obj._id
+      obj.labeled, obj.deleted, obj._id
     );
   }
 }
@@ -80,7 +84,41 @@ export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promis
 }
 
 export async function insertSegments(segments: Segment[]) {
+  let segmentsToRemove = [];
+  let segmentsToInsert = [];
+  for(let segment of segments) {
+    let segmentsInside = await db.findMany({
+      analyticUnitId: segments[0].analyticUnitId,
+      to: { $gte: segment.from },
+      from: { $lte: segment.to },
+      labeled: segment.labeled,
+      deleted: segment.deleted
+    });
+
+    if(segmentsInside.length > 0) {
+      let from = _.minBy(segmentsInside, 'from').from;
+      let to = _.maxBy(segmentsInside, 'to').to;
+      let newSegment = Segment.fromObject(segment.toObject());
+      newSegment.from = from;
+      newSegment.to = to;
+      let segmentsInsideIds = segmentsInside.map(s => s._id);
+      segmentsToRemove = segmentsToRemove.concat(segmentsInsideIds);
+      segmentsToInsert.push(newSegment);
+    } else {
+      segmentsToInsert.push(segment);
+    }
+  }
+
+  await db.removeMany(segmentsToRemove);
   return db.insertMany(segments.map(s => s.toObject()));
+}
+
+export async function makeSegmentsDeleted(ids: SegmentId[]) {
+  let promises = [];
+  for(let id of ids) {
+    promises.push(db.updateOne({ _id: id }, { deleted: true }));
+  }
+  return Promise.all(promises);
 }
 
 export function removeSegments(idsToRemove: SegmentId[]) {
