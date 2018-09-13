@@ -17,7 +17,7 @@ export type DBQ = {
   findMany: (query: string[] | object) => Promise<any[]>,
   insertOne: (document: object) => Promise<string>,
   insertMany: (documents: object[]) => Promise<string[]>,
-  updateOne: (query: string | object, updateQuery: any) => Promise<void>,
+  updateOne: (query: string | object, updateQuery: any) => Promise<object>,
   removeOne: (query: string) => Promise<boolean>
   removeMany: (query: string[] | object) => Promise<number>
 }
@@ -88,12 +88,13 @@ let dbUpdateOne = (collection: Collection, query: string | object, updateQuery: 
   // https://github.com/louischatriot/nedb#updating-documents
   let nedbUpdateQuery = { $set: updateQuery }
   query = wrapIdToQuery(query);
-  return new Promise<void>((resolve, reject) => {
-    db.get(collection).update(query, nedbUpdateQuery, { /* options */ }, (err: Error) => {
+  return new Promise<object>((resolve, reject) => {
+    db.get(collection).update(query, nedbUpdateQuery, { returnUpdatedDocs: true }, (err: Error, numAffected: number, affectedDocument) => {
       if(err) {
         reject(err);
       } else {
-        resolve();
+        // TODO: remove Object cast (bad nedb typings)
+        resolve(<Object>affectedDocument);
       }
     });
   });
