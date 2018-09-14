@@ -74,14 +74,10 @@ async function runTask(task: AnalyticsTask): Promise<TaskResult> {
  * @param segments labeled segments
  */
 function getQueryRangeForLearningBySegments(segments: Segment.Segment[]) {
-  if(segments.length < 2) {
-    throw new Error('Need at least 2 labeled segments');
-  }
-
   let from = _.minBy(segments, s => s.from).from;
   let to = _.maxBy(segments, s => s.to).to;
-  let diff = to - from;
-  from -= Math.round(diff);
+  let leftOffset = Date.now() - to;
+  from -= Math.round(leftOffset);
   to = Date.now();
 
   return { from, to };
@@ -96,9 +92,6 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
     }
 
     let segments = await Segment.findMany(id, { labeled: true });
-    if(segments.length < 2) {
-      throw new Error('Need at least 2 labeled segments');
-    }
 
     let segmentObjs = segments.map(s => s.toObject());
 
@@ -140,9 +133,6 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
     let pattern = unit.type;
 
     let segments = await Segment.findMany(id, { labeled: true });
-    if(segments.length < 2) {
-      throw new Error('Need at least 2 labeled segments');
-    }
 
     let { from, to } = getQueryRangeForLearningBySegments(segments);
     let data = await queryByMetric(unit.metric, unit.panelUrl, from, to);
