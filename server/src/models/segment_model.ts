@@ -84,10 +84,10 @@ export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promis
 }
 
 export async function insertSegments(segments: Segment[]) {
-  let segmentsToRemove = [];
-  let segmentsToInsert = [];
+  let segmentIdsToRemove: SegmentId[] = [];
+  let segmentsToInsert: Segment[] = [];
   for(let segment of segments) {
-    let segmentsInside = await db.findMany({
+    let intersectedSegments = await db.findMany({
       analyticUnitId: segments[0].analyticUnitId,
       to: { $gte: segment.from },
       from: { $lte: segment.to },
@@ -95,30 +95,25 @@ export async function insertSegments(segments: Segment[]) {
       deleted: segment.deleted
     });
 
-    if(segmentsInside.length > 0) {
-      let from = _.minBy(segmentsInside, 'from').from;
-      let to = _.maxBy(segmentsInside, 'to').to;
+    if(intersectedSegments.length > 0) {
+      let from = _.minBy(intersectedSegments, 'from').from;
+      let to = _.maxBy(intersectedSegments, 'to').to;
       let newSegment = Segment.fromObject(segment.toObject());
       newSegment.from = from;
       newSegment.to = to;
-      let segmentsInsideIds = segmentsInside.map(s => s._id);
-      segmentsToRemove = segmentsToRemove.concat(segmentsInsideIds);
+      segmentIdsToRemove = segmentIdsToRemove.concat(intersectedSegments.map(s => s._id));
       segmentsToInsert.push(newSegment);
     } else {
       segmentsToInsert.push(segment);
     }
   }
 
-  await db.removeMany(segmentsToRemove);
+  await db.removeMany(segmentIdsToRemove);
   return db.insertMany(segments.map(s => s.toObject()));
 }
 
-export async function makeSegmentsDeleted(ids: SegmentId[]) {
-  let promises = [];
-  for(let id of ids) {
-    promises.push(db.updateOne({ _id: id }, { deleted: true }));
-  }
-  return Promise.all(promises);
+export async function setSegmentsDeleted(ids: SegmentId[]) {
+  return db.updateMany(ids, { deleted: true });
 }
 
 export function removeSegments(idsToRemove: SegmentId[]) {

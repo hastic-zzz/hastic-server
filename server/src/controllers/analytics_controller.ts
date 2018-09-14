@@ -240,7 +240,7 @@ export async function updateSegments(
 ) {
   let [addedIds, removed] = await Promise.all([
     Segment.insertSegments(segmentsToInsert),
-    Segment.makeSegmentsDeleted(removedIds)
+    Segment.setSegmentsDeleted(removedIds)
   ]);
   removed = removed.map(s => s._id);
 
