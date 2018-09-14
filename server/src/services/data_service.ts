@@ -17,7 +17,8 @@ export type DBQ = {
   findMany: (query: string[] | object) => Promise<any[]>,
   insertOne: (document: object) => Promise<string>,
   insertMany: (documents: object[]) => Promise<string[]>,
-  updateOne: (query: string | object, updateQuery: any) => Promise<void>,
+  updateOne: (query: string | object, updateQuery: any) => Promise<any>,
+  updateMany: (query: string[] | object, updateQuery: any) => Promise<any[]>,
   removeOne: (query: string) => Promise<boolean>
   removeMany: (query: string[] | object) => Promise<number>
 }
@@ -29,6 +30,7 @@ export function makeDBQ(collection: Collection): DBQ {
     insertOne: dbInsertOne.bind(null, collection),
     insertMany: dbInsertMany.bind(null, collection),
     updateOne: dbUpdateOne.bind(null, collection),
+    updateMany: dbUpdateMany.bind(null, collection),
     removeOne: dbRemoveOne.bind(null, collection),
     removeMany: dbRemoveMany.bind(null, collection)
   }
@@ -88,14 +90,42 @@ let dbUpdateOne = (collection: Collection, query: string | object, updateQuery: 
   // https://github.com/louischatriot/nedb#updating-documents
   let nedbUpdateQuery = { $set: updateQuery }
   query = wrapIdToQuery(query);
-  return new Promise<void>((resolve, reject) => {
-    db.get(collection).update(query, nedbUpdateQuery, { /* options */ }, (err: Error) => {
-      if(err) {
-        reject(err);
-      } else {
-        resolve();
+  return new Promise<any>((resolve, reject) => {
+    db.get(collection).update(
+      query,
+      nedbUpdateQuery,
+      { returnUpdatedDocs: true },
+      (err: Error, numAffected: number, affectedDocument: any) => {
+        if(err) {
+          reject(err);
+        } else {
+          resolve(affectedDocument);
+        }
       }
-    });
+    );
+  });
+}
+
+let dbUpdateMany = (collection: Collection, query: string[] | object, updateQuery: object) => {
+  // https://github.com/louischatriot/nedb#updating-documents
+  if(isEmptyArray(query)) {
+    return Promise.resolve([]);
+  }
+  let nedbUpdateQuery = { $set: updateQuery };
+  query = wrapIdsToQuery(query);
+  return new Promise<any[]>((resolve, reject) => {
+    db.get(collection).update(
+      query,
+      nedbUpdateQuery,
+      { returnUpdatedDocs: true, multi: true },
+      (err: Error, numAffected: number, affectedDocuments: any[]) => {
+        if(err) {
+          reject(err);
+        } else {
+          resolve(affectedDocuments);
+        }
+      }
+    );
   });
 }
 

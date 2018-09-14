@@ -210,7 +210,7 @@ function processPredictionResult(analyticUnitId: AnalyticUnit.AnalyticUnitId, ta
     );
   }
 
-  let segments = payload.segments.map(segment => new Segment.Segment(analyticUnitId, segment.from, segment.to, false));
+  let segments = payload.segments.map(segment => new Segment.Segment(analyticUnitId, segment.from, segment.to, false, false));
 
   return {
     lastPredictionTime: payload.lastPredictionTime,
@@ -240,8 +240,10 @@ export async function updateSegments(
 ) {
   let [addedIds, removed] = await Promise.all([
     Segment.insertSegments(segmentsToInsert),
-    Segment.removeSegments(removedIds)
+    Segment.setSegmentsDeleted(removedIds)
   ]);
+  removed = removed.map(s => s._id);
+
   // TODO: move setting status somehow "inside" learning
   await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.PENDING);
   runLearning(id).then(() => runPredict(id));
