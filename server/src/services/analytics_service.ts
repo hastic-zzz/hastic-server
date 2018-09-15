@@ -2,7 +2,7 @@ import { AnalyticsTask } from '../models/analytics_task_model';
 import { AnalyticsMessageMethod, AnalyticsMessage } from '../models/analytics_message_model';
 import * as config from '../config';
 
-const zmq = require('zeromq');
+import * as zmq from 'zeromq';
 
 import * as childProcess from 'child_process'
 import * as fs from 'fs';
@@ -208,7 +208,7 @@ export class AnalyticsService {
   }
 
   private static async createIPCAddress(): Promise<{ address: string, file: string }> {
-    let filename = `${process.pid}.ipc`
+    let filename = `${process.pid}.ipc`;
     let p = path.join(config.ZMQ_IPC_PATH, filename);
     fs.writeFileSync(p, '');
     return Promise.resolve({ address: 'ipc://' + p, file: p });
