@@ -42,7 +42,8 @@ rootRouter.get('/', async (ctx) => {
   ctx.response.body = {
     server: 'OK',
     analyticsReady: AnalyticsController.isAnalyticReady(),
-    version: process.env.npm_package_version
+    version: process.env.npm_package_version,
+    env: process.env.npm_config_user_agent
   };
 });
 
