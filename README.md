@@ -17,6 +17,7 @@ Implementation of analytics unit for Hastic.
 **Please note that we are still in alpha, so features are subject to change**
 
 See also:
+* [Getting started](https://github.com/hastic/hastic-server/wiki#getting-started)
 * [FAQ](https://github.com/hastic/hastic-server/wiki/FAQ)
 * [HasticPanel](https://github.com/hastic/hastic-grafana-graph-panel) - Hastic visualisation plugin for Grafana
 * [Hooks](https://github.com/hastic/hastic-server/blob/master/HOOKS.md) - notifications about events
