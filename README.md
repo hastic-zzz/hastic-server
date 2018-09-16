@@ -17,9 +17,10 @@ Implementation of analytics unit for Hastic.
 **Please note that we are still in alpha, so features are subject to change**
 
 See also:
+* [FAQ](https://github.com/hastic/hastic-server/wiki/FAQ)
+* [HasticPanel](https://github.com/hastic/hastic-grafana-graph-panel) - Hastic visualisation plugin for Grafana
 * [Hooks](https://github.com/hastic/hastic-server/blob/master/HOOKS.md) - notifications about events
 * [REST](REST.md) - for developing your plugins
-* [HasticPanel](https://github.com/hastic/hastic-grafana-graph-panel) - Hastic visualisation plugin for Grafana
 * [Installation from source](https://github.com/hastic/hastic-server/wiki/Installation-from-source)
 * [ChangeLog](https://github.com/hastic/hastic-server/wiki/Change-log)
 
@@ -43,7 +44,5 @@ cd hastic-server-0.2.2-alpha/server/dist
 node server
 ```
 
-
 **Make sure that HASTIC_PORT is opened in your firewall. Default value is 8000.**
-
 
