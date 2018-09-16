@@ -1,5 +1,6 @@
-import { GrafanaMetric } from './grafana_metric_model';
 import { Collection, makeDBQ } from '../services/data_service';
+
+import { GrafanaMetric } from 'grafana-datasource-kit';
 
 
 let db = makeDBQ(Collection.ANALYTIC_UNITS);

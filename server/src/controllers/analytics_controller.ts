@@ -4,7 +4,10 @@ import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import * as Segment from '../models/segment_model';
 import * as AnalyticUnit from '../models/analytic_unit_model';
 import { AnalyticsService } from '../services/analytics_service';
-import { queryByMetric } from '../services/grafana_service';
+import { HASTIC_API_KEY } from '../config'
+
+import { queryByMetric } from 'grafana-datasource-kit';
+
 
 import * as _ from 'lodash';
 
@@ -104,7 +107,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
     let segmentObjs = segments.map(s => s.toObject());
 
     let { from, to } = getQueryRangeForLearningBySegments(segments);
-    let data = await queryByMetric(analyticUnit.metric, analyticUnit.panelUrl, from, to);
+    let data = await queryByMetric(analyticUnit.metric, analyticUnit.panelUrl, from, to, HASTIC_API_KEY);
     if(data.length === 0) {
       throw new Error('Empty data to learn on');
     }
@@ -146,7 +149,7 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
     }
 
     let { from, to } = getQueryRangeForLearningBySegments(segments);
-    let data = await queryByMetric(unit.metric, unit.panelUrl, from, to);
+    let data = await queryByMetric(unit.metric, unit.panelUrl, from, to, HASTIC_API_KEY);
     if(data.length === 0) {
       throw new Error('Empty data to predict on');
     }
