@@ -47,3 +47,5 @@ node server
 
 **Make sure that HASTIC_PORT is opened in your firewall. Default value is 8000.**
 
+## [Docker installation](https://github.com/hastic/hastic-server/wiki/Docker)
+
