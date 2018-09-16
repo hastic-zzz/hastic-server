@@ -8,7 +8,8 @@
 [Hastic server](https://hastic.io) [![Travis CI](https://travis-ci.org/hastic/hastic-server.svg?branch=master)](https://travis-ci.org/hastic/hastic-server) 
 ================
 [Website](https://hastic.io) |
-[Twitter](https://twitter.com/hasticio)
+[Twitter](https://twitter.com/hasticio) | 
+[IRC](https://webchat.freenode.net/?channels=#hastic)
 
 Implementation of basic pattern recognition for anomaly detection.
 
