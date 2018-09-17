@@ -107,7 +107,8 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
     let segmentObjs = segments.map(s => s.toObject());
 
     let { from, to } = getQueryRangeForLearningBySegments(segments);
-    let data = await queryByMetric(analyticUnit.metric, analyticUnit.panelUrl, from, to, HASTIC_API_KEY);
+    let queryResult = await queryByMetric(analyticUnit.metric, analyticUnit.panelUrl, from, to, HASTIC_API_KEY);
+    let data = queryResult.values;
     if(data.length === 0) {
       throw new Error('Empty data to learn on');
     }
@@ -149,7 +150,8 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
     }
 
     let { from, to } = getQueryRangeForLearningBySegments(segments);
-    let data = await queryByMetric(unit.metric, unit.panelUrl, from, to, HASTIC_API_KEY);
+    let queryResult = await queryByMetric(unit.metric, unit.panelUrl, from, to, HASTIC_API_KEY);
+    let data = queryResult.values;
     if(data.length === 0) {
       throw new Error('Empty data to predict on');
     }
