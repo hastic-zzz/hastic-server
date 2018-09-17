@@ -8,6 +8,8 @@ import utils
 import numpy as np
 import pandas as pd
 
+SMOOTHING_COEFF = 2400
+EXP_SMOOTHING_FACTOR = 0.01
 
 class PeakModel(Model):
 
@@ -45,8 +47,8 @@ class PeakModel(Model):
                 patterns_list.append(labeled_peak)
         
         self.model_peak = utils.get_av_model(patterns_list)
-        for N in range(len(segments)):
-            labeled_peak = data[self.ipeaks[N] - self.state['WINDOW_SIZE']: self.ipeaks[N] + self.state['WINDOW_SIZE'] + 1]
+        for n in range(len(segments)):
+            labeled_peak = data[self.ipeaks[n] - self.state['WINDOW_SIZE']: self.ipeaks[n] + self.state['WINDOW_SIZE'] + 1]
             labeled_peak = labeled_peak - min(labeled_peak)
             auto_convolve = scipy.signal.fftconvolve(labeled_peak, labeled_peak)
             convolve_peak = scipy.signal.fftconvolve(labeled_peak, self.model_peak)
@@ -70,11 +72,11 @@ class PeakModel(Model):
 
     def do_predict(self, dataframe: pd.DataFrame):
         data = dataframe['value']
-        window_size = int(len(data)/2400) #test ws on flat data
+        window_size = int(len(data)/SMOOTHING_COEFF) #test ws on flat data
         all_maxs = argrelextrema(np.array(data), np.greater)[0]
 
         extrema_list = []
-        for i in utils.exponential_smoothing(data + self.state['confidence'], 0.01):
+        for i in utils.exponential_smoothing(data + self.state['confidence'], EXP_SMOOTHING_FACTOR):
             extrema_list.append(i)
 
         segments = []
