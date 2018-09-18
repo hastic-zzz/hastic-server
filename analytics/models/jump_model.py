@@ -16,6 +16,7 @@ class JumpModel(Model):
         super()
         self.segments = []
         self.ijumps = []
+        self.model_jump = []
         self.state = {
             'confidence': 1.5,
             'convolve_max': 230,
@@ -29,6 +30,7 @@ class JumpModel(Model):
         convolve_list = []
         jump_height_list = []
         jump_length_list = []
+        patterns_list = []
         for segment in segments:
             if segment['labeled']:
                 segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
@@ -64,12 +66,19 @@ class JumpModel(Model):
                 jump_center = cen_ind[0]
                 segment_cent_index = jump_center - 5 + segment_from_index
                 self.ijumps.append(segment_cent_index)
-                labeled_jump = data[segment_cent_index - self.state['WINDOW_SIZE'] : segment_cent_index + self.state['WINDOW_SIZE']]
-                labeled_min = min(labeled_jump)
-                for value in labeled_jump:
-                    value = value - labeled_min
+                labeled_jump = data[segment_cent_index - self.state['WINDOW_SIZE'] : segment_cent_index + self.state['WINDOW_SIZE'] + 1]
+                labeled_jump = labeled_jump - min(labeled_jump)
                 convolve = scipy.signal.fftconvolve(labeled_jump, labeled_jump)
                 convolve_list.append(max(convolve))
+                
+        self.model_jump = utils.get_av_model(patterns_list)
+        for n in range(len(segments)):
+            labeled_jump = data[self.ijumps[n] - self.state['WINDOW_SIZE']: self.ijumps[n] + self.state['WINDOW_SIZE'] + 1]
+            labeled_jump = labeled_jump - min(labeled_jump)
+            auto_convolve = scipy.signal.fftconvolve(labeled_jump, labeled_jump)
+            convolve_jump = scipy.signal.fftconvolve(labeled_jump, self.model_jump)
+            convolve_list.append(max(auto_convolve))
+            convolve_list.append(max(convolve_jump))
 
         if len(confidences) > 0:
             self.state['confidence'] = float(min(confidences))
@@ -112,12 +121,12 @@ class JumpModel(Model):
             segments = []
             return segments
 
-        pattern_data = data[self.ijumps[0] - self.state['WINDOW_SIZE'] : self.ijumps[0] + self.state['WINDOW_SIZE']]
+        pattern_data = self.model_jump
         for segment in segments:
             if segment > self.state['WINDOW_SIZE'] and segment < (len(data) - self.state['WINDOW_SIZE']):
-                convol_data = data[segment - self.state['WINDOW_SIZE'] : segment + self.state['WINDOW_SIZE']]
+                convol_data = data[segment - self.state['WINDOW_SIZE'] : segment + self.state['WINDOW_SIZE'] + 1]
 
-                conv = scipy.signal.fftconvolve(pattern_data, convol_data)
+                conv = scipy.signal.fftconvolve(convol_data, pattern_data)
                 if max(conv) > self.state['convolve_max'] * 1.2 or max(conv) < self.state['convolve_max'] * 0.8:
                     delete_list.append(segment)
             else:
