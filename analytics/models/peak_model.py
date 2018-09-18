@@ -8,6 +8,8 @@ import utils
 import numpy as np
 import pandas as pd
 
+SMOOTHING_COEFF = 2400
+EXP_SMOOTHING_FACTOR = 0.01
 
 class PeakModel(Model):
 
@@ -15,6 +17,7 @@ class PeakModel(Model):
         super()
         self.segments = []
         self.ipeaks = []
+        self.model_peak = []
         self.state = {
             'confidence': 1.5,
             'convolve_max': 570000,
@@ -26,11 +29,11 @@ class PeakModel(Model):
         data = dataframe['value']
         confidences = []
         convolve_list = []
+        patterns_list = []
         for segment in segments:
             if segment['labeled']:
                 segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
                 segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
-
                 segment_data = data[segment_from_index: segment_to_index + 1]
                 if len(segment_data) == 0:
                     continue
@@ -39,14 +42,18 @@ class PeakModel(Model):
                 confidences.append(0.2 * (segment_max - segment_min))
                 segment_max_index = segment_data.idxmax()
                 self.ipeaks.append(segment_max_index)
-                labeled_peak = data[segment_max_index - self.state['WINDOW_SIZE']: segment_max_index + self.state['WINDOW_SIZE']]
+                labeled_peak = data[segment_max_index - self.state['WINDOW_SIZE']: segment_max_index + self.state['WINDOW_SIZE'] + 1]
                 labeled_peak = labeled_peak - min(labeled_peak)
-                auto_convolve = scipy.signal.fftconvolve(labeled_peak, labeled_peak)
-                first_peak = data[self.ipeaks[0] - self.state['WINDOW_SIZE']: self.ipeaks[0] + self.state['WINDOW_SIZE']]
-                first_peak = first_peak - min(first_peak)
-                convolve_peak = scipy.signal.fftconvolve(labeled_peak, first_peak)
-                convolve_list.append(max(auto_convolve))
-                convolve_list.append(max(convolve_peak))
+                patterns_list.append(labeled_peak)
+        
+        self.model_peak = utils.get_av_model(patterns_list)
+        for n in range(len(segments)):
+            labeled_peak = data[self.ipeaks[n] - self.state['WINDOW_SIZE']: self.ipeaks[n] + self.state['WINDOW_SIZE'] + 1]
+            labeled_peak = labeled_peak - min(labeled_peak)
+            auto_convolve = scipy.signal.fftconvolve(labeled_peak, labeled_peak)
+            convolve_peak = scipy.signal.fftconvolve(labeled_peak, self.model_peak)
+            convolve_list.append(max(auto_convolve))
+            convolve_list.append(max(convolve_peak))
 
         if len(confidences) > 0:
             self.state['confidence'] = float(min(confidences))
@@ -65,11 +72,11 @@ class PeakModel(Model):
 
     def do_predict(self, dataframe: pd.DataFrame):
         data = dataframe['value']
-        window_size = 24
+        window_size = int(len(data)/SMOOTHING_COEFF) #test ws on flat data
         all_maxs = argrelextrema(np.array(data), np.greater)[0]
 
         extrema_list = []
-        for i in utils.exponential_smoothing(data + self.state['confidence'], 0.02):
+        for i in utils.exponential_smoothing(data + self.state['confidence'], EXP_SMOOTHING_FACTOR):
             extrema_list.append(i)
 
         segments = []
@@ -82,8 +89,8 @@ class PeakModel(Model):
     def __filter_prediction(self, segments: list, data: list) -> list:
         delete_list = []
         variance_error = int(0.004 * len(data))
-        if variance_error > 50:
-            variance_error = 50
+        if variance_error > self.state['WINDOW_SIZE']:
+            variance_error = self.state['WINDOW_SIZE']
         for i in range(1, len(segments)):
             if segments[i] < segments[i - 1] + variance_error:
                 delete_list.append(segments[i])
@@ -93,13 +100,12 @@ class PeakModel(Model):
         delete_list = []
         if len(segments) == 0 or len(self.ipeaks) == 0:
             return []
-        pattern_data = data[self.ipeaks[0] - self.state['WINDOW_SIZE']: self.ipeaks[0] + self.state['WINDOW_SIZE']]
-        pattern_data = pattern_data - min(pattern_data)
+        pattern_data = self.model_peak
         for segment in segments:
             if segment > self.state['WINDOW_SIZE']:
-                convol_data = data[segment - self.state['WINDOW_SIZE']: segment + self.state['WINDOW_SIZE']]
+                convol_data = data[segment - self.state['WINDOW_SIZE']: segment + self.state['WINDOW_SIZE'] + 1]
                 convol_data = convol_data - min(convol_data)
-                conv = scipy.signal.fftconvolve(pattern_data, convol_data)
+                conv = scipy.signal.fftconvolve(convol_data, pattern_data)
                 if max(conv) > self.state['convolve_max'] * 1.05 or max(conv) < self.state['convolve_min'] * 0.95:
                     delete_list.append(segment)
             else:
