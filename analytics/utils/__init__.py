@@ -206,3 +206,18 @@ def peak_finder(data, size):
         if data[i] == max(data[i - size: i + size]) and data[i] > data[i + 1]:
             all_max.append(i)
     return all_max
+
+def ar_mean(numbers):
+    return float(sum(numbers)) / max(len(numbers), 1)
+
+def get_av_model(patterns_list):
+    x = len(patterns_list[0])
+    if len(patterns_list[1]) != x:
+        raise NameError('All elements of patterns_list should have same length')
+    model_pat = []
+    for i in range(x):
+        av_val = []
+        for j in patterns_list:
+            av_val.append(j.values[i])
+        model_pat.append(ar_mean(av_val))
+    return model_pat
