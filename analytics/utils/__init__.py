@@ -213,7 +213,7 @@ def ar_mean(numbers):
 def get_av_model(patterns_list):
     x = len(patterns_list[0])
     if len(patterns_list[1]) != x:
-        return "false patterns_list"
+        raise NameError('All elements of patterns_list should have same length')
     model_pat = []
     for i in range(x):
         av_val = []
