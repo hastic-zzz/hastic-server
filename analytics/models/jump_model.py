@@ -23,6 +23,7 @@ class JumpModel(Model):
             'convolve_min': 230,
             'JUMP_HEIGHT': 1,
             'JUMP_LENGTH': 1,
+            'WINDOW_SIZE': 240,
         }
 
     def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
