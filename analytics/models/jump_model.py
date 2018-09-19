@@ -16,11 +16,14 @@ class JumpModel(Model):
         super()
         self.segments = []
         self.ijumps = []
+        self.model_jump = []
         self.state = {
             'confidence': 1.5,
             'convolve_max': 230,
+            'convolve_min': 230,
             'JUMP_HEIGHT': 1,
             'JUMP_LENGTH': 1,
+            'WINDOW_SIZE': 240,
         }
 
     def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
@@ -29,18 +32,19 @@ class JumpModel(Model):
         convolve_list = []
         jump_height_list = []
         jump_length_list = []
+        patterns_list = []
         for segment in segments:
             if segment['labeled']:
                 segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
                 segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
-
                 segment_data = data[segment_from_index: segment_to_index + 1]
                 if len(segment_data) == 0:
                     continue
+                    
                 segment_min = min(segment_data)
                 segment_max = max(segment_data)
                 confidences.append(0.20 * (segment_max - segment_min))
-                flat_segment = segment_data.rolling(window=5).mean()
+                flat_segment = segment_data.rolling(window = 5).mean()
                 flat_segment_dropna = flat_segment.dropna()
                 pdf = gaussian_kde(flat_segment_dropna)
                 x = np.linspace(flat_segment_dropna.min() - 1, flat_segment_dropna.max() + 1, len(flat_segment_dropna))
@@ -64,12 +68,18 @@ class JumpModel(Model):
                 jump_center = cen_ind[0]
                 segment_cent_index = jump_center - 5 + segment_from_index
                 self.ijumps.append(segment_cent_index)
-                labeled_jump = data[segment_cent_index - self.state['WINDOW_SIZE'] : segment_cent_index + self.state['WINDOW_SIZE']]
-                labeled_min = min(labeled_jump)
-                for value in labeled_jump:
-                    value = value - labeled_min
-                convolve = scipy.signal.fftconvolve(labeled_jump, labeled_jump)
-                convolve_list.append(max(convolve))
+                labeled_jump = data[segment_cent_index - self.state['WINDOW_SIZE'] : segment_cent_index + self.state['WINDOW_SIZE'] + 1]
+                labeled_jump = labeled_jump - min(labeled_jump)
+                patterns_list.append(labeled_jump)
+                
+        self.model_jump = utils.get_av_model(patterns_list)
+        for n in range(len(segments)):
+            labeled_jump = data[self.ijumps[n] - self.state['WINDOW_SIZE']: self.ijumps[n] + self.state['WINDOW_SIZE'] + 1]
+            labeled_jump = labeled_jump - min(labeled_jump)
+            auto_convolve = scipy.signal.fftconvolve(labeled_jump, labeled_jump)
+            convolve_jump = scipy.signal.fftconvolve(labeled_jump, self.model_jump)
+            convolve_list.append(max(auto_convolve))
+            convolve_list.append(max(convolve_jump))
 
         if len(confidences) > 0:
             self.state['confidence'] = float(min(confidences))
@@ -80,6 +90,11 @@ class JumpModel(Model):
             self.state['convolve_max'] = float(max(convolve_list))
         else:
             self.state['convolve_max'] = self.state['WINDOW_SIZE']
+            
+        if len(convolve_list) > 0:
+            self.state['convolve_min'] = float(min(convolve_list))
+        else:
+            self.state['convolve_min'] = self.state['WINDOW_SIZE']
 
         if len(jump_height_list) > 0:
             self.state['JUMP_HEIGHT'] = int(min(jump_height_list))
@@ -100,25 +115,26 @@ class JumpModel(Model):
     def __filter_prediction(self, segments, data):
         delete_list = []
         variance_error = int(0.004 * len(data))
-        if variance_error > 50:
-            variance_error = 50
+        if variance_error > self.state['WINDOW_SIZE']:
+            variance_error = self.state['WINDOW_SIZE']
         for i in range(1, len(segments)):
             if segments[i] < segments[i - 1] + variance_error:
                 delete_list.append(segments[i])
-        #for item in delete_list:
-            #segments.remove(item)
-        delete_list = []
+        for item in delete_list:
+            segments.remove(item)
+            
         if len(segments) == 0 or len(self.ijumps) == 0 :
             segments = []
             return segments
-
-        pattern_data = data[self.ijumps[0] - self.state['WINDOW_SIZE'] : self.ijumps[0] + self.state['WINDOW_SIZE']]
+        
+        delete_list = []
+        pattern_data = self.model_jump
         for segment in segments:
             if segment > self.state['WINDOW_SIZE'] and segment < (len(data) - self.state['WINDOW_SIZE']):
-                convol_data = data[segment - self.state['WINDOW_SIZE'] : segment + self.state['WINDOW_SIZE']]
+                convol_data = data[segment - self.state['WINDOW_SIZE'] : segment + self.state['WINDOW_SIZE'] + 1]
 
-                conv = scipy.signal.fftconvolve(pattern_data, convol_data)
-                if max(conv) > self.state['convolve_max'] * 1.2 or max(conv) < self.state['convolve_max'] * 0.8:
+                conv = scipy.signal.fftconvolve(convol_data, pattern_data)
+                if max(conv) > self.state['convolve_max'] * 1.2 or max(conv) < self.state['convolve_min'] * 0.8:
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
