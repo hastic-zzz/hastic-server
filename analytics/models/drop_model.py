@@ -15,9 +15,11 @@ class DropModel(Model):
         super()
         self.segments = []
         self.idrops = []
+        self.model_drop = []
         self.state = {
             'confidence': 1.5,
             'convolve_max': 200,
+            'convolve_min': 200,
             'DROP_HEIGHT': 1,
             'DROP_LENGTH': 1,
             'WINDOW_SIZE': 240,
@@ -29,18 +31,19 @@ class DropModel(Model):
         convolve_list = []
         drop_height_list = []
         drop_length_list = []
+        patterns_list = []
         for segment in segments:
             if segment['labeled']:
                 segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
                 segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
-
                 segment_data = data[segment_from_index: segment_to_index + 1]
+                
                 if len(segment_data) == 0:
                     continue
                 segment_min = min(segment_data)
                 segment_max = max(segment_data)
                 confidences.append(0.20 * (segment_max - segment_min))
-                flat_segment = segment_data.rolling(window=5).mean()
+                flat_segment = segment_data.rolling(window = 5).mean()
                 pdf = gaussian_kde(flat_segment.dropna())
                 x = np.linspace(flat_segment.dropna().min(), flat_segment.dropna().max(), len(flat_segment.dropna()))
                 y = pdf(x)
@@ -59,17 +62,22 @@ class DropModel(Model):
                 drop_height_list.append(drop_height)
                 drop_length = utils.find_drop_length(segment_data, segment_min_line, segment_max_line)
                 drop_length_list.append(drop_length)
-                cen_ind = utils.drop_intersection(flat_segment, segment_median) #finds all interseprions with median
+                cen_ind = utils.drop_intersection(flat_segment.tolist(), segment_median) #finds all interseprions with median
                 drop_center = cen_ind[0]
                 segment_cent_index = drop_center - 5 + segment_from_index
                 self.idrops.append(segment_cent_index)
-                labeled_drop = data[segment_cent_index - self.state['WINDOW_SIZE']: segment_cent_index + self.state['WINDOW_SIZE']]
-                labeled_min = min(labeled_drop)
-                for value in labeled_drop:
-                    value = value - labeled_min
+                labeled_drop = data[segment_cent_index - self.state['WINDOW_SIZE']: segment_cent_index + self.state['WINDOW_SIZE'] + 1]
+                labeled_drop = labeled_drop - min(labeled_drop)
+                patterns_list.append(labeled_drop)
 
-                convolve = scipy.signal.fftconvolve(labeled_drop, labeled_drop)
-                convolve_list.append(max(convolve))
+        self.model_drop = utils.get_av_model(patterns_list)
+        for n in range(len(segments)):
+            labeled_drop = data[self.idrops[n] - self.state['WINDOW_SIZE']: self.idrops[n] + self.state['WINDOW_SIZE'] + 1]
+            labeled_drop = labeled_drop - min(labeled_drop)
+            auto_convolve = scipy.signal.fftconvolve(labeled_drop, labeled_drop)
+            convolve_jump = scipy.signal.fftconvolve(labeled_drop, self.model_drop)
+            convolve_list.append(max(auto_convolve))
+            convolve_list.append(max(convolve_jump))
 
         if len(confidences) > 0:
             self.state['confidence'] = float(min(confidences))
@@ -80,6 +88,11 @@ class DropModel(Model):
             self.state['convolve_max'] = float(max(convolve_list))
         else:
             self.state['convolve_max'] = self.state['WINDOW_SIZE']
+            
+        if len(convolve_list) > 0:
+            self.state['convolve_min'] = float(min(convolve_list))
+        else:
+            self.state['convolve_min'] = self.state['WINDOW_SIZE']
 
         if len(drop_height_list) > 0:
             self.state['DROP_HEIGHT'] = int(min(drop_height_list))
@@ -100,8 +113,8 @@ class DropModel(Model):
     def __filter_prediction(self, segments: list, data: list):
         delete_list = []
         variance_error = int(0.004 * len(data))
-        if variance_error > 50:
-            variance_error = 50
+        if variance_error > self.state['WINDOW_SIZE']:
+            variance_error = self.state['WINDOW_SIZE']
 
         for i in range(1, len(segments)):
             if segments[i] < segments[i - 1] + variance_error:
@@ -113,12 +126,12 @@ class DropModel(Model):
         if len(segments) == 0 or len(self.idrops) == 0 :
             segments = []
             return segments
-        pattern_data = data[self.idrops[0] - self.state['WINDOW_SIZE'] : self.idrops[0] + self.state['WINDOW_SIZE']]
+        pattern_data = self.model_drop
         for segment in segments:
             if segment > self.state['WINDOW_SIZE'] and segment < (len(data) - self.state['WINDOW_SIZE']):
-                convol_data = data[segment - self.state['WINDOW_SIZE'] : segment + self.state['WINDOW_SIZE']]
-                conv = scipy.signal.fftconvolve(pattern_data, convol_data)
-                if conv[self.state['WINDOW_SIZE']*2] > self.state['convolve_max'] * 1.2 or conv[self.state['WINDOW_SIZE']*2] < self.state['convolve_max'] * 0.8:
+                convol_data = data[segment - self.state['WINDOW_SIZE'] : segment + self.state['WINDOW_SIZE'] + 1]
+                conv = scipy.signal.fftconvolve(convol_data, pattern_data)
+                if conv[self.state['WINDOW_SIZE']*2] > self.state['convolve_max'] * 1.2 or conv[self.state['WINDOW_SIZE']*2] < self.state['convolve_min'] * 0.8:
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
