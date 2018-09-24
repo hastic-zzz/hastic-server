@@ -23,6 +23,8 @@ class PeakModel(Model):
             'convolve_max': 570000,
             'convolve_min': 530000,
             'WINDOW_SIZE': 240,
+            'conv_del_min': 54000,
+            'conv_del_max': 55000,
         }
 
     def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
@@ -47,13 +49,27 @@ class PeakModel(Model):
                 patterns_list.append(labeled_peak)
         
         self.model_peak = utils.get_av_model(patterns_list)
-        for n in range(len(segments)):
+        for n in range(len(segments)): #labeled segments
             labeled_peak = data[self.ipeaks[n] - self.state['WINDOW_SIZE']: self.ipeaks[n] + self.state['WINDOW_SIZE'] + 1]
             labeled_peak = labeled_peak - min(labeled_peak)
             auto_convolve = scipy.signal.fftconvolve(labeled_peak, labeled_peak)
             convolve_peak = scipy.signal.fftconvolve(labeled_peak, self.model_peak)
             convolve_list.append(max(auto_convolve))
             convolve_list.append(max(convolve_peak))
+        
+        del_conv_list = []
+        for segment in segments:
+            if segment['deleted']:
+                segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
+                segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
+                segment_data = data[segment_from_index: segment_to_index + 1]
+                if len(segment_data) == 0:
+                    continue
+                del_max_index = segment_data.idxmax()
+                deleted_peak = data[del_max_index - self.state['WINDOW_SIZE']: del_max_index + self.state['WINDOW_SIZE'] + 1]
+                deleted_peak = deleted_peak - min(deleted_peak)
+                del_conv_peak = scipy.signal.fftconvolve(deleted_peak, self.model_peak)
+                del_conv_list.append(max(del_conv_peak))                
 
         if len(confidences) > 0:
             self.state['confidence'] = float(min(confidences))
@@ -69,6 +85,16 @@ class PeakModel(Model):
             self.state['convolve_min'] = float(min(convolve_list))
         else:
             self.state['convolve_min'] = self.state['WINDOW_SIZE']
+            
+        if len(del_conv_list) > 0:
+            self.state['conv_del_min'] = float(min(del_conv_list))
+        else:
+            self.state['conv_del_min'] = self.state['WINDOW_SIZE']
+            
+        if len(del_conv_list) > 0:
+            self.state['conv_del_max'] = float(max(del_conv_list))
+        else:
+            self.state['conv_del_max'] = self.state['WINDOW_SIZE']
 
     def do_predict(self, dataframe: pd.DataFrame):
         data = dataframe['value']
@@ -107,6 +133,8 @@ class PeakModel(Model):
                 convol_data = convol_data - min(convol_data)
                 conv = scipy.signal.fftconvolve(convol_data, pattern_data)
                 if max(conv) > self.state['convolve_max'] * 1.05 or max(conv) < self.state['convolve_min'] * 0.95:
+                    delete_list.append(segment)
+                if max(conv) < self.state['conv_del_max'] * 1.02 and max(conv) > self.state['conv_del_min'] * 0.98:
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
