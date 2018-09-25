@@ -134,6 +134,11 @@ class DropModel(Model):
             self.state['DROP_LENGTH'] = 1
             
         if len(del_conv_list) > 0:
+            self.state['conv_del_min'] = float(min(del_conv_list))
+        else:
+            self.state['conv_del_min'] = self.state['WINDOW_SIZE']
+            
+        if len(del_conv_list) > 0:
             self.state['conv_del_max'] = float(max(del_conv_list))
         else:
             self.state['conv_del_max'] = self.state['WINDOW_SIZE']
