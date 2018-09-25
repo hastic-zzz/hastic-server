@@ -24,6 +24,8 @@ class JumpModel(Model):
             'JUMP_HEIGHT': 1,
             'JUMP_LENGTH': 1,
             'WINDOW_SIZE': 240,
+            'conv_del_min': 54000,
+            'conv_del_max': 55000,
         }
 
     def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
@@ -39,8 +41,7 @@ class JumpModel(Model):
                 segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
                 segment_data = data[segment_from_index: segment_to_index + 1]
                 if len(segment_data) == 0:
-                    continue
-                    
+                    continue    
                 segment_min = min(segment_data)
                 segment_max = max(segment_data)
                 confidences.append(0.20 * (segment_max - segment_min))
@@ -80,6 +81,33 @@ class JumpModel(Model):
             convolve_jump = scipy.signal.fftconvolve(labeled_jump, self.model_jump)
             convolve_list.append(max(auto_convolve))
             convolve_list.append(max(convolve_jump))
+            
+        del_conv_list = []
+        for segment in segments:
+            if segment['deleted']:
+                segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
+                segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
+                segment_data = data[segment_from_index: segment_to_index + 1]
+                if len(segment_data) == 0:
+                    continue
+                flat_segment = segment_data.rolling(window = 5).mean()
+                flat_segment_dropna = flat_segment.dropna()
+                pdf = gaussian_kde(flat_segment_dropna)
+                x = np.linspace(flat_segment_dropna.min() - 1, flat_segment_dropna.max() + 1, len(flat_segment_dropna))
+                y = pdf(x)
+                ax_list = []
+                for i in range(len(x)):
+                    ax_list.append([x[i], y[i]])
+                ax_list = np.array(ax_list, np.float32)
+                antipeaks_kde = argrelextrema(np.array(ax_list), np.less)[0]
+                segment_median = ax_list[antipeaks_kde[0], 0]
+                cen_ind = utils.intersection_segment(flat_segment.tolist(), segment_median) #finds all interseprions with median
+                jump_center = cen_ind[0]
+                segment_cent_index = jump_center - 5 + segment_from_index
+                deleted_jump = data[segment_cent_index - self.state['WINDOW_SIZE'] : segment_cent_index + self.state['WINDOW_SIZE'] + 1]
+                deleted_jump = deleted_jump - min(labeled_jump)
+                del_conv_jump = scipy.signal.fftconvolve(deleted_jump, self.model_jump)
+                del_conv_list.append(max(del_conv_jump)) 
 
         if len(confidences) > 0:
             self.state['confidence'] = float(min(confidences))
@@ -105,6 +133,16 @@ class JumpModel(Model):
             self.state['JUMP_LENGTH'] = int(max(jump_length_list))
         else:
             self.state['JUMP_LENGTH'] = 1
+            
+        if len(del_conv_list) > 0:
+            self.state['conv_del_min'] = float(min(del_conv_list))
+        else:
+            self.state['conv_del_min'] = self.state['WINDOW_SIZE']
+            
+        if len(del_conv_list) > 0:
+            self.state['conv_del_max'] = float(max(del_conv_list))
+        else:
+            self.state['conv_del_max'] = self.state['WINDOW_SIZE']
 
     def do_predict(self, dataframe: pd.DataFrame) -> list:
         data = dataframe['value']
@@ -132,9 +170,10 @@ class JumpModel(Model):
         for segment in segments:
             if segment > self.state['WINDOW_SIZE'] and segment < (len(data) - self.state['WINDOW_SIZE']):
                 convol_data = data[segment - self.state['WINDOW_SIZE'] : segment + self.state['WINDOW_SIZE'] + 1]
-
                 conv = scipy.signal.fftconvolve(convol_data, pattern_data)
                 if max(conv) > self.state['convolve_max'] * 1.2 or max(conv) < self.state['convolve_min'] * 0.8:
+                    delete_list.append(segment)
+                if max(conv) < self.state['conv_del_max'] * 1.02 and max(conv) > self.state['conv_del_min'] * 0.98:
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
