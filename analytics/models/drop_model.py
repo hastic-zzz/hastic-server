@@ -39,7 +39,7 @@ class DropModel(Model):
                 segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
                 segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
                 segment_data = data[segment_from_index: segment_to_index + 1]
-                
+
                 if len(segment_data) == 0:
                     continue
                 segment_min = min(segment_data)
@@ -80,7 +80,7 @@ class DropModel(Model):
             convolve_drop = scipy.signal.fftconvolve(labeled_drop, self.model_drop)
             convolve_list.append(max(auto_convolve))
             convolve_list.append(max(convolve_drop))
-            
+
         del_conv_list = []
         for segment in segments:
             if segment['deleted']:
@@ -106,7 +106,7 @@ class DropModel(Model):
                 deleted_drop = data[segment_cent_index - self.state['WINDOW_SIZE'] : segment_cent_index + self.state['WINDOW_SIZE'] + 1]
                 deleted_drop = deleted_drop - min(labeled_drop)
                 del_conv_drop = scipy.signal.fftconvolve(deleted_drop, self.model_drop)
-                del_conv_list.append(max(del_conv_drop)) 
+                del_conv_list.append(max(del_conv_drop))
 
         if len(confidences) > 0:
             self.state['confidence'] = float(min(confidences))
@@ -117,7 +117,7 @@ class DropModel(Model):
             self.state['convolve_max'] = float(max(convolve_list))
         else:
             self.state['convolve_max'] = self.state['WINDOW_SIZE']
-            
+
         if len(convolve_list) > 0:
             self.state['convolve_min'] = float(min(convolve_list))
         else:
@@ -132,12 +132,12 @@ class DropModel(Model):
             self.state['DROP_LENGTH'] = int(max(drop_length_list))
         else:
             self.state['DROP_LENGTH'] = 1
-            
+
         if len(del_conv_list) > 0:
             self.state['conv_del_min'] = float(min(del_conv_list))
         else:
             self.state['conv_del_min'] = self.state['WINDOW_SIZE']
-            
+
         if len(del_conv_list) > 0:
             self.state['conv_del_max'] = float(max(del_conv_list))
         else:
@@ -172,7 +172,7 @@ class DropModel(Model):
                 conv = scipy.signal.fftconvolve(convol_data, pattern_data)
                 if conv[self.state['WINDOW_SIZE']*2] > self.state['convolve_max'] * 1.2 or conv[self.state['WINDOW_SIZE']*2] < self.state['convolve_min'] * 0.8:
                     delete_list.append(segment)
-                 if max(conv) < self.state['conv_del_max'] * 1.02 and max(conv) > self.state['conv_del_min'] * 0.98:
+                if max(conv) < self.state['conv_del_max'] * 1.02 and max(conv) > self.state['conv_del_min'] * 0.98:
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
