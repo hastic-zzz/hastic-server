@@ -1,6 +1,6 @@
 import { Collection, makeDBQ } from '../services/data_service';
 
-import { GrafanaMetric } from 'grafana-datasource-kit';
+import { Metric } from 'grafana-datasource-kit';
 
 
 let db = makeDBQ(Collection.ANALYTIC_UNITS);
@@ -20,7 +20,7 @@ export class AnalyticUnit {
     public name: string,
     public panelUrl: string,
     public type: string,
-    public metric: GrafanaMetric,
+    public metric: Metric,
     public id?: AnalyticUnitId,
     public lastPredictionTime?: number,
     public status?: AnalyticUnitStatus,
@@ -61,7 +61,7 @@ export class AnalyticUnit {
       obj.name,
       obj.panelUrl,
       obj.type,
-      GrafanaMetric.fromObject(obj.metric),
+      Metric.fromObject(obj.metric),
       obj._id,
       obj.lastPredictionTime,
       obj.status as AnalyticUnitStatus,
