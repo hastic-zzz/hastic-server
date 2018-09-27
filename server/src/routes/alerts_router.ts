@@ -6,7 +6,7 @@ import * as Router from 'koa-router';
 
 function getAlert(ctx: Router.IRouterContext) {
   let id: AnalyticUnit.AnalyticUnitId = ctx.request.query.id;
-
+  console.log(`Requested alerts for AnalyticUnit ${id}`);
   let alertsAnomalies = getAlertsAnomalies();
   let pos = alertsAnomalies.indexOf(id);
 
@@ -17,6 +17,7 @@ function getAlert(ctx: Router.IRouterContext) {
 function setAlertEnabled(ctx: Router.IRouterContext) {
   let id: AnalyticUnit.AnalyticUnitId = ctx.request.body.id;
   let enabled: boolean = ctx.request.body.enabled;
+  console.log(`Set alert enabled = ${enabled} for AnalyticUnit ${id}`);
 
   let alertsAnomalies = getAlertsAnomalies();
   let pos: number = alertsAnomalies.indexOf(id);

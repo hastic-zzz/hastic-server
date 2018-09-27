@@ -49,10 +49,11 @@ async function processAlerts(id: AnalyticUnitId) {
 
 async function alertsTick() {
   let alertsAnomalies = getAlertsAnomalies();
+  console.log(alertsAnomalies);
   for (let predictorId of alertsAnomalies) {
     try {
       await runPredict(predictorId);
-      processAlerts(predictorId);
+      await processAlerts(predictorId);
     } catch (e) {
       console.error(e);
     }

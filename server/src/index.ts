@@ -1,5 +1,6 @@
 import { router as anomaliesRouter } from './routes/analytic_units_router';
 import { router as segmentsRouter } from './routes/segments_router';
+import {router as alertsRouter } from './routes/alerts_router';
 
 
 import * as AnalyticsController from './controllers/analytics_controller';
@@ -37,7 +38,7 @@ app.use(async function(ctx, next) {
 var rootRouter = new Router();
 rootRouter.use('/analyticUnits', anomaliesRouter.routes(), anomaliesRouter.allowedMethods());
 rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
-//rootRouter.use('/alerts', alertsRouter.routes(), alertsRouter.allowedMethods());
+rootRouter.use('/alerts', alertsRouter.routes(), alertsRouter.allowedMethods());
 rootRouter.get('/', async (ctx) => {
   ctx.response.body = {
     server: 'OK',
