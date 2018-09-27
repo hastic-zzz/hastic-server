@@ -1,6 +1,6 @@
 {
   "name": "hastic-server",
-  "version": "0.2.2-alpha",
+  "version": "0.2.3-alpha",
   "description": "REST server for managing data for analytics",
   "scripts": {
     "start": "node dist/server.js",
