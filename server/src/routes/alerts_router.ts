@@ -11,6 +11,7 @@ function getAlert(ctx: Router.IRouterContext) {
   let pos = alertsAnomalies.indexOf(id);
 
   let enabled: boolean = (pos !== -1);
+  console.log(`Return ${enabled} for ${id} (pos = ${pos})`);
   ctx.response.body = { enabled };
 }
 

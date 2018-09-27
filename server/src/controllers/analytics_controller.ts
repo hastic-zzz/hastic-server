@@ -87,6 +87,8 @@ function getQueryRangeForLearningBySegments(segments: Segment.Segment[]) {
   let leftOffset = now - to;
   from -= Math.round(leftOffset);
   to = now;
+  from = from * 1000000;
+  to = to * 1000000;
 
   return { from, to };
 }
@@ -172,6 +174,7 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
       return [];
     }
 
+    console.log(result);
     let payload = processPredictionResult(id, result);
 
     // TODO: implement segments merging without removing labeled

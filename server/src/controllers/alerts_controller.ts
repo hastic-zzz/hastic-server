@@ -31,13 +31,19 @@ async function processAlerts(id: AnalyticUnitId) {
   const activeAlert = activeAlerts.has(id);
   let newActiveAlert = false;
 
+  console.log('SL', segments.length);
+
   if(segments.length > 0) {
     let lastSegment = segments[segments.length - 1];
+    console.log(`processAlerts lastSegment.to:${lastSegment.to} curTime-ALTO: ${ currentTime - ALERT_TIMEOUT}`);
     if(lastSegment.to >= currentTime - ALERT_TIMEOUT) {
       newActiveAlert = true;
     }
+  } else {
+    console.log(`segments ${Object.keys(segments).forEach(k => {`${k}=${segments[k]}`})}`);
   }
 
+  console.log(`processAlerts activeAlert:${activeAlert} newActiveAlert:${newActiveAlert}`);
   if(!activeAlert && newActiveAlert) {
     activeAlerts.add(id);
     sendNotification(id, true);
@@ -48,8 +54,8 @@ async function processAlerts(id: AnalyticUnitId) {
 }
 
 async function alertsTick() {
+  console.log('alertsTick');
   let alertsAnomalies = getAlertsAnomalies();
-  console.log(alertsAnomalies);
   for (let predictorId of alertsAnomalies) {
     try {
       await runPredict(predictorId);
