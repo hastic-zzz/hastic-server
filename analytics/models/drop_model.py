@@ -47,7 +47,7 @@ class DropModel(Model):
                 confidences.append(0.20 * (segment_max - segment_min))
                 flat_segment = segment_data.rolling(window = 5).mean()
                 pdf = gaussian_kde(flat_segment.dropna())
-                x = np.linspace(flat_segment.dropna().min(), flat_segment.dropna().max(), len(flat_segment.dropna()))
+                x = np.linspace(flat_segment.dropna().min() - 1, flat_segment.dropna().max() + 1, len(flat_segment.dropna()))
                 y = pdf(x)
                 ax_list = []
                 for i in range(len(x)):
