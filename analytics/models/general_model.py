@@ -23,7 +23,7 @@ class GeneralModel(Model):
             'convolve_max': 240,
             'convolve_min': 200,
             'WINDOW_SIZE': 240,
-			'conv_del_min': 100,
+	    'conv_del_min': 100,
             'conv_del_max': 120,
         }
         self.all_conv = []
@@ -56,7 +56,7 @@ class GeneralModel(Model):
             convolve_list.append(max(auto_convolve))
             convolve_list.append(max(convolve_data))
 				
-		del_conv_list = []
+	del_conv_list = []
         for segment in segments:
             if segment['deleted']:
                 segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
@@ -80,7 +80,7 @@ class GeneralModel(Model):
         else:
             self.state['convolve_min'] = self.state['WINDOW_SIZE'] / 3
 		
-		if len(del_conv_list) > 0:
+	if len(del_conv_list) > 0:
             self.state['conv_del_min'] = float(min(del_conv_list))
         else:
             self.state['conv_del_min'] = self.state['WINDOW_SIZE']
@@ -114,8 +114,8 @@ class GeneralModel(Model):
         for val in segments:
             if self.all_conv[val] < self.state['convolve_min'] * 0.8:
                 delete_list.append(val)
-			else if self.all_conv[val] < self.state['conv_del_max'] * 1.02 and self.all_conv[val] > self.state['conv_del_min'] * 0.98:
-				delete_list.append(val)
+	    else if self.all_conv[val] < self.state['conv_del_max'] * 1.02 and self.all_conv[val] > self.state['conv_del_min'] * 0.98:
+	        delete_list.append(val)
 
         for item in delete_list:
             segments.remove(item)
