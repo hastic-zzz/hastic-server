@@ -23,7 +23,7 @@ class GeneralModel(Model):
             'convolve_max': 240,
             'convolve_min': 200,
             'WINDOW_SIZE': 240,
-	    'conv_del_min': 100,
+	'conv_del_min': 100,
             'conv_del_max': 120,
         }
         self.all_conv = []
