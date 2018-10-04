@@ -9,6 +9,10 @@ services:
       - data-volume:"8000:8000"
     privileged: true
     ipc: host
+    deploy:
+      restart_policy:
+        condition: on-failure
+        
   analytics:
     build:
       dockerfile: Dockerfile_analytics
@@ -18,6 +22,9 @@ services:
       - "8002:8002"
     privileged: true
     ipc: host
+    deploy:
+      restart_policy:
+        condition: on-failure
 
 volumes:
   data-volume:
