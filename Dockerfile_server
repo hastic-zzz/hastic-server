@@ -1,23 +1,23 @@
-FROM alpine:3.8
-
-EXPOSE 8000
+FROM python:3.6.6
 
 VOLUME [ "/var/www/data" ]
 
-COPY server config /var/www
+COPY server /var/www/
 
 WORKDIR /var/www/server
 
-#RUN apt-get update && apt-get install -y \
-#  gnupg \
-#  curl \
-#  make \
-#  g++
+RUN apt-get install curl \
+                    bash \
+                    gnupg \
+                    curl \
+                    make \
+                    g++ \
+ && curl -sL https://deb.nodesource.com/setup_8.x | bash - \
+ && apt-get update \
+ && apt-get install nodejs \
+ && npm install \
+ && npm run build
 
-RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - &&
-    apt-get update &&
-    apt-get install -y nodejs &&
-    npm install &&
-    npm run build
+ENV INSIDE_DOCKER true
 
 CMD ["npm", "start"]

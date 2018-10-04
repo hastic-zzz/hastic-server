@@ -4,12 +4,12 @@ EXPOSE 8000
 
 VOLUME [ "/var/www/data" ]
 
-COPY analytics config /var/www
+COPY analytics /var/www
 
 WORKDIR /var/www/analytics
 
-RUN pip install -r requirements.txt &&
-    apt-get update && apt-get install -y \
+RUN pip install -r requirements.txt \
+ && apt-get update && apt-get install -y \
     gnupg \
     curl \
     make \

@@ -1,0 +1,23 @@
+version: '3'
+services:
+  server:
+    build:
+      dockerfile: Dockerfile_server
+    volumes:
+      - "/var/www/data"
+    ports:
+      - data-volume:"8000:8000"
+    privileged: true
+    ipc: host
+  analytics:
+    build:
+      dockerfile: Dockerfile_analytics
+    volumes:
+      - data-volume:"/var/www/data"
+    ports:
+      - "8002:8002"
+    privileged: true
+    ipc: host
+
+volumes:
+  data-volume:
