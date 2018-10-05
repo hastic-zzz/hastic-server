@@ -1,25 +1,22 @@
-#base image
-FROM node:carbon AS base
+FROM python:3.6.6
 
-#dependencies
-FROM base AS dependencies
-WORKDIR /var/www/server
-COPY package*.json ./
-RUN npm install
+VOLUME [ "/var/www/data" ]
 
-#build
-FROM dependencies AS build
-COPY . /var/www/server
-WORKDIR /var/www/server
-RUN npm run build
+COPY server /var/www/
 
-#release
-FROM node:8.9-alpine AS release
 WORKDIR /var/www/server
-COPY --from=dependencies /var/www/server/package.json ./
-RUN npm install
-COPY --from=build /var/www/server ./
+
+RUN apt-get install curl \
+                    bash \
+                    gnupg \
+                    make \
+                    g++ \
+ && curl -sL https://deb.nodesource.com/setup_8.x | bash - \
+ && apt-get update \
+ && apt-get install nodejs \
+ && npm install \
+ && npm run build
 
 ENV INSIDE_DOCKER true
-VOLUME [ "/var/www/data" ]
+
 CMD ["npm", "start"]
