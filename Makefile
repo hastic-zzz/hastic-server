@@ -1,9 +1,12 @@
-.PHONY: server analytics
-
-server:
-	 docker build . -f Dockerfile_server
-
-analytics:
-	 docker build . -f Dockerfile_analytics
+.PHONY: server analytics compose
 
 all: server analytics
+
+server:
+	 docker build server -t hastic-server
+
+analytics:
+	 docker build analytics -t hastic-analytics
+
+compose:
+	 docker-compose up
