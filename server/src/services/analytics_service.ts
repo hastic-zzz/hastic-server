@@ -69,7 +69,7 @@ export class AnalyticsService {
     this._requester = zmq.socket('pair');
     let productionMode = process.env.NODE_ENV !== 'development' && process.env.INSIDE_DOCKER !== 'true';
 
-    this._zmqConnectionString = `tcp://127.0.0.1:${config.ZMQ_DEV_PORT}`; // debug mode
+    this._zmqConnectionString = `tcp://${config.ZMQ_HOST}:${config.ZMQ_DEV_PORT}`; // debug mode
     if(productionMode) {
       this._zmqConnectionString = config.ZMQ_CONNECTION_STRING;
       if(this._zmqConnectionString === null) {

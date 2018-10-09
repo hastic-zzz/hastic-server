@@ -2,7 +2,7 @@ FROM python:3.6.6
 
 VOLUME [ "/var/www/data" ]
 
-COPY server /var/www/
+COPY . /var/www/
 
 WORKDIR /var/www/server
 

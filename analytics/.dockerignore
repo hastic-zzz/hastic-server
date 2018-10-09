@@ -1,3 +1,5 @@
 .git
-node_modules
 npm-debug
+node_modules
+__pychache__
+.vscode

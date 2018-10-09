@@ -2,7 +2,7 @@ FROM python:3.6.6
 
 VOLUME [ "/var/www/data" ]
 
-COPY analytics/ /var/www/analytics/
+COPY . /var/www/analytics/
 
 WORKDIR /var/www/analytics
 
