@@ -2,22 +2,19 @@ version: '2'
 services:
   server:
     image: hastic-server
-    #build: server
+    build: server
     environment:
       HASTIC_API_KEY: "eyJrIjoiNzhiYjIyTGZDMjY4M3lnYTNwWHo3WFVaNnVDSm9qakkiLCJuIjoiaGFzIiwiaWQiOjF9"
-      ZMQ_HOST: analytics
-    volumes:
-      - data-volume:/var/www/data
+      ZMQ_CONNECTION_STRING: tcp://analytics:8002
     ports:
       - 8000:8000
+    volumes:
+      - data-volume:/var/www/data
     privileged: true
 
   analytics:
     image: hastic-analytics
-    #build: analytics
-    volumes:
-      - data-volume:/var/www/data
-    privileged: true
+    build: analytics
 
 volumes:
   data-volume:

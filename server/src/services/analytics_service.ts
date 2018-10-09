@@ -18,8 +18,12 @@ export class AnalyticsService {
   private _ipcPath: string = null;
   private _analyticsPinger: NodeJS.Timer = null;
   private _isClosed = false;
+  private _productionMode = false;
+  private _inDocker = false;
 
   constructor(private _onMessage: (message: AnalyticsMessage) => void) {
+    this._productionMode =  process.env.NODE_ENV !== 'development';
+    this._inDocker = process.env.INSIDE_DOCKER === 'true';
     this._init();
   }
 
@@ -67,10 +71,12 @@ export class AnalyticsService {
 
   private async _init() {
     this._requester = zmq.socket('pair');
-    let productionMode = process.env.NODE_ENV !== 'development' && process.env.INSIDE_DOCKER !== 'true';
 
     this._zmqConnectionString = `tcp://${config.ZMQ_HOST}:${config.ZMQ_DEV_PORT}`; // debug mode
-    if(productionMode) {
+
+    if(this._inDocker) {
+      this._zmqConnectionString = config.ZMQ_CONNECTION_STRING;
+    } else if(this._productionMode) {
       this._zmqConnectionString = config.ZMQ_CONNECTION_STRING;
       if(this._zmqConnectionString === null) {
         var createResult = await AnalyticsService.createIPCAddress();
@@ -84,7 +90,7 @@ export class AnalyticsService {
     this._requester.on("message", this._onAnalyticsMessage.bind(this));
     console.log('Ok');
 
-    if(productionMode) {
+    if(this._productionMode && !this._inDocker) {
       console.log('Creating analytics process...');
       try {
         var cp = await AnalyticsService._runAnalyticsProcess(this._zmqConnectionString);
