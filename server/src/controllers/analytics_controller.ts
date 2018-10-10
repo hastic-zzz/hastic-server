@@ -120,6 +120,11 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
     } else {
       await AnalyticUnitCache.create(id);
     }
+
+    let deletedSegments = await Segment.findMany(id, { deleted: true });
+    let deletedSegmentsObjs = deletedSegments.map(s => s.toObject());
+    segmentObjs = _.concat(segmentObjs, deletedSegmentsObjs);
+
     let task = new AnalyticsTask(
       id, AnalyticsTaskType.LEARN, { pattern, segments: segmentObjs, data, cache: oldCache }
     );

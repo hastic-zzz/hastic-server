@@ -62,7 +62,8 @@ export type FindManyQuery = {
   timeFromGTE?: number,
   timeToLTE?: number,
   intexGT?: number,
-  labeled?: boolean
+  labeled?: boolean,
+  deleted?: boolean
 }
 
 export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promise<Segment[]> {
@@ -75,6 +76,9 @@ export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promis
   }
   if(query.labeled !== undefined) {
     dbQuery.labeled = query.labeled;
+  }
+  if(query.deleted !== undefined) {
+    dbQuery.deleted = query.deleted;
   }
   let segs = await db.findMany(dbQuery);
   if(segs === null) {
@@ -113,7 +117,7 @@ export async function insertSegments(segments: Segment[]) {
 }
 
 export async function setSegmentsDeleted(ids: SegmentId[]) {
-  return db.updateMany(ids, { deleted: true });
+  return db.updateMany(ids, { deleted: true, labeled: false });
 }
 
 export function removeSegments(idsToRemove: SegmentId[]) {
