@@ -172,7 +172,7 @@ class DropModel(Model):
                 conv = scipy.signal.fftconvolve(convol_data, pattern_data)
                 if conv[self.state['WINDOW_SIZE']*2] > self.state['convolve_max'] * 1.2 or conv[self.state['WINDOW_SIZE']*2] < self.state['convolve_min'] * 0.8:
                     delete_list.append(segment)
-                if max(conv) < self.state['conv_del_max'] * 1.02 and max(conv) > self.state['conv_del_min'] * 0.98:
+                else if max(conv) < self.state['conv_del_max'] * 1.02 and max(conv) > self.state['conv_del_min'] * 0.98:
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
