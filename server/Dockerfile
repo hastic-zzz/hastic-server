@@ -11,12 +11,15 @@ RUN apt-get install curl \
 
 VOLUME [ "/var/www/data" ]
 
-COPY . /var/www/server
-
 WORKDIR /var/www/server
 
-RUN npm install \
- && npm run build
+COPY package.json /var/www/server
+
+RUN npm install
+
+COPY . /var/www/server
+
+RUN npm run build
 
 ENV INSIDE_DOCKER true
 

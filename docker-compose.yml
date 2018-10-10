@@ -5,16 +5,15 @@ services:
     build: server
     environment:
       HASTIC_API_KEY: ${HASTIC_API_KEY}
-      ZMQ_CONNECTION_STRING: tcp://0.0.0.0:8002
-    network_mode: host
+      ZMQ_CONNECTION_STRING: tcp://analytics:8002
+    ports:
+      - 8000:8000
     volumes:
       - data-volume:/var/www/data
 
   analytics:
     image: hastic/analytics:latest
     build: analytics
-    ports:
-      - 8002:8002
 
 volumes:
   data-volume:
