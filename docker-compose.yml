@@ -1,7 +1,7 @@
 version: '2'
 services:
   server:
-    image: hastic-server:latest
+    image: hastic/server:latest
     build: server
     environment:
       HASTIC_API_KEY: ${HASTIC_API_KEY}
@@ -11,7 +11,7 @@ services:
       - data-volume:/var/www/data
 
   analytics:
-    image: hastic-analytics:latest
+    image: hastic/analytics:latest
     build: analytics
     ports:
       - 8002:8002
