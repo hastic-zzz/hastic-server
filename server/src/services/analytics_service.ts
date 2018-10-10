@@ -23,7 +23,7 @@ export class AnalyticsService {
 
   constructor(private _onMessage: (message: AnalyticsMessage) => void) {
     this._productionMode =  process.env.NODE_ENV !== 'development';
-    this._inDocker = process.env.INSIDE_DOCKER === 'true';
+    this._inDocker = process.env.INSIDE_DOCKER !== undefined;
     this._init();
   }
 
