@@ -1,11 +1,5 @@
 FROM python:3.6.6
 
-VOLUME [ "/var/www/data" ]
-
-COPY . /var/www/
-
-WORKDIR /var/www/server
-
 RUN apt-get install curl \
                     bash \
                     gnupg \
@@ -13,8 +7,15 @@ RUN apt-get install curl \
                     g++ \
  && curl -sL https://deb.nodesource.com/setup_8.x | bash - \
  && apt-get update \
- && apt-get install nodejs \
- && npm install \
+ && apt-get install nodejs
+
+VOLUME [ "/var/www/data" ]
+
+COPY . /var/www/server
+
+WORKDIR /var/www/server
+
+RUN npm install \
  && npm run build
 
 ENV INSIDE_DOCKER true

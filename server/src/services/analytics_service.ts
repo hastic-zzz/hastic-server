@@ -76,7 +76,7 @@ export class AnalyticsService {
 
     if(this._inDocker) {
       this._zmqConnectionString = config.ZMQ_CONNECTION_STRING;
-    } else if(this._productionMode) {
+    } else if(this._productionMode && !this._inDocker) {
       this._zmqConnectionString = config.ZMQ_CONNECTION_STRING;
       if(this._zmqConnectionString === null) {
         var createResult = await AnalyticsService.createIPCAddress();
