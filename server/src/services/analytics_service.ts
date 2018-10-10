@@ -171,12 +171,13 @@ export class AnalyticsService {
 
   private async _onAnalyticsDown() {
     console.log('Analytics is down');
-    if(process.env.NODE_ENV !== 'development' && process.env.INSIDE_DOCKER !== 'true') {
+    if(this._productionMode && !this._inDocker) {
       await AnalyticsService._runAnalyticsProcess(this._zmqConnectionString);
     }
   }
 
   private _onAnalyticsMessage(data: any) {
+
     let text = data.toString();
     if(text === 'PONG') {
       this._pingResponded = true;
