@@ -1,0 +1,5 @@
+.git
+npm-debug
+node_modules
+__pycache__
+.vscode
