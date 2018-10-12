@@ -5,7 +5,7 @@ services:
     build: server
     environment:
       HASTIC_API_KEY: ${HASTIC_API_KEY}
-      ZMQ_CONNECTION_STRING: tcp://analytics:8002
+      ZMQ_CONNECTION_STRING: ${ZMQ_CONNECTION_STRING}
     ports:
       - 8000:8000
     volumes:
