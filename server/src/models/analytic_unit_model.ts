@@ -80,6 +80,14 @@ export async function findById(id: AnalyticUnitId): Promise<AnalyticUnit> {
   return AnalyticUnit.fromObject(obj);
 }
 
+export async function findAll(id: AnalyticUnitId): Promise<AnalyticUnit[]> {
+  let obj = await db.findMany({});
+  if(obj === null) {
+    return null;
+  }
+  return obj.map(o => AnalyticUnit.fromObject(o));
+}
+
 /**
  * Creates and updates new unit.id
  *
