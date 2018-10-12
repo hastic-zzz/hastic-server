@@ -38,12 +38,17 @@ var rootRouter = new Router();
 rootRouter.use('/analyticUnits', anomaliesRouter.routes(), anomaliesRouter.allowedMethods());
 rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
 //rootRouter.use('/alerts', alertsRouter.routes(), alertsRouter.allowedMethods());
+
+var pjson = require('../../pacakge.json');
+let packageVersion = process.env.npm_package_version ?
+  process.env.npm_package_version : pjson.version;
+
 rootRouter.get('/', async (ctx) => {
   ctx.response.body = {
     server: 'OK',
     analyticsReady: AnalyticsController.isAnalyticReady(),
     node_version: process.version,
-    npm_package_version: process.env.npm_package_version,
+    package_version: packageVersion,
     npm_user_agent: process.env.npm_config_user_agent,
     docker: process.env.INSIDE_DOCKER !== undefined,
     zmqConectionString: AnalyticsController.getZMQConnectionString(),
