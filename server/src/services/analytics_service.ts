@@ -14,12 +14,13 @@ export class AnalyticsService {
   private _requester: any;
   private _ready: boolean = false;
   private _pingResponded = false;
-  private _zmqConnectionString: string = null;
   private _ipcPath: string = null;
   private _analyticsPinger: NodeJS.Timer = null;
   private _isClosed = false;
   private _productionMode = false;
   private _inDocker = false;
+
+  public zmqConnectionString: string = null;
 
   constructor(private _onMessage: (message: AnalyticsMessage) => void) {
     this._productionMode =  process.env.NODE_ENV !== 'development';
@@ -72,28 +73,28 @@ export class AnalyticsService {
   private async _init() {
     this._requester = zmq.socket('pair');
 
-    this._zmqConnectionString = `tcp://${config.ZMQ_HOST}:${config.ZMQ_DEV_PORT}`; // debug mode
+    this.zmqConnectionString = `tcp://${config.ZMQ_HOST}:${config.ZMQ_DEV_PORT}`; // debug mode
 
     if(this._inDocker) {
-      this._zmqConnectionString = config.ZMQ_CONNECTION_STRING;
+      this.zmqConnectionString = config.ZMQ_CONNECTION_STRING;
     } else if(this._productionMode && !this._inDocker) {
-      this._zmqConnectionString = config.ZMQ_CONNECTION_STRING;
-      if(this._zmqConnectionString === null) {
+      this.zmqConnectionString = config.ZMQ_CONNECTION_STRING;
+      if(this.zmqConnectionString === null) {
         var createResult = await AnalyticsService.createIPCAddress();
-        this._zmqConnectionString = createResult.address;
+        this.zmqConnectionString = createResult.address;
         this._ipcPath = createResult.file;
       }
     }
 
-    console.log("Binding to zmq... %s", this._zmqConnectionString);
-    this._requester.connect(this._zmqConnectionString);
+    console.log("Binding to zmq... %s", this.zmqConnectionString);
+    this._requester.connect(this.zmqConnectionString);
     this._requester.on("message", this._onAnalyticsMessage.bind(this));
     console.log('Ok');
 
     if(this._productionMode && !this._inDocker) {
       console.log('Creating analytics process...');
       try {
-        var cp = await AnalyticsService._runAnalyticsProcess(this._zmqConnectionString);
+        var cp = await AnalyticsService._runAnalyticsProcess(this.zmqConnectionString);
       } catch(error) {
         console.error('Can`t run analytics process: %s', error);
         return;
@@ -172,7 +173,7 @@ export class AnalyticsService {
   private async _onAnalyticsDown() {
     console.log('Analytics is down');
     if(this._productionMode && !this._inDocker) {
-      await AnalyticsService._runAnalyticsProcess(this._zmqConnectionString);
+      await AnalyticsService._runAnalyticsProcess(this.zmqConnectionString);
     }
   }
 

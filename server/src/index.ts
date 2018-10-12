@@ -42,8 +42,12 @@ rootRouter.get('/', async (ctx) => {
   ctx.response.body = {
     server: 'OK',
     analyticsReady: AnalyticsController.isAnalyticReady(),
-    version: process.env.npm_package_version,
-    env: process.env.npm_config_user_agent
+    node_version: process.version,
+    npm_package_version: process.env.npm_package_version,
+    npm_user_agent: process.env.npm_config_user_agent,
+    docker: process.env.INSIDE_DOCKER !== undefined,
+    zmqConectionString: AnalyticsController.getZMQConnectionString(),
+    serverPort: HASTIC_PORT
   };
 });
 
