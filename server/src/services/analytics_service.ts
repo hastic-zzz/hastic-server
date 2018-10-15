@@ -209,9 +209,8 @@ export class AnalyticsService {
 
   private static createIPCAddress(zmqConnectionString: string): string {
     let filename = zmqConnectionString.substring(6); //without 'ipc://'
-    let p = path.join(config.ZMQ_IPC_PATH, filename);
-    fs.writeFileSync(p, '');
-    return p;
+    fs.writeFileSync(filename, '');
+    return filename;
   }
 
 }
