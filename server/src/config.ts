@@ -24,7 +24,7 @@ export const ZMQ_HOST = getConfigField('ZMQ_HOST', '127.0.0.1');
 export const HASTIC_API_KEY = getConfigField('HASTIC_API_KEY');
 export const ANLYTICS_PING_INTERVAL = 500; // ms
 export const PACKAGE_VERSION = getPackageVersion();
-export const COMMIT_HASH = getCommitHash();
+export const GIT_INFO = getGiInfo();
 
 
 function getConfigField(field: string, defaultVal?: any) {
@@ -61,7 +61,7 @@ function getPackageVersion() {
   }
 }
 
-function getCommitHash() {
+function getGiInfo() {
   let gitRoot = path.join(__dirname, '../../.git');
   let gitHeadFile = path.join(gitRoot, 'HEAD');
   if(!fs.existsSync(gitHeadFile)) {
