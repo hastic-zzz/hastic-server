@@ -85,7 +85,7 @@ function createZMQConnectionString() {
     return zmqConf;
   } else if(PRODUCTION_MODE) {
     if(zmqConf === null) {
-      return path.join(`ipc://${path.join(ZMQ_IPC_PATH, process.pid.toString())}.ipc`);
+      return 'ipc://' + `${path.join(ZMQ_IPC_PATH, process.pid.toString())}.ipc`;
     }
   }
   return zmq;
