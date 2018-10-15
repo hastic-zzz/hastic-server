@@ -6,11 +6,13 @@ import * as AnalyticsController from './controllers/analytics_controller';
 
 import * as ProcessService from './services/process_service';
 
-import { HASTIC_PORT } from './config';
+import { HASTIC_PORT, PACKAGE_VERSION, GIT_INFO, ZMQ_CONNECTION_STRING } from './config';
 
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
 import * as bodyParser from 'koa-bodyparser';
+import * as fs  from 'fs';
+
 
 
 AnalyticsController.init();
@@ -38,12 +40,18 @@ var rootRouter = new Router();
 rootRouter.use('/analyticUnits', anomaliesRouter.routes(), anomaliesRouter.allowedMethods());
 rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
 //rootRouter.use('/alerts', alertsRouter.routes(), alertsRouter.allowedMethods());
+
 rootRouter.get('/', async (ctx) => {
   ctx.response.body = {
     server: 'OK',
     analyticsReady: AnalyticsController.isAnalyticReady(),
-    version: process.env.npm_package_version,
-    env: process.env.npm_config_user_agent
+    nodeVersion: process.version,
+    packageVersion: PACKAGE_VERSION,
+    npmUserAgent: process.env.npm_config_user_agent,
+    docker: process.env.INSIDE_DOCKER !== undefined,
+    zmqConectionString: ZMQ_CONNECTION_STRING,
+    serverPort: HASTIC_PORT,
+    git: GIT_INFO
   };
 });
 

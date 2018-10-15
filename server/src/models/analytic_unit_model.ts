@@ -80,6 +80,7 @@ export async function findById(id: AnalyticUnitId): Promise<AnalyticUnit> {
   return AnalyticUnit.fromObject(obj);
 }
 
+
 /**
  * Creates and updates new unit.id
  *

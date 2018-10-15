@@ -22,8 +22,8 @@ export class AnalyticsService {
   private _inDocker = false;
 
   constructor(private _onMessage: (message: AnalyticsMessage) => void) {
-    this._productionMode =  process.env.NODE_ENV !== 'development';
-    this._inDocker = process.env.INSIDE_DOCKER !== undefined;
+    this._productionMode =  config.PRODUCTION_MODE;
+    this._inDocker = config.INSIDE_DOCKER;
     this._init();
   }
 
@@ -72,17 +72,10 @@ export class AnalyticsService {
   private async _init() {
     this._requester = zmq.socket('pair');
 
-    this._zmqConnectionString = `tcp://${config.ZMQ_HOST}:${config.ZMQ_DEV_PORT}`; // debug mode
+    this._zmqConnectionString = config.ZMQ_CONNECTION_STRING;
 
-    if(this._inDocker) {
-      this._zmqConnectionString = config.ZMQ_CONNECTION_STRING;
-    } else if(this._productionMode && !this._inDocker) {
-      this._zmqConnectionString = config.ZMQ_CONNECTION_STRING;
-      if(this._zmqConnectionString === null) {
-        var createResult = await AnalyticsService.createIPCAddress();
-        this._zmqConnectionString = createResult.address;
-        this._ipcPath = createResult.file;
-      }
+    if(this._zmqConnectionString.startsWith('ipc')) {
+      this._ipcPath = AnalyticsService.createIPCAddress(this._zmqConnectionString);
     }
 
     console.log("Binding to zmq... %s", this._zmqConnectionString);
@@ -214,11 +207,10 @@ export class AnalyticsService {
     }, config.ANLYTICS_PING_INTERVAL);
   }
 
-  private static async createIPCAddress(): Promise<{ address: string, file: string }> {
-    let filename = `${process.pid}.ipc`;
-    let p = path.join(config.ZMQ_IPC_PATH, filename);
-    fs.writeFileSync(p, '');
-    return Promise.resolve({ address: 'ipc://' + p, file: p });
+  private static createIPCAddress(zmqConnectionString: string): string {
+    let filename = zmqConnectionString.substring(6); //without 'ipc://'
+    fs.writeFileSync(filename, '');
+    return filename;
   }
 
 }

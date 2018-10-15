@@ -235,6 +235,7 @@ export function isAnalyticReady(): boolean {
   return analyticsService.ready;
 }
 
+
 export async function createAnalyticUnitFromObject(obj: any): Promise<AnalyticUnit.AnalyticUnitId> {
   if(obj.datasource !== undefined) {
     obj.metric.datasource = obj.datasource;
