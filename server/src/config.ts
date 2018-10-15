@@ -17,7 +17,7 @@ export const ANALYTIC_UNIT_CACHES_DATABASE_PATCH = path.join(DATA_PATH, 'analyti
 
 
 export const HASTIC_PORT = getConfigField('HASTIC_PORT', '8000');
-export const ZMQ_CONNECTION_STRING = getConfigField('ZMQ_CONNECTION_STRING', null);
+export const ZMQ_CONNECTION_STRING = createZMQConnectionString();
 export const ZMQ_IPC_PATH = getConfigField('ZMQ_IPC_PATH', path.join(os.tmpdir(), 'hastic'));
 export const ZMQ_DEV_PORT = getConfigField('ZMQ_DEV_PORT', '8002');
 export const ZMQ_HOST = getConfigField('ZMQ_HOST', '127.0.0.1');
@@ -25,6 +25,8 @@ export const HASTIC_API_KEY = getConfigField('HASTIC_API_KEY');
 export const ANLYTICS_PING_INTERVAL = 500; // ms
 export const PACKAGE_VERSION = getPackageVersion();
 export const GIT_INFO = getGiInfo();
+export const INSIDE_DOCKER = process.env.INSIDE_DOCKER !== undefined;
+export const PRODUCTION_MODE = process.env.NODE_ENV !== 'development'
 
 
 function getConfigField(field: string, defaultVal?: any) {
@@ -76,4 +78,17 @@ function getGiInfo() {
     branch: branch,
     commitHash: commitHash
   };
+}
+
+function createZMQConnectionString() {
+  let zmq =`tcp://${ZMQ_HOST}:${ZMQ_DEV_PORT}`; //debug mode
+  let zmqConf = getConfigField('ZMQ_CONNECTION_STRING', null);
+  if(INSIDE_DOCKER) {
+    return zmqConf;
+  } else if(PRODUCTION_MODE) {
+    if(zmqConf === null) {
+      return `ipc://${process.pid}.ipc`;
+    }
+  }
+  return zmq;
 }
