@@ -23,6 +23,8 @@ export const ZMQ_DEV_PORT = getConfigField('ZMQ_DEV_PORT', '8002');
 export const ZMQ_HOST = getConfigField('ZMQ_HOST', '127.0.0.1');
 export const HASTIC_API_KEY = getConfigField('HASTIC_API_KEY');
 export const ANLYTICS_PING_INTERVAL = 500; // ms
+export const PACKAGE_VERSION = getPackageVersion();
+export const COMMIT_HASH = getCommitHash();
 
 
 function getConfigField(field: string, defaultVal?: any) {
@@ -42,4 +44,35 @@ function getConfigField(field: string, defaultVal?: any) {
     throw new Error(`Please configure ${field}`);
   }
   return val;
+}
+
+function getPackageVersion() {
+  if(process.env.npm_package_version !== undefined) {
+    return process.env.npm_package_version;
+  } else {
+    let packageFile = path.join(__dirname, '../../../package.json');
+    if(fs.existsSync(packageFile)) {
+      let packageJson: any = getJsonDataSync('package.json');
+      return packageJson.version;
+    } else {
+      console.debug(`Can't find package file ${packageFile}`);
+      return null;
+    }
+  }
+}
+
+function getCommitHash() {
+  let gitRoot = path.join(__dirname, '../../.git');
+  let gitHeadFile = path.join(gitRoot, 'HEAD');
+  if(!fs.existsSync(gitHeadFile)) {
+    console.debug(`Can't find git HEAD file ${gitHeadFile}`);
+    return null;
+  }
+  const rev = fs.readFileSync(gitHeadFile).toString();
+  let branch = rev.indexOf(':') === -1 ? rev : rev.substring(5);
+  let commitHash = fs.readFileSync(`${gitRoot}/${branch}`).toString();
+  return {
+    branch: branch,
+    commitHash: commitHash
+  };
 }

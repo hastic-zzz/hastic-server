@@ -6,11 +6,13 @@ import * as AnalyticsController from './controllers/analytics_controller';
 
 import * as ProcessService from './services/process_service';
 
-import { HASTIC_PORT } from './config';
+import { HASTIC_PORT, PACKAGE_VERSION, COMMIT_HASH } from './config';
 
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
 import * as bodyParser from 'koa-bodyparser';
+import * as fs  from 'fs';
+
 
 
 AnalyticsController.init();
@@ -39,20 +41,17 @@ rootRouter.use('/analyticUnits', anomaliesRouter.routes(), anomaliesRouter.allow
 rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
 //rootRouter.use('/alerts', alertsRouter.routes(), alertsRouter.allowedMethods());
 
-var pjson = require('../../pacakge.json');
-let packageVersion = process.env.npm_package_version ?
-  process.env.npm_package_version : pjson.version;
-
 rootRouter.get('/', async (ctx) => {
   ctx.response.body = {
     server: 'OK',
     analyticsReady: AnalyticsController.isAnalyticReady(),
-    node_version: process.version,
-    package_version: packageVersion,
-    npm_user_agent: process.env.npm_config_user_agent,
+    nodeVersion: process.version,
+    packageVersion: PACKAGE_VERSION,
+    npmUserAgent: process.env.npm_config_user_agent,
     docker: process.env.INSIDE_DOCKER !== undefined,
     zmqConectionString: AnalyticsController.getZMQConnectionString(),
-    serverPort: HASTIC_PORT
+    serverPort: HASTIC_PORT,
+    gitCommit: COMMIT_HASH
   };
 });
 
