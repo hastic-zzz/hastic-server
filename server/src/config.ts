@@ -69,8 +69,9 @@ function getGiInfo() {
     return null;
   }
   const rev = fs.readFileSync(gitHeadFile).toString();
-  let branch = rev.indexOf(':') === -1 ? rev : rev.slice(5, -1);
-  let commitHash = fs.readFileSync(`${gitRoot}/${branch}`).toString().slice(0, -1);
+  let branchPath = rev.indexOf(':') === -1 ? rev : rev.slice(5, -1);
+  let branch = branchPath.split('/').pop();
+  let commitHash = fs.readFileSync(`${gitRoot}/${branchPath}`).toString().slice(0, -1);
   return {
     branch: branch,
     commitHash: commitHash
