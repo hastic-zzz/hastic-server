@@ -17,16 +17,17 @@ export const ANALYTIC_UNIT_CACHES_DATABASE_PATCH = path.join(DATA_PATH, 'analyti
 
 
 export const HASTIC_PORT = getConfigField('HASTIC_PORT', '8000');
-export const ZMQ_CONNECTION_STRING = createZMQConnectionString();
 export const ZMQ_IPC_PATH = getConfigField('ZMQ_IPC_PATH', path.join(os.tmpdir(), 'hastic'));
 export const ZMQ_DEV_PORT = getConfigField('ZMQ_DEV_PORT', '8002');
 export const ZMQ_HOST = getConfigField('ZMQ_HOST', '127.0.0.1');
 export const HASTIC_API_KEY = getConfigField('HASTIC_API_KEY');
 export const ANLYTICS_PING_INTERVAL = 500; // ms
 export const PACKAGE_VERSION = getPackageVersion();
-export const GIT_INFO = getGiInfo();
+export const GIT_INFO = getGitInfo();
 export const INSIDE_DOCKER = process.env.INSIDE_DOCKER !== undefined;
-export const PRODUCTION_MODE = process.env.NODE_ENV !== 'development'
+export const PRODUCTION_MODE = process.env.NODE_ENV !== 'development';
+
+export const ZMQ_CONNECTION_STRING = createZMQConnectionString();
 
 
 function getConfigField(field: string, defaultVal?: any) {
@@ -54,7 +55,7 @@ function getPackageVersion() {
   } else {
     let packageFile = path.join(__dirname, '../package.json');
     if(fs.existsSync(packageFile)) {
-      let packageJson: any = getJsonDataSync('package.json');
+      let packageJson: any = getJsonDataSync(packageFile);
       return packageJson.version;
     } else {
       console.debug(`Can't find package file ${packageFile}`);
@@ -63,7 +64,7 @@ function getPackageVersion() {
   }
 }
 
-function getGiInfo() {
+function getGitInfo() {
   let gitRoot = path.join(__dirname, '../../.git');
   let gitHeadFile = path.join(gitRoot, 'HEAD');
   if(!fs.existsSync(gitHeadFile)) {
@@ -74,10 +75,7 @@ function getGiInfo() {
   let branchPath = rev.indexOf(':') === -1 ? rev : rev.slice(5, -1);
   let branch = branchPath.split('/').pop();
   let commitHash = fs.readFileSync(`${gitRoot}/${branchPath}`).toString().slice(0, -1);
-  return {
-    branch: branch,
-    commitHash: commitHash
-  };
+  return { branch, commitHash };
 }
 
 function createZMQConnectionString() {

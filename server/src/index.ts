@@ -6,7 +6,7 @@ import * as AnalyticsController from './controllers/analytics_controller';
 
 import * as ProcessService from './services/process_service';
 
-import { HASTIC_PORT, PACKAGE_VERSION, GIT_INFO } from './config';
+import { HASTIC_PORT, PACKAGE_VERSION, GIT_INFO, ZMQ_CONNECTION_STRING } from './config';
 
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
@@ -49,7 +49,7 @@ rootRouter.get('/', async (ctx) => {
     packageVersion: PACKAGE_VERSION,
     npmUserAgent: process.env.npm_config_user_agent,
     docker: process.env.INSIDE_DOCKER !== undefined,
-    zmqConectionString: AnalyticsController.getZMQConnectionString(),
+    zmqConectionString: ZMQ_CONNECTION_STRING,
     serverPort: HASTIC_PORT,
     git: GIT_INFO
   };

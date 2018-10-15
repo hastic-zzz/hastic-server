@@ -75,7 +75,7 @@ export class AnalyticsService {
     this._zmqConnectionString = config.ZMQ_CONNECTION_STRING;
 
     if(this._zmqConnectionString.startsWith('ipc')) {
-      this._ipcPath = await AnalyticsService.createIPCAddress(this._zmqConnectionString);
+      this._ipcPath = AnalyticsService.createIPCAddress(this._zmqConnectionString);
     }
 
     console.log("Binding to zmq... %s", this._zmqConnectionString);
@@ -207,11 +207,11 @@ export class AnalyticsService {
     }, config.ANLYTICS_PING_INTERVAL);
   }
 
-  private static async createIPCAddress(zmqConnectionString: string): Promise<string> {
+  private static createIPCAddress(zmqConnectionString: string): string {
     let filename = zmqConnectionString.substring(6); //without 'ipc://'
     let p = path.join(config.ZMQ_IPC_PATH, filename);
     fs.writeFileSync(p, '');
-    return Promise.resolve(p);
+    return p;
   }
 
 }
