@@ -50,7 +50,7 @@ function getPackageVersion() {
   if(process.env.npm_package_version !== undefined) {
     return process.env.npm_package_version;
   } else {
-    let packageFile = path.join(__dirname, '../../../package.json');
+    let packageFile = path.join(__dirname, '../package.json');
     if(fs.existsSync(packageFile)) {
       let packageJson: any = getJsonDataSync('package.json');
       return packageJson.version;
@@ -69,8 +69,8 @@ function getCommitHash() {
     return null;
   }
   const rev = fs.readFileSync(gitHeadFile).toString();
-  let branch = rev.indexOf(':') === -1 ? rev : rev.substring(5);
-  let commitHash = fs.readFileSync(`${gitRoot}/${branch}`).toString();
+  let branch = rev.indexOf(':') === -1 ? rev : rev.slice(5, -1);
+  let commitHash = fs.readFileSync(`${gitRoot}/${branch}`).toString().slice(0, -1);
   return {
     branch: branch,
     commitHash: commitHash
