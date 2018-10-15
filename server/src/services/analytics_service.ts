@@ -14,8 +14,8 @@ export class AnalyticsService {
   private _requester: any;
   private _ready: boolean = false;
   private _pingResponded = false;
-  private _ipcPath: string = null;
   private _zmqConnectionString: string = null;
+  private _ipcPath: string = null;
   private _analyticsPinger: NodeJS.Timer = null;
   private _isClosed = false;
   private _productionMode = false;
