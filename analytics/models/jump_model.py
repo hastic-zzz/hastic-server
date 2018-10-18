@@ -196,10 +196,6 @@ class JumpModel(Model):
             else:
                 delete_list.append(segment)
         for item in delete_list:
-            segments.remove(item)
-
-        # TODO: implement filtering
-        #for ijump in self.ijumps:
-            #segments.append(ijump)
+            segments.remove(item))
 
         return set(segments)

@@ -196,8 +196,5 @@ class DropModel(Model):
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
-        # TODO: implement filtering
-        # for item in delete_list:
-        #     segments.remove(item)
 
         return set(segments)
