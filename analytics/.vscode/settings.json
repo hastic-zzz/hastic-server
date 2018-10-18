@@ -7,5 +7,6 @@
   "files.eol": "\n",
   "files.exclude": {
     "**/__pycache__/": true
-  }
+},
+"python.formatting.provider": "black"
 }

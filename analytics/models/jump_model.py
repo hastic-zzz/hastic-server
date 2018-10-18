@@ -49,24 +49,36 @@ class JumpModel(Model):
                 flat_segment_dropna = flat_segment.dropna()
                 pdf = gaussian_kde(flat_segment_dropna)
                 x = np.linspace(flat_segment_dropna.min() - 1, flat_segment_dropna.max() + 1, len(flat_segment_dropna))
-                y = pdf(x)
-                ax_list = []
-                for i in range(len(x)):
-                    ax_list.append([x[i], y[i]])
-                ax_list = np.array(ax_list, np.float32)
-                antipeaks_kde = argrelextrema(np.array(ax_list), np.less)[0]
-                peaks_kde = argrelextrema(np.array(ax_list), np.greater)[0]
-                min_peak_index = peaks_kde[0]
-                max_peak_index = peaks_kde[1]
-                segment_median = ax_list[antipeaks_kde[0], 0]
-                segment_min_line = ax_list[min_peak_index, 0]
-                segment_max_line = ax_list[max_peak_index, 0]
+                try:
+                    y = pdf(x)
+                    ax_list = []
+                    for i in range(len(x)):
+                        ax_list.append([x[i], y[i]])
+                    ax_list = np.array(ax_list, np.float32)
+                    peaks_kde = argrelextrema(np.array(ax_list), np.greater)[0]
+                    min_peak_index = peaks_kde[0]
+                    max_peak_index = peaks_kde[1]
+                    try:
+                        antipeaks_kde = argrelextrema(np.array(ax_list), np.less)[0]
+                        segment_median = ax_list[antipeaks_kde[0], 0]
+                    except UnboundLocalError:
+                        segment_median = (max(flat_segment_dropna) - min(flat_segment_dropna)) / 2 + min(flat_segment_dropna)
+                    segment_min_line = ax_list[min_peak_index, 0]
+                except IndexError:
+                    segment_min_line = min(flat_segment_dropna)
+                try:
+                    segment_max_line = ax_list[max_peak_index, 0]
+                except UnboundLocalError:
+                    segment_max_line = max(flat_segment_dropna)
                 jump_height = 0.95 * (segment_max_line - segment_min_line)
                 jump_height_list.append(jump_height)
                 jump_length = utils.find_jump_length(segment_data, segment_min_line, segment_max_line)
                 jump_length_list.append(jump_length)
-                cen_ind = utils.intersection_segment(flat_segment.tolist(), segment_median) #finds all interseprions with median
-                jump_center = cen_ind[0]
+                try:
+                    cen_ind = utils.intersection_segment(flat_segment.tolist(), segment_median) #finds all interseprions with median
+                    jump_center = cen_ind[0]
+                except UnboundLocalError:
+                    jump_center = (segment_to_index - segment_from_index) / 2 + 5
                 segment_cent_index = jump_center - 5 + segment_from_index
                 self.ijumps.append(segment_cent_index)
                 labeled_jump = data[segment_cent_index - self.state['WINDOW_SIZE'] : segment_cent_index + self.state['WINDOW_SIZE'] + 1]
@@ -92,15 +104,18 @@ class JumpModel(Model):
                     continue
                 flat_segment = segment_data.rolling(window = 5).mean()
                 flat_segment_dropna = flat_segment.dropna()
-                pdf = gaussian_kde(flat_segment_dropna)
-                x = np.linspace(flat_segment_dropna.min() - 1, flat_segment_dropna.max() + 1, len(flat_segment_dropna))
-                y = pdf(x)
-                ax_list = []
-                for i in range(len(x)):
-                    ax_list.append([x[i], y[i]])
-                ax_list = np.array(ax_list, np.float32)
-                antipeaks_kde = argrelextrema(np.array(ax_list), np.less)[0]
-                segment_median = ax_list[antipeaks_kde[0], 0]
+                try:
+                    pdf = gaussian_kde(flat_segment_dropna)
+                    x = np.linspace(flat_segment_dropna.min() - 1, flat_segment_dropna.max() + 1, len(flat_segment_dropna))
+                    y = pdf(x)
+                    ax_list = []
+                    for i in range(len(x)):
+                        ax_list.append([x[i], y[i]])
+                    ax_list = np.array(ax_list, np.float32)
+                    antipeaks_kde = argrelextrema(np.array(ax_list), np.less)[0]
+                    segment_median = ax_list[antipeaks_kde[0], 0]
+                except IndexError:
+                    segment_median = (max(flat_segment_dropna) - min(flat_segment_dropna)) / 2 + min(flat_segment_dropna)
                 cen_ind = utils.intersection_segment(flat_segment.tolist(), segment_median) #finds all interseprions with median
                 jump_center = cen_ind[0]
                 segment_cent_index = jump_center - 5 + segment_from_index
@@ -171,9 +186,12 @@ class JumpModel(Model):
             if segment > self.state['WINDOW_SIZE'] and segment < (len(data) - self.state['WINDOW_SIZE']):
                 convol_data = data[segment - self.state['WINDOW_SIZE'] : segment + self.state['WINDOW_SIZE'] + 1]
                 conv = scipy.signal.fftconvolve(convol_data, pattern_data)
-                if max(conv) > self.state['convolve_max'] * 1.2 or max(conv) < self.state['convolve_min'] * 0.8:
-                    delete_list.append(segment)
-                elif max(conv) < self.state['conv_del_max'] * 1.02 and max(conv) > self.state['conv_del_min'] * 0.98:
+                try:
+                    if max(conv) > self.state['convolve_max'] * 1.2 or max(conv) < self.state['convolve_min'] * 0.8:
+                        delete_list.append(segment)
+                    elif max(conv) < self.state['conv_del_max'] * 1.02 and max(conv) > self.state['conv_del_min'] * 0.98:
+                        delete_list.append(segment)
+                except ValueError:
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
