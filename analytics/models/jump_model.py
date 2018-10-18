@@ -195,7 +195,8 @@ class JumpModel(Model):
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
+
         for item in delete_list:
-            segments.remove(item))
+            segments.remove(item)
 
         return set(segments)
