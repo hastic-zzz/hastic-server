@@ -92,6 +92,7 @@ function getQueryRangeForLearningBySegments(segments: Segment.Segment[]) {
 }
 
 export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
+  console.debug('learning runned...');
   try {
 
     let analyticUnit = await AnalyticUnit.findById(id);
@@ -107,6 +108,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
     let segmentObjs = segments.map(s => s.toObject());
 
     let { from, to } = getQueryRangeForLearningBySegments(segments);
+    console.debug(`query metrics from ${analyticUnit.panelUrl}`);
     let queryResult = await queryByMetric(analyticUnit.metric, analyticUnit.panelUrl, from, to, HASTIC_API_KEY);
     let data = queryResult.values;
     if(data.length === 0) {
@@ -129,6 +131,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
       id, AnalyticsTaskType.LEARN, { pattern, segments: segmentObjs, data, cache: oldCache }
     );
     AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
+    console.debug(`run task, id:${id}`);
     let result = await runTask(task);
     if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
       throw new Error(result.error)
@@ -155,6 +158,7 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
     }
 
     let { from, to } = getQueryRangeForLearningBySegments(segments);
+    console.debug(`query metrics from ${unit.panelUrl}`);
     let queryResult = await queryByMetric(unit.metric, unit.panelUrl, from, to, HASTIC_API_KEY);
     let data = queryResult.values;
     if(data.length === 0) {
@@ -172,6 +176,7 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
       AnalyticsTaskType.PREDICT,
       { pattern, lastPredictionTime: unit.lastPredictionTime, data, cache: oldCache }
     );
+    console.debug(`run task, id:${id}`);
     let result = await runTask(task);
     if(result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
       return [];
