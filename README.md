@@ -25,6 +25,7 @@ See also:
 * [REST](REST.md) - for developing your plugins
 * [Installation from source](https://github.com/hastic/hastic-server/wiki/Installation-from-source)
 * [ChangeLog](https://github.com/hastic/hastic-server/wiki/Change-log)
+* [Roadmap](https://github.com/hastic/hastic-server/wiki/Roadmap)
 
 ## Download & Install on Linux
 
