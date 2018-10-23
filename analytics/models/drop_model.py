@@ -46,40 +46,33 @@ class DropModel(Model):
                 segment_max = max(segment_data)
                 confidences.append(0.20 * (segment_max - segment_min))
                 flat_segment = segment_data.rolling(window = 5).mean()
-                flat_segment_dropna = flat_segment.dropna()
+                pdf = gaussian_kde(flat_segment.dropna())
+                x = np.linspace(flat_segment.dropna().min() - 1, flat_segment.dropna().max() + 1, len(flat_segment.dropna()))
+                y = pdf(x)
+                ax_list = []
+                for i in range(len(x)):
+                    ax_list.append([x[i], y[i]])
+                ax_list = np.array(ax_list, np.float32)
+                antipeaks_kde = argrelextrema(np.array(ax_list), np.less)[0]
+                peaks_kde = argrelextrema(np.array(ax_list), np.greater)[0]
+
+                min_peak_index = peaks_kde[0]
+                segment_min_line = ax_list[min_peak_index, 0]
                 try:
-                    pdf = gaussian_kde(flat_segment_dropna)
-                    x = np.linspace(flat_segment_dropna.min() - 1, flat_segment_dropna.max() + 1, len(flat_segment_dropna))
-                    y = pdf(x)
-                    ax_list = []
-                    for i in range(len(x)):
-                        ax_list.append([x[i], y[i]])
-                    ax_list = np.array(ax_list, np.float32)
-                    
-                    peaks_kde = argrelextrema(np.array(ax_list), np.greater)[0]
-                    min_peak_index = peaks_kde[0]
                     max_peak_index = peaks_kde[1]
-                    try:
-                        antipeaks_kde = argrelextrema(np.array(ax_list), np.less)[0]
-                        segment_median = ax_list[antipeaks_kde[0], 0]
-                    except UnboundLocalError:
-                        segment_median = (max(flat_segment_dropna) - min(flat_segment_dropna)) / 2 + min(flat_segment_dropna)
-                    segment_min_line = ax_list[min_peak_index, 0]
-                except IndexError:
-                    segment_min_line = min(flat_segment_dropna)
-                try:
                     segment_max_line = ax_list[max_peak_index, 0]
-                except UnboundLocalError:
-                    segment_max_line = max(flat_segment_dropna)
+                except IndexError:
+                    segment_max_line = max(flat_segment.dropna())
+                try:
+                    segment_median = ax_list[antipeaks_kde[0], 0]
+                except IndexError:
+                    segment_median = (max(flat_segment.dropna()) - min(flat_segment.dropna())) / 2 + min(flat_segment.dropna())                
                 drop_height = 0.95 * (segment_max_line - segment_min_line)
                 drop_height_list.append(drop_height)
                 drop_length = utils.find_drop_length(segment_data, segment_min_line, segment_max_line)
                 drop_length_list.append(drop_length)
-                try:
-                    cen_ind = utils.drop_intersection(flat_segment.tolist(), segment_median) #finds all interseprions with median
-                    drop_center = cen_ind[0]
-                except UnboundLocalError:
-                    drop_center = (segment_to_index - segment_from_index) / 2 + 5
+                cen_ind = utils.drop_intersection(flat_segment.tolist(), segment_median) #finds all interseprions with median
+                drop_center = cen_ind[0]
                 segment_cent_index = drop_center - 5 + segment_from_index
                 self.idrops.append(segment_cent_index)
                 labeled_drop = data[segment_cent_index - self.state['WINDOW_SIZE']: segment_cent_index + self.state['WINDOW_SIZE'] + 1]
@@ -105,18 +98,15 @@ class DropModel(Model):
                     continue
                 flat_segment = segment_data.rolling(window = 5).mean()
                 flat_segment_dropna = flat_segment.dropna()
-                try:
-                    pdf = gaussian_kde(flat_segment_dropna)
-                    x = np.linspace(flat_segment_dropna.min() - 1, flat_segment_dropna.max() + 1, len(flat_segment_dropna))
-                    y = pdf(x)
-                    ax_list = []
-                    for i in range(len(x)):
-                        ax_list.append([x[i], y[i]])
-                    ax_list = np.array(ax_list, np.float32)
-                    antipeaks_kde = argrelextrema(np.array(ax_list), np.less)[0]
-                    segment_median = ax_list[antipeaks_kde[0], 0]
-                except IndexError:
-                    segment_median = (max(flat_segment_dropna) - min(flat_segment_dropna)) / 2 + min(flat_segment_dropna)
+                pdf = gaussian_kde(flat_segment_dropna)
+                x = np.linspace(flat_segment_dropna.min() - 1, flat_segment_dropna.max() + 1, len(flat_segment_dropna))
+                y = pdf(x)
+                ax_list = []
+                for i in range(len(x)):
+                    ax_list.append([x[i], y[i]])
+                ax_list = np.array(ax_list, np.float32)
+                antipeaks_kde = argrelextrema(np.array(ax_list), np.less)[0]
+                segment_median = ax_list[antipeaks_kde[0], 0]
                 cen_ind = utils.intersection_segment(flat_segment.tolist(), segment_median) #finds all interseprions with median
                 drop_center = cen_ind[0] # or -1? test
                 segment_cent_index = drop_center - 5 + segment_from_index
