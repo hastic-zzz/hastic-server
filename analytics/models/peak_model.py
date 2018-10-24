@@ -142,5 +142,5 @@ class PeakModel(Model):
         # TODO: implement filtering
         for item in delete_list:
             segments.remove(item)
-        
+
         return set(segments)
