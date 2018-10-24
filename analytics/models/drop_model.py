@@ -47,11 +47,11 @@ class DropModel(Model):
                 confidences.append(0.20 * (segment_max - segment_min))
                 flat_segment = segment_data.rolling(window = 5).mean()
                 pdf = gaussian_kde(flat_segment.dropna())
+                max_drop = max(flat_segment.dropna())
+                min_drop = min(flat_segment.dropna())
                 x = np.linspace(flat_segment.dropna().min() - 1, flat_segment.dropna().max() + 1, len(flat_segment.dropna()))
                 y = pdf(x)
-                ax_list = []
-                for i in range(len(x)):
-                    ax_list.append([x[i], y[i]])
+                ax_list = list(zip(x, y))
                 ax_list = np.array(ax_list, np.float32)
                 antipeaks_kde = argrelextrema(np.array(ax_list), np.less)[0]
                 peaks_kde = argrelextrema(np.array(ax_list), np.greater)[0]
@@ -62,11 +62,11 @@ class DropModel(Model):
                     max_peak_index = peaks_kde[1]
                     segment_max_line = ax_list[max_peak_index, 0]
                 except IndexError:
-                    segment_max_line = max(flat_segment.dropna())
+                    segment_max_line = max_drop
                 try:
                     segment_median = ax_list[antipeaks_kde[0], 0]
                 except IndexError:
-                    segment_median = (max(flat_segment.dropna()) - min(flat_segment.dropna())) / 2 + min(flat_segment.dropna())                
+                    segment_median = (max_drop - min_drop) / 2 + min_drop                
                 drop_height = 0.95 * (segment_max_line - segment_min_line)
                 drop_height_list.append(drop_height)
                 drop_length = utils.find_drop_length(segment_data, segment_min_line, segment_max_line)
@@ -101,9 +101,7 @@ class DropModel(Model):
                 pdf = gaussian_kde(flat_segment_dropna)
                 x = np.linspace(flat_segment_dropna.min() - 1, flat_segment_dropna.max() + 1, len(flat_segment_dropna))
                 y = pdf(x)
-                ax_list = []
-                for i in range(len(x)):
-                    ax_list.append([x[i], y[i]])
+                ax_list = list(zip(x, y))
                 ax_list = np.array(ax_list, np.float32)
                 antipeaks_kde = argrelextrema(np.array(ax_list), np.less)[0]
                 segment_median = ax_list[antipeaks_kde[0], 0]
@@ -177,10 +175,14 @@ class DropModel(Model):
             if segment > self.state['WINDOW_SIZE'] and segment < (len(data) - self.state['WINDOW_SIZE']):
                 convol_data = data[segment - self.state['WINDOW_SIZE'] : segment + self.state['WINDOW_SIZE'] + 1]
                 conv = scipy.signal.fftconvolve(convol_data, pattern_data)
+                upper_bound = self.state['convolve_max'] * 1.2
+                lower_bound = self.state['convolve_min'] * 0.8
+                delete_up_bound = self.state['conv_del_max'] * 1.02
+                delete_low_bound = self.state['conv_del_min'] * 0.98
                 try:
-                    if max(conv) > self.state['convolve_max'] * 1.2 or max(conv) < self.state['convolve_min'] * 0.8:
+                    if max(conv) > upper_bound or max(conv) < lower_bound:
                         delete_list.append(segment)
-                    elif max(conv) < self.state['conv_del_max'] * 1.02 and max(conv) > self.state['conv_del_min'] * 0.98:
+                    elif max(conv) < delete_up_bound and max(conv) > delete_low_bound:
                         delete_list.append(segment)
                 except ValueError:
                     delete_list.append(segment)
