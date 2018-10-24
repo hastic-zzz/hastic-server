@@ -56,18 +56,16 @@ class JumpModel(Model):
                 ax_list = np.array(ax_list, np.float32)
                 antipeaks_kde = argrelextrema(np.array(ax_list), np.less)[0]
                 peaks_kde = argrelextrema(np.array(ax_list), np.greater)[0]
-
-                min_peak_index = peaks_kde[0]
-                segment_min_line = ax_list[min_peak_index, 0]
                 try:
+                    min_peak_index = peaks_kde[0]
+                    segment_min_line = ax_list[min_peak_index, 0]
                     max_peak_index = peaks_kde[1]
                     segment_max_line = ax_list[max_peak_index, 0]
-                except IndexError:
-                    segment_max_line = max_jump
-                try:
                     segment_median = ax_list[antipeaks_kde[0], 0]
                 except IndexError:
-                    segment_median = (max_jump - min_jump) / 2 + min_jump                
+                    segment_max_line = max_jump
+                    segment_min_line = min_jump
+                    segment_median = (max_jump - min_jump) / 2 + min_jump               
                 jump_height = 0.95 * (segment_max_line - segment_min_line)
                 jump_height_list.append(jump_height)
                 jump_length = utils.find_jump_length(segment_data, segment_min_line, segment_max_line)
