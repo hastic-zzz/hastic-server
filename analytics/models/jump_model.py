@@ -47,8 +47,8 @@ class JumpModel(Model):
                 confidences.append(0.20 * (segment_max - segment_min))
                 flat_segment = segment_data.rolling(window = 5).mean()
                 flat_segment_dropna = flat_segment.dropna()
-                min_drop = min(flat_segment_dropna)
-                max_drop = max(flat_segment_dropna)
+                min_jump = min(flat_segment_dropna)
+                max_jump = max(flat_segment_dropna)
                 pdf = gaussian_kde(flat_segment_dropna)
                 x = np.linspace(flat_segment_dropna.min() - 1, flat_segment_dropna.max() + 1, len(flat_segment_dropna))
                 y = pdf(x)
@@ -63,11 +63,11 @@ class JumpModel(Model):
                     max_peak_index = peaks_kde[1]
                     segment_max_line = ax_list[max_peak_index, 0]
                 except IndexError:
-                    segment_max_line = max_drop
+                    segment_max_line = max_jump
                 try:
                     segment_median = ax_list[antipeaks_kde[0], 0]
                 except IndexError:
-                    segment_median = (max_drop - min_drop) / 2 + min_drop                
+                    segment_median = (max_jump - min_jump) / 2 + min_jump                
                 jump_height = 0.95 * (segment_max_line - segment_min_line)
                 jump_height_list.append(jump_height)
                 jump_length = utils.find_jump_length(segment_data, segment_min_line, segment_max_line)
