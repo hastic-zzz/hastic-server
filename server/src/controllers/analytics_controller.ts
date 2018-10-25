@@ -190,6 +190,10 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
     //   }
     // }
 
+    let segmentsToRemove = segments.filter(s => function(s) {
+      return s in payload.segments ? false : true;
+    });
+    Segment.removeSegments(segmentsToRemove.map(s => s.id));
     Segment.insertSegments(payload.segments);
     AnalyticUnitCache.setData(id, payload.cache);
     AnalyticUnit.setPredictionTime(id, payload.lastPredictionTime);
