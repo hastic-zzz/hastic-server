@@ -190,10 +190,8 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
     //   }
     // }
 
-    let predictedSegments = await Segment.findMany(id, { labeled: false });
-    let segmentsToRemove = predictedSegments.filter(s => function(s) {
-      return payload.segments.indexOf(s) > -1 ? false : true;
-    });
+    let predictedSegments = await Segment.findMany(id, { labeled: false, deleted: false });
+    let segmentsToRemove = predictedSegments.filter(s => payload.segments.indexOf(s) > -1 ? false : true);
     Segment.removeSegments(segmentsToRemove.map(s => s.id));
 
     Segment.insertSegments(payload.segments);
