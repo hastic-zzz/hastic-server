@@ -92,7 +92,7 @@ export class AnalyticsService {
         console.error('Can`t run analytics process: %s', error);
         return;
       }
-      console.log('Alanytics creating successful, pid: %s', cp.pid);
+      console.log('Analytics creating successful, pid: %s', cp.pid);
     }
 
     console.log('Start analytics pinger...');
@@ -139,17 +139,19 @@ export class AnalyticsService {
 
       cp.stdout.on('data', (data) => {
         console.log(data);
-        if(!resolved) {
-          resolved = true;
+        if(resolved) {
+          return;
         }
+        resolved = true;
         resolve(cp);
       });
 
       cp.stderr.on('data', function(data) {
         console.error(data);
-        if(!resolved) {
-          resolved = true;
+        if(resolved) {
+          return;
         }
+        resolved = true;
         reject(data);
       });
     });
