@@ -195,7 +195,7 @@ function maybeCreateDir(path: string): void {
   if(fs.existsSync(path)) {
     return;
   }
-  console.log('mkdir: ' + path);
+  console.log('data service: mkdir: ' + path);
   fs.mkdirSync(path);
 }
 

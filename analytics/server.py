@@ -19,7 +19,7 @@ data_service: services.DataService = None
 root.setLevel(logging.DEBUG)
 
 
-logging_formatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
+logging_formatter = logging.Formatter("%(asctime)s [Analytics] [%(levelname)-5.5s]  %(message)s")
 
 logging_handler = logging.StreamHandler(sys.stdout)
 #logging_handler = logging.FileHandler(config.DATA_FOLDER + '/analytics.log')
