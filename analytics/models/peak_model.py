@@ -135,6 +135,7 @@ class PeakModel(Model):
                 if max(conv) > self.state['convolve_max'] * 1.05 or max(conv) < self.state['convolve_min'] * 0.95:
                     delete_list.append(segment)
                 elif max(conv) < self.state['conv_del_max'] * 1.02 and max(conv) > self.state['conv_del_min'] * 0.98:
+                    print("this must be deleted: {0}, index: {1}".format(max(conv), segment))
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
