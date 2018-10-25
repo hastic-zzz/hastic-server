@@ -47,6 +47,7 @@ export class AnalyticsService {
     return new Promise<void>((resolve, reject) => {
       this._requester.send(text, undefined, (err: any) => {
         if(err) {
+          console.trace(`got error while sending ${err}`);
           reject(err);
         } else {
           resolve();
@@ -64,7 +65,7 @@ export class AnalyticsService {
       fs.unlinkSync(this._ipcPath);
     }
     this._requester.close();
-    console.log('Ok');
+    console.log('Terminating successful');
   }
 
   public get ready(): boolean { return this._ready; }
@@ -81,7 +82,7 @@ export class AnalyticsService {
     console.log("Binding to zmq... %s", this._zmqConnectionString);
     this._requester.connect(this._zmqConnectionString);
     this._requester.on("message", this._onAnalyticsMessage.bind(this));
-    console.log('Ok');
+    console.log('Binding successful');
 
     if(this._productionMode && !this._inDocker) {
       console.log('Creating analytics process...');
@@ -91,12 +92,12 @@ export class AnalyticsService {
         console.error('Can`t run analytics process: %s', error);
         return;
       }
-      console.log('Ok, pid: %s', cp.pid);
+      console.log('Analytics creating successful, pid: %s', cp.pid);
     }
 
     console.log('Start analytics pinger...');
     this._runAlalyticsPinger();
-    console.log('Ok');
+    console.log('Analytics pinger started');
 
   }
 
@@ -136,24 +137,23 @@ export class AnalyticsService {
     return new Promise<childProcess.ChildProcess>((resolve, reject) => {
       var resolved = false;
 
-      cp.stdout.on('data', () => {
+      cp.stdout.on('data', (data) => {
+        console.log(data);
         if(resolved) {
           return;
-        } else {
-          resolved = true;
         }
+        resolved = true;
         resolve(cp);
       });
 
       cp.stderr.on('data', function(data) {
+        console.error(data);
         if(resolved) {
           return;
-        } else {
-          resolved = true;
         }
+        resolved = true;
         reject(data);
       });
-
     });
 
   }
