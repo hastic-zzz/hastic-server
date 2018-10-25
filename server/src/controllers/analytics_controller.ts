@@ -194,7 +194,6 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
     let segmentsToRemove = predictedSegments.filter(s => function(s) {
       return payload.segments.indexOf(s) > -1 ? false : true;
     });
-    console.log(segmentsToRemove);
     Segment.removeSegments(segmentsToRemove.map(s => s.id));
 
     Segment.insertSegments(payload.segments);
