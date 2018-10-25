@@ -191,7 +191,7 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
     // }
 
     let lastPredictedSegments = await Segment.findMany(id, { labeled: false, deleted: false });
-    let segmentsToRemove = lastPredictedSegments.filter(s => payload.segments.indexOf(s) > -1 ? false : true);
+    let segmentsToRemove = lastPredictedSegments.filter(s => payload.segments.indexOf(s) === -1);
     Segment.removeSegments(segmentsToRemove.map(s => s.id));
 
     Segment.insertSegments(payload.segments);
