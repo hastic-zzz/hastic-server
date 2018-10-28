@@ -50,6 +50,7 @@ class TroughModel(Model):
                 patterns_list.append(labeled_trough)
                 
         self.model_trough = utils.get_av_model(patterns_list)
+        print("self.model_trough: {}".format(self.model_trough))
         for n in range(len(segments)):
             labeled_trough = data[self.itroughs[n] - self.state['WINDOW_SIZE']: self.itroughs[n] + self.state['WINDOW_SIZE'] + 1]
             labeled_trough = labeled_trough - min(labeled_trough)
@@ -115,16 +116,12 @@ class TroughModel(Model):
 
     def __filter_prediction(self, segments: list, data: list) -> list:
         delete_list = []
-        variance_error = int(0.004 * len(data))
-        if variance_error > self.state['WINDOW_SIZE']:
-            variance_error = self.state['WINDOW_SIZE']
-        for i in range(1, len(segments)):
-            if segments[i] < segments[i - 1] + variance_error:
-                delete_list.append(segments[i])
-        for item in delete_list:
-            segments.remove(item)
-
-        delete_list = []
+        variance_error = self.state['WINDOW_SIZE']
+        print("variance_error: {}".format(variance_error))
+        print("segments before first filtration: {}".format(segments))
+        close_patterns = utils.close_filtration(segments, variance_error)
+        segments = utils.best_pat(close_patterns, data, "min")
+        print("segments after first filtration: {}".format(segments))
         if len(segments) == 0 or len(self.itroughs) == 0 :
             segments = []
             return segments  
@@ -140,7 +137,6 @@ class TroughModel(Model):
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
-        # TODO: implement filtering
         for item in delete_list:
             segments.remove(item)
 

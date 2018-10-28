@@ -155,14 +155,12 @@ class JumpModel(Model):
 
     def __filter_prediction(self, segments, data):
         delete_list = []
-        variance_error = int(0.004 * len(data))
-        if variance_error > self.state['WINDOW_SIZE']:
-            variance_error = self.state['WINDOW_SIZE']
-        for i in range(1, len(segments)):
-            if segments[i] < segments[i - 1] + variance_error:
-                delete_list.append(segments[i])
-        for item in delete_list:
-            segments.remove(item)
+        variance_error = self.state['WINDOW_SIZE']
+        print("variance_error: {}".format(variance_error))
+        print("segments before first filtration: {}".format(segments))
+        close_patterns = utils.close_filtration(segments, variance_error)
+        segments = utils.best_pat(close_patterns, data, "max")
+        print("segments after first filtration: {}".format(segments))
             
         if len(segments) == 0 or len(self.ijumps) == 0 :
             segments = []
@@ -187,11 +185,8 @@ class JumpModel(Model):
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
+                
         for item in delete_list:
             segments.remove(item)
-
-        # TODO: implement filtering
-        #for ijump in self.ijumps:
-            #segments.append(ijump)
 
         return set(segments)

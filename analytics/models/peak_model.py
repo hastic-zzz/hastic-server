@@ -114,16 +114,12 @@ class PeakModel(Model):
 
     def __filter_prediction(self, segments: list, data: list) -> list:
         delete_list = []
-        variance_error = int(0.004 * len(data))
-        if variance_error > self.state['WINDOW_SIZE']:
-            variance_error = self.state['WINDOW_SIZE']
-        for i in range(1, len(segments)):
-            if segments[i] < segments[i - 1] + variance_error:
-                delete_list.append(segments[i])
-        for item in delete_list:
-            segments.remove(item)
-
-        delete_list = []
+        variance_error = self.state['WINDOW_SIZE']
+        print("variance_error: {}".format(variance_error))
+        print("segments before first filtration: {}".format(segments))
+        close_patterns = utils.close_filtration(segments, variance_error)
+        segments = utils.best_pat(close_patterns, data, "max")
+        print("segments after first filtration: {}".format(segments))
         if len(segments) == 0 or len(self.ipeaks) == 0:
             return []
         pattern_data = self.model_peak
@@ -142,7 +138,6 @@ class PeakModel(Model):
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
-        # TODO: implement filtering
         for item in delete_list:
             segments.remove(item)
         print("return segments: {}".format(segments))
