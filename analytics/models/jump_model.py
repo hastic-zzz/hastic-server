@@ -156,17 +156,12 @@ class JumpModel(Model):
     def __filter_prediction(self, segments, data):
         delete_list = []
         variance_error = self.state['WINDOW_SIZE']
-        print("variance_error: {}".format(variance_error))
-        print("segments before first filtration: {}".format(segments))
         close_patterns = utils.close_filtration(segments, variance_error)
         segments = utils.best_pat(close_patterns, data, "max")
-        print("segments after first filtration: {}".format(segments))
             
         if len(segments) == 0 or len(self.ijumps) == 0 :
             segments = []
             return segments
-        
-        delete_list = []
         pattern_data = self.model_jump
         upper_bound = self.state['convolve_max'] * 1.2
         lower_bound = self.state['convolve_min'] * 0.8
@@ -185,7 +180,7 @@ class JumpModel(Model):
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
-                
+
         for item in delete_list:
             segments.remove(item)
 
