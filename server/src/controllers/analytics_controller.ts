@@ -210,7 +210,7 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
   }
 }
 
-async function deleteNonpredictedSegments(id, payload) {
+export async function deleteNonpredictedSegments(id, payload) {
   let lastPredictedSegments = await Segment.findMany(id, { labeled: false, deleted: false });
   let segmentsToRemove = lastPredictedSegments.filter(s => payload.segments.indexOf(s) === -1);
   Segment.removeSegments(segmentsToRemove.map(s => s.id));
