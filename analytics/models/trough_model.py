@@ -116,7 +116,7 @@ class TroughModel(Model):
     def __filter_prediction(self, segments: list, data: list) -> list:
         delete_list = []
         variance_error = self.state['WINDOW_SIZE']
-        close_patterns = utils.close_filtration(segments, variance_error)
+        close_patterns = utils.close_filtering(segments, variance_error)
         segments = utils.best_pat(close_patterns, data, "min")
         if len(segments) == 0 or len(self.itroughs) == 0 :
             segments = []
