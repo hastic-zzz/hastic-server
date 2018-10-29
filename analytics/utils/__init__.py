@@ -225,7 +225,7 @@ def get_av_model(patterns_list):
         model_pat.append(ar_mean(av_val))
     return model_pat
 
-def close_filtration(pat_list, win_size):
+def close_filtering(pat_list, win_size):
     s = []
     s.append([])
     s[0].append(pat_list[0])
