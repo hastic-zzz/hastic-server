@@ -58,11 +58,12 @@ export class Segment {
   }
 
   public equals(obj: Segment) : boolean {
-    return this.analyticUnitId === obj.analyticUnitId &&
+    let ret = this.analyticUnitId === obj.analyticUnitId &&
            this.from === obj.from &&
            this.to === obj.to &&
            this.labeled === this.labeled &&
            this.deleted === this.deleted;
+    return ret;
   }
 }
 

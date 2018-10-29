@@ -212,7 +212,10 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
 
 export async function deleteNonpredictedSegments(id, payload) {
   let lastPredictedSegments = await Segment.findMany(id, { labeled: false, deleted: false });
-  let segmentsToRemove = lastPredictedSegments.filter(s => payload.segments.indexOf(s) === -1);
+  let segmentsToRemove: Segment.Segment[];
+  segmentsToRemove = _.differenceWith(lastPredictedSegments, payload.segments, (a, b: Segment.Segment) => {
+    return a.equals(b);
+  });
   Segment.removeSegments(segmentsToRemove.map(s => s.id));
 }
 
