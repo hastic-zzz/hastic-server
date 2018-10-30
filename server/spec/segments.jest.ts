@@ -19,19 +19,19 @@ afterEach(async () => {
   clearDB();
 });
 
-describe("Check deleted segments", function() {
+describe('Check deleted segments', function() {
   let payload = {
     lastPredictionTime: 0,
     segments: [],
     cache: null
   };
 
-  it('deleted should be non empty', async function() {
+  it('previous segments not found', async function() {
     payload.segments = segmentBuilder([[0,1], [4,5]]);
     expect(await getDeletedSegments(id, payload)).toEqual(segmentBuilder([[2,3]]));
   });
 
-  it('deleted should be empty', async function() {
+  it('all previous segments found', async function() {
     payload.segments = segmentBuilder([[0,1], [2,3], [4,5]]);
     expect(await getDeletedSegments(id, payload)).toEqual([]);
   });
