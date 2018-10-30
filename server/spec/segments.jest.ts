@@ -44,7 +44,7 @@ async function getDeletedSegments(id, payload): Promise<Segment.Segment[]> {
   let postSegments = await Segment.findMany(id, {labeled: false, deleted:false});
   let deleted = setDifference(preSegments, postSegments);
   deleted = deleted.map(s => {
-    s.id = undefined
+    s.id = undefined;
     return s;
   });
   return deleted;
