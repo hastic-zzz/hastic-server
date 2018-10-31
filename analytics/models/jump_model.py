@@ -1,6 +1,7 @@
 from models import Model
 
 import utils
+from utils.segments import parse_segment
 import numpy as np
 import pandas as pd
 import scipy.signal
@@ -37,9 +38,7 @@ class JumpModel(Model):
         patterns_list = []
         for segment in segments:
             if segment['labeled']:
-                segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
-                segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
-                segment_data = data[segment_from_index: segment_to_index + 1]
+                segment_from_index, segment_to_index, segment_data = parse_segment(segment, dataframe)
                 if len(segment_data) == 0:
                     continue    
                 segment_min = min(segment_data)

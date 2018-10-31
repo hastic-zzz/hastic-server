@@ -138,7 +138,7 @@ export class AnalyticsService {
       var resolved = false;
 
       cp.stdout.on('data', (data) => {
-        console.log(data);
+        console.log(data.toString());
         if(resolved) {
           return;
         }
@@ -146,8 +146,8 @@ export class AnalyticsService {
         resolve(cp);
       });
 
-      cp.stderr.on('data', function(data) {
-        console.error(data);
+      cp.stderr.on('data', (data) => {
+        console.error(data.toString());
         if(resolved) {
           return;
         }
