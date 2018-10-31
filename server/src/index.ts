@@ -1,6 +1,6 @@
 import { router as analyticUnitsRouter } from './routes/analytic_units_router';
 import { router as segmentsRouter } from './routes/segments_router';
-
+import { router as panelRouter } from './routes/panel_router';
 
 import * as AnalyticsController from './controllers/analytics_controller';
 
@@ -11,7 +11,6 @@ import { HASTIC_PORT, PACKAGE_VERSION, GIT_INFO, ZMQ_CONNECTION_STRING } from '.
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
 import * as bodyParser from 'koa-bodyparser';
-
 
 
 AnalyticsController.init();
@@ -38,6 +37,7 @@ app.use(async function(ctx, next) {
 var rootRouter = new Router();
 rootRouter.use('/analyticUnits', analyticUnitsRouter.routes(), analyticUnitsRouter.allowedMethods());
 rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
+rootRouter.use('/panel', panelRouter.routes(), panelRouter.allowedMethods());
 //rootRouter.use('/alerts', alertsRouter.routes(), alertsRouter.allowedMethods());
 
 rootRouter.get('/', async (ctx) => {

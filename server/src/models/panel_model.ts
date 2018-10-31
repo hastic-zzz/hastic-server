@@ -59,7 +59,6 @@ export async function insertAnalyticUnit(panelUrl: string, analyticUnitId: Analy
 }
 
 export async function removeAnalyticUnit(panelUrl: string, analyticUnitId: AnalyticUnitId) {
-  // TODO: stop task when analytic unit is removed
   const panel = await db.findOne({ panelUrl });
   
   return db.updateOne({ panelUrl }, {
