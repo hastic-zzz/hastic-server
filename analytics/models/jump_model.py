@@ -157,7 +157,7 @@ class JumpModel(Model):
         delete_list = []
         variance_error = self.state['WINDOW_SIZE']
         close_patterns = utils.close_filtering(segments, variance_error)
-        segments = utils.best_pat(close_patterns, data, "max")
+        segments = utils.best_pat(close_patterns, data, 'max')
             
         if len(segments) == 0 or len(self.ijumps) == 0 :
             segments = []
