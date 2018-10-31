@@ -4,6 +4,10 @@ import logging
 import sys
 import asyncio
 import traceback
+import os
+
+#TODO: make wrapper script that set PYHONPATH instead
+sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 
 import services
 from analytic_unit_manager import handle_analytic_task
