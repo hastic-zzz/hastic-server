@@ -1,4 +1,4 @@
-import { router as anomaliesRouter } from './routes/analytic_units_router';
+import { router as analyticUnitsRouter } from './routes/analytic_units_router';
 import { router as segmentsRouter } from './routes/segments_router';
 
 
@@ -11,7 +11,6 @@ import { HASTIC_PORT, PACKAGE_VERSION, GIT_INFO, ZMQ_CONNECTION_STRING } from '.
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
 import * as bodyParser from 'koa-bodyparser';
-import * as fs  from 'fs';
 
 
 
@@ -37,7 +36,7 @@ app.use(async function(ctx, next) {
 
 
 var rootRouter = new Router();
-rootRouter.use('/analyticUnits', anomaliesRouter.routes(), anomaliesRouter.allowedMethods());
+rootRouter.use('/analyticUnits', analyticUnitsRouter.routes(), analyticUnitsRouter.allowedMethods());
 rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
 //rootRouter.use('/alerts', alertsRouter.routes(), alertsRouter.allowedMethods());
 
