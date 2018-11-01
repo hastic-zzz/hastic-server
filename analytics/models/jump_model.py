@@ -38,7 +38,9 @@ class JumpModel(Model):
         patterns_list = []
         for segment in segments:
             if segment['labeled']:
-                segment_from_index, segment_to_index, segment_data = parse_segment(segment, dataframe)
+                segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
+                segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
+                segment_data = data[segment_from_index: segment_to_index + 1]
                 if len(segment_data) == 0:
                     continue    
                 segment_min = min(segment_data)
@@ -154,20 +156,13 @@ class JumpModel(Model):
 
     def __filter_prediction(self, segments, data):
         delete_list = []
-        variance_error = int(0.004 * len(data))
-        if variance_error > self.state['WINDOW_SIZE']:
-            variance_error = self.state['WINDOW_SIZE']
-        for i in range(1, len(segments)):
-            if segments[i] < segments[i - 1] + variance_error:
-                delete_list.append(segments[i])
-        for item in delete_list:
-            segments.remove(item)
+        variance_error = self.state['WINDOW_SIZE']
+        close_patterns = utils.close_filtering(segments, variance_error)
+        segments = utils.best_pat(close_patterns, data, 'max')
             
         if len(segments) == 0 or len(self.ijumps) == 0 :
             segments = []
             return segments
-        
-        delete_list = []
         pattern_data = self.model_jump
         upper_bound = self.state['convolve_max'] * 1.2
         lower_bound = self.state['convolve_min'] * 0.8
@@ -186,11 +181,8 @@ class JumpModel(Model):
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
+
         for item in delete_list:
             segments.remove(item)
-
-        # TODO: implement filtering
-        #for ijump in self.ijumps:
-            #segments.append(ijump)
 
         return set(segments)
