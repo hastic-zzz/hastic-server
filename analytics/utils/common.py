@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+
 def exponential_smoothing(series, alpha):
     result = [series[0]]
     for n in range(1, len(series)):
@@ -211,7 +212,11 @@ def ar_mean(numbers):
 
 def get_av_model(patterns_list):
     x = len(patterns_list[0])
+<<<<<<< HEAD
+    if len(pattern_list) > 1 and len(patterns_list[1]) != x:
+=======
     if len(patterns_list[1]) != x:
+>>>>>>> f3e8de3d4de8748ed7c9eb1b81e2d438e04f5f38
         raise NameError('All elements of patterns_list should have same length')
     model_pat = []
     for i in range(x):
@@ -220,3 +225,35 @@ def get_av_model(patterns_list):
             av_val.append(j.values[i])
         model_pat.append(ar_mean(av_val))
     return model_pat
+<<<<<<< HEAD
+
+def close_filtering(pat_list, win_size):
+    s = [[pat_list[0]]]
+    k = 0
+    for i in range(1, len(pat_list)):
+        if pat_list[i] - win_size <= s[k][-1]:
+            s[k].append(pat_list[i])
+        else:
+            k += 1
+            s.append([pat_list[i]])
+    return s
+
+def best_pat(pat_list, data, dir):
+    new_pat_list = []
+    for val in pat_list:
+        max_val = data[val[0]]
+        min_val = data[val[0]]
+        ind = 0
+        for i in val:
+            if dir == 'max':
+                if data[i] > max_val:
+                    max_val = data[i]
+                    ind = i
+            else:
+                if data[i] < min_val:
+                    min_val = data[i]
+                    ind = i
+        new_pat_list.append(ind)
+    return new_pat_list
+=======
+>>>>>>> f3e8de3d4de8748ed7c9eb1b81e2d438e04f5f38
