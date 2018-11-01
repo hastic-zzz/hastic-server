@@ -236,8 +236,8 @@ def close_filtering(pat_list, win_size):
 def best_pat(pat_list, data, dir):
     new_pat_list = []
     for val in pat_list:
-        max_val = data[0]
-        min_val = data[0]
+        max_val = data[val[0]]
+        min_val = data[val[0]]
         ind = 0
         for i in val:
             if dir == 'max':
