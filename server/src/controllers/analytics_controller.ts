@@ -158,7 +158,7 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
     }
 
     let { from, to } = getQueryRangeForLearningBySegments(segments);
-    console.debug(`query metrics from ${unit.panelUrl}`);
+    console.debug(`query time range: from ${new Date(from)} to ${new Date(to)}`);
     let queryResult = await queryByMetric(unit.metric, unit.panelUrl, from, to, HASTIC_API_KEY);
     let data = queryResult.values;
     if(data.length === 0) {
