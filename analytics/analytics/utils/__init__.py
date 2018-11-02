@@ -1,2 +1,2 @@
-from common import *
-from segments import *
+from utils.common import *
+from utils.segments import *
