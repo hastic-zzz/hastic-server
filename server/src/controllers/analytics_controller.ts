@@ -108,7 +108,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
     let segmentObjs = segments.map(s => s.toObject());
 
     let { from, to } = getQueryRangeForLearningBySegments(segments);
-    console.debug(`query metrics from ${analyticUnit.panelUrl}`);
+    console.debug(`query time range: from ${new Date(from)} to ${new Date(to)}`);
     let queryResult = await queryByMetric(analyticUnit.metric, analyticUnit.panelUrl, from, to, HASTIC_API_KEY);
     let data = queryResult.values;
     if(data.length === 0) {
