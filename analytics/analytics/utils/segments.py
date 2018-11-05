@@ -1,6 +1,6 @@
 import pandas as pd
 
-from common import timestamp_to_index
+from utils.common import timestamp_to_index
 
 def parse_segment(segment, dataframe):
     start = timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))

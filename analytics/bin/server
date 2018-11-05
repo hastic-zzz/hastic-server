@@ -1,13 +1,16 @@
-import config
-import json
-import logging
+#!/usr/bin/env python3
+
 import sys
-import asyncio
-import traceback
 import os
 
 #TODO: make wrapper script that set PYTHONPATH instead
-sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'analytics'))
+
+import config
+import json
+import logging
+import asyncio
+import traceback
 
 import services
 from analytic_unit_manager import handle_analytic_task
