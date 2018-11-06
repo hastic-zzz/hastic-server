@@ -212,7 +212,7 @@ def ar_mean(numbers):
 
 def get_av_model(patterns_list):
     x = len(patterns_list[0])
-    if len(pattern_list) > 1 and len(patterns_list[1]) != x:
+    if len(patterns_list) > 1 and len(patterns_list[1]) != x:
         raise NameError('All elements of patterns_list should have same length')
     model_pat = []
     for i in range(x):
@@ -238,7 +238,7 @@ def best_pat(pat_list, data, dir):
     for val in pat_list:
         max_val = data[val[0]]
         min_val = data[val[0]]
-        ind = 0
+        ind = val[0]
         for i in val:
             if dir == 'max':
                 if data[i] > max_val:
