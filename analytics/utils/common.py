@@ -212,11 +212,7 @@ def ar_mean(numbers):
 
 def get_av_model(patterns_list):
     x = len(patterns_list[0])
-<<<<<<< HEAD
-    if len(patterns_list[1]) != x:
-=======
     if len(pattern_list) > 1 and len(patterns_list[1]) != x:
->>>>>>> 9f96b99a372b7aa771d68b99b91cac9af3fe5977
         raise NameError('All elements of patterns_list should have same length')
     model_pat = []
     for i in range(x):
@@ -225,8 +221,6 @@ def get_av_model(patterns_list):
             av_val.append(j.values[i])
         model_pat.append(ar_mean(av_val))
     return model_pat
-<<<<<<< HEAD
-=======
 
 def close_filtering(pat_list, win_size):
     s = [[pat_list[0]]]
@@ -256,4 +250,3 @@ def best_pat(pat_list, data, dir):
                     ind = i
         new_pat_list.append(ind)
     return new_pat_list
->>>>>>> 9f96b99a372b7aa771d68b99b91cac9af3fe5977
