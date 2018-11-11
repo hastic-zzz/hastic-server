@@ -170,7 +170,7 @@ class DropModel(Model):
                     continue
                 elif 0 < percent_of_nans < 0.5:
                     nan_list = utils.nan_checker(convol_data)[1]
-                    pattern_data = utils.nan_for_zero(convol_data, nan_list)
+                    convol_data = utils.nan_for_zero(convol_data, nan_list)
                     pattern_data = utils.nan_for_zero(pattern_data, nan_list)
                 conv = scipy.signal.fftconvolve(convol_data, pattern_data)
                 upper_bound = self.state['convolve_max'] * 1.2
