@@ -36,9 +36,9 @@ class GeneralModel(Model):
             if segment['labeled']:
                 segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
                 segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
-
                 segment_data = data[segment_from_index: segment_to_index + 1]
-                if len(segment_data) == 0:
+                percent_of_nans = utils.nan_checker(segment_data)[0]
+                if percent_of_nans > 0 or len(segment_data) == 0:
                     continue
                 x = segment_from_index + math.ceil((segment_to_index - segment_from_index) / 2)
                 self.ipats.append(x)
@@ -110,7 +110,6 @@ class GeneralModel(Model):
         if len(segments) == 0 or len(self.ipats) == 0:
             return []
         delete_list = []
-
         for val in segments:
             if self.all_conv[val] < self.state['convolve_min'] * 0.8:
                 delete_list.append(val)

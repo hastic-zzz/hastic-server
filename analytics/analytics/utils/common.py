@@ -255,3 +255,19 @@ def best_pat(pat_list, data, dir):
                     ind = i
         new_pat_list.append(ind)
     return new_pat_list
+
+def nan_checker(segment):
+    nan_list = np.isnan(segment)
+    nan_count = 0
+    nan_indexes = []
+    for i, val in enumerate(nan_list):
+        if val:
+            nan_count += 1
+            nan_inexes.append(i)
+    return nan_count / len(segment), nan_indexes
+
+def nan_for_zero(segment, nan_list):
+    for val in nan_list:
+        segment[val] = 0
+    return segment
+    

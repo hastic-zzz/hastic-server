@@ -37,7 +37,8 @@ class PeakModel(Model):
                 segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
                 segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
                 segment_data = data[segment_from_index: segment_to_index + 1]
-                if len(segment_data) == 0:
+                percent_of_nans = utils.nan_checker(segment_data)[0]
+                if percent_of_nans > 0 or len(segment_data) == 0:
                     continue
                 segment_min = min(segment_data)
                 segment_max = max(segment_data)
@@ -127,6 +128,14 @@ class PeakModel(Model):
             if segment > self.state['WINDOW_SIZE']:
                 convol_data = data[segment - self.state['WINDOW_SIZE']: segment + self.state['WINDOW_SIZE'] + 1]
                 convol_data = convol_data - min(convol_data)
+                percent_of_nans = utils.nan_checker(convol_data)[0]
+                if percent_of_nans > 0.5:
+                    delete_list.append(segment)
+                    continue
+                elif 0 < percent_of_nans < 0.5:
+                    nan_list = utils.nan_checker(convol_data)[1]
+                    pattern_data = utils.nan_for_zero(convol_data, nan_list)
+                    pattern_data = utils.nan_for_zero(pattern_data, nan_list)
                 conv = scipy.signal.fftconvolve(convol_data, pattern_data)
                 print("max conv: {0}, index: {1}".format(max(conv), segment))
                 if max(conv) > self.state['convolve_max'] * 1.05 or max(conv) < self.state['convolve_min'] * 0.95:

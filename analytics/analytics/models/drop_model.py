@@ -39,8 +39,8 @@ class DropModel(Model):
                 segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
                 segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
                 segment_data = data[segment_from_index: segment_to_index + 1]
-
-                if len(segment_data) == 0:
+                percent_of_nans = utils.nan_checker(segment_data)[0]
+                if percent_of_nans > 0 or len(segment_data) == 0:
                     continue
                 segment_min = min(segment_data)
                 segment_max = max(segment_data)
@@ -166,6 +166,14 @@ class DropModel(Model):
         for segment in segments:
             if segment > self.state['WINDOW_SIZE'] and segment < (len(data) - self.state['WINDOW_SIZE']):
                 convol_data = data[segment - self.state['WINDOW_SIZE'] : segment + self.state['WINDOW_SIZE'] + 1]
+                percent_of_nans = utils.nan_checker(convol_data)[0]
+                if percent_of_nans > 0.5:
+                    delete_list.append(segment)
+                    continue
+                elif 0 < percent_of_nans < 0.5:
+                    nan_list = utils.nan_checker(convol_data)[1]
+                    pattern_data = utils.nan_for_zero(convol_data, nan_list)
+                    pattern_data = utils.nan_for_zero(pattern_data, nan_list)
                 conv = scipy.signal.fftconvolve(convol_data, pattern_data)
                 upper_bound = self.state['convolve_max'] * 1.2
                 lower_bound = self.state['convolve_min'] * 0.8
