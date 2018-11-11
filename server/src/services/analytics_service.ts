@@ -122,10 +122,12 @@ export class AnalyticsService {
       console.log('dist/server/server');
       cp = childProcess.spawn('dist/server/server', [], cpOptions);
     } else {
-      console.log('python3 server.py');
+      const ANALYTICS_SERVER_PATH = path.join('bin', 'server');
+      console.log('python3 ' + ANALYTICS_SERVER_PATH);
       // If compiled analytics script doesn't exist - fallback to regular python
       console.log(config.ANALYTICS_PATH);
-      cp = childProcess.spawn('python3', ['server.py'], cpOptions);
+      // maybe starting it via bash better that put python3
+      cp = childProcess.spawn('python3', [ANALYTICS_SERVER_PATH], cpOptions);
     }
 
     if(cp.pid === undefined) {
@@ -138,7 +140,7 @@ export class AnalyticsService {
       var resolved = false;
 
       cp.stdout.on('data', (data) => {
-        console.log(data);
+        console.log(data.toString());
         if(resolved) {
           return;
         }
@@ -146,8 +148,8 @@ export class AnalyticsService {
         resolve(cp);
       });
 
-      cp.stderr.on('data', function(data) {
-        console.error(data);
+      cp.stderr.on('data', (data) => {
+        console.error(data.toString());
         if(resolved) {
           return;
         }

@@ -108,7 +108,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
     let segmentObjs = segments.map(s => s.toObject());
 
     let { from, to } = getQueryRangeForLearningBySegments(segments);
-    console.debug(`query metrics from ${analyticUnit.panelUrl}`);
+    console.debug(`query time range: from ${new Date(from)} to ${new Date(to)}`);
     let queryResult = await queryByMetric(analyticUnit.metric, analyticUnit.panelUrl, from, to, HASTIC_API_KEY);
     let data = queryResult.values;
     if(data.length === 0) {
@@ -158,7 +158,7 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
     }
 
     let { from, to } = getQueryRangeForLearningBySegments(segments);
-    console.debug(`query metrics from ${unit.panelUrl}`);
+    console.debug(`query time range: from ${new Date(from)} to ${new Date(to)}`);
     let queryResult = await queryByMetric(unit.metric, unit.panelUrl, from, to, HASTIC_API_KEY);
     let data = queryResult.values;
     if(data.length === 0) {
@@ -195,9 +195,7 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
     //   }
     // }
 
-    let lastPredictedSegments = await Segment.findMany(id, { labeled: false, deleted: false });
-    let segmentsToRemove = lastPredictedSegments.filter(s => payload.segments.indexOf(s) === -1);
-    Segment.removeSegments(segmentsToRemove.map(s => s.id));
+    await deleteNonpredictedSegments(id, payload);
 
     Segment.insertSegments(payload.segments);
     AnalyticUnitCache.setData(id, payload.cache);
@@ -210,6 +208,13 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
       await AnalyticUnit.setPredictionTime(id, previousLastPredictionTime);
     }
   }
+}
+
+export async function deleteNonpredictedSegments(id, payload) {
+  let lastPredictedSegments = await Segment.findMany(id, { labeled: false, deleted: false });
+  let segmentsToRemove: Segment.Segment[];
+  segmentsToRemove = _.differenceWith(lastPredictedSegments, payload.segments, (a, b: Segment.Segment) => a.equals(b));
+  Segment.removeSegments(segmentsToRemove.map(s => s.id));
 }
 
 function processPredictionResult(analyticUnitId: AnalyticUnit.AnalyticUnitId, taskResult: any): {

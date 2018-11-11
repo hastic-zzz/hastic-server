@@ -1,27 +1,29 @@
 from models import Model
 
+import utils
+from utils.segments import parse_segment
+import numpy as np
+import pandas as pd
 import scipy.signal
 from scipy.fftpack import fft
+import math
 from scipy.signal import argrelextrema
 from scipy.stats import gaussian_kde
 
-import utils
-import numpy as np
-import pandas as pd
 
+class JumpModel(Model):
 
-class DropModel(Model):
     def __init__(self):
         super()
         self.segments = []
-        self.idrops = []
-        self.model_drop = []
+        self.ijumps = []
+        self.model_jump = []
         self.state = {
             'confidence': 1.5,
-            'convolve_max': 200,
-            'convolve_min': 200,
-            'DROP_HEIGHT': 1,
-            'DROP_LENGTH': 1,
+            'convolve_max': 230,
+            'convolve_min': 230,
+            'JUMP_HEIGHT': 1,
+            'JUMP_LENGTH': 1,
             'WINDOW_SIZE': 240,
             'conv_del_min': 54000,
             'conv_del_max': 55000,
@@ -31,25 +33,23 @@ class DropModel(Model):
         data = dataframe['value']
         confidences = []
         convolve_list = []
-        drop_height_list = []
-        drop_length_list = []
+        jump_height_list = []
+        jump_length_list = []
         patterns_list = []
         for segment in segments:
             if segment['labeled']:
-                segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
-                segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
-                segment_data = data[segment_from_index: segment_to_index + 1]
-
+                segment_from_index, segment_to_index, segment_data = parse_segment(segment, dataframe)
                 if len(segment_data) == 0:
-                    continue
+                    continue    
                 segment_min = min(segment_data)
                 segment_max = max(segment_data)
                 confidences.append(0.20 * (segment_max - segment_min))
                 flat_segment = segment_data.rolling(window = 5).mean()
-                pdf = gaussian_kde(flat_segment.dropna())
-                max_drop = max(flat_segment.dropna())
-                min_drop = min(flat_segment.dropna())
-                x = np.linspace(flat_segment.dropna().min() - 1, flat_segment.dropna().max() + 1, len(flat_segment.dropna()))
+                flat_segment_dropna = flat_segment.dropna()
+                min_jump = min(flat_segment_dropna)
+                max_jump = max(flat_segment_dropna)
+                pdf = gaussian_kde(flat_segment_dropna)
+                x = np.linspace(flat_segment_dropna.min() - 1, flat_segment_dropna.max() + 1, len(flat_segment_dropna))
                 y = pdf(x)
                 ax_list = list(zip(x, y))
                 ax_list = np.array(ax_list, np.float32)
@@ -62,30 +62,30 @@ class DropModel(Model):
                     segment_max_line = ax_list[max_peak_index, 0]
                     segment_median = ax_list[antipeaks_kde[0], 0]
                 except IndexError:
-                    segment_max_line = max_drop
-                    segment_min_line = min_drop
-                    segment_median = (max_drop - min_drop) / 2 + min_drop
-                drop_height = 0.95 * (segment_max_line - segment_min_line)
-                drop_height_list.append(drop_height)
-                drop_length = utils.find_drop_length(segment_data, segment_min_line, segment_max_line)
-                drop_length_list.append(drop_length)
-                cen_ind = utils.drop_intersection(flat_segment.tolist(), segment_median) #finds all interseprions with median
-                drop_center = cen_ind[0]
-                segment_cent_index = drop_center - 5 + segment_from_index
-                self.idrops.append(segment_cent_index)
-                labeled_drop = data[segment_cent_index - self.state['WINDOW_SIZE']: segment_cent_index + self.state['WINDOW_SIZE'] + 1]
-                labeled_drop = labeled_drop - min(labeled_drop)
-                patterns_list.append(labeled_drop)
-
-        self.model_drop = utils.get_av_model(patterns_list)
+                    segment_max_line = max_jump
+                    segment_min_line = min_jump
+                    segment_median = (max_jump - min_jump) / 2 + min_jump               
+                jump_height = 0.95 * (segment_max_line - segment_min_line)
+                jump_height_list.append(jump_height)
+                jump_length = utils.find_jump_length(segment_data, segment_min_line, segment_max_line)
+                jump_length_list.append(jump_length)
+                cen_ind = utils.intersection_segment(flat_segment.tolist(), segment_median) #finds all interseprions with median
+                jump_center = cen_ind[0]
+                segment_cent_index = jump_center - 5 + segment_from_index
+                self.ijumps.append(segment_cent_index)
+                labeled_jump = data[segment_cent_index - self.state['WINDOW_SIZE'] : segment_cent_index + self.state['WINDOW_SIZE'] + 1]
+                labeled_jump = labeled_jump - min(labeled_jump)
+                patterns_list.append(labeled_jump)
+                
+        self.model_jump = utils.get_av_model(patterns_list)
         for n in range(len(segments)):
-            labeled_drop = data[self.idrops[n] - self.state['WINDOW_SIZE']: self.idrops[n] + self.state['WINDOW_SIZE'] + 1]
-            labeled_drop = labeled_drop - min(labeled_drop)
-            auto_convolve = scipy.signal.fftconvolve(labeled_drop, labeled_drop)
-            convolve_drop = scipy.signal.fftconvolve(labeled_drop, self.model_drop)
+            labeled_jump = data[self.ijumps[n] - self.state['WINDOW_SIZE']: self.ijumps[n] + self.state['WINDOW_SIZE'] + 1]
+            labeled_jump = labeled_jump - min(labeled_jump)
+            auto_convolve = scipy.signal.fftconvolve(labeled_jump, labeled_jump)
+            convolve_jump = scipy.signal.fftconvolve(labeled_jump, self.model_jump)
             convolve_list.append(max(auto_convolve))
-            convolve_list.append(max(convolve_drop))
-
+            convolve_list.append(max(convolve_jump))
+            
         del_conv_list = []
         for segment in segments:
             if segment['deleted']:
@@ -104,12 +104,12 @@ class DropModel(Model):
                 antipeaks_kde = argrelextrema(np.array(ax_list), np.less)[0]
                 segment_median = ax_list[antipeaks_kde[0], 0]
                 cen_ind = utils.intersection_segment(flat_segment.tolist(), segment_median) #finds all interseprions with median
-                drop_center = cen_ind[0] # or -1? test
-                segment_cent_index = drop_center - 5 + segment_from_index
-                deleted_drop = data[segment_cent_index - self.state['WINDOW_SIZE'] : segment_cent_index + self.state['WINDOW_SIZE'] + 1]
-                deleted_drop = deleted_drop - min(labeled_drop)
-                del_conv_drop = scipy.signal.fftconvolve(deleted_drop, self.model_drop)
-                del_conv_list.append(max(del_conv_drop))
+                jump_center = cen_ind[0]
+                segment_cent_index = jump_center - 5 + segment_from_index
+                deleted_jump = data[segment_cent_index - self.state['WINDOW_SIZE'] : segment_cent_index + self.state['WINDOW_SIZE'] + 1]
+                deleted_jump = deleted_jump - min(labeled_jump)
+                del_conv_jump = scipy.signal.fftconvolve(deleted_jump, self.model_jump)
+                del_conv_list.append(max(del_conv_jump)) 
 
         if len(confidences) > 0:
             self.state['confidence'] = float(min(confidences))
@@ -120,27 +120,27 @@ class DropModel(Model):
             self.state['convolve_max'] = float(max(convolve_list))
         else:
             self.state['convolve_max'] = self.state['WINDOW_SIZE']
-
+            
         if len(convolve_list) > 0:
             self.state['convolve_min'] = float(min(convolve_list))
         else:
             self.state['convolve_min'] = self.state['WINDOW_SIZE']
 
-        if len(drop_height_list) > 0:
-            self.state['DROP_HEIGHT'] = int(min(drop_height_list))
+        if len(jump_height_list) > 0:
+            self.state['JUMP_HEIGHT'] = float(min(jump_height_list))
         else:
-            self.state['DROP_HEIGHT'] = 1
+            self.state['JUMP_HEIGHT'] = 1
 
-        if len(drop_length_list) > 0:
-            self.state['DROP_LENGTH'] = int(max(drop_length_list))
+        if len(jump_length_list) > 0:
+            self.state['JUMP_LENGTH'] = int(max(jump_length_list))
         else:
-            self.state['DROP_LENGTH'] = 1
-
+            self.state['JUMP_LENGTH'] = 1
+            
         if len(del_conv_list) > 0:
             self.state['conv_del_min'] = float(min(del_conv_list))
         else:
             self.state['conv_del_min'] = self.state['WINDOW_SIZE']
-
+            
         if len(del_conv_list) > 0:
             self.state['conv_del_max'] = float(max(del_conv_list))
         else:
@@ -148,45 +148,38 @@ class DropModel(Model):
 
     def do_predict(self, dataframe: pd.DataFrame) -> list:
         data = dataframe['value']
-        possible_drops = utils.find_drop(data, self.state['DROP_HEIGHT'], self.state['DROP_LENGTH'] + 1)
+        possible_jumps = utils.find_jump(data, self.state['JUMP_HEIGHT'], self.state['JUMP_LENGTH'] + 1)
 
-        return self.__filter_prediction(possible_drops, data)
+        return self.__filter_prediction(possible_jumps, data)
 
-    def __filter_prediction(self, segments: list, data: list):
+    def __filter_prediction(self, segments, data):
         delete_list = []
         variance_error = self.state['WINDOW_SIZE']
-        print("variance_error: {}".format(variance_error))
-        print("segments before first filtration: {}".format(segments))
-        close_patterns = utils.close_filtration(segments, variance_error)
-        segments = utils.best_pat(close_patterns, data, "min")
-        print("segments after first filtration: {}".format(segments))
-        if len(segments) == 0 or len(self.idrops) == 0 :
+        close_patterns = utils.close_filtering(segments, variance_error)
+        segments = utils.best_pat(close_patterns, data, 'max')
+            
+        if len(segments) == 0 or len(self.ijumps) == 0 :
             segments = []
             return segments
-        pattern_data = self.model_drop
-        print("common convole: min {1}, max {0}".format(self.state['convolve_max'] * 1.05, self.state['convolve_min'] * 0.95))
-        print("delete convolve: min {1}, max {0}".format(self.state['conv_del_max'] * 1.02, self.state['conv_del_min'] * 0.98))
+        pattern_data = self.model_jump
+        upper_bound = self.state['convolve_max'] * 1.2
+        lower_bound = self.state['convolve_min'] * 0.8
+        delete_up_bound = self.state['conv_del_max'] * 1.02
+        delete_low_bound = self.state['conv_del_min'] * 0.98
         for segment in segments:
             if segment > self.state['WINDOW_SIZE'] and segment < (len(data) - self.state['WINDOW_SIZE']):
                 convol_data = data[segment - self.state['WINDOW_SIZE'] : segment + self.state['WINDOW_SIZE'] + 1]
                 conv = scipy.signal.fftconvolve(convol_data, pattern_data)
-                upper_bound = self.state['convolve_max'] * 1.2
-                lower_bound = self.state['convolve_min'] * 0.8
-                delete_up_bound = self.state['conv_del_max'] * 1.02
-                delete_low_bound = self.state['conv_del_min'] * 0.98
-                print("max conv: {0}, index: {1}".format(max(conv), segment))
                 try:
                     if max(conv) > upper_bound or max(conv) < lower_bound:
                         delete_list.append(segment)
                     elif max(conv) < delete_up_bound and max(conv) > delete_low_bound:
-                        print("this must be deleted: {0}, index: {1}".format(max(conv), segment))
                         delete_list.append(segment)
                 except ValueError:
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
-
         for item in delete_list:
             segments.remove(item)
-        print("return segments: {}".format(segments))
+
         return set(segments)

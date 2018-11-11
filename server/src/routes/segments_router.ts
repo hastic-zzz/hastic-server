@@ -1,32 +1,40 @@
 import * as AnalyticsController from '../controllers/analytics_controller';
 
-import { AnalyticUnitId, AnalyticUnitStatus } from '../models/analytic_unit_model';
+import { AnalyticUnitId } from '../models/analytic_unit_model';
 import * as Segment from '../models/segment_model';
 
 import * as Router from 'koa-router';
 
 
 async function getSegments(ctx: Router.IRouterContext) {
-  let id: AnalyticUnitId = ctx.request.query.id;
-  if(id === undefined || id === '') {
-    throw new Error('analyticUnitId (id) is missing');
-  }
-  let query: Segment.FindManyQuery = {};
+  try {
+    let id: AnalyticUnitId = ctx.request.query.id;
+    if(id === undefined || id === '') {
+      throw new Error('analyticUnitId (id) is missing');
+    }
+    let query: Segment.FindManyQuery = {};
 
-  if(!isNaN(+ctx.request.query.lastSegmentId)) {
-    query.intexGT = +ctx.request.query.lastSegmentId;
-  }
-  if(!isNaN(+ctx.request.query.from)) {
-    query.timeFromGTE = +ctx.request.query.from;
-  }
-  if(!isNaN(+ctx.request.query.to)) {
-    query.timeToLTE = +ctx.request.query.to;
-  }
+    if(!isNaN(+ctx.request.query.lastSegmentId)) {
+      query.intexGT = +ctx.request.query.lastSegmentId;
+    }
+    if(!isNaN(+ctx.request.query.from)) {
+      query.timeFromGTE = +ctx.request.query.from;
+    }
+    if(!isNaN(+ctx.request.query.to)) {
+      query.timeToLTE = +ctx.request.query.to;
+    }
 
-  let segments = await Segment.findMany(id, query);
+    let segments = await Segment.findMany(id, query);
 
-  ctx.response.body = { segments };
-
+    ctx.response.body = { segments };
+  } catch(e) {
+    console.error(e);
+    ctx.response.status = 500;
+    ctx.response.body = {
+      code: 500,
+      message: `GET /segments error: ${e.message}`
+    };
+  }
 }
 
 async function updateSegments(ctx: Router.IRouterContext) {
@@ -49,10 +57,11 @@ async function updateSegments(ctx: Router.IRouterContext) {
     ctx.response.body = { addedIds, removed };
     
   } catch(e) {
+    console.error(e);
     ctx.response.status = 500;
     ctx.response.body = {
       code: 500,
-      message: `Learning error: ${e.message}`
+      message: `PATCH /segments (learning) error: ${e.message}`
     };
   }
 }
