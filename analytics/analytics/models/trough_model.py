@@ -64,7 +64,7 @@ class TroughModel(Model):
                 segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
                 segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
                 segment_data = data[segment_from_index: segment_to_index + 1]
-                percent_of_nans = utils.nan_checker(segment_data)
+                percent_of_nans = utils.nan_checker(segment_data)[0]
                 if percent_of_nans > 0 or len(segment_data) == 0:
                     continue
                 del_min_index = segment_data.idxmin()
