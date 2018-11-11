@@ -180,7 +180,7 @@ class DropModel(Model):
                 try:
                     if max(conv) > upper_bound or max(conv) < lower_bound:
                         delete_list.append(segment)
-                    elif max(conv) < delete_up_bound and max(conv) > delete_low_bound:)
+                    elif max(conv) < delete_up_bound and max(conv) > delete_low_bound:
                         delete_list.append(segment)
                 except ValueError:
                     delete_list.append(segment)
