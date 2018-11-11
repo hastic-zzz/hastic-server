@@ -122,8 +122,6 @@ class PeakModel(Model):
         if len(segments) == 0 or len(self.ipeaks) == 0:
             return []
         pattern_data = self.model_peak
-        print("common convole: min {1}, max {0}".format(self.state['convolve_max'] * 1.05, self.state['convolve_min'] * 0.95))
-        print("delete convolve: min {1}, max {0}".format(self.state['conv_del_max'] * 1.02, self.state['conv_del_min'] * 0.98))
         for segment in segments:
             if segment > self.state['WINDOW_SIZE']:
                 convol_data = data[segment - self.state['WINDOW_SIZE']: segment + self.state['WINDOW_SIZE'] + 1]
@@ -137,7 +135,6 @@ class PeakModel(Model):
                     pattern_data = utils.nan_for_zero(convol_data, nan_list)
                     pattern_data = utils.nan_for_zero(pattern_data, nan_list)
                 conv = scipy.signal.fftconvolve(convol_data, pattern_data)
-                print("max conv: {0}, index: {1}".format(max(conv), segment))
                 if max(conv) > self.state['convolve_max'] * 1.05 or max(conv) < self.state['convolve_min'] * 0.95:
                     delete_list.append(segment)
                 elif max(conv) < self.state['conv_del_max'] * 1.02 and max(conv) > self.state['conv_del_min'] * 0.98:
@@ -146,5 +143,4 @@ class PeakModel(Model):
                 delete_list.append(segment)
         for item in delete_list:
             segments.remove(item)
-        print("return segments: {}".format(segments))
         return set(segments)

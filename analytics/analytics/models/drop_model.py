@@ -161,8 +161,6 @@ class DropModel(Model):
             segments = []
             return segments
         pattern_data = self.model_drop
-        print("common convole: min {1}, max {0}".format(self.state['convolve_max'] * 1.05, self.state['convolve_min'] * 0.95))
-        print("delete convolve: min {1}, max {0}".format(self.state['conv_del_max'] * 1.02, self.state['conv_del_min'] * 0.98))
         for segment in segments:
             if segment > self.state['WINDOW_SIZE'] and segment < (len(data) - self.state['WINDOW_SIZE']):
                 convol_data = data[segment - self.state['WINDOW_SIZE'] : segment + self.state['WINDOW_SIZE'] + 1]
@@ -179,12 +177,10 @@ class DropModel(Model):
                 lower_bound = self.state['convolve_min'] * 0.8
                 delete_up_bound = self.state['conv_del_max'] * 1.02
                 delete_low_bound = self.state['conv_del_min'] * 0.98
-                print("max conv: {0}, index: {1}".format(max(conv), segment))
                 try:
                     if max(conv) > upper_bound or max(conv) < lower_bound:
                         delete_list.append(segment)
-                    elif max(conv) < delete_up_bound and max(conv) > delete_low_bound:
-                        print("this must be deleted: {0}, index: {1}".format(max(conv), segment))
+                    elif max(conv) < delete_up_bound and max(conv) > delete_low_bound:)
                         delete_list.append(segment)
                 except ValueError:
                     delete_list.append(segment)
@@ -193,5 +189,4 @@ class DropModel(Model):
 
         for item in delete_list:
             segments.remove(item)
-        print("return segments: {}".format(segments))
         return set(segments)

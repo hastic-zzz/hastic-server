@@ -50,7 +50,6 @@ class TroughModel(Model):
                 patterns_list.append(labeled_trough)
                 
         self.model_trough = utils.get_av_model(patterns_list)
-        print("self.model_trough: {}".format(self.model_trough))
         for n in range(len(segments)):
             labeled_trough = data[self.itroughs[n] - self.state['WINDOW_SIZE']: self.itroughs[n] + self.state['WINDOW_SIZE'] + 1]
             labeled_trough = labeled_trough - min(labeled_trough)
