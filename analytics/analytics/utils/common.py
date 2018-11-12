@@ -258,7 +258,7 @@ def nan_checker(segment):
     for i, val in enumerate(nan_list):
         if val:
             nan_count += 1
-            nan_inexes.append(i)
+            nan_indexes.append(i)
     return nan_count / len(segment), nan_indexes
 
 def nan_for_zero(segment, nan_list):
