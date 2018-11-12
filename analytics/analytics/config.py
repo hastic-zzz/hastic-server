@@ -2,7 +2,7 @@ import os
 import json
 
 
-PARENT_FOLDER = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+PARENT_FOLDER = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 CONFIG_FILE = os.path.join(PARENT_FOLDER, 'config.json')
 
 
@@ -10,6 +10,8 @@ config_exists = os.path.isfile(CONFIG_FILE)
 if config_exists:
     with open(CONFIG_FILE) as f:
         config = json.load(f)
+else:
+    print('Config file %s doesn`t exist, using defaults' % CONFIG_FILE)
 
 
 def get_config_field(field, default_val = None):
