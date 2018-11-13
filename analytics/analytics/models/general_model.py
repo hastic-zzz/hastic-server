@@ -37,7 +37,7 @@ class GeneralModel(Model):
                 segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
                 segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
                 segment_data = data[segment_from_index: segment_to_index + 1]
-                percent_of_nans = utils.nan_checker(segment_data)[0]
+                percent_of_nans = segment_data.count(np.NaN) / len(segment_data)
                 if percent_of_nans > 0 or len(segment_data) == 0:
                     continue
                 x = segment_from_index + math.ceil((segment_to_index - segment_from_index) / 2)
