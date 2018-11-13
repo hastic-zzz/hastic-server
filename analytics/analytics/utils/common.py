@@ -229,6 +229,8 @@ def get_av_model(patterns_list):
     return model_pat
 
 def close_filtering(pat_list, win_size):
+    if len(pat_list) == 0:
+        return []
     s = [[pat_list[0]]]
     k = 0
     for i in range(1, len(pat_list)):
