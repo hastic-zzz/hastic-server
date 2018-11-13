@@ -39,7 +39,7 @@ class DropModel(Model):
                 segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
                 segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
                 segment_data = data[segment_from_index: segment_to_index + 1]
-                percent_of_nans = segment_data.count(np.NaN) / len(segment_data)
+                percent_of_nans = segment_data.isnull().sum() / len(segment_data)
                 if percent_of_nans > 0 or len(segment_data) == 0:
                     continue
                 segment_min = min(segment_data)
@@ -164,7 +164,7 @@ class DropModel(Model):
         for segment in segments:
             if segment > self.state['WINDOW_SIZE'] and segment < (len(data) - self.state['WINDOW_SIZE']):
                 convol_data = data[segment - self.state['WINDOW_SIZE'] : segment + self.state['WINDOW_SIZE'] + 1]
-                percent_of_nans = convol_data.count(np.NaN) / len(convol_data)
+                percent_of_nans = convol_data.isnull().sum() / len(convol_data)
                 if percent_of_nans > 0.5:
                     delete_list.append(segment)
                     continue
