@@ -210,10 +210,16 @@ def peak_finder(data, size):
 def ar_mean(numbers):
     return float(sum(numbers)) / max(len(numbers), 1)
 
+
 def get_av_model(patterns_list):
+    if len(patterns_list) == 0:
+        return []
+
     x = len(patterns_list[0])
     if len(patterns_list) > 1 and len(patterns_list[1]) != x:
-        raise NameError('All elements of patterns_list should have same length')
+        raise NameError(
+            'All elements of patterns_list should have same length')
+
     model_pat = []
     for i in range(x):
         av_val = []
