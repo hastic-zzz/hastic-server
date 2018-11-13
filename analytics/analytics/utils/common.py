@@ -211,9 +211,12 @@ def ar_mean(numbers):
     return float(sum(numbers)) / max(len(numbers), 1)
 
 def get_av_model(patterns_list):
-    x = len(patterns_list[0])
-    if len(patterns_list) > 1 and len(patterns_list[1]) != x:
+    if len(patterns_list) > 1 and len(patterns_list[1]) != len(patterns_list[0]):
         raise NameError('All elements of patterns_list should have same length')
+    elif len(patterns_list) == 0:
+        x = 0
+    else:
+        x = len(patterns_list[0])
     model_pat = []
     for i in range(x):
         av_val = []
