@@ -39,7 +39,7 @@ class JumpModel(Model):
         for segment in segments:
             if segment['labeled']:
                 segment_from_index, segment_to_index, segment_data = parse_segment(segment, dataframe)
-                percent_of_nans = utils.nan_checker(segment_data)[0]
+                percent_of_nans = segment_data.count(np.NaN) / len(segment_data)
                 if percent_of_nans > 0 or len(segment_data) == 0:
                     continue    
                 segment_min = min(segment_data)
@@ -170,14 +170,14 @@ class JumpModel(Model):
         for segment in segments:
             if segment > self.state['WINDOW_SIZE'] and segment < (len(data) - self.state['WINDOW_SIZE']):
                 convol_data = data[segment - self.state['WINDOW_SIZE'] : segment + self.state['WINDOW_SIZE'] + 1]
-                percent_of_nans = utils.nan_checker(convol_data)[0]
+                percent_of_nans = convol_data.count(np.NaN) / len(convol_data)
                 if percent_of_nans > 0.5:
                     delete_list.append(segment)
                     continue
-                elif 0 < percent_of_nans < 0.5:
-                    nan_list = utils.nan_checker(convol_data)[1]
-                    convol_data = utils.nan_for_zero(convol_data, nan_list)
-                    pattern_data = utils.nan_for_zero(pattern_data, nan_list)
+                elif 0 < percent_of_nans <= 0.5:
+                    nan_list = utils.find_nan_indexes(convol_data)
+                    convol_data = utils.nan_to_zero(convol_data, nan_list)
+                    pattern_data = utils.nan_to_zero(pattern_data, nan_list)
                 conv = scipy.signal.fftconvolve(convol_data, pattern_data)
                 try:
                     if max(conv) > upper_bound or max(conv) < lower_bound:
