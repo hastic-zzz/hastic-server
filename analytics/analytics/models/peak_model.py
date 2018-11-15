@@ -50,8 +50,8 @@ class PeakModel(Model):
                 patterns_list.append(labeled_peak)
 
         self.model_peak = utils.get_av_model(patterns_list)
-        for n in range(len(segments)): #labeled segments
-            labeled_peak = data[self.ipeaks[n] - self.state['WINDOW_SIZE']: self.ipeaks[n] + self.state['WINDOW_SIZE'] + 1]
+        for ipeak in self.ipeaks: #labeled segments
+            labeled_peak = data[ipeak - self.state['WINDOW_SIZE']: ipeak + self.state['WINDOW_SIZE'] + 1]
             labeled_peak = labeled_peak - min(labeled_peak)
             auto_convolve = scipy.signal.fftconvolve(labeled_peak, labeled_peak)
             convolve_peak = scipy.signal.fftconvolve(labeled_peak, self.model_peak)
