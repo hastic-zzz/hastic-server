@@ -48,8 +48,8 @@ class GeneralModel(Model):
                 patterns_list.append(segment_data)
         
         self.model_gen = utils.get_av_model(patterns_list)
-        for n in range(len(segments)): #labeled segments
-            labeled_data = data[self.ipats[n] - self.state['WINDOW_SIZE']: self.ipats[n] + self.state['WINDOW_SIZE'] + 1]
+        for ipat in self.ipats: #labeled segments
+            labeled_data = data[ipat - self.state['WINDOW_SIZE']: ipat + self.state['WINDOW_SIZE'] + 1]
             labeled_data = labeled_data - min(labeled_data)
             auto_convolve = scipy.signal.fftconvolve(labeled_data, labeled_data)
             convolve_data = scipy.signal.fftconvolve(labeled_data, self.model_gen)
