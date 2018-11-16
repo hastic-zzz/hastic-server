@@ -4,7 +4,11 @@ import pandas as pd
 
 def exponential_smoothing(series, alpha):
     result = [series[0]]
+    if np.isnan(result):
+        result = [0]
     for n in range(1, len(series)):
+        if np.isnan(series[n]):
+            series[n] = 0
         result.append(alpha * series[n] + (1 - alpha) * result[n - 1])
     return result
 
