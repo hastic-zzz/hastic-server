@@ -1,5 +1,6 @@
 from typing import Dict
 import pandas as pd
+import numpy as np
 import logging, traceback
 
 import detectors
@@ -61,6 +62,7 @@ def prepare_data(data: list):
     data = pd.DataFrame(data, columns=['timestamp', 'value'])
 
     data['timestamp'] = pd.to_datetime(data['timestamp'], unit='ms')
-    data['value'] = data['value'] - min(data['value'])
+    if not np.isnan(min(data['value'])):
+        data['value'] = data['value'] - min(data['value'])
 
     return data

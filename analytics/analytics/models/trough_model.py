@@ -50,8 +50,8 @@ class TroughModel(Model):
                 patterns_list.append(labeled_trough)
                 
         self.model_trough = utils.get_av_model(patterns_list)
-        for n in range(len(segments)):
-            labeled_trough = data[self.itroughs[n] - self.state['WINDOW_SIZE']: self.itroughs[n] + self.state['WINDOW_SIZE'] + 1]
+        for itrough in self.itroughs:
+            labeled_trough = data[itrough - self.state['WINDOW_SIZE']: itrough + self.state['WINDOW_SIZE'] + 1]
             labeled_trough = labeled_trough - min(labeled_trough)
             auto_convolve = scipy.signal.fftconvolve(labeled_trough, labeled_trough)
             convolve_trough = scipy.signal.fftconvolve(labeled_trough, self.model_trough)
