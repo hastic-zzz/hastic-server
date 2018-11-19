@@ -19,3 +19,23 @@ def get_convolve(segments, av_model, data, window_size):
             convolve_list.append(max(auto_convolve))
             convolve_list.append(max(convolve_trough)
     return convolve_list
+
+def explore_segments(segments, dataframe):
+    confidences = []
+    ipeaks = []
+    patterns_list = []
+    for segment in segments:
+        if segment['labeled']:
+            segment_from_index, segment_to_index, segment_data = parse_segment(segment, dataframe)
+            percent_of_nans = segment_data.isnull().sum() / len(segment_data)
+            if percent_of_nans > 0 or len(segment_data) == 0:
+                continue
+            segment_min = min(segment_data)
+            segment_max = max(segment_data)
+            confidences.append(0.2 * (segment_max - segment_min))
+            segment_max_index = segment_data.idxmax()
+            ipeaks.append(segment_max_index)
+            labeled_peak = data[segment_max_index - self.state['WINDOW_SIZE']: segment_max_index + self.state['WINDOW_SIZE'] + 1]
+            labeled_peak = labeled_peak - min(labeled_peak)
+            patterns_list.append(labeled_peak)
+    return confidences, ipeaks, patterns_list
