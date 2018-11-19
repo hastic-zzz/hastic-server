@@ -33,17 +33,17 @@ You need only [nodejs >= 6.14](https://nodejs.org/en/download/) on your machine.
 
 ### Node 6
 ```
-wget https://github.com/hastic/hastic-server/releases/download/0.2.3-alpha/hastic-server-0.2.3-alpha-node-6.tar.gz
-tar -zxvf hastic-server-0.2.3-alpha-node-6.tar.gz
-cd hastic-server-0.2.3-alpha/server/dist
+wget https://github.com/hastic/hastic-server/releases/download/0.2.4-alpha/hastic-server-0.2.4-alpha-node-6.tar.gz
+tar -zxvf hastic-server-0.2.4-alpha-node-6.tar.gz
+cd hastic-server-0.2.4-alpha/server/dist
 node server
 ```
 
 ### Node 8
 ```
-wget https://github.com/hastic/hastic-server/releases/download/0.2.3-alpha/hastic-server-0.2.3-alpha-node-8.tar.gz
-tar -zxvf hastic-server-0.2.3-alpha-node-8.tar.gz
-cd hastic-server-0.2.3-alpha/server/dist
+wget https://github.com/hastic/hastic-server/releases/download/0.2.4-alpha/hastic-server-0.2.4-alpha-node-8.tar.gz
+tar -zxvf hastic-server-0.2.4-alpha-node-8.tar.gz
+cd hastic-server-0.2.4-alpha/server/dist
 node server
 ```
 
