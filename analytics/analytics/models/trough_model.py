@@ -50,7 +50,7 @@ class TroughModel(Model):
                 patterns_list.append(labeled_trough)
                 
         self.model_trough = utils.get_av_model(patterns_list)
-        convolve_list = get_convolve(self.itroughs, self.model_trough, data, self.state['WINDOW_SIZE'])
+        convolve_list = utils.get_convolve(self.itroughs, self.model_trough, data, self.state['WINDOW_SIZE'])
             
         del_conv_list = []
         for segment in segments:
