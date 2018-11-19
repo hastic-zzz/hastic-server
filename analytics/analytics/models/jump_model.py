@@ -79,13 +79,7 @@ class JumpModel(Model):
                 patterns_list.append(labeled_jump)
                 
         self.model_jump = utils.get_av_model(patterns_list)
-        for ijump in self.ijumps:
-            labeled_jump = data[ijump - self.state['WINDOW_SIZE']: ijump + self.state['WINDOW_SIZE'] + 1]
-            labeled_jump = labeled_jump - min(labeled_jump)
-            auto_convolve = scipy.signal.fftconvolve(labeled_jump, labeled_jump)
-            convolve_jump = scipy.signal.fftconvolve(labeled_jump, self.model_jump)
-            convolve_list.append(max(auto_convolve))
-            convolve_list.append(max(convolve_jump))
+        convolve_list = get_convolve(self.ijumps, self.model_jump, data, self.state['WINDOW_SIZE'])
             
         del_conv_list = []
         for segment in segments:
