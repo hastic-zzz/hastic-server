@@ -78,13 +78,7 @@ class DropModel(Model):
                 patterns_list.append(labeled_drop)
 
         self.model_drop = utils.get_av_model(patterns_list)
-        for idrop in self.idrops:
-            labeled_drop = data[idrop - self.state['WINDOW_SIZE']: idrop + self.state['WINDOW_SIZE'] + 1]
-            labeled_drop = labeled_drop - min(labeled_drop)
-            auto_convolve = scipy.signal.fftconvolve(labeled_drop, labeled_drop)
-            convolve_drop = scipy.signal.fftconvolve(labeled_drop, self.model_drop)
-            convolve_list.append(max(auto_convolve))
-            convolve_list.append(max(convolve_drop))
+        convolve_list = utils.get_convolve(self.idrops, self.model_drop, data, self.state['WINDOW_SIZE'])
 
         del_conv_list = []
         for segment in segments:
