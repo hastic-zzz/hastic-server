@@ -79,7 +79,7 @@ class JumpModel(Model):
                 patterns_list.append(labeled_jump)
                 
         self.model_jump = utils.get_av_model(patterns_list)
-        convolve_list = get_convolve(self.ijumps, self.model_jump, data, self.state['WINDOW_SIZE'])
+        convolve_list = utils.get_convolve(self.ijumps, self.model_jump, data, self.state['WINDOW_SIZE'])
             
         del_conv_list = []
         for segment in segments:
