@@ -20,7 +20,7 @@ def get_convolve(segments, av_model, data, window_size):
             convolve_list.append(max(convolve_trough)
     return convolve_list
 
-def explore_segments(segments, dataframe):
+def process_segments_parameters(segments, dataframe):
     confidences = []
     ipeaks = []
     patterns_list = []
