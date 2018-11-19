@@ -20,12 +20,12 @@ def get_convolve(segments, av_model, data, window_size):
             convolve_list.append(max(convolve_trough)
     return convolve_list
 
-def process_segments_parameters(segments, dataframe):
+def process_segments_parameters(segments, dataframe, status):
     confidences = []
     ipeaks = []
     patterns_list = []
     for segment in segments:
-        if segment['labeled']:
+        if segment[status]:
             segment_from_index, segment_to_index, segment_data = parse_segment(segment, dataframe)
             percent_of_nans = segment_data.isnull().sum() / len(segment_data)
             if percent_of_nans > 0 or len(segment_data) == 0:
