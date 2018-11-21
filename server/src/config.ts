@@ -75,7 +75,7 @@ function getGitInfo() {
   const rev = fs.readFileSync(gitHeadFile).toString();
   let branchPath = rev.indexOf(':') === -1 ? rev : rev.slice(5, -1);
   let branch = branchPath.split('/').pop();
-  let commitHash = fs.readFileSync(`${gitRoot}/${branchPath}`).toString().slice(0, -1);
+  let commitHash = fs.readFileSync(`${gitRoot}/${branchPath}`).toString().slice(0, 7);
   return { branch, commitHash };
 }
 
