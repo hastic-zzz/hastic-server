@@ -1,0 +1,4 @@
+*
+!.git/HEAD
+!.git/refs
+!server
