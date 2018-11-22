@@ -29,12 +29,36 @@ class PeakModel(Model):
 
     def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
         data = dataframe['value']
-        confidences, self.ipeaks, patterns_list = utils.process_segments_parameters(segments, dataframe, 'labeled')
+        confidences = []
+        convolve_list = []
+        patterns_list = []
+        for segment in segments:
+            if segment['labeled']:
+                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
+                percent_of_nans = segment_data.isnull().sum() / len(segment_data)
+                if percent_of_nans > 0 or len(segment_data) == 0:
+                    continue
+                confidence = utils.find_confidence(segment_data)
+                confidences.append(confidence)
+                segment_max_index = segment_data.idxmax()
+                self.ipeaks.append(segment_max_index)
+                labeled_peak = utils.get_interval(data, segment_max_index, self.state['WINDOW_SIZE'])
+                labeled_peak = utils.subtract_min_without_nan(labeled_peak)
+                patterns_list.append(labeled_peak)
         self.model_peak = utils.get_av_model(patterns_list)
         convolve_list = utils.get_convolve(self.ipeaks, self.model_peak, data, self.state['WINDOW_SIZE'])
         
-        ipeak_dels = utils.process_segments_parameters(segments, dataframe, 'deleted')[0]
-        del_conv_list = utils.get_convolve(ipeak_dels, self.model_peak, data, self.state['WINDOW_SIZE'])
+        del_conv_list = []
+        for segment in segments:
+            if segment['deleted']:
+                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
+                if percent_of_nans > 0 or len(segment_data) == 0:
+                    continue
+                del_max_index = segment_data.idxmax()
+                deleted_peak = utils.get_interval(data, del_max_index, self.state['WINDOW_SIZE'])
+                deleted_peak = utils.subtract_min_without_nan(deleted_peak)
+                del_conv_peak = scipy.signal.fftconvolve(deleted_peak, self.model_peak)
+                del_conv_list.append(max(del_conv_peak))
 
         if len(confidences) > 0:
             self.state['confidence'] = float(min(confidences))
@@ -88,8 +112,8 @@ class PeakModel(Model):
         pattern_data = self.model_peak
         for segment in segments:
             if segment > self.state['WINDOW_SIZE']:
-                convol_data = data[segment - self.state['WINDOW_SIZE']: segment + self.state['WINDOW_SIZE'] + 1]
-                convol_data = convol_data - min(convol_data)
+                convol_data = utils.get_interval(data, segment, self.state['WINDOW_SIZE'])
+                convol_data = utils.subtract_min_without_nan(convol_data)
                 percent_of_nans = convol_data.isnull().sum() / len(convol_data)
                 if percent_of_nans > 0.5:
                     delete_list.append(segment)
