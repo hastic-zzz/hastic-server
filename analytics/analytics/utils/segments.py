@@ -20,22 +20,18 @@ def get_convolve(segments, av_model, data, window_size):
             convolve_list.append(max(convolve_trough)
     return convolve_list
 
-def process_segments_parameters(segments, dataframe, status):
-    confidences = []
-    ipeaks = []
-    patterns_list = []
-    for segment in segments:
-        if segment[status]:
-            segment_from_index, segment_to_index, segment_data = parse_segment(segment, dataframe)
-            percent_of_nans = segment_data.isnull().sum() / len(segment_data)
-            if percent_of_nans > 0 or len(segment_data) == 0:
-                continue
-            segment_min = min(segment_data)
-            segment_max = max(segment_data)
-            confidences.append(0.2 * (segment_max - segment_min))
-            segment_max_index = segment_data.idxmax()
-            ipeaks.append(segment_max_index)
-            labeled_peak = data[segment_max_index - self.state['WINDOW_SIZE']: segment_max_index + self.state['WINDOW_SIZE'] + 1]
-            labeled_peak = labeled_peak - min(labeled_peak)
-            patterns_list.append(labeled_peak)
-    return confidences, ipeaks, patterns_list
+def find_confidence(segment):
+    segment_min = min(segment)
+    segment_max = max(data)
+    return 0.2 * (segment_max - segment_min)
+
+def subtract_min_without_nan(segment):
+    if not np.isnan(min(segment)):
+        segment = segment - min(segment)
+    return segment
+
+def get_interval(data, center, window_size):
+    left_bound = center - window_size
+    right_bound = center + window_size + 1
+    return data[left_bound, right_bound]
+                                 
