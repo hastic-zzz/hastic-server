@@ -13,7 +13,7 @@ def get_convolve(segments, av_model, data, window_size):
     convolve_list = []
     for segment in segments:
             labeled_segment = data[segment - window_size: segment + window_size + 1]
-            labeled_segment = labeled_segment - min(labeled_segment)
+            labeled_segment = utils.subtract_min_without_nan(labeled_segment)
             auto_convolve = scipy.signal.fftconvolve(labeled_segment, labeled_segment)
             convolve_segment = scipy.signal.fftconvolve(labeled_segment, av_model)
             convolve_list.append(max(auto_convolve))
@@ -22,7 +22,7 @@ def get_convolve(segments, av_model, data, window_size):
 
 def find_confidence(segment):
     segment_min = min(segment)
-    segment_max = max(data)
+    segment_max = max(segment)
     return 0.2 * (segment_max - segment_min)
 
 def subtract_min_without_nan(segment):
