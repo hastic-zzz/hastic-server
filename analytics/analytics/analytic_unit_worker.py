@@ -16,7 +16,7 @@ class AnalyticUnitWorker:
         self.detector = detector
 
     async def do_learn(self, segments: list, data: pd.DataFrame, cache: Optional[AnalyticUnitCache]) -> AnalyticUnitCache:
-        return await self.detector.train(data, segments, cache)
+        return self.detector.train(data, segments, cache)
 
     async def do_predict(self, data: pd.DataFrame, cache: Optional[AnalyticUnitCache]) -> dict:
-        return await self.detector.predict(data, cache)
+        return self.detector.predict(data, cache)

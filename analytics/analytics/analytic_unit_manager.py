@@ -12,25 +12,40 @@ AnalyticUnitId = str
 analytic_workers: Dict[AnalyticUnitId, AnalyticUnitWorker] = dict()
 
 
-def get_detector_by_type(analytic_unit_type) -> detectors.Detector:
+def __get_detector_by_type(analytic_unit_type) -> detectors.Detector:
     return detectors.PatternDetector(analytic_unit_type)
 
-def ensure_worker(analytic_unit_id, analytic_unit_type) -> AnalyticUnitWorker:
+def __ensure_worker(analytic_unit_id, analytic_unit_type) -> AnalyticUnitWorker:
     if analytic_unit_id in analytic_workers:
         # TODO: check that type is the same
         return analytic_workers[analytic_unit_id]
-    detector = get_detector_by_type(analytic_unit_type)
+    detector = __get_detector_by_type(analytic_unit_type)
     worker = AnalyticUnitWorker(analytic_unit_id, detector)
     analytic_workers[analytic_unit_id] = worker
     return worker
+
+def __prepare_data(data: list):
+    """
+        Takes list
+        - converts it into pd.DataFrame,
+        - converts 'timestamp' column to pd.Datetime,
+        - subtracts min value from dataset
+    """
+    data = pd.DataFrame(data, columns=['timestamp', 'value'])
+
+    data['timestamp'] = pd.to_datetime(data['timestamp'], unit='ms')
+    if not np.isnan(min(data['value'])):
+        data['value'] = data['value'] - min(data['value'])
+
+    return data
 
 async def handle_analytic_task(task):
     try:
         payload = task['payload']
 
-        worker = ensure_worker(task['analyticUnitId'], payload['pattern'])
+        worker = __ensure_worker(task['analyticUnitId'], payload['pattern'])
 
-        data = prepare_data(payload['data'])
+        data = __prepare_data(payload['data'])
         result_payload = {}
         if task['type'] == 'LEARN':
             result_payload = await worker.do_learn(payload['segments'], data, payload['cache'])
@@ -52,17 +67,4 @@ async def handle_analytic_task(task):
             'error': str(e)
         }
 
-def prepare_data(data: list):
-    """
-        Takes list
-        - converts it into pd.DataFrame,
-        - converts 'timestamp' column to pd.Datetime,
-        - subtracts min value from dataset
-    """
-    data = pd.DataFrame(data, columns=['timestamp', 'value'])
 
-    data['timestamp'] = pd.to_datetime(data['timestamp'], unit='ms')
-    if not np.isnan(min(data['value'])):
-        data['value'] = data['value'] - min(data['value'])
-
-    return data
