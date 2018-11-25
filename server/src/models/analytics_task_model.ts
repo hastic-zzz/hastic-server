@@ -8,7 +8,8 @@ const UID_LENGTH = 16;
 export type AnalyticsTaskId = string;
 export enum AnalyticsTaskType { 
   LEARN = 'LEARN',
-  PREDICT = 'PREDICT'
+  PREDICT = 'PREDICT',
+  CANCEL = 'CANCEL'
 };
 
 export class AnalyticsTask {
