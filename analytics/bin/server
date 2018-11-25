@@ -13,7 +13,7 @@ import asyncio
 import traceback
 
 import services
-from analytic_unit_manager import handle_analytic_task
+from analytic_unit_manager import AnalyticUnitManager
 
 
 root = logging.getLogger()
@@ -22,6 +22,8 @@ logger = logging.getLogger('SERVER')
 
 server_service: services.ServerService = None
 data_service: services.DataService = None
+analytic_unit_manager: AnalyticUnitManager = None
+
 
 root.setLevel(logging.DEBUG)
 
@@ -34,8 +36,6 @@ logging_handler.setLevel(logging.DEBUG)
 logging_handler.setFormatter(logging_formatter)
 
 root.addHandler(logging_handler)
-
-
 
 
 async def handle_task(task: object):
@@ -53,7 +53,7 @@ async def handle_task(task: object):
         message = services.server_service.ServerMessage('TASK_RESULT', task_result_payload)
         await server_service.send_message(message)
 
-        res = await handle_analytic_task(task)
+        res = await analytic_unit_manager.handle_analytic_task(task)
         res['_id'] = task['_id']
 
         message = services.server_service.ServerMessage('TASK_RESULT', res)
@@ -68,7 +68,6 @@ async def handle_message(message: services.ServerMessage):
     if message.method == 'TASK':
         await handle_task(message.payload)
 
-
 def init_services():
     logger.info("Starting services...")
     logger.info("Server...")
@@ -77,18 +76,20 @@ def init_services():
     logger.info("Data service...")
     data_service = services.DataService(server_service)
     logger.info("Ok")
+    logger.info("Analytic unit manager...")
+    analytic_unit_manager = AnalyticUnitManager()
+    logger.info("Ok")
 
-    return server_service, data_service
+    return server_service, data_service, analytic_unit_manager
 
 async def app_loop():
     await server_service.handle_loop()
-    # await asyncio.gather(server_service.handle_loop(), test_file_save())
 
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     logger.info("Ok")
-    server_service, data_service = init_services()
+    server_service, data_service, analytic_unit_manager = init_services()
     print('Analytics process is running') # we need to print to stdout and flush
     sys.stdout.flush()                    # because node.js expects it
 
