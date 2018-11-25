@@ -7,9 +7,12 @@ from typing import Optional
 class Detector(ABC):
 
     @abstractmethod
-    async def train(self, dataframe: DataFrame, segments: list, cache: Optional[AnalyticUnitCache]) -> AnalyticUnitCache:
+    def train(self, dataframe: DataFrame, segments: list, cache: Optional[AnalyticUnitCache]) -> AnalyticUnitCache:
+        """
+            Should be thread-safe with other detectors' train method
+        """
         pass
 
     @abstractmethod
-    async def predict(self, dataframe: DataFrame, cache: Optional[AnalyticUnitCache]) -> dict:
+    def predict(self, dataframe: DataFrame, cache: Optional[AnalyticUnitCache]) -> dict:
         pass

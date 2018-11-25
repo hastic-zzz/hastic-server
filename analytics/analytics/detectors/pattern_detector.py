@@ -35,14 +35,14 @@ class PatternDetector(Detector):
         self.model = resolve_model_by_pattern(self.pattern_type)
         window_size = 100
 
-    async def train(self, dataframe: pd.DataFrame, segments: list, cache: Optional[models.AnalyticUnitCache]) -> models.AnalyticUnitCache:
+    def train(self, dataframe: pd.DataFrame, segments: list, cache: Optional[models.AnalyticUnitCache]) -> models.AnalyticUnitCache:
         # TODO: pass only part of dataframe that has segments
         new_cache = self.model.fit(dataframe, segments, cache)
         return {
             'cache': new_cache
         }
 
-    async def predict(self, dataframe: pd.DataFrame, cache: Optional[models.AnalyticUnitCache]) -> dict:
+    def predict(self, dataframe: pd.DataFrame, cache: Optional[models.AnalyticUnitCache]) -> dict:
         # TODO: split and sleep (https://github.com/hastic/hastic-server/pull/124#discussion_r214085643)
         predicted = self.model.predict(dataframe, cache)
 
