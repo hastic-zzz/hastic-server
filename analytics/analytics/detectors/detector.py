@@ -8,6 +8,9 @@ class Detector(ABC):
 
     @abstractmethod
     def train(self, dataframe: DataFrame, segments: list, cache: Optional[AnalyticUnitCache]) -> AnalyticUnitCache:
+        """
+            Should be thread-safe with other detectors' train method
+        """
         pass
 
     @abstractmethod

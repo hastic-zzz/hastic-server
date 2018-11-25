@@ -2,12 +2,14 @@ from typing import Dict
 import pandas as pd
 import numpy as np
 import logging, traceback
+from concurrent.futures import Executor, ThreadPoolExecutor
 
 import detectors
 from analytic_unit_worker import AnalyticUnitWorker
 
 
 logger = logging.getLogger('AnalyticUnitManager')
+WORKERS_EXECUTORS = 20
 
 AnalyticUnitId = str
 
@@ -35,13 +37,14 @@ class AnalyticUnitManager:
 
     def __init__(self):
         self.analytic_workers: Dict[AnalyticUnitId, AnalyticUnitWorker] = dict()
+        self.workers_executor = ThreadPoolExecutor(max_workers=WORKERS_EXECUTORS)
 
     def __ensure_worker(self, analytic_unit_id, analytic_unit_type) -> AnalyticUnitWorker:
         if analytic_unit_id in self.analytic_workers:
             # TODO: check that type is the same
             return self.analytic_workers[analytic_unit_id]
         detector = get_detector_by_type(analytic_unit_type)
-        worker = AnalyticUnitWorker(analytic_unit_id, detector)
+        worker = AnalyticUnitWorker(analytic_unit_id, detector, self.workers_executor)
         self.analytic_workers[analytic_unit_id] = worker
         return worker
 
