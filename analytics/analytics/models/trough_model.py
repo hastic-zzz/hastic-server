@@ -29,12 +29,36 @@ class TroughModel(Model):
 
     def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
         data = dataframe['value']
-        confidences, self.itroughs, patterns_list = utils.process_segments_parameters(segments, dataframe, 'labeled')
+        confidences = []
+        convolve_list = []
+        patterns_list = []
+        for segment in segments:
+            if segment['labeled']:
+                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
+                percent_of_nans = segment_data.isnull().sum() / len(segment_data)
+                if percent_of_nans > 0 or len(segment_data) == 0:
+                    continue
+                confidence = utils.find_confidence(segment_data)
+                confidences.append(confidence)
+                segment_min_index = segment_data.idxmin()
+                self.itroughs.append(segment_min_index)
+                labeled_trough = utils.get_interval(data, segment_min_index, self.state['WINDOW_SIZE'])
+                labeled_trough = utils.subtract_min_without_nan(labeled_trough)
+                patterns_list.append(labeled_trough)
         self.model_trough = utils.get_av_model(patterns_list)
         convolve_list = utils.get_convolve(self.itroughs, self.model_trough, data, self.state['WINDOW_SIZE'])
         
-        itrough_dels = utils.process_segments_parameters(segments, dataframe, 'deleted')[0]
-        del_conv_list = utils.get_convolve(itrough_dels, self.model_trough, data, self.state['WINDOW_SIZE'])
+        del_conv_list = []
+        for segment in segments:
+            if segment['deleted']:
+                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
+                if percent_of_nans > 0 or len(segment_data) == 0:
+                    continue
+                del_min_index = segment_data.idxmin()
+                deleted_trough = utils.get_interval(data, del_min_index, self.state['WINDOW_SIZE'])
+                deleted_trough = utils.subtract_min_without_nan(deleted_trough)
+                del_conv_trough = scipy.signal.fftconvolve(deleted_trough, self.model_trough)
+                del_conv_list.append(max(del_conv_trough))
 
         if len(confidences) > 0:
             self.state['confidence'] = float(min(confidences))
