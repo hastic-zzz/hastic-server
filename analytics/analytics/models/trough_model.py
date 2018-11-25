@@ -110,10 +110,14 @@ class TroughModel(Model):
             segments = []
             return segments  
         pattern_data = self.model_trough
+        upper_bound = self.state['convolve_max'] * 1.1
+        lower_bound = self.state['convolve_min'] * 0.9
+        delete_up_bound = self.state['conv_del_max'] * 1.02
+        delete_low_bound = self.state['conv_del_min'] * 0.98
         for segment in segments:
             if segment > self.state['WINDOW_SIZE']:
-                convol_data = data[segment - self.state['WINDOW_SIZE'] : segment + self.state['WINDOW_SIZE'] + 1]
-                convol_data = convol_data - min(convol_data)
+                convol_data = utils.get_interval(data, segment, self.state['WINDOW_SIZE'])
+                convol_data = utils.subtract_min_without_nan(convol_data)
                 percent_of_nans = convol_data.isnull().sum() / len(convol_data)
                 if percent_of_nans > 0.5:
                     delete_list.append(segment)
@@ -123,9 +127,9 @@ class TroughModel(Model):
                     convol_data = utils.nan_to_zero(convol_data, nan_list)
                     pattern_data = utils.nan_to_zero(pattern_data, nan_list)
                 conv = scipy.signal.fftconvolve(convol_data, pattern_data)
-                if max(conv) > self.state['convolve_max'] * 1.1 or max(conv) < self.state['convolve_min'] * 0.9:
+                if max(conv) > upper_bound or max(conv) < lower_bound:
                     delete_list.append(segment)
-                elif max(conv) < self.state['conv_del_max'] * 1.02 and max(conv) > self.state['conv_del_min'] * 0.98:
+                elif max(conv) < delete_up_bound and max(conv) > delete_low_bound:
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
