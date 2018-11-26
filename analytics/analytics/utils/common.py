@@ -306,3 +306,14 @@ def get_convolve(segments, av_model, data, window_size):
         convolve_list.append(max(convolve_trough))
     return convolve_list
 
+
+def find_parameters(segment_data, segment_from_index):
+    flat_segment = segment_data.rolling(window=5).mean()
+    flat_segment_dropna = flat_segment.dropna()
+    segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(flat_segment_dropna)
+    jump_height = 0.95 * (segment_max_line - segment_min_line)
+    jump_length = utils.find_jump_length(segment_data, segment_min_line, segment_max_line) # finds all interseprions with median
+    cen_ind = utils.intersection_segment(flat_segment.tolist(), segment_median)
+    jump_center = cen_ind[0]
+    segment_cent_index = jump_center - 5 + segment_from_index
+    return segment_cent_index, jump_height, jump_length
