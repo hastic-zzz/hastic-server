@@ -34,42 +34,31 @@ class TroughModel(Model):
         patterns_list = []
         for segment in segments:
             if segment['labeled']:
-                segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
-                segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
-                segment_data = data[segment_from_index: segment_to_index + 1]
+                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
                 percent_of_nans = segment_data.isnull().sum() / len(segment_data)
                 if percent_of_nans > 0 or len(segment_data) == 0:
                     continue
-                segment_min = min(segment_data)
-                segment_max = max(segment_data)
-                confidences.append(0.2 * (segment_max - segment_min))
+                confidence = utils.find_confidence(segment_data)
+                confidences.append(confidence)
                 segment_min_index = segment_data.idxmin() 
                 self.itroughs.append(segment_min_index)
-                labeled_trough = data[segment_min_index - self.state['WINDOW_SIZE'] : segment_min_index + self.state['WINDOW_SIZE'] + 1]
-                labeled_trough = labeled_trough - min(labeled_trough)
+                labeled_trough = utils.get_interval(data, segment_min_index, self.state['WINDOW_SIZE'])
+                labeled_trough = utils.subtract_min_without_nan(labeled_trough)
                 patterns_list.append(labeled_trough)
                 
         self.model_trough = utils.get_av_model(patterns_list)
-        for itrough in self.itroughs:
-            labeled_trough = data[itrough - self.state['WINDOW_SIZE']: itrough + self.state['WINDOW_SIZE'] + 1]
-            labeled_trough = labeled_trough - min(labeled_trough)
-            auto_convolve = scipy.signal.fftconvolve(labeled_trough, labeled_trough)
-            convolve_trough = scipy.signal.fftconvolve(labeled_trough, self.model_trough)
-            convolve_list.append(max(auto_convolve))
-            convolve_list.append(max(convolve_trough))
+        convolve_list = utils.get_convolve(self.itroughs, self.model_trough, data, self.state['WINDOW_SIZE'])
             
         del_conv_list = []
         for segment in segments:
             if segment['deleted']:
-                segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
-                segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
-                segment_data = data[segment_from_index: segment_to_index + 1]
+                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
                 percent_of_nans = segment_data.isnull().sum() / len(segment_data)
                 if percent_of_nans > 0 or len(segment_data) == 0:
                     continue
                 del_min_index = segment_data.idxmin()
-                deleted_trough = data[del_min_index - self.state['WINDOW_SIZE']: del_min_index + self.state['WINDOW_SIZE'] + 1]
-                deleted_trough = deleted_trough - min(deleted_trough)
+                deleted_trough = utils.get_interval(data, del_min_index, self.state['WINDOW_SIZE'])
+                deleted_trough = utils.subtract_min_without_nan(deleted_trough)
                 del_conv_trough = scipy.signal.fftconvolve(deleted_trough, self.model_trough)
                 del_conv_list.append(max(del_conv_trough))  
 
@@ -125,8 +114,8 @@ class TroughModel(Model):
         pattern_data = self.model_trough
         for segment in segments:
             if segment > self.state['WINDOW_SIZE']:
-                convol_data = data[segment - self.state['WINDOW_SIZE'] : segment + self.state['WINDOW_SIZE'] + 1]
-                convol_data = convol_data - min(convol_data)
+                convol_data = utils.get_interval(data, segment, self.state['WINDOW_SIZE'])
+                convol_data = utils.subtract_min_without_nan(convol_data)
                 percent_of_nans = convol_data.isnull().sum() / len(convol_data)
                 if percent_of_nans > 0.5:
                     delete_list.append(segment)
