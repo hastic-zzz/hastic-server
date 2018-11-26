@@ -1,3 +1,4 @@
+import * as AnalyticsController from '../controllers/analytics_controller';
 import * as AnalyticUnit from '../models/analytic_unit_model';
 
 import { createAnalyticUnitFromObject } from '../controllers/analytics_controller';
@@ -82,7 +83,7 @@ async function deleteUnit(ctx: Router.IRouterContext) {
     if(analyticUnitId === undefined) {
       throw new Error('Cannot delete undefined id');
     }
-    await AnalyticUnit.remove(analyticUnitId);
+    await AnalyticsController.remove(analyticUnitId);
     ctx.response.body = {
       code: 200,
       message: 'Success'

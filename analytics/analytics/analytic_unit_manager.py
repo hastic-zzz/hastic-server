@@ -39,7 +39,7 @@ class AnalyticUnitManager:
         self.analytic_workers: Dict[AnalyticUnitId, AnalyticUnitWorker] = dict()
         self.workers_executor = ThreadPoolExecutor(max_workers=WORKERS_EXECUTORS)
 
-    def __ensure_worker(self, analytic_unit_id, analytic_unit_type) -> AnalyticUnitWorker:
+    def __ensure_worker(self, analytic_unit_id: AnalyticUnitId, analytic_unit_type) -> AnalyticUnitWorker:
         if analytic_unit_id in self.analytic_workers:
             # TODO: check that type is the same
             return self.analytic_workers[analytic_unit_id]
@@ -50,12 +50,21 @@ class AnalyticUnitManager:
 
     async def handle_analytic_task(self, task):
         try:
+            analytic_unit_id: AnalyticUnitId = task['analyticUnitId']
+
+            if task['type'] == 'CANCEL':
+                if analytic_unit_id in self.analytic_workers:
+                    self.analytic_workers[analytic_unit_id].cancel()
+                return {
+                    'status': 'SUCCESS'
+                }
+
             payload = task['payload']
-            worker = self.__ensure_worker(task['analyticUnitId'], payload['pattern'])
+            worker = self.__ensure_worker(analytic_unit_id, payload['pattern'])
             data = prepare_data(payload['data'])
             result_payload = {}
             if task['type'] == 'LEARN':
-                result_payload = await worker.do_learn(payload['segments'], data, payload['cache'])
+                result_payload = await worker.do_train(payload['segments'], data, payload['cache'])
             elif task['type'] == 'PREDICT':
                 result_payload = await worker.do_predict(data, payload['cache'])
             else:
