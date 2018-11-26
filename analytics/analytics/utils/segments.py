@@ -31,8 +31,15 @@ def subtract_min_without_nan(segment):
     return segment
 
 def get_interval(data, center, window_size):
-    left_bound = center - window_size
-    right_bound = center + window_size + 1
+    if center >= window_size and center < len(data) - window_size:
+        left_bound = center - window_size
+        right_bound = center + window_size + 1
+    elif center < window_size:
+        left_bound = 0
+    elif center > len(data) - window_size:
+        right_bound = len(data) - 1
+    else:
+        return []
     return data[left_bound, right_bound]
 
 def find_parameters(segment_data):
