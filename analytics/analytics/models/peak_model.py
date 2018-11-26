@@ -34,41 +34,30 @@ class PeakModel(Model):
         patterns_list = []
         for segment in segments:
             if segment['labeled']:
-                segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
-                segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
-                segment_data = data[segment_from_index: segment_to_index + 1]
+                segment_from_index, segment_to_index, segment_data = parse_segment(segment, dataframe)
                 percent_of_nans = segment_data.isnull().sum() / len(segment_data)
                 if percent_of_nans > 0 or len(segment_data) == 0:
                     continue
-                segment_min = min(segment_data)
-                segment_max = max(segment_data)
-                confidences.append(0.2 * (segment_max - segment_min))
+                confidence = utils.find_confidence(segment_data)
+                confidences.append(confidence)
                 segment_max_index = segment_data.idxmax()
                 self.ipeaks.append(segment_max_index)
-                labeled_peak = data[segment_max_index - self.state['WINDOW_SIZE']: segment_max_index + self.state['WINDOW_SIZE'] + 1]
-                labeled_peak = labeled_peak - min(labeled_peak)
+                labeled_peak = utils.get_interval(data, segment_max_index, self.state['WINDOW_SIZE'])
+                labeled_peak = utils.subtract_min_without_nan(labeled_peak)
                 patterns_list.append(labeled_peak)
 
         self.model_peak = utils.get_av_model(patterns_list)
-        for ipeak in self.ipeaks: #labeled segments
-            labeled_peak = data[ipeak - self.state['WINDOW_SIZE']: ipeak + self.state['WINDOW_SIZE'] + 1]
-            labeled_peak = labeled_peak - min(labeled_peak)
-            auto_convolve = scipy.signal.fftconvolve(labeled_peak, labeled_peak)
-            convolve_peak = scipy.signal.fftconvolve(labeled_peak, self.model_peak)
-            convolve_list.append(max(auto_convolve))
-            convolve_list.append(max(convolve_peak))
+        convolve_list = utils.get_convolve(self.ipeaks, self.model_peak, data, self.state['WINDOW_SIZE'])
         
         del_conv_list = []
         for segment in segments:
             if segment['deleted']:
-                segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
-                segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
-                segment_data = data[segment_from_index: segment_to_index + 1]
+                segment_from_index, segment_to_index, segment_data = parse_segment(segment, dataframe)
                 if len(segment_data) == 0:
                     continue
                 del_max_index = segment_data.idxmax()
-                deleted_peak = data[del_max_index - self.state['WINDOW_SIZE']: del_max_index + self.state['WINDOW_SIZE'] + 1]
-                deleted_peak = deleted_peak - min(deleted_peak)
+                deleted_peak = utils.get_interval(data, del_max_index, self.state['WINDOW_SIZE'])
+                deleted_peak = utils.subtract_min_without_nan(deleted_peak)
                 del_conv_peak = scipy.signal.fftconvolve(deleted_peak, self.model_peak)
                 del_conv_list.append(max(del_conv_peak))                
 
@@ -124,8 +113,8 @@ class PeakModel(Model):
         pattern_data = self.model_peak
         for segment in segments:
             if segment > self.state['WINDOW_SIZE']:
-                convol_data = data[segment - self.state['WINDOW_SIZE']: segment + self.state['WINDOW_SIZE'] + 1]
-                convol_data = convol_data - min(convol_data)
+                convol_data = utils.get_interval(data, segment, self.state['WINDOW_SIZE'])
+                convol_data = utils.subtract_min_without_nan(convol_data)
                 percent_of_nans = convol_data.isnull().sum() / len(convol_data)
                 if percent_of_nans > 0.5:
                     delete_list.append(segment)
