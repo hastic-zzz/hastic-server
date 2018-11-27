@@ -3,7 +3,8 @@ import pandas as pd
 import scipy.signal
 from scipy.fftpack import fft
 from scipy.signal import argrelextrema
-
+from scipy.stats import gaussian_kde
+import utils
 
 def exponential_smoothing(series, alpha):
     result = [series[0]]
@@ -287,7 +288,7 @@ def find_confidence(segment):
 def get_interval(data, center, window_size):
     left_bound = center - window_size
     right_bound = center + window_size + 1
-    return data[left_bound, right_bound]
+    return data[left_bound: right_bound]
 
 def subtract_min_without_nan(segment):
     if not np.isnan(min(segment)):
@@ -303,11 +304,11 @@ def get_convolve(segments, av_model, data, window_size):
         auto_convolve = scipy.signal.fftconvolve(labeled_segment, labeled_segment)
         convolve_segment = scipy.signal.fftconvolve(labeled_segment, av_model)
         convolve_list.append(max(auto_convolve))
-        convolve_list.append(max(convolve_trough))
+        convolve_list.append(max(convolve_segment))
     return convolve_list
 
 
-def find_parameters(segment_data, segment_from_index):
+def find_jump_parameters(segment_data, segment_from_index):
     flat_segment = segment_data.rolling(window=5).mean()
     flat_segment_dropna = flat_segment.dropna()
     segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(flat_segment_dropna)
@@ -317,3 +318,38 @@ def find_parameters(segment_data, segment_from_index):
     jump_center = cen_ind[0]
     segment_cent_index = jump_center - 5 + segment_from_index
     return segment_cent_index, jump_height, jump_length
+
+
+def find_drop_parameters(segment_data, segment_from_index):
+    flat_segment = segment_data.rolling(window=5).mean()
+    flat_segment_dropna = flat_segment.dropna()
+    segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(flat_segment_dropna)
+    drop_height = 0.95 * (segment_max_line - segment_min_line)
+    drop_length = utils.find_drop_length(segment_data, segment_min_line, segment_max_line)
+    cen_ind = utils.drop_intersection(flat_segment.tolist(), segment_median)
+    drop_center = cen_ind[0]
+    segment_cent_index = drop_center - 5 + segment_from_index
+    return segment_cent_index, drop_height, drop_length
+
+
+def get_distribution_density(segment):
+    min_jump = min(segment)
+    max_jump = max(segment)
+    pdf = gaussian_kde(segment)
+    x = np.linspace(segment.min() - 1, segment.max() + 1, len(segment))
+    y = pdf(x)
+    ax_list = list(zip(x, y))
+    ax_list = np.array(ax_list, np.float32)
+    antipeaks_kde = argrelextrema(np.array(ax_list), np.less)[0]
+    peaks_kde = argrelextrema(np.array(ax_list), np.greater)[0]
+    try:
+        min_peak_index = peaks_kde[0]
+        segment_min_line = ax_list[min_peak_index, 0]
+        max_peak_index = peaks_kde[1]
+        segment_max_line = ax_list[max_peak_index, 0]
+        segment_median = ax_list[antipeaks_kde[0], 0]
+    except IndexError:
+        segment_max_line = max_jump
+        segment_min_line = min_jump
+        segment_median = (max_jump - min_jump) / 2 + min_jump
+    return segment_median, segment_max_line, segment_min_line

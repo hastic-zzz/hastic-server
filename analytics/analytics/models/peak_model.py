@@ -34,7 +34,7 @@ class PeakModel(Model):
         patterns_list = []
         for segment in segments:
             if segment['labeled']:
-                segment_from_index, segment_to_index, segment_data = parse_segment(segment, dataframe)
+                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
                 percent_of_nans = segment_data.isnull().sum() / len(segment_data)
                 if percent_of_nans > 0 or len(segment_data) == 0:
                     continue
