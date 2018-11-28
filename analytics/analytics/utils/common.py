@@ -280,22 +280,22 @@ def nan_to_zero(segment, nan_list):
         segment[val] = 0
     return segment
 
-def find_confidence(segment):
+def find_confidence(segment: pd.Series) -> float:
     segment_min = min(segment)
     segment_max = max(segment)
     return 0.2 * (segment_max - segment_min)    
 
-def get_interval(data, center, window_size):
+def get_interval(data: pd.Series, center: int, window_size: int) -> pd.Series:
     left_bound = center - window_size
     right_bound = center + window_size + 1
     return data[left_bound: right_bound]
 
-def subtract_min_without_nan(segment):
+def subtract_min_without_nan(segment: list) -> list:
     if not np.isnan(min(segment)):
         segment = segment - min(segment)
     return segment
 
-def get_convolve(segments, av_model, data, window_size):
+def get_convolve(segments: list, av_model: list, data: pd.Series, window_size: int) -> list:
     labeled_segment = []
     convolve_list = []
     for segment in segments:
@@ -308,7 +308,7 @@ def get_convolve(segments, av_model, data, window_size):
     return convolve_list
 
 
-def find_jump_parameters(segment_data, segment_from_index):
+def find_jump_parameters(segment_data: pd.Series, segment_from_index: int):
     flat_segment = segment_data.rolling(window=5).mean()
     flat_segment_dropna = flat_segment.dropna()
     segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(flat_segment_dropna)
@@ -320,7 +320,7 @@ def find_jump_parameters(segment_data, segment_from_index):
     return segment_cent_index, jump_height, jump_length
 
 
-def find_drop_parameters(segment_data, segment_from_index):
+def find_drop_parameters(segment_data: pd.Series, segment_from_index: int):
     flat_segment = segment_data.rolling(window=5).mean()
     flat_segment_dropna = flat_segment.dropna()
     segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(flat_segment_dropna)
@@ -332,7 +332,7 @@ def find_drop_parameters(segment_data, segment_from_index):
     return segment_cent_index, drop_height, drop_length
 
 
-def get_distribution_density(segment):
+def get_distribution_density(segment: pd.Series) -> float:
     min_jump = min(segment)
     max_jump = max(segment)
     pdf = gaussian_kde(segment)
