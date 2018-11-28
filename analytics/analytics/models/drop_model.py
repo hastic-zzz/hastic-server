@@ -36,78 +36,32 @@ class DropModel(Model):
         patterns_list = []
         for segment in segments:
             if segment['labeled']:
-                segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
-                segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
-                segment_data = data[segment_from_index: segment_to_index + 1]
+                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
                 percent_of_nans = segment_data.isnull().sum() / len(segment_data)
                 if percent_of_nans > 0 or len(segment_data) == 0:
                     continue
-                segment_min = min(segment_data)
-                segment_max = max(segment_data)
-                confidences.append(0.20 * (segment_max - segment_min))
-                flat_segment = segment_data.rolling(window = 5).mean()
-                pdf = gaussian_kde(flat_segment.dropna())
-                max_drop = max(flat_segment.dropna())
-                min_drop = min(flat_segment.dropna())
-                x = np.linspace(flat_segment.dropna().min() - 1, flat_segment.dropna().max() + 1, len(flat_segment.dropna()))
-                y = pdf(x)
-                ax_list = list(zip(x, y))
-                ax_list = np.array(ax_list, np.float32)
-                antipeaks_kde = argrelextrema(np.array(ax_list), np.less)[0]
-                peaks_kde = argrelextrema(np.array(ax_list), np.greater)[0]
-                try:
-                    min_peak_index = peaks_kde[0]
-                    segment_min_line = ax_list[min_peak_index, 0]
-                    max_peak_index = peaks_kde[1]
-                    segment_max_line = ax_list[max_peak_index, 0]
-                    segment_median = ax_list[antipeaks_kde[0], 0]
-                except IndexError:
-                    segment_max_line = max_drop
-                    segment_min_line = min_drop
-                    segment_median = (max_drop - min_drop) / 2 + min_drop
-                drop_height = 0.95 * (segment_max_line - segment_min_line)
+                confidence = utils.find_confidence(segment_data)
+                confidences.append(confidence)
+                segment_cent_index, drop_height, drop_length = utils.find_drop_parameters(segment_data, segment_from_index)
                 drop_height_list.append(drop_height)
-                drop_length = utils.find_drop_length(segment_data, segment_min_line, segment_max_line)
                 drop_length_list.append(drop_length)
-                cen_ind = utils.drop_intersection(flat_segment.tolist(), segment_median) #finds all interseprions with median
-                drop_center = cen_ind[0]
-                segment_cent_index = drop_center - 5 + segment_from_index
                 self.idrops.append(segment_cent_index)
-                labeled_drop = data[segment_cent_index - self.state['WINDOW_SIZE']: segment_cent_index + self.state['WINDOW_SIZE'] + 1]
-                labeled_drop = labeled_drop - min(labeled_drop)
+                labeled_drop = utils.get_interval(data, segment_cent_index, self.state['WINDOW_SIZE'])
+                labeled_drop = utils.subtract_min_without_nan(labeled_drop)
                 patterns_list.append(labeled_drop)
 
         self.model_drop = utils.get_av_model(patterns_list)
-        for idrop in self.idrops:
-            labeled_drop = data[idrop - self.state['WINDOW_SIZE']: idrop + self.state['WINDOW_SIZE'] + 1]
-            labeled_drop = labeled_drop - min(labeled_drop)
-            auto_convolve = scipy.signal.fftconvolve(labeled_drop, labeled_drop)
-            convolve_drop = scipy.signal.fftconvolve(labeled_drop, self.model_drop)
-            convolve_list.append(max(auto_convolve))
-            convolve_list.append(max(convolve_drop))
+        convolve_list = utils.get_convolve(self.idrops, self.model_drop, data, self.state['WINDOW_SIZE'])
 
         del_conv_list = []
         for segment in segments:
             if segment['deleted']:
-                segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
-                segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
-                segment_data = data[segment_from_index: segment_to_index + 1]
+                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
                 if len(segment_data) == 0:
                     continue
-                flat_segment = segment_data.rolling(window = 5).mean()
-                flat_segment_dropna = flat_segment.dropna()
-                pdf = gaussian_kde(flat_segment_dropna)
-                x = np.linspace(flat_segment_dropna.min() - 1, flat_segment_dropna.max() + 1, len(flat_segment_dropna))
-                y = pdf(x)
-                ax_list = list(zip(x, y))
-                ax_list = np.array(ax_list, np.float32)
-                antipeaks_kde = argrelextrema(np.array(ax_list), np.less)[0]
-                segment_median = ax_list[antipeaks_kde[0], 0]
-                cen_ind = utils.intersection_segment(flat_segment.tolist(), segment_median) #finds all interseprions with median
-                drop_center = cen_ind[0] # or -1? test
-                segment_cent_index = drop_center - 5 + segment_from_index
-                deleted_drop = data[segment_cent_index - self.state['WINDOW_SIZE'] : segment_cent_index + self.state['WINDOW_SIZE'] + 1]
-                deleted_drop = deleted_drop - min(labeled_drop)
+                segment_cent_index = utils.find_drop_parameters(segment_data, segment_from_index)[0]
+                deleted_drop = utils.get_interval(data, segment_cent_index, self.state['WINDOW_SIZE'])
+                deleted_drop = utils.subtract_min_without_nan(deleted_drop)
                 del_conv_drop = scipy.signal.fftconvolve(deleted_drop, self.model_drop)
                 del_conv_list.append(max(del_conv_drop))
 
@@ -163,7 +117,7 @@ class DropModel(Model):
         pattern_data = self.model_drop
         for segment in segments:
             if segment > self.state['WINDOW_SIZE'] and segment < (len(data) - self.state['WINDOW_SIZE']):
-                convol_data = data[segment - self.state['WINDOW_SIZE'] : segment + self.state['WINDOW_SIZE'] + 1]
+                convol_data = utils.get_interval(data, segment, self.state['WINDOW_SIZE'])
                 percent_of_nans = convol_data.isnull().sum() / len(convol_data)
                 if percent_of_nans > 0.5:
                     delete_list.append(segment)

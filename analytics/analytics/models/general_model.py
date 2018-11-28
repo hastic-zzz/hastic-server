@@ -34,39 +34,28 @@ class GeneralModel(Model):
         patterns_list = []
         for segment in segments:
             if segment['labeled']:
-                segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
-                segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
-                segment_data = data[segment_from_index: segment_to_index + 1]
+                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
                 percent_of_nans = segment_data.isnull().sum() / len(segment_data)
                 if percent_of_nans > 0 or len(segment_data) == 0:
                     continue
-                x = segment_from_index + math.ceil((segment_to_index - segment_from_index) / 2)
-                self.ipats.append(x)
-                segment_data = data[x - self.state['WINDOW_SIZE'] : x + self.state['WINDOW_SIZE']]
-                segment_min = min(segment_data)
-                segment_data = segment_data - segment_min
+                center_ind = segment_from_index + math.ceil((segment_to_index - segment_from_index) / 2)
+                self.ipats.append(center_ind)
+                segment_data = utils.get_interval(data, center_ind, self.state['WINDOW_SIZE'])
+                segment_data = utils.subtract_min_without_nan(segment_data)
                 patterns_list.append(segment_data)
         
         self.model_gen = utils.get_av_model(patterns_list)
-        for ipat in self.ipats: #labeled segments
-            labeled_data = data[ipat - self.state['WINDOW_SIZE']: ipat + self.state['WINDOW_SIZE'] + 1]
-            labeled_data = labeled_data - min(labeled_data)
-            auto_convolve = scipy.signal.fftconvolve(labeled_data, labeled_data)
-            convolve_data = scipy.signal.fftconvolve(labeled_data, self.model_gen)
-            convolve_list.append(max(auto_convolve))
-            convolve_list.append(max(convolve_data))
+        convolve_list = utils.get_convolve(self.ipats, self.model_gen, data, self.state['WINDOW_SIZE'])
 				
         del_conv_list = []
         for segment in segments:
             if segment['deleted']:
-                segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
-                segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
-                segment_data = data[segment_from_index: segment_to_index + 1]
+                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
                 if len(segment_data) == 0:
                     continue
                 del_mid_index = segment_from_index + math.ceil((segment_to_index - segment_from_index) / 2)
-                deleted_pat = data[del_mid_index - self.state['WINDOW_SIZE']: del_mid_index + self.state['WINDOW_SIZE'] + 1]
-                deleted_pat = deleted_pat - min(deleted_pat)
+                deleted_pat = utils.get_interval(data, del_mid_index, self.state['WINDOW_SIZE'])
+                deleted_pat = utils.subtract_min_without_nan(segment_data)
                 del_conv_pat = scipy.signal.fftconvolve(deleted_pat, self.model_gen)
                 del_conv_list.append(max(del_conv_pat))
 
@@ -97,8 +86,7 @@ class GeneralModel(Model):
 
         for i in range(self.state['WINDOW_SIZE'] * 2, len(data)):
             watch_data = data[i - self.state['WINDOW_SIZE'] * 2: i]
-            w = min(watch_data)
-            watch_data = watch_data - w
+            watch_data = utils.subtract_min_without_nan(watch_data)
             conv = scipy.signal.fftconvolve(watch_data, pat_data)
             self.all_conv.append(max(conv))
         all_conv_peaks = utils.peak_finder(self.all_conv, self.state['WINDOW_SIZE'] * 2)
