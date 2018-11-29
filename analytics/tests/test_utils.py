@@ -12,34 +12,34 @@ class TestUtils(unittest.TestCase):
         self.assertTrue(True)
     
     def test_confidence_all_normal_value(self):
-        a = [1, 2, 0, 6, 8, 5, 3]
-        self.assertEqual(utils.find_confidence(a), 1.6)
+        segment = [1, 2, 0, 6, 8, 5, 3]
+        self.assertEqual(utils.find_confidence(segment), 1.6)
     
     def test_confidence_all_nan_value(self):
-        a = [np.NaN, np.NaN, np.NaN, np.NaN]
-        self.assertEqual(utils.find_confidence(a), np.NaN)
+        segment = [np.NaN, np.NaN, np.NaN, np.NaN]
+        self.assertEqual(utils.find_confidence(segment), np.NaN)
     
     def test_confidence_with_nan_value(self):
-        a = [np.NaN, np.NaN, 0, 8]
-        self.assertEqual(utils.find_confidence(a), 1.6)
+        data = [np.NaN, np.NaN, 0, 8]
+        self.assertEqual(utils.find_confidence(data), 1.6)
     
     def test_interval_all_normal_value(self):
         data = [1, 2, 1, 2, 4, 1, 2, 4, 5, 6]
         data = pd.Series(data)
         center = 4
-        ws = 2
+        window_size = 2
         result = [1, 2, 4, 1, 2]
         result = pd.Series(result)
-        self.assertEqual(utils.get_interval(data, center, ws), result)
+        self.assertEqual(utils.get_interval(data, center, window_size), result)
     
     def test_interval_wrong_ws(self):
         data = [1, 2, 4, 1, 2, 4]
         data = pd.Series(data)
         center = 3
-        ws = 6
+        window_size = 6
         result = [1, 2, 4, 1, 2, 4]
         result = pd.Series(result)
-        self.assertEqual(utils.get_interval(data, center, ws), result)
+        self.assertEqual(utils.get_interval(data, center, window_size), result)
     
     def test_subtract_min_without_nan(self):
         segment = [1, 2, 4, 1, 2, 4]    
@@ -58,29 +58,29 @@ class TestUtils(unittest.TestCase):
     def test_get_convolve(self):
         data = [1, 2, 3, 2, 2, 0, 2, 3, 4, 3, 2, 1, 1, 2, 3, 4, 3, 2, 0]
         data = pd.Series(data)
-        s = [2, 8, 15]
-        ws = 2
-        av = [1, 2, 3, 2, 1]
+        pattern_index = [2, 8, 15]
+        window_size = 2
+        av_model = [1, 2, 3, 2, 1]
         result = []
-        self.assertNotEqual(utils.get_convolve(s, av, data, ws), result)
+        self.assertNotEqual(utils.get_convolve(pattern_index, av_model, data, window_size), result)
     
     def test_get_convolve_with_nan(self):
         data = [1, 2, 3, 2, np.NaN, 0, 2, 3, 4, np.NaN, 2, 1, 1, 2, 3, 4, 3, np.NaN, 0]
         data = pd.Series(data)
-        s = [2, 8, 15]
-        ws = 2
-        av = [1, 2, 3, 2, 1]
-        result = utils.get_convolve(s, av, data, ws)
+        pattern_index = [2, 8, 15]
+        window_size = 2
+        av_model = [1, 2, 3, 2, 1]
+        result = utils.get_convolve(pattern_index, av_model, data, window_size)
         for val in result:
             self.assertFalse(val)
     
     def test_get_convolve_empty_data(self):
         data = []
-        s = []
-        ws = 2
-        av = []
+        pattern_index = []
+        window_size = 2
+        av_model = []
         result = []
-        self.assertEqual(utils.get_convolve(s, av, data, ws), result)
+        self.assertEqual(utils.get_convolve(pattern_index, av_model, data, window_size), result)
     
     def test_get_distribution_density(self):
         segment = [1, 1, 1, 3, 5, 5, 5]
