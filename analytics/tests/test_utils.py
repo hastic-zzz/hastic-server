@@ -2,6 +2,8 @@ import unittest
 import utils
 import numpy as np
 import pandas as pd
+import scipy.signal
+import math
 
 class TestUtils(unittest.TestCase):
 
@@ -53,7 +55,26 @@ class TestUtils(unittest.TestCase):
         result = pd.Series(result)
         self.assertEqual(utils.subtract_min_without_nan(segment), result)
     
-        
+    def test_get_convolve(self):
+        data = [1, 2, 3, 2, 2, 0, 2, 3, 4, 3, 2, 1, 1, 2, 3, 4, 3, 2, 0]
+        data = pd.Series(data)
+        s = [2, 8, 15]
+        ws = 2
+        av = [1, 2, 3, 2, 1]
+        result = []
+        self.assertNotEqual(utils.get_convolve(s, av, data, ws), result)
+    
+    def test_get_convolve(self):
+        data = [1, 2, 3, 2, np.NaN, 0, 2, 3, 4, np.NaN, 2, 1, 1, 2, 3, 4, 3, np.NaN, 0]
+        data = pd.Series(data)
+        s = [2, 8, 15]
+        ws = 2
+        av = [1, 2, 3, 2, 1]
+        result = utils.get_convolve(s, av, data, ws)
+        for val in result:
+            self.assertFalse(val)
+    
+    
 
 if __name__ == '__main__':
     unittest.main()
