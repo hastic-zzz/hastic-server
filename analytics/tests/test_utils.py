@@ -82,6 +82,12 @@ class TestUtils(unittest.TestCase):
         result = []
         self.assertEqual(utils.get_convolve(s, av, data, ws), result)
     
+    def test_get_distribution_density(self):
+        segment = [1, 1, 1, 3, 5, 5, 5]
+        segment = pd.Series(segment)
+        result = (3, 5, 1)
+        self.assertEqual(utils.get_distribution_densitye(segment), result)
+    
 
 if __name__ == '__main__':
     unittest.main()
