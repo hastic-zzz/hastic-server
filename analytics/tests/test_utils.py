@@ -22,21 +22,38 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(utils.find_confidence(a), 1.6)
     
     def test_interval_all_normal_value(self):
-        data = [1,2,1,2,4,1,2,4,5,6]
+        data = [1, 2, 1, 2, 4, 1, 2, 4, 5, 6]
+        data = pd.Series(data)
         center = 4
         ws = 2
         result = [1, 2, 4, 1, 2]
+        result = pd.Series(result)
         self.assertEqual(utils.get_interval(data, center, ws), result)
     
     def test_interval_wrong_ws(self):
-        data = [1,2,4,1,2,4]
+        data = [1, 2, 4, 1, 2, 4]
+        data = pd.Series(data)
         center = 3
         ws = 6
         result = [1, 2, 4, 1, 2, 4]
+        result = pd.Series(result)
         self.assertEqual(utils.get_interval(data, center, ws), result)
     
+    def test_subtract_min_without_nan(self):
+        segment = [1, 2, 4, 1, 2, 4]    
+        segment = pd.Series(segment)
+        result = [0, 1, 3, 0, 1, 3]
+        result = pd.Series(result)
+        self.assertEqual(utils.subtract_min_without_nan(segment), result)
     
+    def test_subtract_min_with_nan(self):
+        segment = [np.NaN, 2, 4, 1, 2, 4]
+        segment = pd.Series(segment)
+        result = [np.NaN, 2, 4, 1, 2, 4]
+        result = pd.Series(result)
+        self.assertEqual(utils.subtract_min_without_nan(segment), result)
     
+        
 
 if __name__ == '__main__':
     unittest.main()
