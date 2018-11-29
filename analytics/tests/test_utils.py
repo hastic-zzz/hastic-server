@@ -64,7 +64,7 @@ class TestUtils(unittest.TestCase):
         result = []
         self.assertNotEqual(utils.get_convolve(s, av, data, ws), result)
     
-    def test_get_convolve(self):
+    def test_get_convolve_with_nan(self):
         data = [1, 2, 3, 2, np.NaN, 0, 2, 3, 4, np.NaN, 2, 1, 1, 2, 3, 4, 3, np.NaN, 0]
         data = pd.Series(data)
         s = [2, 8, 15]
@@ -74,6 +74,13 @@ class TestUtils(unittest.TestCase):
         for val in result:
             self.assertFalse(val)
     
+    def test_get_convolve_empty_data(self):
+        data = []
+        s = []
+        ws = 2
+        av = []
+        result = []
+        self.assertEqual(utils.get_convolve(s, av, data, ws), result)
     
 
 if __name__ == '__main__':
