@@ -29,11 +29,11 @@ class AnalyticUnitWorker:
             return new_cache
         except CancelledError as e:
             return cache
-        
+
 
     async def do_predict(self, data: pd.DataFrame, cache: Optional[AnalyticUnitCache]) -> dict:
         return self._detector.predict(data, cache)
-    
+
     def cancel(self):
         if self._training_feature is not None:
             self._training_feature.cancel()

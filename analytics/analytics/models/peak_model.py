@@ -48,7 +48,7 @@ class PeakModel(Model):
 
         self.model_peak = utils.get_av_model(patterns_list)
         convolve_list = utils.get_convolve(self.ipeaks, self.model_peak, data, self.state['WINDOW_SIZE'])
-        
+
         del_conv_list = []
         for segment in segments:
             if segment['deleted']:
@@ -59,7 +59,7 @@ class PeakModel(Model):
                 deleted_peak = utils.get_interval(data, del_max_index, self.state['WINDOW_SIZE'])
                 deleted_peak = utils.subtract_min_without_nan(deleted_peak)
                 del_conv_peak = scipy.signal.fftconvolve(deleted_peak, self.model_peak)
-                del_conv_list.append(max(del_conv_peak))                
+                del_conv_list.append(max(del_conv_peak))
 
         if len(confidences) > 0:
             self.state['confidence'] = float(min(confidences))
@@ -75,12 +75,12 @@ class PeakModel(Model):
             self.state['convolve_min'] = float(min(convolve_list))
         else:
             self.state['convolve_min'] = self.state['WINDOW_SIZE']
-            
+
         if len(del_conv_list) > 0:
             self.state['conv_del_min'] = float(min(del_conv_list))
         else:
             self.state['conv_del_min'] = self.state['WINDOW_SIZE']
-            
+
         if len(del_conv_list) > 0:
             self.state['conv_del_max'] = float(max(del_conv_list))
         else:
@@ -107,7 +107,7 @@ class PeakModel(Model):
         variance_error = self.state['WINDOW_SIZE']
         close_patterns = utils.close_filtering(segments, variance_error)
         segments = utils.best_pat(close_patterns, data, 'max')
-        
+
         if len(segments) == 0 or len(self.ipeaks) == 0:
             return []
         pattern_data = self.model_peak

@@ -11,7 +11,6 @@ from scipy.stats import gaussian_kde
 from scipy.stats import norm
 
 
-
 class GeneralModel(Model):
 
     def __init__(self):
@@ -43,10 +42,10 @@ class GeneralModel(Model):
                 segment_data = utils.get_interval(data, center_ind, self.state['WINDOW_SIZE'])
                 segment_data = utils.subtract_min_without_nan(segment_data)
                 patterns_list.append(segment_data)
-        
+
         self.model_gen = utils.get_av_model(patterns_list)
         convolve_list = utils.get_convolve(self.ipats, self.model_gen, data, self.state['WINDOW_SIZE'])
-				
+
         del_conv_list = []
         for segment in segments:
             if segment['deleted']:
@@ -63,17 +62,17 @@ class GeneralModel(Model):
             self.state['convolve_max'] = float(max(convolve_list))
         else:
             self.state['convolve_max'] = self.state['WINDOW_SIZE'] / 3
-        
+
         if len(convolve_list) > 0:
             self.state['convolve_min'] = float(min(convolve_list))
         else:
             self.state['convolve_min'] = self.state['WINDOW_SIZE'] / 3
-		
+
         if len(del_conv_list) > 0:
             self.state['conv_del_min'] = float(min(del_conv_list))
         else:
             self.state['conv_del_min'] = self.state['WINDOW_SIZE']
-            
+
         if len(del_conv_list) > 0:
             self.state['conv_del_max'] = float(max(del_conv_list))
         else:

@@ -23,7 +23,7 @@ def get_config_field(field, default_val = None):
 
     if default_val is not None:
         return default_val
-    
+
     raise Exception('Please configure {}'.format(field))
 
 ZMQ_DEV_PORT = get_config_field('ZMQ_DEV_PORT', '8002')

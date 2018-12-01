@@ -40,15 +40,15 @@ class TroughModel(Model):
                     continue
                 confidence = utils.find_confidence(segment_data)
                 confidences.append(confidence)
-                segment_min_index = segment_data.idxmin() 
+                segment_min_index = segment_data.idxmin()
                 self.itroughs.append(segment_min_index)
                 labeled_trough = utils.get_interval(data, segment_min_index, self.state['WINDOW_SIZE'])
                 labeled_trough = utils.subtract_min_without_nan(labeled_trough)
                 patterns_list.append(labeled_trough)
-                
+
         self.model_trough = utils.get_av_model(patterns_list)
         convolve_list = utils.get_convolve(self.itroughs, self.model_trough, data, self.state['WINDOW_SIZE'])
-            
+
         del_conv_list = []
         for segment in segments:
             if segment['deleted']:
@@ -60,7 +60,7 @@ class TroughModel(Model):
                 deleted_trough = utils.get_interval(data, del_min_index, self.state['WINDOW_SIZE'])
                 deleted_trough = utils.subtract_min_without_nan(deleted_trough)
                 del_conv_trough = scipy.signal.fftconvolve(deleted_trough, self.model_trough)
-                del_conv_list.append(max(del_conv_trough))  
+                del_conv_list.append(max(del_conv_trough))
 
         if len(confidences) > 0:
             self.state['confidence'] = float(min(confidences))
@@ -71,17 +71,17 @@ class TroughModel(Model):
             self.state['convolve_max'] = float(max(convolve_list))
         else:
             self.state['convolve_max'] = self.state['WINDOW_SIZE']
-        
+
         if len(convolve_list) > 0:
             self.state['convolve_min'] = float(min(convolve_list))
         else:
             self.state['convolve_min'] = self.state['WINDOW_SIZE']
-        
+
         if len(del_conv_list) > 0:
             self.state['conv_del_min'] = float(min(del_conv_list))
         else:
             self.state['conv_del_min'] = self.state['WINDOW_SIZE']
-            
+
         if len(del_conv_list) > 0:
             self.state['conv_del_max'] = float(max(del_conv_list))
         else:
@@ -91,7 +91,7 @@ class TroughModel(Model):
         data = dataframe['value']
         window_size = int(len(data)/SMOOTHING_COEFF) #test ws on flat data
         all_mins = argrelextrema(np.array(data), np.less)[0]
-        
+
         extrema_list = []
         for i in utils.exponential_smoothing(data - self.state['confidence'], EXP_SMOOTHING_FACTOR):
             extrema_list.append(i)
@@ -110,7 +110,7 @@ class TroughModel(Model):
         segments = utils.best_pat(close_patterns, data, 'min')
         if len(segments) == 0 or len(self.itroughs) == 0 :
             segments = []
-            return segments  
+            return segments
         pattern_data = self.model_trough
         for segment in segments:
             if segment > self.state['WINDOW_SIZE']:

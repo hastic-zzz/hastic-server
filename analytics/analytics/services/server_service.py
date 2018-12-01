@@ -16,17 +16,17 @@ class ServerMessage:
         self.method = method
         self.payload = payload
         self.request_id = request_id
-    
+
     def toJSON(self):
         result = {
-            'method': self.method   
+            'method': self.method
         }
         if self.payload is not None:
             result['payload'] = self.payload
         if self.request_id is not None:
             result['requestId'] = self.request_id
         return result
-    
+
     def fromJSON(json: dict):
         method = json['method']
         payload = None
@@ -35,7 +35,7 @@ class ServerMessage:
             payload = json['payload']
         if 'requestId' in json:
             request_id = json['requestId']
-        
+
         return ServerMessage(method, payload, request_id)
 
 class ServerService:
@@ -62,7 +62,7 @@ class ServerService:
 
     async def send_message(self, message: ServerMessage):
         await self.socket.send_string(json.dumps(message.toJSON()))
-    
+
     async def send_request(self, message: ServerMessage) -> object:
         if message.request_id is not None:
             raise ValueError('Message can`t have request_id before it is scheduled')
@@ -82,7 +82,7 @@ class ServerService:
         try:
             message_object = json.loads(text)
             message = ServerMessage.fromJSON(message_object)
-            
+
             if message.request_id is not None:
                 self.responses[message_object['requestId']] = message.payload
                 return

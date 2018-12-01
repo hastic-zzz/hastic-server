@@ -73,7 +73,7 @@ def intersection_segment(data, median):
     for i in range(1, len(cen_ind)):
         if cen_ind[i] == cen_ind[i - 1] + 1:
             del_ind.append(i - 1)
- 
+
     return [x for (idx, x) in enumerate(cen_ind) if idx not in del_ind]
 
 def logistic_sigmoid_distribution(self, x1, x2, alpha, height):
@@ -123,7 +123,7 @@ def find_ind_median(median, segment_data):
     for i in range(len(segment_data)):
         f.append(median)
     f = np.array(f)
-    g = []    
+    g = []
     for i in segment_data:
         g.append(i)
     g = np.array(g)
@@ -139,7 +139,7 @@ def find_jump_length(segment_data, min_line, max_line):
         l.append(max_line)
     f = np.array(f)
     l = np.array(l)
-    g = []    
+    g = []
     for i in segment_data:
         g.append(i)
     g = np.array(g)
@@ -150,7 +150,7 @@ def find_jump_length(segment_data, min_line, max_line):
     else:
         print("retard alert!")
         return 0
-    
+
 def find_jump(data, height, lenght):
     j_list = []
     for i in range(len(data)-lenght-1):
@@ -168,7 +168,7 @@ def find_drop_length(segment_data, min_line, max_line):
         l.append(max_line)
     f = np.array(f)
     l = np.array(l)
-    g = []    
+    g = []
     for i in segment_data:
         g.append(i)
     g = np.array(g)
@@ -186,11 +186,11 @@ def drop_intersection(segment_data, median_line):
     for i in range(len(segment_data)):
         f.append(median_line)
     f = np.array(f)
-    g = []    
+    g = []
     for i in segment_data:
         g.append(i)
     g = np.array(g)
-    idx = np.argwhere(np.diff(np.sign(f - g)) != 0).reshape(-1) + 0 
+    idx = np.argwhere(np.diff(np.sign(f - g)) != 0).reshape(-1) + 0
     return idx
 
 def find_drop(data, height, length):
@@ -283,7 +283,7 @@ def nan_to_zero(segment, nan_list):
 def find_confidence(segment: pd.Series) -> float:
     segment_min = min(segment)
     segment_max = max(segment)
-    return 0.2 * (segment_max - segment_min)    
+    return 0.2 * (segment_max - segment_min)
 
 def get_interval(data: pd.Series, center: int, window_size: int) -> pd.Series:
     left_bound = center - window_size
