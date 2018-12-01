@@ -7,5 +7,15 @@
   "files.eol": "\n",
   "files.exclude": {
     "**/__pycache__/": true
-  }
+},
+"python.unitTest.unittestArgs": [
+    "-v",
+    "-s",
+    "./tests",
+    "-p",
+    "test_*.py"
+],
+"python.unitTest.pyTestEnabled": false,
+"python.unitTest.nosetestsEnabled": false,
+"python.unitTest.unittestEnabled": true
 }
