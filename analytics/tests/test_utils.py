@@ -14,7 +14,8 @@ class TestUtils(unittest.TestCase):
         segment = [1, 2, 0, 6, 8, 5, 3]
         utils_result = utils.find_confidence(segment)
         result = 1.6
-        self.assertTrue(math.isclose(utils_result, result, rel_tol=1e-2))
+        relative_tolerance = 1e-2
+        self.assertTrue(math.isclose(utils_result, result, rel_tol = relative_tolerance))
     
     def test_confidence_all_nan_value(self):
         segment = [np.NaN, np.NaN, np.NaN, np.NaN]
@@ -24,7 +25,8 @@ class TestUtils(unittest.TestCase):
         data = [np.NaN, np.NaN, 0, 8]
         utils_result = utils.find_confidence(data)
         result = 1.6
-        self.assertTrue(math.isclose(utils_result, result, rel_tol=1e-2))
+        relative_tolerance = 1e-2
+        self.assertTrue(math.isclose(utils_result, result, rel_tol = relative_tolerance))
     
     def test_interval_all_normal_value(self):
         data = [1, 2, 1, 2, 4, 1, 2, 4, 5, 6]
