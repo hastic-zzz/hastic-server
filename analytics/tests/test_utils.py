@@ -1,8 +1,7 @@
-import unittest
 import utils
+import unittest
 import numpy as np
 import pandas as pd
-import scipy.signal
 import math
 
 class TestUtils(unittest.TestCase):
@@ -17,7 +16,7 @@ class TestUtils(unittest.TestCase):
     
     def test_confidence_all_nan_value(self):
         segment = [np.NaN, np.NaN, np.NaN, np.NaN]
-        self.assertEqual(utils.find_confidence(segment), np.NaN)
+        self.assertEqual(utils.find_confidence(segment), 0)
     
     def test_confidence_with_nan_value(self):
         data = [np.NaN, np.NaN, 0, 8]
@@ -29,8 +28,7 @@ class TestUtils(unittest.TestCase):
         center = 4
         window_size = 2
         result = [1, 2, 4, 1, 2]
-        result = pd.Series(result)
-        self.assertEqual(utils.get_interval(data, center, window_size), result)
+        self.assertEqual(list(utils.get_interval(data, center, window_size)), result)
     
     def test_interval_wrong_ws(self):
         data = [1, 2, 4, 1, 2, 4]
@@ -38,22 +36,21 @@ class TestUtils(unittest.TestCase):
         center = 3
         window_size = 6
         result = [1, 2, 4, 1, 2, 4]
-        result = pd.Series(result)
-        self.assertEqual(utils.get_interval(data, center, window_size), result)
+        self.assertEqual(list(utils.get_interval(data, center, window_size)), result)
     
     def test_subtract_min_without_nan(self):
         segment = [1, 2, 4, 1, 2, 4]    
         segment = pd.Series(segment)
         result = [0, 1, 3, 0, 1, 3]
-        result = pd.Series(result)
-        self.assertEqual(utils.subtract_min_without_nan(segment), result)
+        utils_result = list(utils.subtract_min_without_nan(segment))
+        self.assertEqual(utils_result, result)
     
     def test_subtract_min_with_nan(self):
         segment = [np.NaN, 2, 4, 1, 2, 4]
         segment = pd.Series(segment)
-        result = [np.NaN, 2, 4, 1, 2, 4]
-        result = pd.Series(result)
-        self.assertEqual(utils.subtract_min_without_nan(segment), result)
+        result = [2, 4, 1, 2, 4]
+        utils_result = list(utils.subtract_min_without_nan(segment)[1:])
+        self.assertEqual(utils_result, result)
     
     def test_get_convolve(self):
         data = [1, 2, 3, 2, 2, 0, 2, 3, 4, 3, 2, 1, 1, 2, 3, 4, 3, 2, 0]
@@ -72,7 +69,7 @@ class TestUtils(unittest.TestCase):
         av_model = [1, 2, 3, 2, 1]
         result = utils.get_convolve(pattern_index, av_model, data, window_size)
         for val in result:
-            self.assertFalse(val)
+            self.assertFalse(np.isnan(val))
     
     def test_get_convolve_empty_data(self):
         data = []
@@ -98,8 +95,8 @@ class TestUtils(unittest.TestCase):
         segment = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
         segment = pd.Series(segment)
         jump_height = [3.5, 4]
-        self.GreaterEqual(utils.find_jump_parameters(segment, 0)[1], jump_height[0])
-        self.LessEqual(utils.find_jump_parameters(segment, 0)[1], jump_height[1])
+        self.assertGreaterEqual(utils.find_jump_parameters(segment, 0)[1], jump_height[0])
+        self.assertLessEqual(utils.find_jump_parameters(segment, 0)[1], jump_height[1])
     
     def test_find_jump_parameters_length(self):
         segment = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
@@ -117,8 +114,8 @@ class TestUtils(unittest.TestCase):
         segment = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         segment = pd.Series(segment)
         drop_height = [3.5, 4]
-        self.GreaterEqual(utils.find_drop_parameters(segment, 0)[1], drop_height[0])
-        self.LessEqual(utils.find_drop_parameters(segment, 0)[1], drop_height[1])
+        self.assertGreaterEqual(utils.find_drop_parameters(segment, 0)[1], drop_height[0])
+        self.assertLessEqual(utils.find_drop_parameters(segment, 0)[1], drop_height[1])
     
     def test_find_drop_parameters_length(self):
         segment = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
