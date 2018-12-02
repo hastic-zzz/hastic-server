@@ -48,32 +48,36 @@ class AnalyticUnitManager:
         self.analytic_workers[analytic_unit_id] = worker
         return worker
 
+
+    async def __handle_analytic_task(self, task) -> dict:
+        """
+            returns payload or None
+        """
+        analytic_unit_id: AnalyticUnitId = task['analyticUnitId']
+
+        if task['type'] == 'CANCEL':
+            if analytic_unit_id in self.analytic_workers:
+                self.analytic_workers[analytic_unit_id].cancel()
+            return
+
+        payload = task['payload']
+        worker = self.__ensure_worker(analytic_unit_id, payload['pattern'])
+        data = prepare_data(payload['data'])
+        if task['type'] == 'LEARN':
+            return await worker.do_train(payload['segments'], data, payload['cache'])
+        elif task['type'] == 'PREDICT':
+            return await worker.do_predict(data, payload['cache'])
+
+        raise ValueError('Unknown task type "%s"' % task['type'])
+
+
     async def handle_analytic_task(self, task):
         try:
-            analytic_unit_id: AnalyticUnitId = task['analyticUnitId']
-
-            if task['type'] == 'CANCEL':
-                if analytic_unit_id in self.analytic_workers:
-                    self.analytic_workers[analytic_unit_id].cancel()
-                return {
-                    'status': 'SUCCESS'
-                }
-
-            payload = task['payload']
-            worker = self.__ensure_worker(analytic_unit_id, payload['pattern'])
-            data = prepare_data(payload['data'])
-            result_payload = {}
-            if task['type'] == 'LEARN':
-                result_payload = await worker.do_train(payload['segments'], data, payload['cache'])
-            elif task['type'] == 'PREDICT':
-                result_payload = await worker.do_predict(data, payload['cache'])
-            else:
-                raise ValueError('Unknown task type "%s"' % task['type'])
+            result_payload = await self.__handle_analytic_task(task)
             return {
                 'status': 'SUCCESS',
                 'payload': result_payload
             }
-
         except Exception as e:
             error_text = traceback.format_exc()
             logger.error("handle_analytic_task exception: '%s'" % error_text)
@@ -82,5 +86,3 @@ class AnalyticUnitManager:
                 'status': 'FAILED',
                 'error': str(e)
             }
-
-
