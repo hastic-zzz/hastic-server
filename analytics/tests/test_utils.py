@@ -12,7 +12,9 @@ class TestUtils(unittest.TestCase):
     
     def test_confidence_all_normal_value(self):
         segment = [1, 2, 0, 6, 8, 5, 3]
-        self.assertEqual(utils.find_confidence(segment), 1.6)
+        utils_result = utils.find_confidence(segment)
+        result = 1.6
+        self.assertTrue(math.isclose(utils_result, result, rel_tol=1e-2))
     
     def test_confidence_all_nan_value(self):
         segment = [np.NaN, np.NaN, np.NaN, np.NaN]
@@ -20,7 +22,9 @@ class TestUtils(unittest.TestCase):
     
     def test_confidence_with_nan_value(self):
         data = [np.NaN, np.NaN, 0, 8]
-        self.assertEqual(utils.find_confidence(data), 1.6)
+        utils_result = utils.find_confidence(data)
+        result = 1.6
+        self.assertTrue(math.isclose(utils_result, result, rel_tol=1e-2))
     
     def test_interval_all_normal_value(self):
         data = [1, 2, 1, 2, 4, 1, 2, 4, 5, 6]
