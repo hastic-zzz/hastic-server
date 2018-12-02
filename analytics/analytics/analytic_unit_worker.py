@@ -30,7 +30,6 @@ class AnalyticUnitWorker:
         except CancelledError as e:
             return cache
 
-
     async def do_predict(self, data: pd.DataFrame, cache: Optional[AnalyticUnitCache]) -> dict:
         return self._detector.predict(data, cache)
 

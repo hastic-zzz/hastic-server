@@ -17,7 +17,7 @@ class ServerMessage:
         self.payload = payload
         self.request_id = request_id
 
-    def toJSON(self):
+    def toJSON(self) -> dict:
         result = {
             'method': self.method
         }

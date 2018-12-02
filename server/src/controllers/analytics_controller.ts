@@ -13,6 +13,7 @@ import * as _ from 'lodash';
 
 
 type TaskResult = any;
+type PredictionResult = any;
 export type TaskResolver = (taskResult: TaskResult) => void;
 
 const taskResolvers = new Map<AnalyticsTaskId, TaskResolver>();
@@ -37,16 +38,25 @@ function onTaskResult(taskResult: TaskResult) {
   }
 }
 
+function onPredict(predictionResult: PredictionResult) {
+  processPredictionResult(predictionResult.analyticUnitId, predictionResult);
+}
+
 async function onMessage(message: AnalyticsMessage) {
   let responsePayload = null;
-  let resolvedMethod = false;
+  let methodResolved = false;
 
   if(message.method === AnalyticsMessageMethod.TASK_RESULT) {
     onTaskResult(message.payload);
-    resolvedMethod = true;
+    methodResolved = true;
   }
 
-  if(!resolvedMethod) {
+  if(message.method === AnalyticsMessageMethod.PREDICT) {
+    onPredict(message.payload);
+    methodResolved = true;
+  }
+
+  if(!methodResolved) {
     throw new TypeError('Unknown method ' + message.method);
   }
 
@@ -182,7 +192,7 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
       return [];
     }
 
-    let payload = processPredictionResult(id, result);
+    let payload = processPredictionResult(id, result.payload);
 
     // TODO: implement segments merging without removing labeled
     // if(segments.length > 0 && payload.segments.length > 0) {
@@ -223,30 +233,29 @@ export async function deleteNonpredictedSegments(id, payload) {
   Segment.removeSegments(segmentsToRemove.map(s => s.id));
 }
 
-function processPredictionResult(analyticUnitId: AnalyticUnit.AnalyticUnitId, taskResult: any): {
+function processPredictionResult(analyticUnitId: AnalyticUnit.AnalyticUnitId, predictionResult: PredictionResult): {
   lastPredictionTime: number,
   segments: Segment.Segment[],
   cache: any
 } {
-  let payload = taskResult.payload;
-  if (payload === undefined) {
-    throw new Error(`Missing payload in result: ${taskResult}`);
+  
+  if (predictionResult.segments === undefined || !Array.isArray(predictionResult.segments)) {
+    throw new Error(`Missing segments in result or it is corrupted: ${JSON.stringify(predictionResult)}`);
   }
-  if (payload.segments === undefined || !Array.isArray(payload.segments)) {
-    throw new Error(`Missing segments in result or it is corrupted: ${JSON.stringify(payload)}`);
-  }
-  if (payload.lastPredictionTime === undefined || isNaN(+payload.lastPredictionTime)) {
+  if (predictionResult.lastPredictionTime === undefined || isNaN(+predictionResult.lastPredictionTime)) {
     throw new Error(
-      `Missing lastPredictionTime is result or it is corrupted: ${JSON.stringify(payload)}`
+      `Missing lastPredictionTime is result or it is corrupted: ${JSON.stringify(predictionResult)}`
     );
   }
 
-  let segments = payload.segments.map(segment => new Segment.Segment(analyticUnitId, segment.from, segment.to, false, false));
+  let segments = predictionResult.segments.map(
+    segment => new Segment.Segment(analyticUnitId, segment.from, segment.to, false, false)
+  );
 
   return {
-    lastPredictionTime: payload.lastPredictionTime,
+    lastPredictionTime: predictionResult.lastPredictionTime,
     segments: segments,
-    cache: payload.cache
+    cache: predictionResult.cache
   };
 
 }
