@@ -22,7 +22,7 @@ export class AnalyticUnit {
     public type: string,
     public metric: Metric,
     public id?: AnalyticUnitId,
-    public lastPredictionTime?: number,
+    public lastDetectionTime?: number,
     public status?: AnalyticUnitStatus,
     public error?: string,
   ) {
@@ -47,7 +47,7 @@ export class AnalyticUnit {
       panelUrl: this.panelUrl,
       type: this.type,
       metric: this.metric.toObject(),
-      lastPredictionTime: this.lastPredictionTime,
+      lastDetectionTime: this.lastDetectionTime,
       status: this.status,
       error: this.error
     };
@@ -63,7 +63,7 @@ export class AnalyticUnit {
       obj.type,
       Metric.fromObject(obj.metric),
       obj._id,
-      obj.lastPredictionTime,
+      obj.lastDetectionTime,
       obj.status as AnalyticUnitStatus,
       obj.error,
     );
@@ -106,6 +106,6 @@ export async function setStatus(id: AnalyticUnitId, status: string, error?: stri
   return db.updateOne(id, { status, error });
 }
 
-export async function setPredictionTime(id: AnalyticUnitId, lastPredictionTime: number) {
-  return db.updateOne(id, { lastPredictionTime });
+export async function setDetectionTime(id: AnalyticUnitId, lastDetectionTime: number) {
+  return db.updateOne(id, { lastDetectionTime });
 }
