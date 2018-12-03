@@ -267,7 +267,7 @@ def best_pat(pat_list, data, dir):
         new_pat_list.append(ind)
     return new_pat_list
 
-def find_nan_indexes(segment):
+def find_nan_indexes(segment: pd.Series) -> list:
     nan_list = np.isnan(segment)
     nan_indexes = []
     for i, val in enumerate(nan_list):
@@ -275,18 +275,21 @@ def find_nan_indexes(segment):
             nan_indexes.append(i)
     return nan_indexes
 
-def nan_to_zero(segment, nan_list):
-    for val in nan_list:
-        segment[val] = 0
+def nan_to_zero(segment: pd.Series, nan_list: list) -> pd.Series:
+    if type(segment) == pd.Series:
+        for val in nan_list:
+            segment.values[val] = 0
+    else:
+        for val in nan_list:
+            segment[val] = 0
     return segment
 
 def find_confidence(segment: pd.Series) -> float:
+    nan_list = utils.find_nan_indexes(segment)
+    if len(nan_list) > 0:
+        segment = utils.nan_to_zero(segment, nan_list)
     segment_min = min(segment)
     segment_max = max(segment)
-    if np.isnan(segment_min):
-        segment_min = 0
-    if np.isnan(segment_max):
-        segment_max = 0
     return 0.2 * (segment_max - segment_min)
 
 def get_interval(data: pd.Series, center: int, window_size: int) -> pd.Series:
