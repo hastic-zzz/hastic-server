@@ -301,8 +301,11 @@ def get_interval(data: pd.Series, center: int, window_size: int) -> pd.Series:
 def subtract_min_without_nan(segment: list) -> list:
     if len(segment) == 0:
         return []
-    if not np.isnan(min(segment)):
-        segment = segment - min(segment)
+    nan_list = utils.find_nan_indexes(segment)
+    if len(nan_list) > 0:
+        return segment
+    else:
+        segment = segment - min(segment)        
     return segment
 
 def get_convolve(segments: list, av_model: list, data: pd.Series, window_size: int) -> list:
@@ -311,6 +314,9 @@ def get_convolve(segments: list, av_model: list, data: pd.Series, window_size: i
     for segment in segments:
         labeled_segment = utils.get_interval(data, segment, window_size)
         labeled_segment = utils.subtract_min_without_nan(labeled_segment)
+        nan_list = utils.find_nan_indexes(labeled_segment)
+        if len(nan_list) > 0:
+            labeled_segment = utils.nan_to_zero(labeled_segment, nan_list)
         auto_convolve = scipy.signal.fftconvolve(labeled_segment, labeled_segment)
         convolve_segment = scipy.signal.fftconvolve(labeled_segment, av_model)
         convolve_list.append(max(auto_convolve))
