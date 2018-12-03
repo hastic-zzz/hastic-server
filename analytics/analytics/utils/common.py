@@ -283,6 +283,10 @@ def nan_to_zero(segment, nan_list):
 def find_confidence(segment: pd.Series) -> float:
     segment_min = min(segment)
     segment_max = max(segment)
+    if np.isnan(segment_min):
+        segment_min = 0
+    if np.isnan(segment_max):
+        segment_max = 0
     return 0.2 * (segment_max - segment_min)
 
 def get_interval(data: pd.Series, center: int, window_size: int) -> pd.Series:
