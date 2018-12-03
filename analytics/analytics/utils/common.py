@@ -299,6 +299,8 @@ def get_interval(data: pd.Series, center: int, window_size: int) -> pd.Series:
     return data[left_bound: right_bound]
 
 def subtract_min_without_nan(segment: list) -> list:
+    if len(segment) == 0:
+        return []
     if not np.isnan(min(segment)):
         segment = segment - min(segment)
     return segment
