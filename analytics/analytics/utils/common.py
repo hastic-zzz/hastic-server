@@ -292,6 +292,10 @@ def find_confidence(segment: pd.Series) -> float:
 def get_interval(data: pd.Series, center: int, window_size: int) -> pd.Series:
     left_bound = center - window_size
     right_bound = center + window_size + 1
+    if left_bound < 0:
+        left_bound = 0
+    if right_bound > len(data) + 1:
+        right_bound = len(data) + 1
     return data[left_bound: right_bound]
 
 def subtract_min_without_nan(segment: list) -> list:
