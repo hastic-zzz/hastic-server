@@ -51,7 +51,7 @@ async function onMessage(message: AnalyticsMessage) {
     methodResolved = true;
   }
 
-  if(message.method === AnalyticsMessageMethod.PREDICT) {
+  if(message.method === AnalyticsMessageMethod.DETECT) {
     onPredict(message.payload);
     methodResolved = true;
   }
@@ -159,7 +159,7 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
 
   try {
     let unit = await AnalyticUnit.findById(id);
-    previousLastPredictionTime = unit.lastPredictionTime;
+    previousLastPredictionTime = unit.lastDetectionTime;
     let pattern = unit.type;
 
     let segments = await Segment.findMany(id, { labeled: true });
@@ -183,8 +183,8 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
     }
     let task = new AnalyticsTask(
       id,
-      AnalyticsTaskType.PREDICT,
-      { pattern, lastPredictionTime: unit.lastPredictionTime, data, cache: oldCache }
+      AnalyticsTaskType.DETECT,
+      { pattern, lastPredictionTime: unit.lastDetectionTime, data, cache: oldCache }
     );
     console.debug(`run task, id:${id}`);
     let result = await runTask(task);
@@ -209,13 +209,13 @@ export async function runPredict(id: AnalyticUnit.AnalyticUnitId) {
 
     Segment.insertSegments(payload.segments);
     AnalyticUnitCache.setData(id, payload.cache);
-    AnalyticUnit.setPredictionTime(id, payload.lastPredictionTime);
+    AnalyticUnit.setDetectionTime(id, payload.lastPredictionTime);
     AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
   } catch(err) {
     let message = err.message || JSON.stringify(err);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
     if(previousLastPredictionTime !== undefined) {
-      await AnalyticUnit.setPredictionTime(id, previousLastPredictionTime);
+      await AnalyticUnit.setDetectionTime(id, previousLastPredictionTime);
     }
   }
 }
