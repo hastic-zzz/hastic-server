@@ -100,13 +100,13 @@ class DropModel(Model):
         else:
             self.state['conv_del_max'] = self.state['WINDOW_SIZE']
 
-    def do_predict(self, dataframe: pd.DataFrame) -> list:
+    def do_detect(self, dataframe: pd.DataFrame) -> list:
         data = dataframe['value']
         possible_drops = utils.find_drop(data, self.state['DROP_HEIGHT'], self.state['DROP_LENGTH'] + 1)
 
-        return self.__filter_prediction(possible_drops, data)
+        return self.__filter_detection(possible_drops, data)
 
-    def __filter_prediction(self, segments: list, data: list):
+    def __filter_detection(self, segments: list, data: list):
         delete_list = []
         variance_error = self.state['WINDOW_SIZE']
         close_patterns = utils.close_filtering(segments, variance_error)

@@ -87,7 +87,7 @@ class TroughModel(Model):
         else:
             self.state['conv_del_max'] = self.state['WINDOW_SIZE']
 
-    def do_predict(self, dataframe: pd.DataFrame):
+    def do_detect(self, dataframe: pd.DataFrame):
         data = dataframe['value']
         window_size = int(len(data)/SMOOTHING_COEFF) #test ws on flat data
         all_mins = argrelextrema(np.array(data), np.less)[0]
@@ -101,9 +101,9 @@ class TroughModel(Model):
             if data[i] < extrema_list[i]:
                 segments.append(i)
 
-        return self.__filter_prediction(segments, data)
+        return self.__filter_detection(segments, data)
 
-    def __filter_prediction(self, segments: list, data: list) -> list:
+    def __filter_detection(self, segments: list, data: list) -> list:
         delete_list = []
         variance_error = self.state['WINDOW_SIZE']
         close_patterns = utils.close_filtering(segments, variance_error)

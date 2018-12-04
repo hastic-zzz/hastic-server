@@ -78,7 +78,7 @@ class GeneralModel(Model):
         else:
             self.state['conv_del_max'] = self.state['WINDOW_SIZE']
 
-    def do_predict(self, dataframe: pd.DataFrame) -> list:
+    def do_detect(self, dataframe: pd.DataFrame) -> list:
         data = dataframe['value']
         pat_data = self.model_gen
         y = max(pat_data)
@@ -90,10 +90,10 @@ class GeneralModel(Model):
             self.all_conv.append(max(conv))
         all_conv_peaks = utils.peak_finder(self.all_conv, self.state['WINDOW_SIZE'] * 2)
 
-        filtered = self.__filter_prediction(all_conv_peaks, data)
+        filtered = self.__filter_detection(all_conv_peaks, data)
         return set(item + self.state['WINDOW_SIZE'] for item in filtered)
 
-    def __filter_prediction(self, segments: list, data: list):
+    def __filter_detection(self, segments: list, data: list):
         if len(segments) == 0 or len(self.ipats) == 0:
             return []
         delete_list = []

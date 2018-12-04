@@ -14,5 +14,5 @@ class Detector(ABC):
         pass
 
     @abstractmethod
-    def predict(self, dataframe: DataFrame, cache: Optional[AnalyticUnitCache]) -> dict:
+    def detect(self, dataframe: DataFrame, cache: Optional[AnalyticUnitCache]) -> dict:
         pass

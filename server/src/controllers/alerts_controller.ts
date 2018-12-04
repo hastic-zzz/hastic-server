@@ -5,7 +5,7 @@
 throw new Error('not supported');
 
 
-// import { runPredict } from './analytics_controller';
+// import { runDetect } from './analytics_controller';
 // import { getLabeledSegments } from './segments_controller';
 // import { AnalyticUnitId } from '../models/analytic_unit';
 // import { sendNotification } from '../services/notification_service';
@@ -56,10 +56,10 @@ throw new Error('not supported');
 
 // async function alertsTick() {
 //   let alertsAnomalies = getAlertsAnomalies();
-//   for (let predictorId of alertsAnomalies) {
+//   for (let detectorId of alertsAnomalies) {
 //     try {
-//       await runPredict(predictorId);
-//       processAlerts(predictorId);
+//       await runDetect(detectorId);
+//       processAlerts(detectorId);
 //     } catch (e) {
 //       console.error(e);
 //     }
