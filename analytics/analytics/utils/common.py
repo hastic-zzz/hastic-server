@@ -76,60 +76,6 @@ def intersection_segment(data, median):
 
     return [x for (idx, x) in enumerate(cen_ind) if idx not in del_ind]
 
-def logistic_sigmoid_distribution(self, x1, x2, alpha, height):
-    return map(lambda x: logistic_sigmoid(x, alpha, height), range(x1, x2))
-
-def logistic_sigmoid(x, alpha, height):
-    return height / (1 + math.exp(-x * alpha))
-
-def MyLogisticSigmoid(interval, alpha, heigh):
-    distribution = []
-    for i in range(-interval, interval):
-        F = height / (1 + math.exp(-i * alpha))
-        distribution.append(F)
-    return distribution
-
-def find_one_jump(data, x, size, height, err):
-    l = []
-    for i in range(x + 1, x + size):
-        if (data[i] > data[x] and data[x + size] > data[x] + height):
-            l.append(data[i])
-    if len(l) > size * err:
-        return x
-    else:
-        return 0
-
-def find_all_jumps(data, size, height):
-    possible_jump_list = []
-    for i in range(len(data - size)):
-        x = find_one_jump(data, i, size, height, 0.9)
-        if x > 0:
-            possible_jump_list.append(x)
-    return possible_jump_list
-
-def find_jump_center(cen_ind):
-    jump_center = cen_ind[0]
-    for i in range(len(cen_ind)):
-        x = cen_ind[i]
-        cx = scipy.signal.fftconvolve(pat_sigm, flat_data[x - WINDOW_SIZE : x + WINDOW_SIZE])
-        c.append(cx[2 * WINDOW_SIZE])
-        if i > 0 and cx > c[i - 1]:
-            jump_center = x
-    return jump_center
-
-def find_ind_median(median, segment_data):
-    x = np.arange(0, len(segment_data))
-    f = []
-    for i in range(len(segment_data)):
-        f.append(median)
-    f = np.array(f)
-    g = []
-    for i in segment_data:
-        g.append(i)
-    g = np.array(g)
-    idx = np.argwhere(np.diff(np.sign(f - g)) != 0).reshape(-1) + 0
-    return idx
-
 def find_jump_length(segment_data, min_line, max_line):
     x = np.arange(0, len(segment_data))
     f = []
