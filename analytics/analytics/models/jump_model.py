@@ -102,13 +102,13 @@ class JumpModel(Model):
         else:
             self.state['conv_del_max'] = self.state['WINDOW_SIZE']
 
-    def do_predict(self, dataframe: pd.DataFrame) -> list:
+    def do_detect(self, dataframe: pd.DataFrame) -> list:
         data = dataframe['value']
         possible_jumps = utils.find_jump(data, self.state['JUMP_HEIGHT'], self.state['JUMP_LENGTH'] + 1)
 
-        return self.__filter_prediction(possible_jumps, data)
+        return self.__filter_detection(possible_jumps, data)
 
-    def __filter_prediction(self, segments, data):
+    def __filter_detection(self, segments, data):
         delete_list = []
         variance_error = self.state['WINDOW_SIZE']
         close_patterns = utils.close_filtering(segments, variance_error)

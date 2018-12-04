@@ -42,17 +42,17 @@ class PatternDetector(Detector):
             'cache': new_cache
         }
 
-    def predict(self, dataframe: pd.DataFrame, cache: Optional[models.AnalyticUnitCache]) -> dict:
+    def detect(self, dataframe: pd.DataFrame, cache: Optional[models.AnalyticUnitCache]) -> dict:
         # TODO: split and sleep (https://github.com/hastic/hastic-server/pull/124#discussion_r214085643)
-        predicted = self.model.predict(dataframe, cache)
+        detected = self.model.detect(dataframe, cache)
 
-        segments = [{ 'from': segment[0], 'to': segment[1] } for segment in predicted['segments']]
-        newCache = predicted['cache']
+        segments = [{ 'from': segment[0], 'to': segment[1] } for segment in detected['segments']]
+        newCache = detected['cache']
 
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
-        last_prediction_time = last_dataframe_time.value
+        last_detection_time = last_dataframe_time.value
         return {
             'cache': newCache,
             'segments': segments,
-            'lastPredictionTime': last_prediction_time
+            'lastDetectionTime': last_detection_time
         }

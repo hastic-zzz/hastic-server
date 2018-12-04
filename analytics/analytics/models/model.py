@@ -14,7 +14,7 @@ class Model(ABC):
         pass
 
     @abstractmethod
-    def do_predict(self, dataframe: pd.DataFrame) -> list:
+    def do_detect(self, dataframe: pd.DataFrame) -> list:
         pass
 
     def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[AnalyticUnitCache]) -> AnalyticUnitCache:
@@ -34,11 +34,11 @@ class Model(ABC):
         self.do_fit(dataframe, segments)
         return self.state
 
-    def predict(self, dataframe: pd.DataFrame, cache: Optional[AnalyticUnitCache]) -> dict:
+    def detect(self, dataframe: pd.DataFrame, cache: Optional[AnalyticUnitCache]) -> dict:
         if type(cache) is AnalyticUnitCache:
             self.state = cache
 
-        result = self.do_predict(dataframe)
+        result = self.do_detect(dataframe)
         # TODO: convert from ns to ms more proper way (not dividing by 10^6)
         segments = [(
             dataframe['timestamp'][x - 1].value / 1000000,

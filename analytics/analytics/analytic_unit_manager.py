@@ -65,8 +65,8 @@ class AnalyticUnitManager:
         data = prepare_data(payload['data'])
         if task['type'] == 'LEARN':
             return await worker.do_train(payload['segments'], data, payload['cache'])
-        elif task['type'] == 'PREDICT':
-            return await worker.do_predict(data, payload['cache'])
+        elif task['type'] == 'DETECT':
+            return await worker.do_detect(data, payload['cache'])
 
         raise ValueError('Unknown task type "%s"' % task['type'])
 
