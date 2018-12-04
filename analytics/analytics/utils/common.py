@@ -275,7 +275,13 @@ def find_nan_indexes(segment: pd.Series) -> list:
             nan_indexes.append(i)
     return nan_indexes
 
-def nan_to_zero(segment: pd.Series, nan_list: list) -> pd.Series:
+def check_nan_values(segment: [pd.Series, list]) -> [pd.Series, list]:
+    nan_list = utils.find_nan_indexes(segment)
+    if len(nan_list) > 0:
+        segment = utils.nan_to_zero(segment, nan_list)
+    return segment
+
+def nan_to_zero(segment: [pd.Series, list], nan_list: list) -> [pd.Series, list]:
     if type(segment) == pd.Series:
         for val in nan_list:
             segment.values[val] = 0
@@ -285,9 +291,7 @@ def nan_to_zero(segment: pd.Series, nan_list: list) -> pd.Series:
     return segment
 
 def find_confidence(segment: pd.Series) -> float:
-    nan_list = utils.find_nan_indexes(segment)
-    if len(nan_list) > 0:
-        segment = utils.nan_to_zero(segment, nan_list)
+    segment = utils.check_nan_values(segment)
     segment_min = min(segment)
     segment_max = max(segment)
     return 0.2 * (segment_max - segment_min)
@@ -297,8 +301,8 @@ def get_interval(data: pd.Series, center: int, window_size: int) -> pd.Series:
     right_bound = center + window_size + 1
     if left_bound < 0:
         left_bound = 0
-    if right_bound > len(data) + 1:
-        right_bound = len(data) + 1
+    if right_bound > len(data):
+        right_bound = len(data)
     return data[left_bound: right_bound]
 
 def subtract_min_without_nan(segment: list) -> list:
@@ -317,9 +321,7 @@ def get_convolve(segments: list, av_model: list, data: pd.Series, window_size: i
     for segment in segments:
         labeled_segment = utils.get_interval(data, segment, window_size)
         labeled_segment = utils.subtract_min_without_nan(labeled_segment)
-        nan_list = utils.find_nan_indexes(labeled_segment)
-        if len(nan_list) > 0:
-            labeled_segment = utils.nan_to_zero(labeled_segment, nan_list)
+        labeled_segment = utils.check_nan_values(labeled_segment)
         auto_convolve = scipy.signal.fftconvolve(labeled_segment, labeled_segment)
         convolve_segment = scipy.signal.fftconvolve(labeled_segment, av_model)
         convolve_list.append(max(auto_convolve))
