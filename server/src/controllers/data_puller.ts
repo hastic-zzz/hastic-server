@@ -1,5 +1,5 @@
-import { AnalyticsTask, AnalyticsTaskType } from './analytics_task_model';
-import * as AnalyticUnit from './analytic_unit_model';
+import { AnalyticsTask, AnalyticsTaskType } from '../models/analytics_task_model';
+import * as AnalyticUnit from '../models/analytic_unit_model';
 import { AnalyticsService } from '../services/analytics_service';
 import { HASTIC_API_KEY } from '../config'
 
@@ -18,7 +18,7 @@ export class DataPuller {
   private PULL_PERIOD_MS = 1000;
   private _interval = 0;
   private _timer: any;
-  private _unitTimes: any;
+  private _unitTimes: { [id: string]: UnitTime } = {};
 
   constructor(private analyticsService: AnalyticsService){};
 
@@ -43,23 +43,31 @@ export class DataPuller {
 
   //TODO: group analyticUnits by panelID and send same dataset for group
   public runPuller() {
-    this._timer = setInterval(this.puller, this._interval);
+    this._timer = setTimeout(this.puller, this._interval);
   }
   public stopPuller() {
-    clearInterval(this._timer);
+    if(this._timer) {
+      clearInterval(this._timer);
+      this._timer = null;
+      this._interval = 0;
+    }
   }
 
   private puller() {
     let now = Date.now();
+    let times = [];
+
     _.forOwn(this._unitTimes, async (v, k) => {
       if(v.time + this.PULL_PERIOD_MS - now < 0 ) {
         let data = await this.pull(v.unit, v.time);
         v.time = now;
+        times.push(v.time);
         this.push(v.unit, data);
       }
     });
-    this._interval = _.min(this._unitTimes.map(u => Math.min(this.PULL_PERIOD_MS - now + u.time, 0)));
-    this._timer.setInterval(this._interval);
+    
+    this._interval = _.min(times.map(u => Math.min(this.PULL_PERIOD_MS - now + u.time, 0)));
+    this._timer = setTimeout(this.puller, this._interval);
   }
 
 }

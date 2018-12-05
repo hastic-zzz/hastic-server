@@ -5,7 +5,7 @@ import * as Segment from '../models/segment_model';
 import * as AnalyticUnit from '../models/analytic_unit_model';
 import { AnalyticsService } from '../services/analytics_service';
 import { HASTIC_API_KEY } from '../config'
-import { DataPuller } from '../models/data_puller';
+import { DataPuller } from './data_puller';
 
 import { queryByMetric } from 'grafana-datasource-kit';
 
