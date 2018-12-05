@@ -306,7 +306,7 @@ def get_interval(data: pd.Series, center: int, window_size: int) -> pd.Series:
         right_bound = len(data)
     return data[left_bound: right_bound]
 
-def subtract_min_without_nan(segment: list) -> list:
+def subtract_min_without_nan(segment: pd.Series) -> pd.Series:
     if len(segment) == 0:
         return []
     nan_list = utils.find_nan_indexes(segment)
