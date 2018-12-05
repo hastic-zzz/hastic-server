@@ -8,7 +8,6 @@ import detectors
 from analytic_unit_worker import AnalyticUnitWorker
 
 
-
 logger = logging.getLogger('AnalyticUnitManager')
 WORKERS_EXECUTORS = 20
 
