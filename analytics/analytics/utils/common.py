@@ -4,6 +4,7 @@ import scipy.signal
 from scipy.fftpack import fft
 from scipy.signal import argrelextrema
 from scipy.stats import gaussian_kde
+from typing import Union
 import utils
 
 def exponential_smoothing(series, alpha):
@@ -275,13 +276,13 @@ def find_nan_indexes(segment: pd.Series) -> list:
             nan_indexes.append(i)
     return nan_indexes
 
-def check_nan_values(segment: [pd.Series, list]) -> [pd.Series, list]:
+def check_nan_values(segment: Union[pd.Series, list]) -> Union[pd.Series, list]:
     nan_list = utils.find_nan_indexes(segment)
     if len(nan_list) > 0:
         segment = utils.nan_to_zero(segment, nan_list)
     return segment
 
-def nan_to_zero(segment: [pd.Series, list], nan_list: list) -> [pd.Series, list]:
+def nan_to_zero(segment: Union[pd.Series, list], nan_list: list) -> Union[pd.Series, list]:
     if type(segment) == pd.Series:
         for val in nan_list:
             segment.values[val] = 0
