@@ -280,6 +280,7 @@ export async function createAnalyticUnitFromObject(obj: any): Promise<AnalyticUn
   }
   let unit: AnalyticUnit.AnalyticUnit = AnalyticUnit.AnalyticUnit.fromObject(obj);
   let id = await AnalyticUnit.create(unit);
+  unit.id = id;
 
   if(dataPuller !== undefined) {
     dataPuller.addUnit(unit);
