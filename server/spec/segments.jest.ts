@@ -1,4 +1,4 @@
-import { deleteNonpredictedSegments } from '../src/controllers/analytics_controller';
+import { deleteNonDetectedSegments } from '../src/controllers/analytics_controller';
 import * as AnalyticUnit from '../src/models/analytic_unit_model';
 import * as Segment from '../src/models/segment_model';
 
@@ -21,7 +21,7 @@ afterEach(async () => {
 
 describe('Check deleted segments', function() {
   let payload = {
-    lastPredictionTime: 0,
+    lastDetectionTime: 0,
     segments: [],
     cache: null
   };
@@ -40,7 +40,7 @@ describe('Check deleted segments', function() {
 
 async function getDeletedSegments(id, payload): Promise<Segment.Segment[]> {
   let preSegments = await Segment.findMany(id, {labeled: false, deleted:false});
-  await deleteNonpredictedSegments(id, payload);
+  await deleteNonDetectedSegments(id, payload);
   let postSegments = await Segment.findMany(id, {labeled: false, deleted:false});
   let deleted = setDifference(preSegments, postSegments);
   deleted = deleted.map(s => {
