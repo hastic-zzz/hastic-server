@@ -7,7 +7,6 @@ from concurrent.futures import Executor, ThreadPoolExecutor
 import detectors
 from analytic_unit_worker import AnalyticUnitWorker
 
-import pprint
 
 
 logger = logging.getLogger('AnalyticUnitManager')
@@ -55,7 +54,6 @@ class AnalyticUnitManager:
         """
             returns payload or None
         """
-        pprint.pprint(task)
         analytic_unit_id: AnalyticUnitId = task['analyticUnitId']
 
         if task['type'] == 'CANCEL':
