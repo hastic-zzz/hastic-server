@@ -5,8 +5,8 @@ import axios from 'axios';
 import * as querystring from 'querystring';
 
 
-// TODO: send notification with payload without dep to AnalyticUnit
-export async function sendNotification(id: AnalyticUnitId, active: boolean) {
+// TODO: send webhook with payload without dep to AnalyticUnit
+export async function sendWebhook(id: AnalyticUnitId, active: boolean) {
   if(HASTIC_WEBHOOK_URL === null) {
     throw new Error(`Can't send alert, HASTIC_WEBHOOK_URL is undefined`);
   }
