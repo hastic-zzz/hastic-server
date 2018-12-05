@@ -1,4 +1,7 @@
 {
   "HASTIC_PORT": 8000,
-  "HASTIC_API_KEY": "eyJrIjoiVjZqMHY0dHk4UEE3eEN4MzgzRnd2aURlMWlIdXdHNW4iLCJuIjoiaGFzdGljIiwiaWQiOjF9"
+  "HASTIC_API_KEY": "eyJrIjoiVjZqMHY0dHk4UEE3eEN4MzgzRnd2aURlMWlIdXdHNW4iLCJuIjoiaGFzdGljIiwiaWQiOjF9",
+  "HASTIC_WEBHOOK_URL": "http://localhost:8080",
+  "HASTIC_WEBHOOK_TYPE": "application/x-www-form-urlencoded",
+  "HASTIC_WEBHOOK_SECRET": "mysecret"
 }
