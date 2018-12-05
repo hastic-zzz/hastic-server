@@ -15,12 +15,25 @@ export enum AnalyticUnitStatus {
   FAILED = 'FAILED'
 }
 
+export type FindManyQuery = {
+  name?: string,
+  panelUrl?: string,
+  type?: string,
+  metric?: Metric,
+  alert?: boolean,
+  id?: AnalyticUnitId,
+  lastDetectionTime?: number,
+  status?: AnalyticUnitStatus,
+  error?: string
+};
+
 export class AnalyticUnit {
   constructor(
     public name: string,
     public panelUrl: string,
     public type: string,
     public metric: Metric,
+    public alert?: boolean,
     public id?: AnalyticUnitId,
     public lastDetectionTime?: number,
     public status?: AnalyticUnitStatus,
@@ -47,6 +60,7 @@ export class AnalyticUnit {
       panelUrl: this.panelUrl,
       type: this.type,
       metric: this.metric.toObject(),
+      alert: this.alert,
       lastDetectionTime: this.lastDetectionTime,
       status: this.status,
       error: this.error
@@ -62,6 +76,7 @@ export class AnalyticUnit {
       obj.panelUrl,
       obj.type,
       Metric.fromObject(obj.metric),
+      obj.alert,
       obj._id,
       obj.lastDetectionTime,
       obj.status as AnalyticUnitStatus,
@@ -78,6 +93,14 @@ export async function findById(id: AnalyticUnitId): Promise<AnalyticUnit> {
     return null;
   }
   return AnalyticUnit.fromObject(obj);
+}
+
+export async function findMany(query: FindManyQuery): Promise<AnalyticUnit[]> {
+  let analyticUnits = await db.findMany(query);
+  if(analyticUnits === null) {
+    return [];
+  }
+  return analyticUnits.map(AnalyticUnit.fromObject);
 }
 
 
@@ -108,4 +131,8 @@ export async function setStatus(id: AnalyticUnitId, status: string, error?: stri
 
 export async function setDetectionTime(id: AnalyticUnitId, lastDetectionTime: number) {
   return db.updateOne(id, { lastDetectionTime });
+}
+
+export async function setAlert(id: AnalyticUnitId, alert: boolean) {
+  return db.updateOne(id, { alert });
 }
