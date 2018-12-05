@@ -5,6 +5,7 @@ import * as Segment from '../models/segment_model';
 import * as AnalyticUnit from '../models/analytic_unit_model';
 import { AnalyticsService } from '../services/analytics_service';
 import { HASTIC_API_KEY } from '../config'
+import { DataPuller } from '../models/data_puller';
 
 import { queryByMetric } from 'grafana-datasource-kit';
 
@@ -19,6 +20,7 @@ export type TaskResolver = (taskResult: TaskResult) => void;
 const taskResolvers = new Map<AnalyticsTaskId, TaskResolver>();
 
 let analyticsService: AnalyticsService = undefined;
+let dataPuller: DataPuller;
 
 
 function onTaskResult(taskResult: TaskResult) {
@@ -69,6 +71,8 @@ async function onMessage(message: AnalyticsMessage) {
 
 export function init() {
   analyticsService = new AnalyticsService(onMessage);
+  dataPuller = new DataPuller(analyticsService);
+  dataPuller.runPuller();
 }
 
 export function terminate() {
@@ -223,6 +227,11 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId) {
 export async function remove(id: AnalyticUnit.AnalyticUnitId) {
   let task = new AnalyticsTask(id, AnalyticsTaskType.CANCEL);
   await runTask(task);
+
+  if(dataPuller !== undefined) {
+  dataPuller.deleteUnit(id);
+  }
+
   await AnalyticUnit.remove(id);
 }
 
@@ -271,6 +280,11 @@ export async function createAnalyticUnitFromObject(obj: any): Promise<AnalyticUn
   }
   let unit: AnalyticUnit.AnalyticUnit = AnalyticUnit.AnalyticUnit.fromObject(obj);
   let id = await AnalyticUnit.create(unit);
+
+  if(dataPuller !== undefined) {
+    dataPuller.addUnit(unit);
+  }
+
   return id;
 }
 
