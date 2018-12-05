@@ -1,4 +1,4 @@
-import { findById, AnalyticUnitId } from '../models/analytic_unit_model';
+import { Segment } from '../models/segment_model';
 import { HASTIC_WEBHOOK_URL, HASTIC_WEBHOOK_TYPE, HASTIC_WEBHOOK_SECRET } from '../config';
 
 import axios from 'axios';
@@ -6,25 +6,15 @@ import * as querystring from 'querystring';
 
 
 // TODO: send webhook with payload without dep to AnalyticUnit
-export async function sendWebhook(id: AnalyticUnitId, active: boolean) {
+export async function sendWebhook(analyticUnitName: string, segment: Segment) {
   if(HASTIC_WEBHOOK_URL === null) {
     throw new Error(`Can't send alert, HASTIC_WEBHOOK_URL is undefined`);
   }
 
-  const analyticUnit = await findById(id);
-  if(analyticUnit === null) {
-    throw new Error(`Cannot send alert. There is no analytic unit with id "${id}"`);
-  }
-  const analyticUnitName = analyticUnit.name;
-  let status;
-  if(active) {
-    status = 'alert';
-  } else {
-    status = 'OK';
-  }
   const alert = {
-    analyticUnit: analyticUnitName,
-    status
+    analyticUnitName,
+    from: segment.from,
+    to: segment.to 
   };
 
   console.log(`Sending alert: ${JSON.stringify(alert)}`);
