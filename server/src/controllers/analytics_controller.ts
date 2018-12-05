@@ -4,6 +4,7 @@ import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import * as Segment from '../models/segment_model';
 import * as AnalyticUnit from '../models/analytic_unit_model';
 import { AnalyticsService } from '../services/analytics_service';
+import { sendWebhook } from '../services/notification_service';
 import { HASTIC_API_KEY } from '../config'
 
 import { queryByMetric } from 'grafana-datasource-kit';
@@ -192,7 +193,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId) {
       return [];
     }
 
-    let payload = processDetectionResult(id, result.payload);
+    let payload = await processDetectionResult(id, result.payload);
 
     // TODO: implement segments merging without removing labeled
     // if(segments.length > 0 && payload.segments.length > 0) {
@@ -233,25 +234,30 @@ export async function deleteNonDetectedSegments(id, payload) {
   Segment.removeSegments(segmentsToRemove.map(s => s.id));
 }
 
-function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitId, detectionResult: DetectionResult): {
-  lastDetectionTime: number,
-  segments: Segment.Segment[],
-  cache: any
-} {
-  
-  if (detectionResult.segments === undefined || !Array.isArray(detectionResult.segments)) {
+async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitId, detectionResult: DetectionResult): 
+  Promise<{
+    lastDetectionTime: number,
+    segments: Segment.Segment[],
+    cache: any
+  }> {
+  if(detectionResult.segments === undefined || !Array.isArray(detectionResult.segments)) {
     throw new Error(`Missing segments in result or it is corrupted: ${JSON.stringify(detectionResult)}`);
   }
-  if (detectionResult.lastDetectionTime === undefined || isNaN(+detectionResult.lastDetectionTime)) {
+  if(detectionResult.lastDetectionTime === undefined || isNaN(+detectionResult.lastDetectionTime)) {
     throw new Error(
       `Missing lastDetectionTime in result or it is corrupted: ${JSON.stringify(detectionResult)}`
     );
   }
 
-  let segments = detectionResult.segments.map(
+  const segments = detectionResult.segments.map(
     segment => new Segment.Segment(analyticUnitId, segment.from, segment.to, false, false)
   );
-
+  const analyticUnit = await AnalyticUnit.findById(analyticUnitId);
+  if(analyticUnit.alert) {
+    if(!_.isEmpty(segments)) {
+      sendWebhook(analyticUnit.name, _.last(segments));
+    }
+  }
   return {
     lastDetectionTime: detectionResult.lastDetectionTime,
     segments: segments,
