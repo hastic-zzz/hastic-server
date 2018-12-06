@@ -14,7 +14,7 @@ module.exports = {
     __dirname: false,
     __filename: false,
   },
-  entry: [ './src/index.ts' ],
+  entry: [ 'babel-polyfill', './src/index.ts' ],
   output: {
     filename: "server-dev.js",
     path: resolve('dist')

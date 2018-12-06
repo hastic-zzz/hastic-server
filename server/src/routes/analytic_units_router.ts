@@ -113,7 +113,7 @@ async function setAlert(ctx: Router.IRouterContext) {
       throw new Error('Cannot set undefined alert status');
     }
     
-    await AnalyticUnit.setAlert(analyticUnitId, alert);
+    await AnalyticsController.setAlert(analyticUnitId, alert);
 
     ctx.response.body = {
       code: 200,

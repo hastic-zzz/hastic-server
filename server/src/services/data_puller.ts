@@ -13,19 +13,18 @@ const PULL_PERIOD_MS = 5000;
 
 export class DataPuller {
 
-  private _interval = 1000;
-  private _timer: any = null;
-  private _unitTimes: { [id: string]: number } = {};
+  private _unitTimes: { [analyticUnitId: string]: number } = {};
 
   constructor(private analyticsService: AnalyticsService) {};
 
-  public addUnit(unit: AnalyticUnit.AnalyticUnit) {
-    let time = unit.lastDetectionTime || Date.now();
-    this._unitTimes[unit.id] = time;
+  public addUnit(analyticUnit: AnalyticUnit.AnalyticUnit) {
+    this._runAnalyticUnitPuller(analyticUnit);
   }
 
-  public deleteUnit(id: AnalyticUnit.AnalyticUnitId) {
-    delete this._unitTimes[id];
+  public deleteUnit(analyticUnitId: AnalyticUnit.AnalyticUnitId) {
+    if(_.has(this._unitTimes, analyticUnitId)) {
+      delete this._unitTimes[analyticUnitId];
+    }
   }
 
   private async pullData(unit: AnalyticUnit.AnalyticUnit, from: number, to: number): Promise<{
@@ -46,46 +45,65 @@ export class DataPuller {
   }
 
   //TODO: group analyticUnits by panelID and send same dataset for group
-  public runPuller() {
-    this._timer = setTimeout(this.puller.bind(this), this._interval);
+  public async runPuller() {
+    const analyticUnits = await AnalyticUnit.findMany({ alert: true });
+
+    _.each(analyticUnits, analyticUnit => {
+      this._runAnalyticUnitPuller(analyticUnit);
+    });
+
     console.log('Data puller runned');
   }
 
   public stopPuller() {
-    if(this._timer) {
-      clearTimeout(this._timer);
-      this._timer = null;
-      this._interval = 0;
-      console.log('Data puller stopped');
-    }
-    console.log('Data puller already stopped');
+    this._unitTimes = {};
   }
 
-  private async puller() {
-    if(_.isEmpty(this._unitTimes)) {
-      this._interval = PULL_PERIOD_MS;
-      this._timer = setTimeout(this.puller.bind(this), this._interval);
-      return;
+  private async _runAnalyticUnitPuller(analyticUnit: AnalyticUnit.AnalyticUnit) {
+    const time = analyticUnit.lastDetectionTime || Date.now();
+    this._unitTimes[analyticUnit.id] = time;
+
+    const dataGenerator = this.getDataGenerator(
+      analyticUnit, PULL_PERIOD_MS
+    );
+
+    for await (const data of dataGenerator) {
+      if(!_.has(this._unitTimes, analyticUnit.id)) {
+        break;
+      }
+
+      if(data.values.length === 0) {
+        continue;
+      }
+
+      const now = Date.now();
+      let payload = { data, from: time, to: now };
+      this._unitTimes[analyticUnit.id] = now;
+      this.pushData(analyticUnit, payload);
+    }
+  }
+
+  async * getDataGenerator(analyticUnit: AnalyticUnit.AnalyticUnit, duration: number):
+    AsyncIterableIterator<{ values: [number, number][]; columns: string[]; }> {
+
+    const getData = async () => {
+      try {
+        const time = this._unitTimes[analyticUnit.id]
+        const now = Date.now();
+        return await this.pullData(analyticUnit, time, now);
+      } catch(err) {
+        throw new Error(`Error while pulling data: ${err.message}`);
+      }
     }
 
-    let now = Date.now();
+    const timeout = async () => new Promise(
+      resolve => setTimeout(resolve, duration)
+    );
 
-    _.forOwn(this._unitTimes, async (time: number, analyticUnitId: AnalyticUnit.AnalyticUnitId) => {
-      const analyticUnit = await AnalyticUnit.findById(analyticUnitId);
-      if(!analyticUnit.alert) {
-        return;
-      }
-      let data = await this.pullData(analyticUnit, time, now);
-      if(data.values.length === 0) {
-        return;
-      }
-
-      let payload = { data, from: time, to: now, pattern: analyticUnit.type};
-      time = now;
-      this.pushData(analyticUnit, payload); 
-    });
-  
-    this._timer = setTimeout(this.puller.bind(this), this._interval);
+    while(true) {
+      yield await getData();
+      await timeout();
+    }
   }
 
 }
