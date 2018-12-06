@@ -56,3 +56,6 @@ class PatternDetector(Detector):
             'segments': segments,
             'lastDetectionTime': last_detection_time
         }
+
+    def recieve_data(self, data):
+        pass

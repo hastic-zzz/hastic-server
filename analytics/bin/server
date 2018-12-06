@@ -50,16 +50,14 @@ async def handle_task(task: object):
             'status': "IN_PROGRESS"
         }
 
-        if not task['type'] == 'PUSH':
-            message = services.server_service.ServerMessage('TASK_RESULT', task_result_payload)
-            await server_service.send_message(message)
+        message = services.server_service.ServerMessage('TASK_RESULT', task_result_payload)
+        await server_service.send_message(message)
 
         res = await analytic_unit_manager.handle_analytic_task(task)
         res['_id'] = task['_id']
 
-        if not task['type'] == 'PUSH':
-            message = services.server_service.ServerMessage('TASK_RESULT', res)
-            await server_service.send_message(message)
+        message = services.server_service.ServerMessage('TASK_RESULT', res)
+        await server_service.send_message(message)
 
     except Exception as e:
         error_text = traceback.format_exc()

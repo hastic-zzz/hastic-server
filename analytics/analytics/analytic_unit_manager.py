@@ -6,7 +6,6 @@ from concurrent.futures import Executor, ThreadPoolExecutor
 
 import detectors
 from analytic_unit_worker import AnalyticUnitWorker
-from analytic_unit_bucket import AnalyticUnitBucket
 
 
 logger = logging.getLogger('AnalyticUnitManager')
@@ -60,9 +59,6 @@ class AnalyticUnitManager:
         """
             returns payload or None
         """
-        if task['type'] == 'PUSH':
-            # TODO: implement PUSH message handling
-            return
         analytic_unit_id: AnalyticUnitId = task['analyticUnitId']
 
         if task['type'] == 'CANCEL':
@@ -78,10 +74,7 @@ class AnalyticUnitManager:
         elif task['type'] == 'DETECT':
             return await worker.do_detect(data, payload['cache'])
         elif task['type'] == 'PUSH':
-            bucket = self.__ensure_bucket(analytic_unit_id)
-            data = prepare_data(payload['data'])
-            bucket.receive_data(data)
-
+            return await worker.recieve_data(data)
 
         raise ValueError('Unknown task type "%s"' % task['type'])
 
