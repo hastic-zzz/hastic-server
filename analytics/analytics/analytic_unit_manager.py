@@ -6,6 +6,7 @@ from concurrent.futures import Executor, ThreadPoolExecutor
 
 import detectors
 from analytic_unit_worker import AnalyticUnitWorker
+from analytic_unit_bucket import AnalyticUnitBucket
 
 
 logger = logging.getLogger('AnalyticUnitManager')
@@ -37,7 +38,9 @@ class AnalyticUnitManager:
 
     def __init__(self):
         self.analytic_workers: Dict[AnalyticUnitId, AnalyticUnitWorker] = dict()
+        self.analytic_buckets: Dict[AnalyticUnitId, AnalyticUnitBucket] = dict()
         self.workers_executor = ThreadPoolExecutor(max_workers=WORKERS_EXECUTORS)
+        self.buckets = []
 
     def __ensure_worker(self, analytic_unit_id: AnalyticUnitId, analytic_unit_type) -> AnalyticUnitWorker:
         if analytic_unit_id in self.analytic_workers:
@@ -48,6 +51,10 @@ class AnalyticUnitManager:
         self.analytic_workers[analytic_unit_id] = worker
         return worker
 
+    def __ensure_bucket(self, analytic_unit_id: AnalyticUnitId) -> AnalyticUnitBucket:
+        if analytic_unit_id in self.analytic_buckets:
+            return self.analytic_buckets[analytic_unit_id]
+        self.analytic_buckets = AnalyticUnitBucket()
 
     async def __handle_analytic_task(self, task) -> dict:
         """
@@ -67,6 +74,11 @@ class AnalyticUnitManager:
             return await worker.do_train(payload['segments'], data, payload['cache'])
         elif task['type'] == 'DETECT':
             return await worker.do_detect(data, payload['cache'])
+        elif task['type'] == 'PUSH':
+            bucket = self.__ensure_bucket(analytic_unit_id)
+            data = prepare_data(payload['data'])
+            bucket.receive_data(data)
+
 
         raise ValueError('Unknown task type "%s"' % task['type'])
 
