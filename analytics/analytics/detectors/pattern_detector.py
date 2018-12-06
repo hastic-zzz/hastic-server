@@ -63,7 +63,7 @@ class PatternDetector(Detector):
         self.bucket.receive_data(data)
 
         if len(self.bucket) >= self.window_size:
-            res = self.detect(self.bucket.saved_data))
+            res = self.detect(self.bucket.data))
             #drop unused data
             return res
         
