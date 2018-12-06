@@ -16,35 +16,6 @@ def exponential_smoothing(series, alpha):
         result.append(alpha * series[n] + (1 - alpha) * result[n - 1])
     return result
 
-def find_steps(array, threshold):
-    """
-    Finds local maxima by segmenting array based on positions at which
-    the threshold value is crossed. Note that this thresholding is
-    applied after the absolute value of the array is taken. Thus,
-    the distinction between upward and downward steps is lost. However,
-    get_step_sizes can be used to determine directionality after the
-    fact.
-    Parameters
-    ----------
-    array : numpy array
-        1 dimensional array that represents time series of data points
-    threshold : int / float
-        Threshold value that defines a step
-    Returns
-    -------
-    steps : list
-        List of indices of the detected steps
-    """
-    steps        = []
-    array        = np.abs(array)
-    above_points = np.where(array > threshold, 1, 0)
-    ap_dif       = np.diff(above_points)
-    cross_ups    = np.where(ap_dif == 1)[0]
-    cross_dns    = np.where(ap_dif == -1)[0]
-    for upi, dni in zip(cross_ups,cross_dns):
-        steps.append(np.argmax(array[upi:dni]) + upi)
-    return steps
-
 def anomalies_to_timestamp(anomalies):
     for anomaly in anomalies:
         anomaly['from'] = int(anomaly['from'].timestamp() * 1000)
@@ -60,6 +31,18 @@ def segments_box(segments):
     min_time = pd.to_datetime(min_time, unit='ms')
     max_time = pd.to_datetime(max_time, unit='ms')
     return min_time, max_time
+
+def find_pat(data: pd.Series, height: float, lenght: int, pat_type: str):
+    pat_list = []
+    for i in range(len(data) - length - 1):
+        for x in range(1, lenght):
+            if pat_type == 'jump':
+                if(data[i+x] > data[i] + height):
+                    pat_list.append(i)
+            eilf pat_type == 'drop':
+                if(data[i+x] < data[i] - height):
+                    pat_list.append(i)
+    return pat_list
 
 def find_jump(data, height, lenght):
     j_list = []
