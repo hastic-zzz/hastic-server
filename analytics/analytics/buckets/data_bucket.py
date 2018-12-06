@@ -8,7 +8,7 @@ class DataBucket(object):
         self.data = pd.DataFrame([], columns=['timestamp', 'value'])
 
     def receive_data(self, data: pd.DataFrame):
-        self.data = pd.concat(self.data, data)
+        self.data = self.data.append(data, ignore_index=True)
 
     def drop_data(self, count: int):
         self.data = self.data.iloc[count:]
