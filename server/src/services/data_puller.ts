@@ -59,7 +59,7 @@ export class DataPuller {
   }
 
   private async _runAnalyticUnitPuller(analyticUnit: AnalyticUnit.AnalyticUnit) {
-    const time = analyticUnit.lastDetectionTime || Date.now();
+    const time = analyticUnit.lastDetectionTime + 1 || Date.now();
     this._unitTimes[analyticUnit.id] = time;
 
     const dataGenerator = this.getDataGenerator(
@@ -76,7 +76,8 @@ export class DataPuller {
       }
 
       const now = Date.now();
-      let payload = { data: data.values, from: time, to: now, pattern: analyticUnit.type };
+      let payloadValues = data.values;
+      let payload = { data: payloadValues, from: time, to: now, pattern: analyticUnit.type };
       this._unitTimes[analyticUnit.id] = now;
       this.pushData(analyticUnit, payload);
     }
