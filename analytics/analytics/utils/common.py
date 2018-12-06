@@ -8,7 +8,6 @@ from typing import Union
 import utils
 
 SHIFT_FACTOR = 0.05
-
 CONFIDENCE_FACTOR = 0.2
 
 def exponential_smoothing(series, alpha):
@@ -66,12 +65,12 @@ def segments_box(segments):
     max_time = pd.to_datetime(max_time, unit='ms')
     return min_time, max_time
 
-def intersection_segment(data, median):
+def find_intersection(data: pd.Series, median: float) -> list:
     """
-    Finds all intersections between drop pattern data and median
+        Finds all intersections between drop pattern data and median
     """
     cen_ind = []
-    for i in range(1, len(data)-1):
+    for i in range(1, len(data) - 1):
         if data[i - 1] < median and data[i + 1] > median:
             cen_ind.append(i)
     del_ind = []
@@ -185,17 +184,15 @@ def find_drop_length(segment_data, min_line, max_line):
         print("retard alert!")
         return 0
 
-def drop_intersection(segment_data, median_line):
+def find_drop_intersection(segment_data: pd.Series, median_line: float) -> list:
     """
-    Finds all intersections between flatten data and median
+        Finds all intersections between flatten data and median
     """
     cen_ind = []
     for i in range(1, len(segment_data)-1):
         if segment_data[i - 1] > median_line and segment_data[i + 1] < median_line:
             cen_ind.append(i)
-    """
-    Delete close values except the last one
-    """
+    #Delete close values except the last one
     del_ind = []
     for i in range(1, len(cen_ind)):
         if cen_ind[i] == cen_ind[i - 1] + 1:
@@ -338,18 +335,16 @@ def get_convolve(segments: list, av_model: list, data: pd.Series, window_size: i
         convolve_list.append(max(convolve_segment))
     return convolve_list
 
-
 def find_jump_parameters(segment_data: pd.Series, segment_from_index: int):
     flat_segment = segment_data.rolling(window=5).mean()
     flat_segment_dropna = flat_segment.dropna()
     segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(flat_segment_dropna)
     jump_height = (1 - SHIFT_FACTOR) * (segment_max_line - segment_min_line)
     jump_length = utils.find_jump_length(segment_data, segment_min_line, segment_max_line) # finds all interseprions with median
-    cen_ind = utils.intersection_segment(segment_data.tolist(), segment_median)
+    cen_ind = utils.find_intersection(segment_data.tolist(), segment_median)
     jump_center = cen_ind[0]
     segment_cent_index = jump_center + segment_from_index
     return segment_cent_index, jump_height, jump_length
-
 
 def find_drop_parameters(segment_data: pd.Series, segment_from_index: int):
     flat_segment = segment_data.rolling(window=5).mean()
@@ -357,11 +352,10 @@ def find_drop_parameters(segment_data: pd.Series, segment_from_index: int):
     segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(flat_segment_dropna)
     drop_height = (1 - SHIFT_FACTOR) * (segment_max_line - segment_min_line)
     drop_length = utils.find_drop_length(segment_data, segment_min_line, segment_max_line)
-    cen_ind = utils.drop_intersection(segment_data.tolist(), segment_median)
+    cen_ind = utils.find_drop_intersection(segment_data.tolist(), segment_median)
     drop_center = cen_ind[0]
     segment_cent_index = drop_center + segment_from_index
     return segment_cent_index, drop_height, drop_length
-
 
 def get_distribution_density(segment: pd.Series) -> float:
     min_jump = min(segment)
