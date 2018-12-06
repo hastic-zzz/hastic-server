@@ -68,7 +68,7 @@ async def handle_task(task: object):
 async def handle_data(task: object):
     res = await analytic_unit_manager.handle_analytic_task(task)
 
-    if res:
+    if res is not None:
         res['_id'] = task['_id']
         message = services.server_service.ServerMessage('TASK_RESULT', res)
         await server_service.send_message(message)

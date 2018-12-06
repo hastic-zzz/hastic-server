@@ -7,7 +7,7 @@ import pandas as pd
 from typing import Optional
 
 from detectors import Detector
-from data_bucket import DataBucket
+from buckets import DataBucket
 
 
 logger = logging.getLogger('PATTERN_DETECTOR')
@@ -63,7 +63,7 @@ class PatternDetector(Detector):
         self.bucket.receive_data(data)
 
         if len(self.bucket) >= self.window_size:
-            res = self.detect(self.bucket.data))
+            res = self.detect(self.bucket.dat)
             #drop unused data
             return res
         
