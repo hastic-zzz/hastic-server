@@ -15,9 +15,9 @@ declare type UnitTime = {
 
 export class DataPuller {
 
-  private PULL_PERIOD_MS: number = 2000;
+  private PULL_PERIOD_MS: number = 5000;
   private _interval: number = 1000;
-  private _timer: number = null;
+  private _timer: any = null;
   private _unitTimes: { [id: string]: UnitTime } = {};
 
   constructor(private analyticsService: AnalyticsService){};
@@ -33,7 +33,6 @@ export class DataPuller {
   }
 
   private pullData(unit: AnalyticUnit.AnalyticUnit, from: number, to: number) {
-    console.log(`pull ${from} ${to} ${JSON.stringify(unit)}`);
     if(!unit) {
       throw Error(`puller: can't pull undefined unit`);
     }
@@ -74,7 +73,7 @@ export class DataPuller {
 
     let now = Date.now();
 
-    _.forOwn(this._unitTimes, (v,k) => {
+    _.forOwn(this._unitTimes, async (v, k) => {
       let data = await this.pullData(v.unit, v.time, now);
       if(data.values.length === 0) {
         return;
@@ -82,7 +81,7 @@ export class DataPuller {
 
       let payload = { data, from: v.time, to: now};
       v.time = now;
-      this.pushData(v.unit, payload);
+      this.pushData(v.unit, payload); 
     });
   
     this._timer = setTimeout(this.puller.bind(this), this._interval);
