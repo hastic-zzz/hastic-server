@@ -286,13 +286,20 @@ export async function createAnalyticUnitFromObject(obj: any): Promise<AnalyticUn
   }
   let unit: AnalyticUnit.AnalyticUnit = AnalyticUnit.AnalyticUnit.fromObject(obj);
   let id = await AnalyticUnit.create(unit);
-  unit.id = id;
-
-  if(dataPuller !== undefined) {
-    dataPuller.addUnit(unit);
-  }
 
   return id;
+}
+
+export async function setAlert(analyticUnitId: AnalyticUnit.AnalyticUnitId, alert: boolean) {
+  AnalyticUnit.setAlert(analyticUnitId, alert);
+  if(dataPuller !== undefined) {
+    if(alert) {
+      const analyticUnit = await AnalyticUnit.findById(analyticUnitId);
+      dataPuller.addUnit(analyticUnit);
+    } else {
+      dataPuller.deleteUnit(analyticUnitId);
+    }
+  }
 }
 
 export async function updateSegments(
