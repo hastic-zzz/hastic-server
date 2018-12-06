@@ -8,14 +8,9 @@ import { queryByMetric } from 'grafana-datasource-kit';
 import * as _ from 'lodash';
 
 
-<<<<<<< HEAD
-const PULL_PERIOD_MS = 5000;
-
-=======
 type MetricDataChunk = { values: [number, number][], columns: string[] };
 
 const PULL_PERIOD_MS = 5000;
->>>>>>> 053e1a4e9db28effcb0f0ba82c090bceab8d1b42
 
 export class DataPuller {
 
@@ -33,13 +28,7 @@ export class DataPuller {
     }
   }
 
-<<<<<<< HEAD
-  private async pullData(unit: AnalyticUnit.AnalyticUnit, from: number, to: number): Promise<{
-    values: [number, number][]; columns: string[];
-  }> {
-=======
   private async pullData(unit: AnalyticUnit.AnalyticUnit, from: number, to: number): Promise<MetricDataChunk> {
->>>>>>> 053e1a4e9db28effcb0f0ba82c090bceab8d1b42
     if(unit === undefined) {
       throw Error(`puller: can't pull undefined unit`);
     }
@@ -87,22 +76,14 @@ export class DataPuller {
       }
 
       const now = Date.now();
-<<<<<<< HEAD
-      let payload = { data, from: time, to: now };
-=======
       let payload = { data, from: time, to: now, pattern: analyticUnit.type };
->>>>>>> 053e1a4e9db28effcb0f0ba82c090bceab8d1b42
       this._unitTimes[analyticUnit.id] = now;
       this.pushData(analyticUnit, payload);
     }
   }
 
   async * getDataGenerator(analyticUnit: AnalyticUnit.AnalyticUnit, duration: number):
-<<<<<<< HEAD
-    AsyncIterableIterator<{ values: [number, number][]; columns: string[]; }> {
-=======
     AsyncIterableIterator<MetricDataChunk> {
->>>>>>> 053e1a4e9db28effcb0f0ba82c090bceab8d1b42
 
     const getData = async () => {
       try {
