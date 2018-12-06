@@ -8,7 +8,7 @@ import { queryByMetric } from 'grafana-datasource-kit';
 import * as _ from 'lodash';
 
 
-type Data = { values: [number, number][], columns: string[] };
+type MetricDataChunk = { values: [number, number][], columns: string[] };
 
 const PULL_PERIOD_MS = 5000;
 
