@@ -65,7 +65,7 @@ def segments_box(segments):
     max_time = pd.to_datetime(max_time, unit='ms')
     return min_time, max_time
 
-def find_intersection(data: pd.Series, median: float) -> list:
+def find_intersections(data: pd.Series, median: float) -> list:
     """
         Finds all intersections between drop pattern data and median
     """
@@ -184,7 +184,7 @@ def find_drop_length(segment_data, min_line, max_line):
         print("retard alert!")
         return 0
 
-def find_drop_intersection(segment_data: pd.Series, median_line: float) -> list:
+def find_drop_intersections(segment_data: pd.Series, median_line: float) -> list:
     """
         Finds all intersections between flatten data and median
     """
@@ -340,7 +340,7 @@ def find_jump_parameters(segment_data: pd.Series, segment_from_index: int):
     segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(flat_segment_dropna)
     jump_height = (1 - SHIFT_FACTOR) * (segment_max_line - segment_min_line)
     jump_length = utils.find_jump_length(segment_data, segment_min_line, segment_max_line) # finds all interseprions with median
-    cen_ind = utils.find_intersection(segment_data.tolist(), segment_median)
+    cen_ind = utils.find_intersections(segment_data.tolist(), segment_median)
     jump_center = cen_ind[0]
     segment_cent_index = jump_center + segment_from_index
     return segment_cent_index, jump_height, jump_length
@@ -351,7 +351,7 @@ def find_drop_parameters(segment_data: pd.Series, segment_from_index: int):
     segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(flat_segment_dropna)
     drop_height = (1 - SHIFT_FACTOR) * (segment_max_line - segment_min_line)
     drop_length = utils.find_drop_length(segment_data, segment_min_line, segment_max_line)
-    cen_ind = utils.find_drop_intersection(segment_data.tolist(), segment_median)
+    cen_ind = utils.find_drop_intersections(segment_data.tolist(), segment_median)
     drop_center = cen_ind[0]
     segment_cent_index = drop_center + segment_from_index
     return segment_cent_index, drop_height, drop_length
