@@ -53,6 +53,9 @@ class AnalyticUnitManager:
         """
             returns payload or None
         """
+        if task['type'] == 'PUSH':
+            # TODO: implement PUSH message handling
+            return
         analytic_unit_id: AnalyticUnitId = task['analyticUnitId']
 
         if task['type'] == 'CANCEL':
