@@ -80,7 +80,7 @@ export class DataPuller {
         return;
       }
 
-      let payload = { data, from: time, to: now};
+      let payload = { data, from: time, to: now, pattern: analyticUnit.type};
       time = now;
       this.pushData(analyticUnit, payload); 
     });

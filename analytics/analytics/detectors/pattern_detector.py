@@ -62,8 +62,8 @@ class PatternDetector(Detector):
     def recieve_data(self, data: pd.DataFrame) -> Optional[dict]:
         self.bucket.receive_data(data)
 
-        if len(self.bucket) >= self.window_size:
-            res = self.detect(self.bucket.dat)
+        if len(self.bucket.data) >= self.window_size:
+            res = self.detect(self.bucket.data)
             #drop unused data
             return res
         
