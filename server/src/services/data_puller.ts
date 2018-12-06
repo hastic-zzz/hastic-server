@@ -76,7 +76,7 @@ export class DataPuller {
       }
 
       const now = Date.now();
-      let payload = { data, from: time, to: now };
+      let payload = { data, from: time, to: now, pattern: analyticUnit.type };
       this._unitTimes[analyticUnit.id] = now;
       this.pushData(analyticUnit, payload);
     }
