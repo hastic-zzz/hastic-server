@@ -182,17 +182,16 @@ def find_drop_length(segment_data, min_line, max_line):
         return 0
 
 def drop_intersection(segment_data, median_line):
-    x = np.arange(0, len(segment_data))
-    f = []
-    for i in range(len(segment_data)):
-        f.append(median_line)
-    f = np.array(f)
-    g = []
-    for i in segment_data:
-        g.append(i)
-    g = np.array(g)
-    idx = np.argwhere(np.diff(np.sign(f - g)) != 0).reshape(-1) + 0
-    return idx
+    cen_ind = []
+    for i in range(1, len(segment_data)-1):
+        if segment_data[i - 1] > median_line and segment_data[i + 1] < median_line:
+            cen_ind.append(i)
+    del_ind = []
+    for i in range(1, len(cen_ind)):
+        if cen_ind[i] == cen_ind[i - 1] + 1:
+            del_ind.append(i - 1)
+
+    return [x for (idx, x) in enumerate(cen_ind) if idx not in del_ind]
 
 def find_drop(data, height, length):
     d_list = []
@@ -336,9 +335,9 @@ def find_jump_parameters(segment_data: pd.Series, segment_from_index: int):
     segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(flat_segment_dropna)
     jump_height = 0.95 * (segment_max_line - segment_min_line)
     jump_length = utils.find_jump_length(segment_data, segment_min_line, segment_max_line) # finds all interseprions with median
-    cen_ind = utils.intersection_segment(flat_segment.tolist(), segment_median)
+    cen_ind = utils.intersection_segment(segment_data.tolist(), segment_median)
     jump_center = cen_ind[0]
-    segment_cent_index = jump_center - 5 + segment_from_index
+    segment_cent_index = jump_center + segment_from_index
     return segment_cent_index, jump_height, jump_length
 
 
@@ -348,9 +347,9 @@ def find_drop_parameters(segment_data: pd.Series, segment_from_index: int):
     segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(flat_segment_dropna)
     drop_height = 0.95 * (segment_max_line - segment_min_line)
     drop_length = utils.find_drop_length(segment_data, segment_min_line, segment_max_line)
-    cen_ind = utils.drop_intersection(flat_segment.tolist(), segment_median)
+    cen_ind = utils.drop_intersection(segment_data.tolist(), segment_median)
     drop_center = cen_ind[0]
-    segment_cent_index = drop_center - 5 + segment_from_index
+    segment_cent_index = drop_center + segment_from_index
     return segment_cent_index, drop_height, drop_length
 
 
@@ -371,7 +370,7 @@ def get_distribution_density(segment: pd.Series) -> float:
         segment_max_line = ax_list[max_peak_index, 0]
         segment_median = ax_list[antipeaks_kde[0], 0]
     except IndexError:
-        segment_max_line = max_jump
-        segment_min_line = min_jump
+        segment_max_line = max_jump * 0.95
+        segment_min_line = min_jump * 1.05
         segment_median = (max_jump - min_jump) / 2 + min_jump
     return segment_median, segment_max_line, segment_min_line
