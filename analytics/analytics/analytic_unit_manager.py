@@ -62,12 +62,12 @@ class AnalyticUnitManager:
         payload = task['payload']
         worker = self.__ensure_worker(analytic_unit_id, payload['pattern'])
         data = prepare_data(payload['data'])
-        if task['type'] == 'LEARN':
+        if task['type'] == 'PUSH':
+            return await worker.recieve_data(data)
+        elif task['type'] == 'LEARN':
             return await worker.do_train(payload['segments'], data, payload['cache'])
         elif task['type'] == 'DETECT':
             return await worker.do_detect(data, payload['cache'])
-        elif task['type'] == 'PUSH':
-            return await worker.recieve_data(data)
 
         raise ValueError('Unknown task type "%s"' % task['type'])
 
