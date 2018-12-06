@@ -68,7 +68,7 @@ def segments_box(segments):
 
 def intersection_segment(data, median):
     """
-    Finds all intersections between flatten data and median
+    Finds all intersections between drop pattern data and median
     """
     cen_ind = []
     for i in range(1, len(data)-1):
@@ -186,10 +186,16 @@ def find_drop_length(segment_data, min_line, max_line):
         return 0
 
 def drop_intersection(segment_data, median_line):
+    """
+    Finds all intersections between flatten data and median
+    """
     cen_ind = []
     for i in range(1, len(segment_data)-1):
         if segment_data[i - 1] > median_line and segment_data[i + 1] < median_line:
             cen_ind.append(i)
+    """
+    Delete close values except the last one
+    """
     del_ind = []
     for i in range(1, len(cen_ind)):
         if cen_ind[i] == cen_ind[i - 1] + 1:
