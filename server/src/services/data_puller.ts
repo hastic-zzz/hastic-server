@@ -8,32 +8,30 @@ import { queryByMetric } from 'grafana-datasource-kit';
 import * as _ from 'lodash';
 
 
-declare type UnitTime = {
-  unit: AnalyticUnit.AnalyticUnit,
-  time: number
-};
+const PULL_PERIOD_MS = 5000;
+
 
 export class DataPuller {
 
-  private PULL_PERIOD_MS: number = 5000;
-  private _interval: number = 1000;
+  private _interval = 1000;
   private _timer: any = null;
-  private _unitTimes: { [id: string]: UnitTime } = {};
+  private _unitTimes: { [id: string]: number } = {};
 
-  constructor(private analyticsService: AnalyticsService){};
+  constructor(private analyticsService: AnalyticsService) {};
 
   public addUnit(unit: AnalyticUnit.AnalyticUnit) {
     let time = unit.lastDetectionTime || Date.now();
-    let unitTime: UnitTime = {unit, time };
-    this._unitTimes[unit.id] = unitTime;
+    this._unitTimes[unit.id] = time;
   }
 
   public deleteUnit(id: AnalyticUnit.AnalyticUnitId) {
     delete this._unitTimes[id];
   }
 
-  private pullData(unit: AnalyticUnit.AnalyticUnit, from: number, to: number) {
-    if(!unit) {
+  private async pullData(unit: AnalyticUnit.AnalyticUnit, from: number, to: number): Promise<{
+    values: [number, number][]; columns: string[];
+  }> {
+    if(unit === undefined) {
       throw Error(`puller: can't pull undefined unit`);
     }
     return queryByMetric(unit.metric, unit.panelUrl, from, to, HASTIC_API_KEY);
@@ -64,27 +62,27 @@ export class DataPuller {
   }
 
   private async puller() {
-
     if(_.isEmpty(this._unitTimes)) {
-      this._interval = this.PULL_PERIOD_MS;
+      this._interval = PULL_PERIOD_MS;
       this._timer = setTimeout(this.puller.bind(this), this._interval);
       return;
     }
 
     let now = Date.now();
 
-    _.forOwn(this._unitTimes, async value => {
-      if(!value.unit.alert) {
+    _.forOwn(this._unitTimes, async (time: number, analyticUnitId: AnalyticUnit.AnalyticUnitId) => {
+      const analyticUnit = await AnalyticUnit.findById(analyticUnitId);
+      if(!analyticUnit.alert) {
         return;
       }
-      let data = await this.pullData(value.unit, value.time, now);
+      let data = await this.pullData(analyticUnit, time, now);
       if(data.values.length === 0) {
         return;
       }
 
-      let payload = { data, from: value.time, to: now};
-      value.time = now;
-      this.pushData(value.unit, payload); 
+      let payload = { data, from: time, to: now};
+      time = now;
+      this.pushData(analyticUnit, payload); 
     });
   
     this._timer = setTimeout(this.puller.bind(this), this._interval);
