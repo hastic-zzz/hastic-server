@@ -10,5 +10,5 @@ class DataBucket(object):
 
         self.saved_data = pd.concat(self.saved_data, data)
 
-    def drop_data(self, count):
+    def drop_data(self, count: int):
         self.saved_data.iloc[count:]

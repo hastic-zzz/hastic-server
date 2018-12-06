@@ -37,9 +37,7 @@ class AnalyticUnitManager:
 
     def __init__(self):
         self.analytic_workers: Dict[AnalyticUnitId, AnalyticUnitWorker] = dict()
-        self.analytic_buckets: Dict[AnalyticUnitId, AnalyticUnitBucket] = dict()
         self.workers_executor = ThreadPoolExecutor(max_workers=WORKERS_EXECUTORS)
-        self.buckets = []
 
     def __ensure_worker(self, analytic_unit_id: AnalyticUnitId, analytic_unit_type) -> AnalyticUnitWorker:
         if analytic_unit_id in self.analytic_workers:
@@ -49,11 +47,6 @@ class AnalyticUnitManager:
         worker = AnalyticUnitWorker(analytic_unit_id, detector, self.workers_executor)
         self.analytic_workers[analytic_unit_id] = worker
         return worker
-
-    def __ensure_bucket(self, analytic_unit_id: AnalyticUnitId) -> AnalyticUnitBucket:
-        if analytic_unit_id in self.analytic_buckets:
-            return self.analytic_buckets[analytic_unit_id]
-        self.analytic_buckets = AnalyticUnitBucket()
 
     async def __handle_analytic_task(self, task) -> dict:
         """

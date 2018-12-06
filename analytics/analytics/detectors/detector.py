@@ -18,9 +18,5 @@ class Detector(ABC):
         pass
 
     @abstractmethod
-    def recieve_data(self, data):
-        pass
-
-    @abstractmethod
-    def check_detect(self):
+    def recieve_data(self, data: DataFrame):
         pass

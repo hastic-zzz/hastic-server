@@ -59,12 +59,12 @@ class PatternDetector(Detector):
             'lastDetectionTime': last_detection_time
         }
 
-    def recieve_data(self, data):
-        self.bucket.receive_dat(data)
+    def recieve_data(self, data: pd.DataFrame):
+        self.bucket.receive_data(data)
 
         if len(self.bucket) >= self.window_size:
-            return self.detect(self.bucket.saved_data)
-
-        #drop
+            res = self.detect(self.bucket.saved_data))
+            #drop unused data
+            return res
         
         return None
