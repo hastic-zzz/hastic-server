@@ -192,7 +192,7 @@ def find_drop_intersection(segment_data: pd.Series, median_line: float) -> list:
     for i in range(1, len(segment_data)-1):
         if segment_data[i - 1] > median_line and segment_data[i + 1] < median_line:
             cen_ind.append(i)
-    #Delete close values except the last one
+    #   Delete close values except the last one
     del_ind = []
     for i in range(1, len(cen_ind)):
         if cen_ind[i] == cen_ind[i - 1] + 1:
@@ -224,7 +224,6 @@ def peak_finder(data, size):
 
 def ar_mean(numbers):
     return float(sum(numbers)) / max(len(numbers), 1)
-
 
 def get_av_model(patterns_list):
     if len(patterns_list) == 0:
