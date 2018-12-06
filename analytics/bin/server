@@ -66,12 +66,17 @@ async def handle_task(task: object):
 async def handle_data(task: object):
     res = await analytic_unit_manager.handle_analytic_task(task)
 
+    if res:
+        res['_id'] = task['_id']
+        message = services.server_service.ServerMessage('TASK_RESULT', res)
+        await server_service.send_message(message)
+
 async def handle_message(message: services.ServerMessage):
     payload = None
     if message.method == 'TASK':
         await handle_task(message.payload)
-    if message.method == 'PUSH':
-        await
+    if message.method == 'DATA':
+        await handle_data(message.payload)
 
 def init_services():
     logger.info("Starting services...")

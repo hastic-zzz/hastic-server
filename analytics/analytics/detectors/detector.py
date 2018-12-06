@@ -20,3 +20,7 @@ class Detector(ABC):
     @abstractmethod
     def recieve_data(self, data):
         pass
+
+    @abstractmethod
+    def check_detect(self):
+        pass

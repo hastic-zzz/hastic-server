@@ -32,7 +32,7 @@ export class AnalyticsService {
       return Promise.reject("Analytics is not ready");
     }
     let method = task.type === AnalyticsTaskType.PUSH ?
-      AnalyticsMessageMethod.PUSH : AnalyticsMessageMethod.TASK
+      AnalyticsMessageMethod.DATA : AnalyticsMessageMethod.TASK
     let message = new AnalyticsMessage(
       method,
       task.toObject()

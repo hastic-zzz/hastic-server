@@ -38,5 +38,4 @@ class AnalyticUnitWorker:
             self._training_feature.cancel()
 
     async def recieve_data(self, data: pd.DataFrame):
-        self._detector.recieve_data(data)
-        return None
+        return self._detector.recieve_data(data)
