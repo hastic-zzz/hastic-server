@@ -78,7 +78,6 @@ class AnalyticUnitManager:
 
         raise ValueError('Unknown task type "%s"' % task['type'])
 
-
     async def handle_analytic_task(self, task):
         try:
             result_payload = await self.__handle_analytic_task(task)

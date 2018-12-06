@@ -7,6 +7,7 @@ import pandas as pd
 from typing import Optional
 
 from detectors import Detector
+from data_bucket import DataBucket
 
 
 logger = logging.getLogger('PATTERN_DETECTOR')
@@ -34,6 +35,7 @@ class PatternDetector(Detector):
         self.pattern_type = pattern_type
         self.model = resolve_model_by_pattern(self.pattern_type)
         window_size = 100
+        self.bucket = DataBucket()
 
     def train(self, dataframe: pd.DataFrame, segments: list, cache: Optional[models.AnalyticUnitCache]) -> models.AnalyticUnitCache:
         # TODO: pass only part of dataframe that has segments
@@ -58,4 +60,9 @@ class PatternDetector(Detector):
         }
 
     def recieve_data(self, data):
-        pass
+        self.bucket.receive_dat(data)
+
+        if len(self.bucket) >= self.window_size:
+            self.detect(self.bucket.saved_data)
+
+            #drop

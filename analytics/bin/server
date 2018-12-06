@@ -63,10 +63,15 @@ async def handle_task(task: object):
         error_text = traceback.format_exc()
         logger.error("handle_task Exception: '%s'" % error_text)
 
+async def handle_data(task: object):
+    res = await analytic_unit_manager.handle_analytic_task(task)
+
 async def handle_message(message: services.ServerMessage):
     payload = None
     if message.method == 'TASK':
         await handle_task(message.payload)
+    if message.method == 'PUSH':
+        await
 
 def init_services():
     logger.info("Starting services...")

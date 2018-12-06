@@ -1,7 +1,8 @@
 export enum AnalyticsMessageMethod {
   TASK = 'TASK',
   TASK_RESULT = 'TASK_RESULT',
-  DETECT = 'DETECT'
+  DETECT = 'DETECT',
+  PUSH = 'PUSH'
 }
 
 export class AnalyticsMessage {
