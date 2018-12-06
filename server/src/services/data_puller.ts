@@ -74,6 +74,7 @@ export class DataPuller {
     let now = Date.now();
 
     _.forOwn(this._unitTimes, async (v, k) => {
+      // TODO: add check for v.unit.alert status
       let data = await this.pullData(v.unit, v.time, now);
       if(data.values.length === 0) {
         return;
