@@ -7,9 +7,12 @@ import { queryByMetric } from 'grafana-datasource-kit';
 
 import * as _ from 'lodash';
 
+
+const PULL_PERIOD_MS = 5000;
+
+
 export class DataPuller {
 
-  private PULL_PERIOD_MS = 5000;
   private _interval = 1000;
   private _timer: any = null;
   private _unitTimes: { [id: string]: number } = {};
@@ -58,7 +61,7 @@ export class DataPuller {
 
   private async puller() {
     if(_.isEmpty(this._unitTimes)) {
-      this._interval = this.PULL_PERIOD_MS;
+      this._interval = PULL_PERIOD_MS;
       this._timer = setTimeout(this.puller.bind(this), this._interval);
       return;
     }
