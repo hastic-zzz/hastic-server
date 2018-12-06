@@ -8,8 +8,9 @@ import { queryByMetric } from 'grafana-datasource-kit';
 import * as _ from 'lodash';
 
 
-const PULL_PERIOD_MS = 5000;
+type Data = { values: [number, number][], columns: string[] };
 
+const PULL_PERIOD_MS = 5000;
 
 export class DataPuller {
 
@@ -27,9 +28,7 @@ export class DataPuller {
     }
   }
 
-  private async pullData(unit: AnalyticUnit.AnalyticUnit, from: number, to: number): Promise<{
-    values: [number, number][]; columns: string[];
-  }> {
+  private async pullData(unit: AnalyticUnit.AnalyticUnit, from: number, to: number): Promise<Data> {
     if(unit === undefined) {
       throw Error(`puller: can't pull undefined unit`);
     }
@@ -84,7 +83,7 @@ export class DataPuller {
   }
 
   async * getDataGenerator(analyticUnit: AnalyticUnit.AnalyticUnit, duration: number):
-    AsyncIterableIterator<{ values: [number, number][]; columns: string[]; }> {
+    AsyncIterableIterator<Data> {
 
     const getData = async () => {
       try {
