@@ -7,6 +7,10 @@ from scipy.stats import gaussian_kde
 from typing import Union
 import utils
 
+SHIFT_FACTOR = 0.05
+
+CONFIDENCE_FACTOR = 0.2
+
 def exponential_smoothing(series, alpha):
     result = [series[0]]
     if np.isnan(result):
@@ -294,7 +298,7 @@ def find_confidence(segment: pd.Series) -> float:
     segment = utils.check_nan_values(segment)
     segment_min = min(segment)
     segment_max = max(segment)
-    return 0.2 * (segment_max - segment_min)
+    return CONFIDENCE_FACTOR * (segment_max - segment_min)
 
 def get_interval(data: pd.Series, center: int, window_size: int) -> pd.Series:
     left_bound = center - window_size
@@ -333,7 +337,7 @@ def find_jump_parameters(segment_data: pd.Series, segment_from_index: int):
     flat_segment = segment_data.rolling(window=5).mean()
     flat_segment_dropna = flat_segment.dropna()
     segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(flat_segment_dropna)
-    jump_height = 0.95 * (segment_max_line - segment_min_line)
+    jump_height = (1 - SHIFT_FACTOR) * (segment_max_line - segment_min_line)
     jump_length = utils.find_jump_length(segment_data, segment_min_line, segment_max_line) # finds all interseprions with median
     cen_ind = utils.intersection_segment(segment_data.tolist(), segment_median)
     jump_center = cen_ind[0]
@@ -345,7 +349,7 @@ def find_drop_parameters(segment_data: pd.Series, segment_from_index: int):
     flat_segment = segment_data.rolling(window=5).mean()
     flat_segment_dropna = flat_segment.dropna()
     segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(flat_segment_dropna)
-    drop_height = 0.95 * (segment_max_line - segment_min_line)
+    drop_height = (1 - SHIFT_FACTOR) * (segment_max_line - segment_min_line)
     drop_length = utils.find_drop_length(segment_data, segment_min_line, segment_max_line)
     cen_ind = utils.drop_intersection(segment_data.tolist(), segment_median)
     drop_center = cen_ind[0]
@@ -370,7 +374,7 @@ def get_distribution_density(segment: pd.Series) -> float:
         segment_max_line = ax_list[max_peak_index, 0]
         segment_median = ax_list[antipeaks_kde[0], 0]
     except IndexError:
-        segment_max_line = max_jump * 0.95
-        segment_min_line = min_jump * 1.05
+        segment_max_line = max_jump * (1 - SHIFT_FACTOR)
+        segment_min_line = min_jump * (1 - SHIFT_FACTOR)
         segment_median = (max_jump - min_jump) / 2 + min_jump
     return segment_median, segment_max_line, segment_min_line
