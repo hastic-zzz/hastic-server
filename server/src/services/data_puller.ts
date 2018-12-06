@@ -73,16 +73,18 @@ export class DataPuller {
 
     let now = Date.now();
 
-    _.forOwn(this._unitTimes, async (v, k) => {
-      // TODO: add check for v.unit.alert status
-      let data = await this.pullData(v.unit, v.time, now);
+    _.forOwn(this._unitTimes, async value => {
+      if(!value.unit.alert) {
+        return;
+      }
+      let data = await this.pullData(value.unit, value.time, now);
       if(data.values.length === 0) {
         return;
       }
 
-      let payload = { data, from: v.time, to: now};
-      v.time = now;
-      this.pushData(v.unit, payload); 
+      let payload = { data, from: value.time, to: now};
+      value.time = now;
+      this.pushData(value.unit, payload); 
     });
   
     this._timer = setTimeout(this.puller.bind(this), this._interval);
