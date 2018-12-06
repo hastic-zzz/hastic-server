@@ -28,7 +28,9 @@ export class DataPuller {
     delete this._unitTimes[id];
   }
 
-  private pullData(unit: AnalyticUnit.AnalyticUnit, from: number, to: number) {
+  private async pullData(unit: AnalyticUnit.AnalyticUnit, from: number, to: number): Promise<{
+    values: [number, number][]; columns: string[];
+  }> {
     if(unit === undefined) {
       throw Error(`puller: can't pull undefined unit`);
     }
