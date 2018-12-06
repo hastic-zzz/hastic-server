@@ -83,7 +83,7 @@ export class DataPuller {
   }
 
   async * getDataGenerator(analyticUnit: AnalyticUnit.AnalyticUnit, duration: number):
-    AsyncIterableIterator<Data> {
+    AsyncIterableIterator<MetricDataChunk> {
 
     const getData = async () => {
       try {
