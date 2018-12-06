@@ -18,5 +18,5 @@ class Detector(ABC):
         pass
 
     @abstractmethod
-    def recieve_data(self, data: DataFrame):
+    def recieve_data(self, data: DataFrame) -> Optional[dict]:
         pass

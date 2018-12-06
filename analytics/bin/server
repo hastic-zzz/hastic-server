@@ -70,7 +70,7 @@ async def handle_data(task: object):
 
     if res is not None:
         res['_id'] = task['_id']
-        message = services.server_service.ServerMessage('TASK_RESULT', res)
+        message = services.server_service.ServerMessage('DETECT', res)
         await server_service.send_message(message)
 
 async def handle_message(message: services.ServerMessage):
