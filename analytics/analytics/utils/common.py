@@ -299,3 +299,41 @@ def get_distribution_density(segment: pd.Series) -> float:
         segment_min_line = min_jump
         segment_median = (max_jump - min_jump) / 2 + min_jump
     return segment_median, segment_max_line, segment_min_line
+
+def find_parameters(segment_data: pd.Series, segment_from_index: int, pat_type: str):
+    flat_segment = segment_data.rolling(window=5).mean()
+    flat_segment_dropna = flat_segment.dropna()
+    segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(flat_segment_dropna)
+    height = 0.95 * (segment_max_line - segment_min_line)
+    length = utils.find_length(segment_data, segment_min_line, segment_max_line, pat_type)
+    cen_ind = utils.pat_intersection(segment_data.tolist(), segment_median, pat_type)
+    pat_center = cen_ind[0]
+    segment_cent_index = pat_center + segment_from_index
+    return segment_cent_index, height, length
+
+def find_length(segment_data: pd.Series, segment_min_line: float, segment_max_line: float, pat_type: str):
+    x_abscissa = np.arange(0, len(segment_data))
+    segment_max = max(segment)
+    segment_min = min(segment)
+    if segment_min_line <= segment_min:
+        segment_min_line = segment_min * 1.05
+    if segment_max_line >= segment_max:
+        segment_max_line = segment_max * 0.95
+    min_line = []
+    max_line = []
+    for i in range(len(segment_data)):
+        min_line.append(segment_min_line)
+        max_line.append(segment_max_line)
+    min_line = np.array(min_line)
+    max_line = np.array(max_line)
+    segment_array = np.array(segment_data.tolist())
+    idmin = np.argwhere(np.diff(np.sign(min_line - segment_array)) != 0).reshape(-1)
+    idmax = np.argwhere(np.diff(np.sign(max_line - segment_array)) != 0).reshape(-1)
+    if len(idl) > 0 and len(idx) > 0:
+        if pat_type == 'jump':
+            result_length = idmax[0] - idmin[-1] + 1
+        elif pat_type == 'drop':
+            result_length = idmin[0] - idmax[-1] + 1
+        return result_length if result_length > 0 else 0
+    else:
+        return 0
