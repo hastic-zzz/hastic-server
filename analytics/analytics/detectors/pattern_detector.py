@@ -67,7 +67,6 @@ class PatternDetector(Detector):
 
             excess_data = len(self.bucket.data) - self.window_size
             self.bucket.drop_data(excess_data)
-
             return res
         
         return None
