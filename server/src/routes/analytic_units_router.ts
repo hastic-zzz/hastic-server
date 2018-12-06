@@ -103,7 +103,7 @@ async function createUnit(ctx: Router.IRouterContext) {
 
 async function setAlert(ctx: Router.IRouterContext) {
   try {
-    const { analyticUnitId, alert } = ctx.request.query as {
+    const { analyticUnitId, alert } = ctx.request.body as {
       analyticUnitId: AnalyticUnit.AnalyticUnitId, alert: boolean
     };
     if(analyticUnitId === undefined) {
