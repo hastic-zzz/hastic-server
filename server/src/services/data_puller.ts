@@ -28,7 +28,7 @@ export class DataPuller {
     }
   }
 
-  private async pullData(unit: AnalyticUnit.AnalyticUnit, from: number, to: number): Promise<Data> {
+  private async pullData(unit: AnalyticUnit.AnalyticUnit, from: number, to: number): Promise<MetricDataChunk> {
     if(unit === undefined) {
       throw Error(`puller: can't pull undefined unit`);
     }
