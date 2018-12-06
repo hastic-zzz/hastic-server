@@ -16,3 +16,7 @@ class Detector(ABC):
     @abstractmethod
     def detect(self, dataframe: DataFrame, cache: Optional[AnalyticUnitCache]) -> dict:
         pass
+
+    @abstractmethod
+    def recieve_data(self, data: DataFrame) -> Optional[dict]:
+        pass

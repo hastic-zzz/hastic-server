@@ -36,3 +36,6 @@ class AnalyticUnitWorker:
     def cancel(self):
         if self._training_feature is not None:
             self._training_feature.cancel()
+
+    async def recieve_data(self, data: pd.DataFrame):
+        return self._detector.recieve_data(data)

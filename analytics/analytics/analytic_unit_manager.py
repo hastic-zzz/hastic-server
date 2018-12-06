@@ -48,14 +48,10 @@ class AnalyticUnitManager:
         self.analytic_workers[analytic_unit_id] = worker
         return worker
 
-
     async def __handle_analytic_task(self, task) -> dict:
         """
             returns payload or None
         """
-        if task['type'] == 'PUSH':
-            # TODO: implement PUSH message handling
-            return
         analytic_unit_id: AnalyticUnitId = task['analyticUnitId']
 
         if task['type'] == 'CANCEL':
@@ -66,13 +62,14 @@ class AnalyticUnitManager:
         payload = task['payload']
         worker = self.__ensure_worker(analytic_unit_id, payload['pattern'])
         data = prepare_data(payload['data'])
-        if task['type'] == 'LEARN':
+        if task['type'] == 'PUSH':
+            return await worker.recieve_data(data)
+        elif task['type'] == 'LEARN':
             return await worker.do_train(payload['segments'], data, payload['cache'])
         elif task['type'] == 'DETECT':
             return await worker.do_detect(data, payload['cache'])
 
         raise ValueError('Unknown task type "%s"' % task['type'])
-
 
     async def handle_analytic_task(self, task):
         try:

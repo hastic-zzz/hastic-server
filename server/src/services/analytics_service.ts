@@ -1,4 +1,4 @@
-import { AnalyticsTask } from '../models/analytics_task_model';
+import { AnalyticsTask, AnalyticsTaskType } from '../models/analytics_task_model';
 import { AnalyticsMessageMethod, AnalyticsMessage } from '../models/analytics_message_model';
 import * as config from '../config';
 
@@ -31,8 +31,10 @@ export class AnalyticsService {
     if(!this._ready) {
       return Promise.reject("Analytics is not ready");
     }
+    let method = task.type === AnalyticsTaskType.PUSH ?
+      AnalyticsMessageMethod.DATA : AnalyticsMessageMethod.TASK
     let message = new AnalyticsMessage(
-      AnalyticsMessageMethod.TASK,
+      method,
       task.toObject()
     );
     return this.sendMessage(message);

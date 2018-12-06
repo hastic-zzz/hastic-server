@@ -7,6 +7,7 @@ import pandas as pd
 from typing import Optional
 
 from detectors import Detector
+from buckets import DataBucket
 
 
 logger = logging.getLogger('PATTERN_DETECTOR')
@@ -33,7 +34,8 @@ class PatternDetector(Detector):
     def __init__(self, pattern_type):
         self.pattern_type = pattern_type
         self.model = resolve_model_by_pattern(self.pattern_type)
-        window_size = 100
+        self.window_size = 100
+        self.bucket = DataBucket()
 
     def train(self, dataframe: pd.DataFrame, segments: list, cache: Optional[models.AnalyticUnitCache]) -> models.AnalyticUnitCache:
         # TODO: pass only part of dataframe that has segments
@@ -56,3 +58,15 @@ class PatternDetector(Detector):
             'segments': segments,
             'lastDetectionTime': last_detection_time
         }
+
+    def recieve_data(self, data: pd.DataFrame) -> Optional[dict]:
+        self.bucket.receive_data(data)
+
+        if len(self.bucket.data) >= self.window_size:
+            res = self.detect(self.bucket.data)
+
+            excess_data = len(self.bucket.data) - self.window_size
+            self.bucket.drop_data(excess_data)
+            return res
+        
+        return None
