@@ -32,23 +32,23 @@ def segments_box(segments):
     max_time = pd.to_datetime(max_time, unit='ms')
     return min_time, max_time
 
-def find_pat(data: pd.Series, height: float, lenght: int, pat_type: str):
-    pat_list = []
+def find_pattern(data: pd.Series, height: float, lenght: int, pat_type: str) -> list:
+    pattern_list = []
     for i in range(len(data) - length - 1):
         for x in range(1, lenght):
             if pat_type == 'jump':
-                if(data[i+x] > data[i] + height):
-                    pat_list.append(i)
+                if(data[i + x] > data[i] + height):
+                    pattern_list.append(i)
             eilf pat_type == 'drop':
-                if(data[i+x] < data[i] - height):
-                    pat_list.append(i)
-    return pat_list
+                if(data[i + x] < data[i] - height):
+                    pattern_list.append(i)
+    return pattern_list
 
 def find_jump(data, height, lenght):
     j_list = []
     for i in range(len(data)-lenght-1):
         for x in range(1, lenght):
-            if(data[i+x] > data[i] + height):
+            if(data[i + x] > data[i] + height):
                 j_list.append(i)
     return(j_list)
 
@@ -56,7 +56,7 @@ def find_drop(data, height, length):
     d_list = []
     for i in range(len(data)-length-1):
         for x in range(1, length):
-            if(data[i+x] < data[i] - height):
+            if(data[i + x] < data[i] - height):
                 d_list.append(i)
     return(d_list)
 
@@ -108,7 +108,7 @@ def close_filtering(pat_list, win_size):
             s.append([pat_list[i]])
     return s
 
-def best_pat(pat_list, data, dir):
+def best_pattern(pat_list, data, dir):
     new_pat_list = []
     for val in pat_list:
         max_val = data[val[0]]
@@ -188,7 +188,7 @@ def get_distribution_density(segment: pd.Series) -> float:
         segment_median = (max_jump - min_jump) / 2 + min_jump
     return segment_median, segment_max_line, segment_min_line
 
-def find_parameters(segment_data: pd.Series, segment_from_index: int, pat_type: str):
+def find_parameters(segment_data: pd.Series, segment_from_index: int, pat_type: str) -> [int, float, int]:
     flat_segment = segment_data.rolling(window=5).mean()
     flat_segment_dropna = flat_segment.dropna()
     segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(flat_segment_dropna)
@@ -199,7 +199,7 @@ def find_parameters(segment_data: pd.Series, segment_from_index: int, pat_type: 
     segment_cent_index = pat_center + segment_from_index
     return segment_cent_index, height, length
 
-def find_length(segment_data: pd.Series, segment_min_line: float, segment_max_line: float, pat_type: str):
+def find_length(segment_data: pd.Series, segment_min_line: float, segment_max_line: float, pat_type: str) -> int:
     x_abscissa = np.arange(0, len(segment_data))
     segment_max = max(segment)
     segment_min = min(segment)
