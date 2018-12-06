@@ -229,7 +229,7 @@ export async function remove(id: AnalyticUnit.AnalyticUnitId) {
   await runTask(task);
 
   if(dataPuller !== undefined) {
-  dataPuller.deleteUnit(id);
+    dataPuller.deleteUnit(id);
   }
 
   await AnalyticUnit.remove(id);
