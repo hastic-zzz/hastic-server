@@ -264,7 +264,11 @@ async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitI
   const analyticUnit = await AnalyticUnit.findById(analyticUnitId);
   if(analyticUnit.alert) {
     if(!_.isEmpty(segments)) {
-      sendWebhook(analyticUnit.name, _.last(segments));
+      try {
+        sendWebhook(analyticUnit.name, _.last(segments));
+      } catch(err) {
+        console.error(`Error while sending webhook: ${err.message}`);
+      }
     }
   }
   return {
