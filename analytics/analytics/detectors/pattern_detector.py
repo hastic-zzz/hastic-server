@@ -61,7 +61,7 @@ class PatternDetector(Detector):
             'lastDetectionTime': last_detection_time
         }
 
-    def recieve_data(self, data: pd.DataFrame, cache: Optional[AnalyticUnitCache]) -> Optional[dict]:
+    def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
         self.bucket.receive_data(data.dropna())
         if cache != None:
             self.window_size = cache['WINDOW_SIZE']
