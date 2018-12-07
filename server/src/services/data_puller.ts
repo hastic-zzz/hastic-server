@@ -56,7 +56,7 @@ export class DataPuller {
   public async runPuller() {
     const analyticUnits = await AnalyticUnit.findMany({ alert: true });
 
-    console.log(`starting data puller with ${JSON.stringify(analyticUnits)} analytic units`);
+    console.log(`starting data puller with ${JSON.stringify(analyticUnits.map(u => u.id))} analytic units`);
 
     _.each(analyticUnits, analyticUnit => {
       this._runAnalyticUnitPuller(analyticUnit);
