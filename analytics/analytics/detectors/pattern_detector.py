@@ -8,6 +8,7 @@ from typing import Optional
 
 from detectors import Detector
 from buckets import DataBucket
+from models import AnalyticUnitCache
 
 
 logger = logging.getLogger('PATTERN_DETECTOR')
@@ -59,11 +60,12 @@ class PatternDetector(Detector):
             'lastDetectionTime': last_detection_time
         }
 
-    def recieve_data(self, data: pd.DataFrame) -> Optional[dict]:
+    def recieve_data(self, data: pd.DataFrame, cache: Optional[AnalyticUnitCache]) -> Optional[dict]:
         self.bucket.receive_data(data)
 
         if len(self.bucket.data) >= self.window_size:
-            res = self.detect(self.bucket.data)
+            print(cache)
+            res = self.detect(self.bucket.data, cache)
 
             excess_data = len(self.bucket.data) - self.window_size
             self.bucket.drop_data(excess_data)

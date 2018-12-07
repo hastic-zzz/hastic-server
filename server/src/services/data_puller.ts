@@ -1,5 +1,6 @@
 import { AnalyticsTask, AnalyticsTaskType } from '../models/analytics_task_model';
 import * as AnalyticUnit from '../models/analytic_unit_model';
+import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import { AnalyticsService } from './analytics_service';
 import { HASTIC_API_KEY } from '../config';
 
@@ -32,6 +33,8 @@ export class DataPuller {
     if(unit === undefined) {
       throw Error(`puller: can't pull undefined unit`);
     }
+    console.log(from)
+    console.log(to)
     return queryByMetric(unit.metric, unit.panelUrl, from, to, HASTIC_API_KEY);
   }
 
@@ -77,7 +80,14 @@ export class DataPuller {
 
       const now = Date.now();
       let payloadValues = data.values;
-      let payload = { data: payloadValues, from: time, to: now, pattern: analyticUnit.type };
+      const cache = await AnalyticUnitCache.findById(analyticUnit.id);
+      let payload = {
+        data: payloadValues,
+        from: time,
+        to: now,
+        pattern: analyticUnit.type,
+        cache
+      };
       this._unitTimes[analyticUnit.id] = now;
       this.pushData(analyticUnit, payload);
     }

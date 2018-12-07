@@ -6,6 +6,7 @@ from concurrent.futures import Executor, ThreadPoolExecutor
 
 import detectors
 from analytic_unit_worker import AnalyticUnitWorker
+from models import AnalyticUnitCache
 
 
 logger = logging.getLogger('AnalyticUnitManager')
@@ -63,7 +64,7 @@ class AnalyticUnitManager:
         worker = self.__ensure_worker(analytic_unit_id, payload['pattern'])
         data = prepare_data(payload['data'])
         if task['type'] == 'PUSH':
-            return await worker.recieve_data(data)
+            return await worker.recieve_data(data, payload['cache'])
         elif task['type'] == 'LEARN':
             return await worker.do_train(payload['segments'], data, payload['cache'])
         elif task['type'] == 'DETECT':
