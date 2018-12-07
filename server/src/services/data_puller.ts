@@ -20,18 +20,20 @@ export class DataPuller {
   constructor(private analyticsService: AnalyticsService) {};
 
   public addUnit(analyticUnit: AnalyticUnit.AnalyticUnit) {
+    console.log(`start pulling analytic unit ${analyticUnit.id}`);
     this._runAnalyticUnitPuller(analyticUnit);
   }
 
   public deleteUnit(analyticUnitId: AnalyticUnit.AnalyticUnitId) {
     if(_.has(this._unitTimes, analyticUnitId)) {
       delete this._unitTimes[analyticUnitId];
+      console.log(`analytic unit ${analyticUnitId} deleted from data puller`);
     }
   }
 
   private async pullData(unit: AnalyticUnit.AnalyticUnit, from: number, to: number): Promise<MetricDataChunk> {
     if(unit === undefined) {
-      throw Error(`puller: can't pull undefined unit`);
+      throw Error(`data puller: can't pull undefined unit`);
     }
 
     return queryByMetric(unit.metric, unit.panelUrl, from, to, HASTIC_API_KEY);
@@ -39,15 +41,22 @@ export class DataPuller {
 
   private pushData(unit: AnalyticUnit.AnalyticUnit, data: any) {
     if(unit === undefined || data === undefined) {
-      throw Error(`can't push unit: ${unit} data: ${data}`);
+      throw Error(`data puller can't push unit: ${unit} data: ${data}`);
     }
     let task = new AnalyticsTask(unit.id, AnalyticsTaskType.PUSH, data);
-    this.analyticsService.sendTask(task);
+
+    try {
+      this.analyticsService.sendTask(task);
+    } catch(e) {
+      console.log(`data puller got error while push data ${e.message}`);
+    }
   }
 
   //TODO: group analyticUnits by panelID and send same dataset for group
   public async runPuller() {
     const analyticUnits = await AnalyticUnit.findMany({ alert: true });
+
+    console.log(`starting data puller with ${JSON.stringify(analyticUnits.map(u => u.id))} analytic units`);
 
     _.each(analyticUnits, analyticUnit => {
       this._runAnalyticUnitPuller(analyticUnit);
@@ -58,6 +67,7 @@ export class DataPuller {
 
   public stopPuller() {
     this._unitTimes = {};
+    console.log('Data puller stopped');
   }
 
   private async _runAnalyticUnitPuller(analyticUnit: AnalyticUnit.AnalyticUnit) {
@@ -98,6 +108,13 @@ export class DataPuller {
 
   async * getDataGenerator(analyticUnit: AnalyticUnit.AnalyticUnit, duration: number):
     AsyncIterableIterator<MetricDataChunk> {
+
+    if(!this.analyticsService.ready) {
+      return {
+        columns: [],
+        values: []
+      }
+    }
 
     const getData = async () => {
       try {
