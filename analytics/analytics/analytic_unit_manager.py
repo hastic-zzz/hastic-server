@@ -6,7 +6,7 @@ from concurrent.futures import Executor, ThreadPoolExecutor
 
 import detectors
 from analytic_unit_worker import AnalyticUnitWorker
-from models import AnalyticUnitCache
+from models import ModelCache
 
 
 logger = logging.getLogger('AnalyticUnitManager')

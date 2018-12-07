@@ -1,4 +1,4 @@
-from models.model import Model, AnalyticUnitCache
+from models.model import Model, ModelCache
 from models.drop_model import DropModel
 from models.peak_model import PeakModel
 from models.jump_model import JumpModel

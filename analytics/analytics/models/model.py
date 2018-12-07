@@ -5,20 +5,21 @@ from typing import Optional
 import pandas as pd
 import math
 
-AnalyticUnitCache = dict
+ModelCache = dict
+
 
 class Model(ABC):
 
     @abstractmethod
-    def do_fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[AnalyticUnitCache]) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[ModelCache]) -> None:
         pass
 
     @abstractmethod
     def do_detect(self, dataframe: pd.DataFrame) -> list:
         pass
 
-    def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[AnalyticUnitCache]) -> AnalyticUnitCache:
-        if type(cache) is AnalyticUnitCache:
+    def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[ModelCache]) -> ModelCache:
+        if type(cache) is ModelCache:
             self.state = cache
 
         self.segments = segments
@@ -34,8 +35,8 @@ class Model(ABC):
         self.do_fit(dataframe, segments)
         return self.state
 
-    def detect(self, dataframe: pd.DataFrame, cache: Optional[AnalyticUnitCache]) -> dict:
-        if type(cache) is AnalyticUnitCache:
+    def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
+        if type(cache) is ModelCache:
             self.state = cache
 
         result = self.do_detect(dataframe)
