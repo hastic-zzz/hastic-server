@@ -55,7 +55,7 @@ async function onMessage(message: AnalyticsMessage) {
   }
 
   if(message.method === AnalyticsMessageMethod.DETECT) {
-    onDetect(message.payload);
+    onDetect(message.payload.payload);
     methodResolved = true;
   }
 
