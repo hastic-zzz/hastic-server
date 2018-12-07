@@ -212,10 +212,12 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId) {
 
     await deleteNonDetectedSegments(id, payload);
 
-    Segment.insertSegments(payload.segments);
-    AnalyticUnitCache.setData(id, payload.cache);
-    AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime);
-    AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
+    await Promise.all([
+      Segment.insertSegments(payload.segments),
+      AnalyticUnitCache.setData(id, payload.cache),
+      AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime),      
+    ]);
+    await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
   } catch(err) {
     let message = err.message || JSON.stringify(err);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
