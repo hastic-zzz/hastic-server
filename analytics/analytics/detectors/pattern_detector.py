@@ -53,7 +53,7 @@ class PatternDetector(Detector):
         newCache = detected['cache']
 
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
-        # TODO: convert from ns to ms more proper way (not dividing by 10^6)
+        # TODO: convert from nanoseconds to millisecond in a better way: not by dividing by 10^6
         last_detection_time = last_dataframe_time.value / 1000000
         return {
             'cache': newCache,
