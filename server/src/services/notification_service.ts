@@ -7,10 +7,6 @@ import * as querystring from 'querystring';
 
 // TODO: send webhook with payload without dep to AnalyticUnit
 export async function sendWebhook(analyticUnitName: string, segment: Segment) {
-  if(HASTIC_WEBHOOK_URL === null) {
-    throw new Error(`Can't send alert, HASTIC_WEBHOOK_URL is undefined`);
-  }
-
   const alert = {
     analyticUnitName,
     from: segment.from,
@@ -18,6 +14,10 @@ export async function sendWebhook(analyticUnitName: string, segment: Segment) {
   };
 
   console.log(`Sending alert: ${JSON.stringify(alert)}`);
+
+  if(HASTIC_WEBHOOK_URL === null) {
+    throw new Error(`Can't send alert, HASTIC_WEBHOOK_URL is undefined`);
+  }
 
   let payload;
   if(HASTIC_WEBHOOK_TYPE === 'application/json') {
