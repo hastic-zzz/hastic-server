@@ -107,7 +107,7 @@ function getQueryRangeForLearningBySegments(segments: Segment.Segment[]) {
 }
 
 export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
-  console.debug('learning runned...');
+  console.debug('learning started...');
   try {
 
     let analyticUnit = await AnalyticUnit.findById(id);

@@ -53,7 +53,7 @@ export class DataPuller {
       this._runAnalyticUnitPuller(analyticUnit);
     });
 
-    console.log('Data puller runned');
+    console.log('Data puller started');
   }
 
   public stopPuller() {
