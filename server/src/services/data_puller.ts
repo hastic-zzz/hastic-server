@@ -33,8 +33,7 @@ export class DataPuller {
     if(unit === undefined) {
       throw Error(`puller: can't pull undefined unit`);
     }
-    console.log(from)
-    console.log(to)
+
     return queryByMetric(unit.metric, unit.panelUrl, from, to, HASTIC_API_KEY);
   }
 
@@ -62,6 +61,7 @@ export class DataPuller {
   }
 
   private async _runAnalyticUnitPuller(analyticUnit: AnalyticUnit.AnalyticUnit) {
+    // TODO: lastDetectionTime can be in ns
     const time = analyticUnit.lastDetectionTime + 1 || Date.now();
     this._unitTimes[analyticUnit.id] = time;
 
@@ -80,7 +80,10 @@ export class DataPuller {
 
       const now = Date.now();
       let payloadValues = data.values;
-      const cache = await AnalyticUnitCache.findById(analyticUnit.id);
+      let cache = await AnalyticUnitCache.findById(analyticUnit.id);
+      if(cache !== null) {
+        cache = cache.data
+      }
       let payload = {
         data: payloadValues,
         from: time,
