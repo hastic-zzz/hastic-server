@@ -41,10 +41,10 @@ def find_pattern(data: pd.Series, height: float, lenght: int, pattern_type: str)
     right_bound = len(data) - length - 1
     for i in range(right_bound):
         for x in range(1, lenght):
-            if pat_type == 'jump':
+            if pattern_type == 'jump':
                 if(data[i + x] > data[i] + height):
                     pattern_list.append(i)
-            eilf pat_type == 'drop':
+            elif pattern_type == 'drop':
                 if(data[i + x] < data[i] - height):
                     pattern_list.append(i)
     return pattern_list
@@ -128,7 +128,7 @@ def best_pattern(pattern_list: list, data: pd.Series, dir: str) -> list:
                     min_val = data[i]
                     ind = i
         new_pattern_list.append(ind)
-    return new_patternt_list
+    return new_pattern_list
 
 def find_nan_indexes(segment: pd.Series) -> list:
     nan_list = np.isnan(segment)
@@ -219,15 +219,15 @@ def find_parameters(segment_data: pd.Series, segment_from_index: int, pat_type: 
     segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(flat_segment_dropna)
     height = 0.95 * (segment_max_line - segment_min_line)
     length = utils.find_length(segment_data, segment_min_line, segment_max_line, pat_type)
-    cen_ind = utils.pat_intersection(segment_data.tolist(), segment_median, pat_type)
+    cen_ind = utils.pattern_intersection(segment_data.tolist(), segment_median, pat_type)
     pat_center = cen_ind[0]
     segment_cent_index = pat_center + segment_from_index
     return segment_cent_index, height, length
 
 def find_length(segment_data: pd.Series, segment_min_line: float, segment_max_line: float, pat_type: str) -> int:
     x_abscissa = np.arange(0, len(segment_data))
-    segment_max = max(segment)
-    segment_min = min(segment)
+    segment_max = max(segment_data)
+    segment_min = min(segment_data)
     if segment_min_line <= segment_min:
         segment_min_line = segment_min * 1.05
     if segment_max_line >= segment_max:
@@ -242,7 +242,7 @@ def find_length(segment_data: pd.Series, segment_min_line: float, segment_max_li
     segment_array = np.array(segment_data.tolist())
     idmin = np.argwhere(np.diff(np.sign(min_line - segment_array)) != 0).reshape(-1)
     idmax = np.argwhere(np.diff(np.sign(max_line - segment_array)) != 0).reshape(-1)
-    if len(idl) > 0 and len(idx) > 0:
+    if len(idmin) > 0 and len(idmax) > 0:
         if pat_type == 'jump':
             result_length = idmax[0] - idmin[-1] + 1
         elif pat_type == 'drop':
@@ -254,12 +254,12 @@ def find_length(segment_data: pd.Series, segment_min_line: float, segment_max_li
 def pattern_intersection(segment_data: list, median: float, pattern_type: str) -> list:
     center_index = []
     if pattern_type == 'jump':
-        for i in range(1, len(data) - 1):
-            if data[i - 1] < median and data[i + 1] > median:
+        for i in range(1, len(segment_data) - 1):
+            if segment_data[i - 1] < median and segment_data[i + 1] > median:
                 center_index.append(i)
     elif pattern_type == 'drop':
-        for i in range(1, len(data) - 1):
-            if data[i - 1] > median and data[i + 1] < median:
+        for i in range(1, len(segment_data) - 1):
+            if segment_data[i - 1] > median and segment_data[i + 1] < median:
                 center_index.append(i)
     delete_index = []
     for i in range(1, len(center_index)):
