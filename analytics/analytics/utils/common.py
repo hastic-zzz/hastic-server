@@ -36,97 +36,6 @@ def segments_box(segments):
     max_time = pd.to_datetime(max_time, unit='ms')
     return min_time, max_time
 
-<<<<<<< HEAD
-def find_intersections(data: pd.Series, median: float) -> list:
-    """
-        Finds all intersections between drop pattern data and median
-    """
-    cen_ind = []
-    for i in range(1, len(data) - 1):
-        if data[i - 1] < median and data[i + 1] > median:
-            cen_ind.append(i)
-    del_ind = []
-    for i in range(1, len(cen_ind)):
-        if cen_ind[i] == cen_ind[i - 1] + 1:
-            del_ind.append(i - 1)
-
-    return [x for (idx, x) in enumerate(cen_ind) if idx not in del_ind]
-
-def logistic_sigmoid_distribution(self, x1, x2, alpha, height):
-    return map(lambda x: logistic_sigmoid(x, alpha, height), range(x1, x2))
-
-def logistic_sigmoid(x, alpha, height):
-    return height / (1 + math.exp(-x * alpha))
-
-def MyLogisticSigmoid(interval, alpha, heigh):
-    distribution = []
-    for i in range(-interval, interval):
-        F = height / (1 + math.exp(-i * alpha))
-        distribution.append(F)
-    return distribution
-
-def find_one_jump(data, x, size, height, err):
-    l = []
-    for i in range(x + 1, x + size):
-        if (data[i] > data[x] and data[x + size] > data[x] + height):
-            l.append(data[i])
-    if len(l) > size * err:
-        return x
-    else:
-        return 0
-
-def find_all_jumps(data, size, height):
-    possible_jump_list = []
-    for i in range(len(data - size)):
-        x = find_one_jump(data, i, size, height, 0.9)
-        if x > 0:
-            possible_jump_list.append(x)
-    return possible_jump_list
-
-def find_jump_center(cen_ind):
-    jump_center = cen_ind[0]
-    for i in range(len(cen_ind)):
-        x = cen_ind[i]
-        cx = scipy.signal.fftconvolve(pat_sigm, flat_data[x - WINDOW_SIZE : x + WINDOW_SIZE])
-        c.append(cx[2 * WINDOW_SIZE])
-        if i > 0 and cx > c[i - 1]:
-            jump_center = x
-    return jump_center
-
-def find_ind_median(median, segment_data):
-    x = np.arange(0, len(segment_data))
-    f = []
-    for i in range(len(segment_data)):
-        f.append(median)
-    f = np.array(f)
-    g = []
-    for i in segment_data:
-        g.append(i)
-    g = np.array(g)
-    idx = np.argwhere(np.diff(np.sign(f - g)) != 0).reshape(-1) + 0
-    return idx
-
-def find_jump_length(segment_data, min_line, max_line):
-    x = np.arange(0, len(segment_data))
-    f = []
-    l = []
-    for i in range(len(segment_data)):
-        f.append(min_line)
-        l.append(max_line)
-    f = np.array(f)
-    l = np.array(l)
-    g = []
-    for i in segment_data:
-        g.append(i)
-    g = np.array(g)
-    idx = np.argwhere(np.diff(np.sign(f - g)) != 0).reshape(-1) + 0
-    idl = np.argwhere(np.diff(np.sign(l - g)) != 0).reshape(-1) + 0
-    if (idl[0] - idx[-1] + 1) > 0:
-        return idl[0] - idx[-1] + 1
-    else:
-        print("retard alert!")
-        return 0
-=======
 def find_pattern(data: pd.Series, height: float, lenght: int, pattern_type: str) -> list:
     pattern_list = []
     right_bound = len(data) - length - 1
@@ -139,7 +48,6 @@ def find_pattern(data: pd.Series, height: float, lenght: int, pattern_type: str)
                 if(data[i + x] < data[i] - height):
                     pattern_list.append(i)
     return pattern_list
->>>>>>> 3875966013029642b12c58fdfe60f50d24e20da2
 
 def find_jump(data, height, lenght):
     j_list = []
@@ -149,46 +57,6 @@ def find_jump(data, height, lenght):
                 j_list.append(i)
     return(j_list)
 
-<<<<<<< HEAD
-def find_drop_length(segment_data, min_line, max_line):
-    x = np.arange(0, len(segment_data))
-    f = []
-    l = []
-    for i in range(len(segment_data)):
-        f.append(min_line)
-        l.append(max_line)
-    f = np.array(f)
-    l = np.array(l)
-    g = []
-    for i in segment_data:
-        g.append(i)
-    g = np.array(g)
-    idx = np.argwhere(np.diff(np.sign(f - g)) != 0).reshape(-1) + 0 #min_line
-    idl = np.argwhere(np.diff(np.sign(l - g)) != 0).reshape(-1) + 0 #max_line
-    if (idx[0] - idl[-1] + 1) > 0:
-        return idx[0] - idl[-1] + 1
-    else:
-        print("retard alert!")
-        return 0
-
-def find_drop_intersections(segment_data: pd.Series, median_line: float) -> list:
-    """
-        Finds all intersections between flatten data and median
-    """
-    cen_ind = []
-    for i in range(1, len(segment_data)-1):
-        if segment_data[i - 1] > median_line and segment_data[i + 1] < median_line:
-            cen_ind.append(i)
-    #   Delete close values except the last one
-    del_ind = []
-    for i in range(1, len(cen_ind)):
-        if cen_ind[i] == cen_ind[i - 1] + 1:
-            del_ind.append(i - 1)
-
-    return [x for (idx, x) in enumerate(cen_ind) if idx not in del_ind]
-
-=======
->>>>>>> 3875966013029642b12c58fdfe60f50d24e20da2
 def find_drop(data, height, length):
     d_list = []
     for i in range(len(data)-length-1):
@@ -323,31 +191,6 @@ def get_convolve(segments: list, av_model: list, data: pd.Series, window_size: i
         convolve_list.append(max(convolve_segment))
     return convolve_list
 
-<<<<<<< HEAD
-def find_jump_parameters(segment_data: pd.Series, segment_from_index: int):
-    flat_segment = segment_data.rolling(window=5).mean()
-    flat_segment_dropna = flat_segment.dropna()
-    segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(flat_segment_dropna)
-    jump_height = (1 - SHIFT_FACTOR) * (segment_max_line - segment_min_line)
-    jump_length = utils.find_jump_length(segment_data, segment_min_line, segment_max_line) # finds all interseprions with median
-    cen_ind = utils.find_intersections(segment_data.tolist(), segment_median)
-    jump_center = cen_ind[0]
-    segment_cent_index = jump_center + segment_from_index
-    return segment_cent_index, jump_height, jump_length
-
-def find_drop_parameters(segment_data: pd.Series, segment_from_index: int):
-    flat_segment = segment_data.rolling(window=5).mean()
-    flat_segment_dropna = flat_segment.dropna()
-    segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(flat_segment_dropna)
-    drop_height = (1 - SHIFT_FACTOR) * (segment_max_line - segment_min_line)
-    drop_length = utils.find_drop_length(segment_data, segment_min_line, segment_max_line)
-    cen_ind = utils.find_drop_intersections(segment_data.tolist(), segment_median)
-    drop_center = cen_ind[0]
-    segment_cent_index = drop_center + segment_from_index
-    return segment_cent_index, drop_height, drop_length
-
-=======
->>>>>>> 3875966013029642b12c58fdfe60f50d24e20da2
 def get_distribution_density(segment: pd.Series) -> float:
     min_jump = min(segment)
     max_jump = max(segment)
