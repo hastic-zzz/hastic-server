@@ -32,9 +32,10 @@ def segments_box(segments):
     max_time = pd.to_datetime(max_time, unit='ms')
     return min_time, max_time
 
-def find_pattern(data: pd.Series, height: float, lenght: int, pat_type: str) -> list:
+def find_pattern(data: pd.Series, height: float, lenght: int, pattern_type: str) -> list:
     pattern_list = []
-    for i in range(len(data) - length - 1):
+    right_bound = len(data) - length - 1
+    for i in range(right_bound):
         for x in range(1, lenght):
             if pat_type == 'jump':
                 if(data[i + x] > data[i] + height):
@@ -95,22 +96,22 @@ def get_av_model(patterns_list):
         model_pat.append(ar_mean(av_val))
     return model_pat
 
-def close_filtering(pat_list, win_size):
-    if len(pat_list) == 0:
+def close_filtering(pattern_list, win_size):
+    if len(pattern_list) == 0:
         return []
-    s = [[pat_list[0]]]
+    s = [[pattern_list[0]]]
     k = 0
-    for i in range(1, len(pat_list)):
-        if pat_list[i] - win_size <= s[k][-1]:
-            s[k].append(pat_list[i])
+    for i in range(1, len(pattern_list)):
+        if pattern_list[i] - win_size <= s[k][-1]:
+            s[k].append(pattern_list[i])
         else:
             k += 1
-            s.append([pat_list[i]])
+            s.append([pattern_list[i]])
     return s
 
-def best_pattern(pat_list, data, dir):
-    new_pat_list = []
-    for val in pat_list:
+def best_pattern(pattern_list: list, data: pd.Series, dir: str) -> list:
+    new_pattern_list = []
+    for val in pattern_list:
         max_val = data[val[0]]
         min_val = data[val[0]]
         ind = val[0]
@@ -123,8 +124,8 @@ def best_pattern(pat_list, data, dir):
                 if data[i] < min_val:
                     min_val = data[i]
                     ind = i
-        new_pat_list.append(ind)
-    return new_pat_list
+        new_pattern_list.append(ind)
+    return new_patternt_list
 
 def find_nan_indexes(segment):
     nan_list = np.isnan(segment)
@@ -226,21 +227,21 @@ def find_length(segment_data: pd.Series, segment_min_line: float, segment_max_li
     else:
         return 0
 
-def pat_interseption(segment_data: list, segment_median: float, pat_type: str) -> list:
-    cen_ind = []
-    if pat_type == 'jump':
+def pattern_intersection(segment_data: list, median: float, pattern_type: str) -> list:
+    center_index = []
+    if pattern_type == 'jump':
         for i in range(1, len(data) - 1):
             if data[i - 1] < median and data[i + 1] > median:
-                cen_ind.append(i)
-    elif pat_type == 'drop':
+                center_index.append(i)
+    elif pattern_type == 'drop':
         for i in range(1, len(data) - 1):
             if data[i - 1] > median and data[i + 1] < median:
-                cen_ind.append(i)
-    del_ind = []
-    for i in range(1, len(cen_ind)):
-        if cen_ind[i] == cen_ind[i - 1] + 1:
-            del_ind.append(i - 1)
+                center_index.append(i)
+    delete_index = []
+    for i in range(1, len(center_index)):
+        if center_index[i] == center_index[i - 1] + 1:
+            delete_index.append(i - 1)
 
-    return [x for (idx, x) in enumerate(cen_ind) if idx not in del_ind]
+    return [x for (idx, x) in enumerate(center_index) if idx not in delete_index]
 
     
