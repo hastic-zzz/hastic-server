@@ -3,6 +3,7 @@ matrix:
     - language: python
       python: 3.6.6
       before_script:
+        - uname -a
         - cd analytics
         - pip install -r requirements.txt
         - sudo apt-get update
