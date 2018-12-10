@@ -6,6 +6,7 @@ matrix:
       env:
         - CXX=g++-4.8
       before_script:
+        - cd server
         - npm install
       script:
         - npm test
