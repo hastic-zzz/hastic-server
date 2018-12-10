@@ -5,11 +5,13 @@
   </a>
 </p>
 
-[Hastic server](https://hastic.io) [![Travis CI](https://travis-ci.org/hastic/hastic-server.svg?branch=master)](https://travis-ci.org/hastic/hastic-server) 
+[Hastic server](https://hastic.io)
 ================
 [Website](https://hastic.io) |
 [Twitter](https://twitter.com/hasticio) | 
 [IRC](https://webchat.freenode.net/?channels=#hastic)
+
+![Last master push status](https://travis-ci.org/hastic/hastic-server.svg?branch=master)
 
 Implementation of basic pattern recognition for anomaly detection.
 
