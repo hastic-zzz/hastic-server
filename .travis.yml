@@ -1,5 +1,15 @@
 matrix:
   include:
+    - language: node_js
+      node_js:
+        - "8"
+      env:
+        - CXX=g++-4.8
+      before_script:
+        - cd server
+        - npm install
+      script:
+        - npm test
     - language: python
       python: 3.6.6
       before_script:
