@@ -1,0 +1,10 @@
+matrix:
+  include:
+    - language: python
+      python: 3.6.6
+      before_script:
+        - cd analytics
+      script:
+        - python -m unittest discover
+notifications:
+  email: false
