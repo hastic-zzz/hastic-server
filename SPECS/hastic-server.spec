@@ -1,6 +1,6 @@
 %define name hastic-server
-%define version 0.2.6_alpha
-%define release %{git rev-parse --short HEAD}
+%define version 0.2.6_alpha_%{echo $RPM_RELEASE}
+%define release 0
 %define buildroot %(mktemp -ud %{_tmppath}/server/%{name}-%{version}-%{release}-XXXXXX)
 
 Name: %{name}
@@ -31,7 +31,7 @@ npm rebuild
 popd
 
 pushd %{buildroot}/analytics
-pip3 install -r requirements.txt
+pip3.6 install -r requirements.txt
 popd
 
 
