@@ -13,7 +13,7 @@ License: Apache-2.0
 URL: hastic.io
 BuildRoot: %{buildroot}
 Requires: nodejs >= 6, python3
-BuildRequires: nodejs
+BuildRequires: nodejs, python3, pip3
 AutoReqProv: no
 
 %description
@@ -30,8 +30,8 @@ pushd %{buildroot}/analytics
 save=$RPM_BUILD_ROOT
 unset RPM_BUILD_ROOT
 
-pip3.6 -q install -U pip setuptools pyinstaller
-pip3.6 -q install -r requirements.txt
+pip3 install -U pip setuptools pyinstaller
+pip3 install -r requirements.txt
 pyinstaller --additional-hooks-dir=pyinstaller_hooks --paths=analytics/ bin/server
 
 export RPM_BUILD_ROOT=$save
@@ -42,18 +42,15 @@ npm prune --production
 npm rebuild
 popd
 
-#%pre
-#getent group hastic-server >/dev/null || groupadd -r hastic-server
-#getent passwd hastic-server >/dev/null || useradd -r -g hastic-server -G hastic-server -d / -s /sbin/nologin -c "hastic-server" hastic-server
-
 %install
-mkdir -p %{buildroot}/usr/lib/hastic-server
-cp -r ./ %{buildroot}/usr/lib/hastic-server
+mkdir -p %{_bindir}/hastic-server
+cp -r ./ %{_bindir}/hastic-server
 
-#%post
-#systemctl enable /usr/lib/hastic-server/hastic-server.service
-ln -s /bin/hastic-server/data /etc/hastic-server/data
-ln -s /bin/hastic-server/config /etc/hastic-server/config
+%post
+#systemctl enable %{_bindir}/hastic-server/hastic-server.service
+ln -s %{_bindir}/hastic-server/data /etc/hastic-server/data
+ln -s %{_bindir}/hastic-server/config /etc/hastic-server/config
+
 
 %clean
 rm -rf %{buildroot}
