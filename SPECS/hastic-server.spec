@@ -1,6 +1,6 @@
 %define name hastic-server
 %define version 0.2.6_alpha
-%define release 0.git%{date}.4
+%define release %{git rev-parse --short HEAD}
 %define buildroot %(mktemp -ud %{_tmppath}/server/%{name}-%{version}-%{release}-XXXXXX)
 
 Name: %{name}

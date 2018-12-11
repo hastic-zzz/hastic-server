@@ -2,7 +2,7 @@ FROM rpmbuild/centos7
 
 USER root
 
-WORKDIR /root
+WORKDIR /root/rpmbuild
 
 RUN     yum -y install https://centos7.iuscommunity.org/ius-release.rpm epel-release
 RUN     yum -y install python36 python36-devel python36-setuptools gcc-c++ make \
