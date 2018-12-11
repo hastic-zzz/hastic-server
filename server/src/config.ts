@@ -72,13 +72,18 @@ function getGitInfo() {
   let gitRoot = path.join(__dirname, '../../.git');
   let gitHeadFile = path.join(gitRoot, 'HEAD');
   if(!fs.existsSync(gitHeadFile)) {
-    console.debug(`Can't find git HEAD file ${gitHeadFile}`);
+    console.error(`Can't find git HEAD file ${gitHeadFile}`);
     return null;
   }
-  const rev = fs.readFileSync(gitHeadFile).toString();
-  let branchPath = rev.indexOf(':') === -1 ? rev : rev.slice(5, -1);
+  const ref = fs.readFileSync(gitHeadFile).toString();
+  let branchPath = ref.indexOf(':') === -1 ? ref : ref.slice(5, -1);
   let branch = branchPath.split('/').pop();
-  let commitHash = fs.readFileSync(`${gitRoot}/${branchPath}`).toString().slice(0, 7);
+  const branchFilename = `${gitRoot}/${branchPath}`;
+  if(!fs.existsSync(branchFilename)) {
+    console.error(`Can't find git branch file ${branchFilename}`);
+    return null;
+  }
+  let commitHash = fs.readFileSync(branchFilename).toString().slice(0, 7);
   return { branch, commitHash };
 }
 
