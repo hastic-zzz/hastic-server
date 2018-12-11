@@ -1,5 +1,5 @@
 %define name hastic-server
-%define version 0.2.6_alpha_%{echo $GIT_HASH}
+%define version 0.2.6_alpha
 %define release 0
 %define buildroot %(mktemp -ud %{_tmppath}/server/%{name}-%{version}-%{release}-XXXXXX)
 
@@ -12,7 +12,7 @@ Group: Installation Script
 License: Apache-2.0
 URL: hastic.io
 BuildRoot: %{buildroot}
-Requires: nodejs >= 6, python3
+Requires: nodejs >= 6
 BuildRequires: nodejs
 AutoReqProv: no
 BuildArch: noarch
@@ -44,8 +44,8 @@ npm rebuild
 popd
 
 %install
-mkdir -p %{_bindir}/hastic-server
-cp -r ./ %{_bindir}/hastic-server
+mkdir -p %{buildroot}/%{_bindir}/hastic-server
+cp -r ./ %{buildroot}/%{_bindir}/hastic-server
 
 %post
 #systemctl enable %{_bindir}/hastic-server/hastic-server.service
@@ -58,5 +58,4 @@ rm -rf %{buildroot}
 
 %files
 %defattr(644, hastic-server, hastic-server, 755)
-/bin/hastic-server
-/etc/hastic-server
+%{_bindir}/hastic-server
