@@ -1,7 +1,8 @@
 %define name hastic-server
 %define version 0.2.6_alpha
 %define release 0
-%define buildroot %(mktemp -ud %{_tmppath}/server/%{name}-%{version}-%{release}-XXXXXX)
+%define buildroot /root/rpmbuild/BUILDROOT
+%define builddir /root/rpmbuild/BUILD
 
 Name: %{name}
 Version: %{version}
@@ -21,41 +22,50 @@ BuildArch: noarch
 REST server for managing data for analytics
 
 %prep
+echo PREP
+pwd
 mkdir -p %{buildroot}
-cp -r ../server %{buildroot}
-cp -r ../analytics %{buildroot}
+cp -r ../server %{builddir}/
+cp -r ../analytics %{builddir}/
 
 %build
-pushd %{buildroot}/analytics
+pushd analytics
 
 save=$RPM_BUILD_ROOT
 unset RPM_BUILD_ROOT
 
-pip3 install -U pip setuptools pyinstaller
-pip3 install -r requirements.txt
+pip3 -q install -U pip setuptools pyinstaller
+pip3 -q install -r requirements.txt
 pyinstaller --additional-hooks-dir=pyinstaller_hooks --paths=analytics/ bin/server
 
 export RPM_BUILD_ROOT=$save
 popd
 
-pushd %{buildroot}/server
+pushd server
 npm prune --production
 npm rebuild
 popd
 
 %install
+echo INSTALL
+pwd
+ls %{buildroot}
+ls %{builddir}
 mkdir -p %{buildroot}/%{_bindir}/hastic-server
 cp -r ./ %{buildroot}/%{_bindir}/hastic-server
 
 %post
-#systemctl enable %{_bindir}/hastic-server/hastic-server.service
+echo POST
+pwd
+ls %{buildroot}
+mkdir -p %{_bindir}/hastic-server
 ln -s %{_bindir}/hastic-server/data /etc/hastic-server/data
-ln -s %{_bindir}/hastic-server/config /etc/hastic-server/config
 
 
-%clean
-rm -rf %{buildroot}
+#%clean
+#rm -rf %{buildroot}
 
 %files
-%defattr(644, hastic-server, hastic-server, 755)
-%{_bindir}/hastic-server
+%defattr(644, root, root, 755)
+%{_bindir}/hastic-server/server/dist/*
+%{_bindir}/hastic-server/analytics/dist/*
