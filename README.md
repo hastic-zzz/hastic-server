@@ -25,7 +25,7 @@ See also:
 * [HasticPanel](https://github.com/hastic/hastic-grafana-graph-panel) - Hastic visualisation plugin for Grafana
 * [Webhooks](https://github.com/hastic/hastic-server/wiki/Webhooks) - notifications about events
 * [Installation from source](https://github.com/hastic/hastic-server/wiki/Installation-from-source)
-* [ChangeLog](https://github.com/hastic/hastic-server/wiki/Changelog)
+* [Changelog](https://github.com/hastic/hastic-server/wiki/Changelog)
 * [Roadmap](https://github.com/hastic/hastic-server/wiki/Roadmap)
 
 ## Download & Install on Linux
