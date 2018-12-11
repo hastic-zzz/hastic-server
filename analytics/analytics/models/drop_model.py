@@ -42,7 +42,7 @@ class DropModel(Model):
                     continue
                 confidence = utils.find_confidence(segment_data)
                 confidences.append(confidence)
-                segment_cent_index, drop_height, drop_length = utils.find_drop_parameters(segment_data, segment_from_index)
+                segment_cent_index, drop_height, drop_length = utils.find_parameters(segment_data, segment_from_index, "drop")
                 drop_height_list.append(drop_height)
                 drop_length_list.append(drop_length)
                 self.idrops.append(segment_cent_index)
@@ -110,7 +110,7 @@ class DropModel(Model):
         delete_list = []
         variance_error = self.state['WINDOW_SIZE']
         close_patterns = utils.close_filtering(segments, variance_error)
-        segments = utils.best_pat(close_patterns, data, 'min')
+        segments = utils.best_pattern(close_patterns, data, 'min')
         if len(segments) == 0 or len(self.idrops) == 0 :
             segments = []
             return segments
