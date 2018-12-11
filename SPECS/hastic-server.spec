@@ -32,6 +32,8 @@ popd
 
 pushd %{buildroot}/analytics
 pip3.6 install -r requirements.txt
+pip3.6 install pyinstaller
+pyinstaller --additional-hooks-dir=pyinstaller_hooks --paths=analytics/ bin/server
 popd
 
 
