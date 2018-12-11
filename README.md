@@ -5,11 +5,13 @@
   </a>
 </p>
 
-[Hastic server](https://hastic.io) [![Travis CI](https://travis-ci.org/hastic/hastic-server.svg?branch=master)](https://travis-ci.org/hastic/hastic-server) 
+[Hastic server](https://hastic.io)
 ================
 [Website](https://hastic.io) |
 [Twitter](https://twitter.com/hasticio) | 
 [IRC](https://webchat.freenode.net/?channels=#hastic)
+
+![Last master push status](https://travis-ci.org/hastic/hastic-server.svg?branch=master)
 
 Implementation of basic pattern recognition for anomaly detection.
 
@@ -21,10 +23,9 @@ See also:
 * [Getting started](https://github.com/hastic/hastic-server/wiki#getting-started)
 * [FAQ](https://github.com/hastic/hastic-server/wiki/FAQ)
 * [HasticPanel](https://github.com/hastic/hastic-grafana-graph-panel) - Hastic visualisation plugin for Grafana
-* [Hooks](https://github.com/hastic/hastic-server/blob/master/HOOKS.md) - notifications about events
-* [REST](REST.md) - for developing your plugins
+* [Webhooks](https://github.com/hastic/hastic-server/wiki/Webhooks) - notifications about events
 * [Installation from source](https://github.com/hastic/hastic-server/wiki/Installation-from-source)
-* [ChangeLog](https://github.com/hastic/hastic-server/wiki/Change-log)
+* [Changelog](https://github.com/hastic/hastic-server/wiki/Changelog)
 * [Roadmap](https://github.com/hastic/hastic-server/wiki/Roadmap)
 
 ## Download & Install on Linux
