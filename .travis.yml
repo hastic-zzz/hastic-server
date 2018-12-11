@@ -1,24 +1,8 @@
-matrix:
-  include:
-    - language: node_js
-      node_js:
-        - "8"
-      env:
-        - CXX=g++-4.8
-      before_script:
-        - cd server
-        - npm install
-      script:
-        - npm test
-    - language: python
-      python: 3.6.6
-      before_script:
-        - cd analytics
-        - pip install -r requirements.txt
-        - sudo apt-get update
-        - sudo apt-get install -y 
-          apt-utils gnupg curl make g++ git
-      script:
-        - python -m unittest discover
+services:
+  - docker
+
+script:
+  - make rpm
+
 notifications:
   email: false
