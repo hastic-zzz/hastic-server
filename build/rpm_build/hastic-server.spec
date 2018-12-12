@@ -22,11 +22,12 @@ BuildArch: noarch
 REST server for managing data for analytics
 
 %prep
-echo PREP
-pwd
-mkdir -p %{buildroot}
+rm -rf %{builddir}
+mkdir -p %{builddir}
 cp -r ../server %{builddir}/
 cp -r ../analytics %{builddir}/
+cp -r ../.git/HEAD %{builddir}/.git/HEAD
+cp -r ../.git/refs %{builddir}/.git/refs
 
 %build
 pushd analytics
@@ -37,6 +38,7 @@ unset RPM_BUILD_ROOT
 pip3 -q install -U pip setuptools pyinstaller
 pip3 -q install -r requirements.txt
 pyinstaller --additional-hooks-dir=pyinstaller_hooks --paths=analytics/ bin/server
+chmod +x dist/server/server
 
 export RPM_BUILD_ROOT=$save
 popd
@@ -47,25 +49,26 @@ npm rebuild
 popd
 
 %install
-echo INSTALL
-pwd
-ls %{buildroot}
-ls %{builddir}
-mkdir -p %{buildroot}/%{_bindir}/hastic-server
-cp -r ./ %{buildroot}/%{_bindir}/hastic-server
+mkdir -p %{buildroot}/usr/lib/hastic-server
+cp -r ./ %{buildroot}/usr/lib/hastic-server
 
 %post
-echo POST
-pwd
-ls %{buildroot}
-mkdir -p %{_bindir}/hastic-server
-ln -s %{_bindir}/hastic-server/data /etc/hastic-server/data
+mkdir -p /etc/hastic-server/
+if [ ! -f /etc/hastic-server/config ]; then
+  echo '{}' > /etc/hastic-server/config
+fi
+ln -s /etc/hastic-server/config.json /usr/lib/hastic-server/config.json
+
+mkdir -p /var/hastic-server/
+ln -s /usr/lib/hastic-server/data /var/hastic-server/data
+
+echo 'node /usr/lib/hastic-server/server/dist/server' > /usr/bin/hastic-server
 
 
-#%clean
-#rm -rf %{buildroot}
+%clean
+rm -rf %{buildroot}
+rm -rf %{builddir}
 
 %files
 %defattr(644, root, root, 755)
-%{_bindir}/hastic-server/server/dist/*
-%{_bindir}/hastic-server/analytics/dist/*
+/usr/lib/hastic-server
