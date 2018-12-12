@@ -24,10 +24,5 @@ class TestDataset(unittest.TestCase):
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
 
-    def test_data_preparation(self):
-        data = [[1523889000000 + i, float('nan')] for i in range(10)]
-
-        self.assertTrue(prepare_data(data).empty) # TODO: raise exception
-
 if __name__ == '__main__':
     unittest.main()

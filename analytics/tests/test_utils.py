@@ -81,9 +81,11 @@ class TestUtils(unittest.TestCase):
         data = []
         pattern_index = []
         window_size = 2
+        window_size_zero = 0
         av_model = []
         result = []
         self.assertEqual(utils.get_convolve(pattern_index, av_model, data, window_size), result)
+        self.assertEqual(utils.get_convolve(pattern_index, av_model, data, window_size_zero), result)
     
     def test_get_distribution_density(self):
         segment = [1, 1, 1, 3, 5, 5, 5]
@@ -95,39 +97,66 @@ class TestUtils(unittest.TestCase):
         segment = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
         segment = pd.Series(segment)
         jump_center = [10, 11]
-        self.assertIn(utils.find_jump_parameters(segment, 0)[0], jump_center)
+        self.assertIn(utils.find_parameters(segment, 0, 'jump')[0], jump_center)
     
     def test_find_jump_parameters_height(self):
         segment = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
         segment = pd.Series(segment)
         jump_height = [3.5, 4]
-        self.assertGreaterEqual(utils.find_jump_parameters(segment, 0)[1], jump_height[0])
-        self.assertLessEqual(utils.find_jump_parameters(segment, 0)[1], jump_height[1])
+        self.assertGreaterEqual(utils.find_parameters(segment, 0, 'jump')[1], jump_height[0])
+        self.assertLessEqual(utils.find_parameters(segment, 0, 'jump')[1], jump_height[1])
     
     def test_find_jump_parameters_length(self):
         segment = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
         segment = pd.Series(segment)
         jump_length = 2
-        self.assertEqual(utils.find_jump_parameters(segment, 0)[2], jump_length)
+        self.assertEqual(utils.find_parameters(segment, 0, 'jump')[2], jump_length)
     
     def test_find_drop_parameters_center(self):
         segment = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         segment = pd.Series(segment)
-        drop_center = [14, 15]
-        self.assertIn(utils.find_drop_parameters(segment, 0)[0], drop_center)
+        drop_center = [14, 15, 16]
+        self.assertIn(utils.find_parameters(segment, 0, 'drop')[0], drop_center)
     
     def test_find_drop_parameters_height(self):
         segment = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         segment = pd.Series(segment)
         drop_height = [3.5, 4]
-        self.assertGreaterEqual(utils.find_drop_parameters(segment, 0)[1], drop_height[0])
-        self.assertLessEqual(utils.find_drop_parameters(segment, 0)[1], drop_height[1])
+        self.assertGreaterEqual(utils.find_parameters(segment, 0, 'drop')[1], drop_height[0])
+        self.assertLessEqual(utils.find_parameters(segment, 0, 'drop')[1], drop_height[1])
     
     def test_find_drop_parameters_length(self):
         segment = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         segment = pd.Series(segment)
         drop_length = 2
-        self.assertEqual(utils.find_drop_parameters(segment, 0)[2], drop_length)
+        self.assertEqual(utils.find_parameters(segment, 0, 'drop')[2], drop_length)
+    
+    def test_get_av_model_empty_data(self):
+        patterns_list = []
+        result = []
+        self.assertEqual(utils.get_av_model(patterns_list), result)
+    
+    def test_find_jump_nan_data(self):
+        data = [np.NaN, np.NaN, np.NaN, np.NaN]
+        data = pd.Series(data)
+        length = 2
+        height = 3
+        length_zero = 0
+        height_zero = 0
+        result = []
+        self.assertEqual(utils.find_jump(data, height, length), result)
+        self.assertEqual(utils.find_jump(data, height_zero, length_zero), result)
+    
+    def test_find_drop_nan_data(self):
+        data = [np.NaN, np.NaN, np.NaN, np.NaN]
+        data = pd.Series(data)
+        length = 2
+        height = 3
+        length_zero = 0
+        height_zero = 0
+        result = []
+        self.assertEqual(utils.find_drop(data, height, length), result)
+        self.assertEqual(utils.find_drop(data, height_zero, length_zero), result)
 
 if __name__ == '__main__':
     unittest.main()
