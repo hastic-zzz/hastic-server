@@ -81,9 +81,11 @@ class TestUtils(unittest.TestCase):
         data = []
         pattern_index = []
         window_size = 2
+        window_size_zero = 0
         av_model = []
         result = []
         self.assertEqual(utils.get_convolve(pattern_index, av_model, data, window_size), result)
+        self.assertEqual(utils.get_convolve(pattern_index, av_model, data, window_size_zero), result)
     
     def test_get_distribution_density(self):
         segment = [1, 1, 1, 3, 5, 5, 5]
@@ -129,6 +131,11 @@ class TestUtils(unittest.TestCase):
         drop_length = 2
         self.assertEqual(utils.find_parameters(
             segment, 0, 'drop')[2], drop_length)
+    
+    def test_get_av_model_empty_data(self):
+        patterns_list = []
+        result = []
+        self.assertEqual(utils.get_av_model(patterns_list), result)
 
 if __name__ == '__main__':
     unittest.main()
