@@ -135,6 +135,28 @@ class TestUtils(unittest.TestCase):
         patterns_list = []
         result = []
         self.assertEqual(utils.get_av_model(patterns_list), result)
+    
+    def test_find_jump_nan_data(self):
+        data = [np.NaN, np.NaN, np.NaN, np.NaN]
+        data = pd.Series(data)
+        length = 2
+        height = 3
+        length_zero = 0
+        height_zero = 0
+        result = []
+        self.assertEqual(utils.find_jump(data, height, length), result)
+        self.assertEqual(utils.find_jump(data, height_zero, length_zero), result)
+    
+    def test_find_drop_nan_data(self):
+        data = [np.NaN, np.NaN, np.NaN, np.NaN]
+        data = pd.Series(data)
+        length = 2
+        height = 3
+        length_zero = 0
+        height_zero = 0
+        result = []
+        self.assertEqual(utils.find_drop(data, height, length), result)
+        self.assertEqual(utils.find_drop(data, height_zero, length_zero), result)
 
 if __name__ == '__main__':
     unittest.main()
