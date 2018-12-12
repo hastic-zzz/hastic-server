@@ -26,8 +26,10 @@ rm -rf %{builddir}
 mkdir -p %{builddir}
 cp -r ../server %{builddir}/
 cp -r ../analytics %{builddir}/
-cp -r ../.git/HEAD %{builddir}/.git/HEAD
-cp -r ../.git/refs %{builddir}/.git/refs
+
+#mkdir -p %{builddir}/.git
+#cp -r ../.git/HEAD %{builddir}/.git/HEAD
+#cp -r ../.git/refs %{builddir}/.git/refs
 
 %build
 pushd analytics
@@ -38,7 +40,7 @@ unset RPM_BUILD_ROOT
 pip3 -q install -U pip setuptools pyinstaller
 pip3 -q install -r requirements.txt
 pyinstaller --additional-hooks-dir=pyinstaller_hooks --paths=analytics/ bin/server
-chmod +x dist/server/server
+#chmod +x dist/server/server
 
 export RPM_BUILD_ROOT=$save
 popd
@@ -67,7 +69,6 @@ echo 'node /usr/lib/hastic-server/server/dist/server' > /usr/bin/hastic-server
 
 %clean
 rm -rf %{buildroot}
-rm -rf %{builddir}
 
 %files
 %defattr(644, root, root, 755)
