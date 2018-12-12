@@ -129,8 +129,7 @@ class TestUtils(unittest.TestCase):
         segment = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         segment = pd.Series(segment)
         drop_length = 2
-        self.assertEqual(utils.find_parameters(
-            segment, 0, 'drop')[2], drop_length)
+        self.assertEqual(utils.find_parameters(segment, 0, 'drop')[2], drop_length)
     
     def test_get_av_model_empty_data(self):
         patterns_list = []
