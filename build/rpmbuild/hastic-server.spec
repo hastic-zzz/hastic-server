@@ -43,7 +43,6 @@ unset RPM_BUILD_ROOT
 pip3 install -U pip setuptools pyinstaller
 pip3 install -r requirements.txt
 pyinstaller -y --additional-hooks-dir=pyinstaller_hooks --paths=analytics/ bin/server
-chmod +x dist/server/server
 
 export RPM_BUILD_ROOT=$save
 popd
@@ -62,8 +61,9 @@ popd
 %install
 mkdir -p %{buildroot}/usr/lib/hastic-server/server
 mkdir -p %{buildroot}/usr/lib/hastic-server/analytics/dist/server
-cp -r server/dist %{buildroot}/usr/lib/hastic-server/server/
-cp -r analytics/dist/server/server %{buildroot}/usr/lib/hastic-server/analytics/dist/server/
+cp -r server %{buildroot}/usr/lib/hastic-server/
+cp -r analytics/dist/server/ %{buildroot}/usr/lib/hastic-server/analytics/dist/
+chmod +x %{buildroot}/usr/lib/hastic-server/analytics/dist/server/server
 
 %post
 mkdir -p /etc/hastic-server/
