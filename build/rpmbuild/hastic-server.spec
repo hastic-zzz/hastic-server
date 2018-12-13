@@ -1,5 +1,5 @@
 %define name hastic-server
-%define version 0.2.6_alpha
+%define version %{getenv:HASTIC_RELEASE_VERSION}_%{getenv:RPM_NODE_VERSION}
 %define release 0
 %define buildroot /root/rpmbuild/BUILDROOT
 %define builddir /root/rpmbuild/BUILD
@@ -13,7 +13,7 @@ Group: Installation Script
 License: Apache-2.0
 URL: hastic.io
 BuildRoot: %{buildroot}
-Requires: nodejs >= %{getenv:NODE_MIN_VERSION}, nodejs < %{getenv:NODE_MAX_VERSION}
+Requires: nodejs >= %{getenv:NODE_MIN_VERSION} and nodejs < %{getenv:NODE_MAX_VERSION}
 AutoReqProv: no
 AutoReq: no
 BuildArch: noarch
