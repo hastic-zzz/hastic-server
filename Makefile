@@ -2,14 +2,24 @@
 
 all: rpm deb
 
-rpm:
-				docker run --rm -v `pwd`/server:/root/rpmbuild/server \
-					-v `pwd`/analytics:/root/rpmbuild/analytics \
-					-v `pwd`/.git:/root/rpmbuild/.git \
-					-v `pwd`/build/rpm_build:/root/rpmbuild/rpm \
-					-v `pwd`/RPMS:/root/rpmbuild/RPMS \
-					-e "GIT_HASH=`git rev-parse --short HEAD`" \
-					amper43/hastic-rpmbuilder rpmbuild -ba /root/rpmbuild/rpm/hastic-server.spec
+rpm_node8:
+	docker run --rm -v `pwd`/server:/root/rpmbuild/server \
+			-v `pwd`/analytics:/root/rpmbuild/analytics \
+			-v `pwd`/build/rpmbuild:/root/rpmbuild/rpm \
+			-v `pwd`/dist/RPMS_8:/root/rpmbuild/RPMS \
+			-e "NODE_VERSION=8.0.0" \
+			amper43/hastic-rpmbuilder rpmbuild -bi rpm/hastic-server.spec
+
+rpm_node6:
+	docker run --rm -v `pwd`/server:/root/rpmbuild/server \
+			-v `pwd`/analytics:/root/rpmbuild/analytics \
+			-v `pwd`/build/rpmbuild:/root/rpmbuild/rpm \
+			-v `pwd`/dist/RPMS_6:/root/rpmbuild/RPMS \
+			-e "NODE_VERSION=6.14.0" \
+			amper43/hastic-rpmbuilder rpmbuild -bi rpm/hastic-server.spec
+
+rpm: rpm_node6 rpm_node8
+	
 
 deb:
-				#
+	#
