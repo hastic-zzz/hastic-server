@@ -9,7 +9,7 @@ rpm_node8:
 			-v `pwd`/dist/RPMS_8:/root/rpmbuild/RPMS \
 			-e "NODE_MIN_VERSION=8.0.0" \
 			-e "NODE_MAX_VERSION=11" \
-			amper43/hastic-rpmbuilder rpmbuild -bi rpm/hastic-server.spec
+			amper43/hastic-rpmbuilder rpmbuild -ba rpm/hastic-server.spec
 
 rpm_node6:
 	docker run --rm -v `pwd`/server:/root/rpmbuild/server \
