@@ -40,22 +40,22 @@ touch dist/server/server
 save=$RPM_BUILD_ROOT
 unset RPM_BUILD_ROOT
 
-#pip3 install -U pip setuptools pyinstaller
-#pip3 install -r requirements.txt
-#pyinstaller --additional-hooks-dir=pyinstaller_hooks --paths=analytics/ bin/server
-#chmod +x dist/server/server
+pip3 install -U pip setuptools pyinstaller
+pip3 install -r requirements.txt
+pyinstaller --additional-hooks-dir=pyinstaller_hooks --paths=analytics/ bin/server
+chmod +x dist/server/server
 
 export RPM_BUILD_ROOT=$save
 popd
 
 pushd server
-#set +x
-#export NVM_DIR="$HOME/.nvm"
-#[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-#nvm use %{getenv:NODE_VERSION}
-#set -x
-#npm install
-#npm run build
+set +x
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+nvm use %{getenv:NODE_VERSION}
+set -x
+npm install
+npm run build
 popd
 
 %install
@@ -75,6 +75,7 @@ mkdir -p /var/hastic-server/
 ln -s /usr/lib/hastic-server/data /var/hastic-server/data
 
 echo 'node /usr/lib/hastic-server/server/dist/server' > /usr/bin/hastic-server
+chmod +x /usr/bin/hastic-server
 
 
 %clean

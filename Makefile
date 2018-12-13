@@ -16,10 +16,9 @@ rpm_node6:
 			-v `pwd`/build/rpmbuild:/root/rpmbuild/rpm \
 			-v `pwd`/dist/RPMS_6:/root/rpmbuild/RPMS \
 			-e "NODE_VERSION=6.14.0" \
-			amper43/hastic-rpmbuilder rpmbuild -bi rpm/hastic-server.spec
+			amper43/hastic-rpmbuilder rpmbuild -ba rpm/hastic-server.spec
 
 rpm: rpm_node6 rpm_node8
-	
 
 deb:
 	#
