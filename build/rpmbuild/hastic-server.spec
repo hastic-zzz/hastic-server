@@ -13,7 +13,7 @@ Group: Installation Script
 License: Apache-2.0
 URL: hastic.io
 BuildRoot: %{buildroot}
-Requires: nodejs >= %{getenv:NODE_VERSION}
+Requires: nodejs >= %{getenv:NODE_MIN_VERSION}, nodejs < %{getenv:NODE_MAX_VERSION}
 AutoReqProv: no
 AutoReq: no
 BuildArch: noarch
@@ -29,7 +29,7 @@ cp -r %{builddir}/../analytics %{builddir}/
 set +x
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-nvm install %{getenv:NODE_VERSION}
+nvm install %{getenv:NODE_MIN_VERSION}
 set -x
 
 %build
@@ -52,7 +52,7 @@ pushd server
 set +x
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-nvm use %{getenv:NODE_VERSION}
+nvm use %{getenv:NODE_MIN_VERSION}
 set -x
 npm install
 npm run build
