@@ -42,7 +42,7 @@ class DropModel(Model):
                     continue
                 confidence = utils.find_confidence(segment_data)
                 confidences.append(confidence)
-                segment_cent_index, drop_height, drop_length = utils.find_parameters(segment_data, segment_from_index, "drop")
+                segment_cent_index, drop_height, drop_length = utils.find_parameters(segment_data, segment_from_index, 'drop')
                 drop_height_list.append(drop_height)
                 drop_length_list.append(drop_length)
                 self.idrops.append(segment_cent_index)
