@@ -27,6 +27,7 @@ class TestDataset(unittest.TestCase):
     def test_antisegments(self):
         data = [[1523889000000 + i, float(1.0)] for i in range(20)]
         dataframe = pd.DataFrame(data, columns=['timestamp', 'value'])
+        dataframe['timestamp'] = pd.to_datetime(dataframe['timestamp'], unit='ms')
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000001, 'to': 1523889000004, 'labeled': True, 'deleted': False},
                     {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000009, 'to': 1523889000012, 'labeled': False, 'deleted': True}]
 
