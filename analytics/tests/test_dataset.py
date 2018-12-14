@@ -24,19 +24,17 @@ class TestDataset(unittest.TestCase):
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
     
-    def test_antisegments(self):
-        data = [[1523889000000 + i, float(1.0)] for i in range(20)]
-        dataframe = pd.DataFrame(data, columns=['timestamp', 'value'])
+    def test_peak_antisegments(self):
+        data_val = [1.0, 1.0, 1.0, 2.0, 3.0, 2.0, 1.0, 1.0, 1.0, 1.0, 5.0, 7.0, 5.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+        data_ind = [1523889000000 + i for i in range(20)]
+        data = {'timestamp': data_ind, 'value': data_val}
+        dataframe = pd.DataFrame(data)
         dataframe['timestamp'] = pd.to_datetime(dataframe['timestamp'], unit='ms')
-        segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000001, 'to': 1523889000004, 'labeled': True, 'deleted': False},
-                    {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000009, 'to': 1523889000012, 'labeled': False, 'deleted': True}]
+        segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000012, 'labeled': True, 'deleted': False},
+                    {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000003, 'to': 1523889000005, 'labeled': False, 'deleted': True}]
 
         model_instances = [
-            models.JumpModel(),
-            models.DropModel(),
-            models.GeneralModel(),
-            models.PeakModel(),
-            models.TroughModel()
+            models.PeakModel()
         ]
         try:
             for model in model_instances:
