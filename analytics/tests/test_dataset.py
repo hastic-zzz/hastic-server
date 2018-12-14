@@ -78,7 +78,7 @@ class TestDataset(unittest.TestCase):
         data = {'timestamp': data_ind, 'value': data_val}
         dataframe = pd.DataFrame(data)
         dataframe['timestamp'] = pd.to_datetime(dataframe['timestamp'], unit='ms')
-        segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000012, 'labeled': True, 'deleted': False},
+        segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000009, 'to': 1523889000011, 'labeled': True, 'deleted': False},
                     {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000003, 'to': 1523889000005, 'labeled': False, 'deleted': True}]
 
         try:
