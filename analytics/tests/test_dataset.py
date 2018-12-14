@@ -55,6 +55,54 @@ class TestDataset(unittest.TestCase):
             model.fit(dataframe, segments, dict())
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
+    
+    def test_trough_antisegments(self):
+        data_val = [9.0, 9.0, 9.0, 9.0, 7.0, 4.0, 7.0, 9.0, 9.0, 9.0, 5.0, 1.0, 5.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0]
+        data_ind = [1523889000000 + i for i in range(20)]
+        data = {'timestamp': data_ind, 'value': data_val}
+        dataframe = pd.DataFrame(data)
+        dataframe['timestamp'] = pd.to_datetime(dataframe['timestamp'], unit='ms')
+        segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000012, 'labeled': True, 'deleted': False},
+                    {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000003, 'to': 1523889000005, 'labeled': False, 'deleted': True}]
+
+        try:
+            model = models.TroughModel()
+            model_name = model.__class__.__name__
+            model.fit(dataframe, segments, dict())
+        except ValueError:
+            self.fail('Model {} raised unexpectedly'.format(model_name))
+    
+    def test_drop_antisegments(self):
+        data_val = [9.0, 9.0, 9.0, 9.0, 7.0, 5.0, 3.0, 9.0, 9.0, 9.0, 5.0, 3.0, 1.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0]
+        data_ind = [1523889000000 + i for i in range(20)]
+        data = {'timestamp': data_ind, 'value': data_val}
+        dataframe = pd.DataFrame(data)
+        dataframe['timestamp'] = pd.to_datetime(dataframe['timestamp'], unit='ms')
+        segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000012, 'labeled': True, 'deleted': False},
+                    {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000003, 'to': 1523889000005, 'labeled': False, 'deleted': True}]
+
+        try:
+            model = models.DropModel()
+            model_name = model.__class__.__name__
+            model.fit(dataframe, segments, dict())
+        except ValueError:
+            self.fail('Model {} raised unexpectedly'.format(model_name))
+
+    def test_general_antisegments(self):
+        data_val = [1.0, 2.0, 1.0, 2.0, 5.0, 6.0, 3.0, 2.0, 1.0, 1.0, 8.0, 9.0, 8.0, 1.0, 2.0, 3.0, 2.0, 1.0, 1.0, 2.0]
+        data_ind = [1523889000000 + i for i in range(20)]
+        data = {'timestamp': data_ind, 'value': data_val}
+        dataframe = pd.DataFrame(data)
+        dataframe['timestamp'] = pd.to_datetime(dataframe['timestamp'], unit='ms')
+        segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000012, 'labeled': True, 'deleted': False},
+                    {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000003, 'to': 1523889000005, 'labeled': False, 'deleted': True}]
+
+        try:
+            model = models.GeneralModel()
+            model_name = model.__class__.__name__
+            model.fit(dataframe, segments, dict())
+        except ValueError:
+            self.fail('Model {} raised unexpectedly'.format(model_name))
 
 if __name__ == '__main__':
     unittest.main()
