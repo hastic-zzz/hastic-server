@@ -40,7 +40,7 @@ class TestDataset(unittest.TestCase):
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
         
-    def test_peak_antisegments(self):
+    def test_jump_antisegments(self):
         data_val = [1.0, 1.0, 1.0, 2.0, 3.0, 4.0, 1.0, 1.0, 1.0, 1.0, 5.0, 7.0, 9.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
         data_ind = [1523889000000 + i for i in range(20)]
         data = {'timestamp': data_ind, 'value': data_val}
