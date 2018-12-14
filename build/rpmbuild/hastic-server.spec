@@ -54,8 +54,7 @@ export NVM_DIR="$HOME/.nvm"
 nvm use %{getenv:NODE_VERSION}
 set -x
 npm install
-npm prune --production
-npm rebuild
+npm run build
 popd
 
 %install
