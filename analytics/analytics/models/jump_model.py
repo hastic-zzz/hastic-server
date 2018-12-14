@@ -43,7 +43,7 @@ class JumpModel(Model):
                     continue
                 confidence = utils.find_confidence(segment_data)
                 confidences.append(confidence)
-                segment_cent_index, jump_height, jump_length = utils.find_parameters(segment_data, segment_from_index, "jump")
+                segment_cent_index, jump_height, jump_length = utils.find_parameters(segment_data, segment_from_index, 'jump')
                 jump_height_list.append(jump_height)
                 jump_length_list.append(jump_length)
                 self.ijumps.append(segment_cent_index)
