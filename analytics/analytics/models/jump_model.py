@@ -60,7 +60,7 @@ class JumpModel(Model):
                 segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
                 if len(segment_data) == 0:
                     continue
-                segment_cent_index = utils.find_jump_parameters(segment_data, segment_from_index)[0]
+                segment_cent_index = utils.find_parameters(segment_data, segment_from_index, 'jump')[0]
                 deleted_jump = utils.get_interval(data, segment_cent_index, self.state['WINDOW_SIZE'])
                 deleted_jump = utils.subtract_min_without_nan(labeled_jump)
                 del_conv_jump = scipy.signal.fftconvolve(deleted_jump, self.model_jump)
