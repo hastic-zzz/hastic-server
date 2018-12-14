@@ -88,13 +88,13 @@ class TestDataset(unittest.TestCase):
             model.fit(dataframe, segments, dict())
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
-    
-    def create_dataframe(data_val: list) -> pd.DataFrame:
-        data_ind = [1523889000000 + i for i in range(len(data_val))]
-        data = {'timestamp': data_ind, 'value': data_val}
-        dataframe = pd.DataFrame(data)
-        dataframe['timestamp'] = pd.to_datetime(dataframe['timestamp'], unit='ms')
-        return dataframe
 
 if __name__ == '__main__':
     unittest.main()
+
+def create_dataframe(data_val: list) -> pd.DataFrame:    
+    data_ind = [1523889000000 + i for i in range(len(data_val))]
+    data = {'timestamp': data_ind, 'value': data_val}
+    dataframe = pd.DataFrame(data)
+    dataframe['timestamp'] = pd.to_datetime(dataframe['timestamp'], unit='ms')
+    return dataframe
