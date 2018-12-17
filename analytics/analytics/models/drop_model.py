@@ -42,7 +42,7 @@ class DropModel(Model):
                     continue
                 confidence = utils.find_confidence(segment_data)
                 confidences.append(confidence)
-                segment_cent_index, drop_height, drop_length = utils.find_parameters(segment_data, segment_from_index, "drop")
+                segment_cent_index, drop_height, drop_length = utils.find_parameters(segment_data, segment_from_index, 'drop')
                 drop_height_list.append(drop_height)
                 drop_length_list.append(drop_length)
                 self.idrops.append(segment_cent_index)
@@ -59,7 +59,7 @@ class DropModel(Model):
                 segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
                 if len(segment_data) == 0:
                     continue
-                segment_cent_index = utils.find_drop_parameters(segment_data, segment_from_index)[0]
+                segment_cent_index = utils.find_parameters(segment_data, segment_from_index, 'drop')[0]
                 deleted_drop = utils.get_interval(data, segment_cent_index, self.state['WINDOW_SIZE'])
                 deleted_drop = utils.subtract_min_without_nan(deleted_drop)
                 del_conv_drop = scipy.signal.fftconvolve(deleted_drop, self.model_drop)

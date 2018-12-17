@@ -1,7 +1,6 @@
 from models import Model
 
 import utils
-from utils.segments import parse_segment
 import numpy as np
 import pandas as pd
 import scipy.signal
@@ -38,13 +37,13 @@ class JumpModel(Model):
         patterns_list = []
         for segment in segments:
             if segment['labeled']:
-                segment_from_index, segment_to_index, segment_data = parse_segment(segment, dataframe)
+                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
                 percent_of_nans = segment_data.isnull().sum() / len(segment_data)
                 if percent_of_nans > 0 or len(segment_data) == 0:
                     continue
                 confidence = utils.find_confidence(segment_data)
                 confidences.append(confidence)
-                segment_cent_index, jump_height, jump_length = utils.find_parameters(segment_data, segment_from_index, "jump")
+                segment_cent_index, jump_height, jump_length = utils.find_parameters(segment_data, segment_from_index, 'jump')
                 jump_height_list.append(jump_height)
                 jump_length_list.append(jump_length)
                 self.ijumps.append(segment_cent_index)
@@ -61,7 +60,7 @@ class JumpModel(Model):
                 segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
                 if len(segment_data) == 0:
                     continue
-                segment_cent_index = utils.find_jump_parameters(segment_data, segment_from_index)[0]
+                segment_cent_index = utils.find_parameters(segment_data, segment_from_index, 'jump')[0]
                 deleted_jump = utils.get_interval(data, segment_cent_index, self.state['WINDOW_SIZE'])
                 deleted_jump = utils.subtract_min_without_nan(labeled_jump)
                 del_conv_jump = scipy.signal.fftconvolve(deleted_jump, self.model_jump)

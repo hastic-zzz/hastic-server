@@ -52,7 +52,7 @@ class PeakModel(Model):
         del_conv_list = []
         for segment in segments:
             if segment['deleted']:
-                segment_from_index, segment_to_index, segment_data = parse_segment(segment, dataframe)
+                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
                 if len(segment_data) == 0:
                     continue
                 del_max_index = segment_data.idxmax()
