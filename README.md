@@ -11,7 +11,8 @@
 [Twitter](https://twitter.com/hasticio) | 
 [IRC](https://webchat.freenode.net/?channels=#hastic)
 
-![Last master push status](https://travis-ci.org/hastic/hastic-server.svg?branch=master)
+[![Build Status](https://travis-ci.org/hastic/hastic-server.svg?branch=master)](https://travis-ci.org/hastic/hastic-server)
+
 
 Implementation of basic pattern recognition for anomaly detection.
 
