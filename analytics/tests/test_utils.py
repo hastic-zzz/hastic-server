@@ -157,6 +157,14 @@ class TestUtils(unittest.TestCase):
         result = []
         self.assertEqual(utils.find_drop(data, height, length), result)
         self.assertEqual(utils.find_drop(data, height_zero, length_zero), result)
+    
+    def test_get_distribution_density(self):
+        data = [1.0, 5.0, 5.0, 4.0]
+        data = pd.Series(data)
+        self.assertEqual(utils.get_distribution_density(data)[0], 3.0)
+        #self.assertEqual(utils.get_distribution_density(data)[1], 5.0)
+        self.assertEqual(utils.get_distribution_density(data)[2], 1.0)
+    
 
 if __name__ == '__main__':
     unittest.main()
