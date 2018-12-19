@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import math
 
-RELATIVE_TOLERANCE = 1e-2
+RELATIVE_TOLERANCE = 1e-1
 
 class TestUtils(unittest.TestCase):
 
