@@ -9,6 +9,7 @@ import utils
 
 SHIFT_FACTOR = 0.05
 CONFIDENCE_FACTOR = 0.2
+SMOOTHING_FACTOR = 5
 
 def exponential_smoothing(series, alpha):
     result = [series[0]]
@@ -192,6 +193,8 @@ def get_convolve(segments: list, av_model: list, data: pd.Series, window_size: i
     return convolve_list
 
 def get_distribution_density(segment: pd.Series) -> float:
+    if len(segment) < 2:
+        return []
     min_jump = min(segment)
     max_jump = max(segment)
     pdf = gaussian_kde(segment)
@@ -214,9 +217,10 @@ def get_distribution_density(segment: pd.Series) -> float:
     return segment_median, segment_max_line, segment_min_line
 
 def find_parameters(segment_data: pd.Series, segment_from_index: int, pat_type: str) -> [int, float, int]:
-    flat_segment = segment_data.rolling(window=5).mean()
-    flat_segment_dropna = flat_segment.dropna()
-    segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(flat_segment_dropna)
+    if len(segment_data) > SMOOTHING_FACTOR * 4:
+        flat_segment = segment_data.rolling(window = SMOOTHING_FACTOR).mean()
+        segment_data = flat_segment.dropna()
+    segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(segment_data)
     height = 0.95 * (segment_max_line - segment_min_line)
     length = utils.find_length(segment_data, segment_min_line, segment_max_line, pat_type)
     cen_ind = utils.pattern_intersection(segment_data.tolist(), segment_median, pat_type)
