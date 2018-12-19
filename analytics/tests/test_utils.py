@@ -183,8 +183,12 @@ class TestUtils(unittest.TestCase):
     def test_get_distribution_density_short_data(self):
         data = [1.0, 5.0]
         data = pd.Series(data)
-        utils_result = utils.get_distribution_density(data)
-        self.assertEqual(len(utils_result), 3)
+        segment = [1.0]
+        segment = pd.Series(segment)
+        utils_result_data = utils.get_distribution_density(data)
+        utils_result_segment = utils.get_distribution_density(segment)
+        self.assertEqual(len(utils_result_data), 3)
+        self.assertEqual(utils_result_segment, [])
 
 if __name__ == '__main__':
     unittest.main()
