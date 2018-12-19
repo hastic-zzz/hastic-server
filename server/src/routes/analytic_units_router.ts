@@ -88,6 +88,52 @@ async function getUnits(ctx: Router.IRouterContext) {
   }
 }
 
+function getTypes(ctx: Router.IRouterContext) {
+  try {
+    ctx.response.body = {
+      pattern: [
+        {
+          name: 'General',
+          value: 'GENERAL'
+        },
+        {
+          name: 'Peaks',
+          value: 'PEAK'
+        },
+        {
+          name: 'Troughs',
+          value: 'TROUGH'
+        },
+        {
+          name: 'Jumps',
+          value: 'JUMP'
+        },
+        {
+          name: 'Drops',
+          value: 'DROP'
+        },
+        {
+          name: 'Custom',
+          value: 'CUSTOM'
+        }
+      ],
+      threshold: [
+        {
+          name: 'Threshold',
+          value: 'THRESHOLD'
+        }
+      ]
+    };
+  } catch(e) {
+    console.error(e);
+    ctx.response.status = 404;
+    ctx.response.body = {
+      code: 404,
+      message: `GET /analyticUnits/types error: ${e.message}`
+    };
+  }
+}
+
 async function createUnit(ctx: Router.IRouterContext) {
   try {
     let id = await createAnalyticUnitFromObject(ctx.request.body);
@@ -112,7 +158,7 @@ async function setAlert(ctx: Router.IRouterContext) {
     if(alert === undefined) {
       throw new Error('Cannot set undefined alert status');
     }
-    
+
     await AnalyticsController.setAlert(analyticUnitId, alert);
 
     ctx.response.body = {
@@ -155,6 +201,7 @@ export var router = new Router();
 router.get('/', getUnit);
 router.get('/units', getUnits);
 router.get('/status', getStatus);
+router.get('/types', getTypes);
 router.patch('/alert', setAlert);
 router.post('/', createUnit);
 router.delete('/', deleteUnit);
