@@ -188,7 +188,7 @@ class TestUtils(unittest.TestCase):
         utils_result_data = utils.get_distribution_density(data)
         utils_result_segment = utils.get_distribution_density(segment)
         self.assertEqual(len(utils_result_data), 3)
-        self.assertEqual(utils_result_segment, [])
+        self.assertEqual(utils_result_segment, (0, 0, 0))
 
 if __name__ == '__main__':
     unittest.main()

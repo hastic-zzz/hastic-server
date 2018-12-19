@@ -194,7 +194,7 @@ def get_convolve(segments: list, av_model: list, data: pd.Series, window_size: i
 
 def get_distribution_density(segment: pd.Series) -> float:
     if len(segment) < 2:
-        return []
+        return (0, 0, 0)
     min_jump = min(segment)
     max_jump = max(segment)
     pdf = gaussian_kde(segment)
