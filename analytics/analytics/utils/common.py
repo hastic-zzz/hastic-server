@@ -217,10 +217,11 @@ def get_distribution_density(segment: pd.Series) -> float:
     return segment_median, segment_max_line, segment_min_line
 
 def find_parameters(segment_data: pd.Series, segment_from_index: int, pat_type: str) -> [int, float, int]:
-    if len(segment_data) > SMOOTHING_FACTOR * 4:
+    segment = segment_data
+    if len(segment_data) > SMOOTHING_FACTOR * 3:
         flat_segment = segment_data.rolling(window = SMOOTHING_FACTOR).mean()
-        segment_data = flat_segment.dropna()
-    segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(segment_data)
+        segment = flat_segment.dropna()
+    segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(segment)
     height = 0.95 * (segment_max_line - segment_min_line)
     length = utils.find_length(segment_data, segment_min_line, segment_max_line, pat_type)
     cen_ind = utils.pattern_intersection(segment_data.tolist(), segment_median, pat_type)
