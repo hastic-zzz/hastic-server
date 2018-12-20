@@ -19,7 +19,7 @@ def get_detector_by_type(detector_type: str, analytic_unit_type: str) -> detecto
     if detector_type == 'pattern':
         return detectors.PatternDetector(analytic_unit_type)
     elif detector_type == 'threshold':
-        return detectors.ThresholdDetector(analytic_unit_type)
+        return detectors.ThresholdDetector()
 
     raise ValueError('Unknown detector type "%s"' % detector_type)
 
@@ -71,7 +71,7 @@ class AnalyticUnitManager:
             return
 
         payload = task['payload']
-        worker = self.__ensure_worker(analytic_unit_id, payload['detector'], payload['type'])
+        worker = self.__ensure_worker(analytic_unit_id, payload['detector'], payload['analyticUnitType'])
         data = prepare_data(payload['data'])
         if task['type'] == 'PUSH':
             return await worker.recieve_data(data, payload['cache'])
