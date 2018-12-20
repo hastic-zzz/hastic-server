@@ -166,7 +166,8 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId) {
   try {
     let unit = await AnalyticUnit.findById(id);
     previousLastDetectionTime = unit.lastDetectionTime;
-    let pattern = unit.type;
+    let analyticUnitType = unit.type;
+    let detector = AnalyticUnit.getDetectorByType(analyticUnitType);
 
     let segments = await Segment.findMany(id, { labeled: true });
     if(segments.length === 0) {
@@ -190,7 +191,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId) {
     let task = new AnalyticsTask(
       id,
       AnalyticsTaskType.DETECT,
-      { pattern, lastDetectionTime: unit.lastDetectionTime, data, cache: oldCache }
+      { detector, analyticUnitType, lastDetectionTime: unit.lastDetectionTime, data, cache: oldCache }
     );
     console.debug(`run task, id:${id}`);
     let result = await runTask(task);
