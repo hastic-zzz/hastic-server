@@ -2,6 +2,7 @@ import { Collection, makeDBQ } from '../services/data_service';
 
 import { Metric } from 'grafana-datasource-kit';
 
+import * as _ from 'lodash';
 
 let db = makeDBQ(Collection.ANALYTIC_UNITS);
 
@@ -166,4 +167,18 @@ export async function setDetectionTime(id: AnalyticUnitId, lastDetectionTime: nu
 
 export async function setAlert(id: AnalyticUnitId, alert: boolean) {
   return db.updateOne(id, { alert });
+}
+
+export function getDetectorByType(analyticUnitType: string) {
+  let detector;
+  _.forOwn(ANALYTIC_UNIT_TYPES, (types, detectorType) => {
+    if(_.find(types, { value: analyticUnitType }) !== undefined) {
+      detector = detectorType;
+    }
+  });
+
+  if(detector === undefined) {
+    throw new Error(`Can't find detector for analytic unit of type "${analyticUnitType}"`);
+  }
+  return detector;
 }

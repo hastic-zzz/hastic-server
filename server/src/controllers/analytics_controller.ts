@@ -130,7 +130,8 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
       throw new Error('Empty data to learn on');
     }
 
-    let pattern = analyticUnit.type;
+    let analyticUnitType = analyticUnit.type;
+    let detector = AnalyticUnit.getDetectorByType(analyticUnitType);
     let oldCache = await AnalyticUnitCache.findById(id);
     if(oldCache !== null) {
       oldCache = oldCache.data;
@@ -143,7 +144,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
     segmentObjs = _.concat(segmentObjs, deletedSegmentsObjs);
 
     let task = new AnalyticsTask(
-      id, AnalyticsTaskType.LEARN, { pattern, segments: segmentObjs, data, cache: oldCache }
+      id, AnalyticsTaskType.LEARN, { detector, analyticUnitType, segments: segmentObjs, data, cache: oldCache }
     );
     AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
     console.debug(`run task, id:${id}`);
