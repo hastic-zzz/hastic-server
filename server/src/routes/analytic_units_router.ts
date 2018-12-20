@@ -88,6 +88,10 @@ async function getUnits(ctx: Router.IRouterContext) {
   }
 }
 
+function getTypes(ctx: Router.IRouterContext) {
+  ctx.response.body = AnalyticUnit.ANALYTIC_UNIT_TYPES;
+}
+
 async function createUnit(ctx: Router.IRouterContext) {
   try {
     let id = await createAnalyticUnitFromObject(ctx.request.body);
@@ -112,7 +116,7 @@ async function setAlert(ctx: Router.IRouterContext) {
     if(alert === undefined) {
       throw new Error('Cannot set undefined alert status');
     }
-    
+
     await AnalyticsController.setAlert(analyticUnitId, alert);
 
     ctx.response.body = {
@@ -155,6 +159,7 @@ export var router = new Router();
 router.get('/', getUnit);
 router.get('/units', getUnits);
 router.get('/status', getStatus);
+router.get('/types', getTypes);
 router.patch('/alert', setAlert);
 router.post('/', createUnit);
 router.delete('/', deleteUnit);

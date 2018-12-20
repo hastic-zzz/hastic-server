@@ -6,6 +6,37 @@ import { Metric } from 'grafana-datasource-kit';
 let db = makeDBQ(Collection.ANALYTIC_UNITS);
 
 
+export const ANALYTIC_UNIT_TYPES = {
+  pattern: [
+    {
+      name: 'General',
+      value: 'GENERAL'
+    },
+    {
+      name: 'Peaks',
+      value: 'PEAK'
+    },
+    {
+      name: 'Troughs',
+      value: 'TROUGH'
+    },
+    {
+      name: 'Jumps',
+      value: 'JUMP'
+    },
+    {
+      name: 'Drops',
+      value: 'DROP'
+    }
+  ],
+  threshold: [
+    {
+      name: 'Threshold',
+      value: 'THRESHOLD'
+    }
+  ]
+};
+
 export type AnalyticUnitId = string;
 export enum AnalyticUnitStatus {
   READY = 'READY',
