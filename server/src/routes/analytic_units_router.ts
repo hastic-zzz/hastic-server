@@ -90,40 +90,7 @@ async function getUnits(ctx: Router.IRouterContext) {
 
 function getTypes(ctx: Router.IRouterContext) {
   try {
-    ctx.response.body = {
-      pattern: [
-        {
-          name: 'General',
-          value: 'GENERAL'
-        },
-        {
-          name: 'Peaks',
-          value: 'PEAK'
-        },
-        {
-          name: 'Troughs',
-          value: 'TROUGH'
-        },
-        {
-          name: 'Jumps',
-          value: 'JUMP'
-        },
-        {
-          name: 'Drops',
-          value: 'DROP'
-        },
-        {
-          name: 'Custom',
-          value: 'CUSTOM'
-        }
-      ],
-      threshold: [
-        {
-          name: 'Threshold',
-          value: 'THRESHOLD'
-        }
-      ]
-    };
+    ctx.response.body = AnalyticUnit.ANALYTIC_UNIT_TYPES;
   } catch(e) {
     console.error(e);
     ctx.response.status = 404;
