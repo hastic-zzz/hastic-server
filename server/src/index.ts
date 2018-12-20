@@ -38,7 +38,6 @@ var rootRouter = new Router();
 rootRouter.use('/analyticUnits', analyticUnitsRouter.routes(), analyticUnitsRouter.allowedMethods());
 rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
 rootRouter.use('/panel', panelRouter.routes(), panelRouter.allowedMethods());
-//rootRouter.use('/alerts', alertsRouter.routes(), alertsRouter.allowedMethods());
 
 rootRouter.get('/', async (ctx) => {
   ctx.response.body = {
