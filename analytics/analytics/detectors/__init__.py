@@ -1,2 +1,3 @@
 from detectors.detector import Detector
 from detectors.pattern_detector import PatternDetector
+from detectors.threshold_detector import ThresholdDetector

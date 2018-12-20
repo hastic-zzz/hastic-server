@@ -15,8 +15,13 @@ WORKERS_EXECUTORS = 20
 AnalyticUnitId = str
 
 
-def get_detector_by_type(analytic_unit_type) -> detectors.Detector:
-    return detectors.PatternDetector(analytic_unit_type)
+def get_detector_by_type(detector_type: str, analytic_unit_type: str) -> detectors.Detector:
+    if detector_type === 'pattern':
+        return detectors.PatternDetector(analytic_unit_type)
+    elif detector_type === 'threshold':
+        return detectors.ThresholdDetector(analytic_unit_type)
+
+    raise ValueError('Unknown detector type "%s"' % detector_type)
 
 def prepare_data(data: list):
     """
@@ -40,11 +45,16 @@ class AnalyticUnitManager:
         self.analytic_workers: Dict[AnalyticUnitId, AnalyticUnitWorker] = dict()
         self.workers_executor = ThreadPoolExecutor(max_workers=WORKERS_EXECUTORS)
 
-    def __ensure_worker(self, analytic_unit_id: AnalyticUnitId, analytic_unit_type) -> AnalyticUnitWorker:
+    def __ensure_worker(
+        self,
+        analytic_unit_id: AnalyticUnitId,
+        detector_type: str,
+        analytic_unit_type: str
+    ) -> AnalyticUnitWorker:
         if analytic_unit_id in self.analytic_workers:
             # TODO: check that type is the same
             return self.analytic_workers[analytic_unit_id]
-        detector = get_detector_by_type(analytic_unit_type)
+        detector = get_detector_by_type(detector_type, analytic_unit_type)
         worker = AnalyticUnitWorker(analytic_unit_id, detector, self.workers_executor)
         self.analytic_workers[analytic_unit_id] = worker
         return worker
@@ -61,7 +71,7 @@ class AnalyticUnitManager:
             return
 
         payload = task['payload']
-        worker = self.__ensure_worker(analytic_unit_id, payload['pattern'])
+        worker = self.__ensure_worker(analytic_unit_id, payload['detector'], payload['type'])
         data = prepare_data(payload['data'])
         if task['type'] == 'PUSH':
             return await worker.recieve_data(data, payload['cache'])
