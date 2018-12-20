@@ -89,16 +89,7 @@ async function getUnits(ctx: Router.IRouterContext) {
 }
 
 function getTypes(ctx: Router.IRouterContext) {
-  try {
-    ctx.response.body = AnalyticUnit.ANALYTIC_UNIT_TYPES;
-  } catch(e) {
-    console.error(e);
-    ctx.response.status = 404;
-    ctx.response.body = {
-      code: 404,
-      message: `GET /analyticUnits/types error: ${e.message}`
-    };
-  }
+  ctx.response.body = AnalyticUnit.ANALYTIC_UNIT_TYPES;
 }
 
 async function createUnit(ctx: Router.IRouterContext) {
