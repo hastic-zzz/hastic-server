@@ -1,5 +1,6 @@
 import logging
 
+import pandas as pd
 from typing import Optional
 
 from detectors import Detector

@@ -16,9 +16,9 @@ AnalyticUnitId = str
 
 
 def get_detector_by_type(detector_type: str, analytic_unit_type: str) -> detectors.Detector:
-    if detector_type === 'pattern':
+    if detector_type == 'pattern':
         return detectors.PatternDetector(analytic_unit_type)
-    elif detector_type === 'threshold':
+    elif detector_type == 'threshold':
         return detectors.ThresholdDetector(analytic_unit_type)
 
     raise ValueError('Unknown detector type "%s"' % detector_type)
