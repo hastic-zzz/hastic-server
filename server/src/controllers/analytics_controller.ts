@@ -204,7 +204,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId) {
     let analyticUnitType = unit.type;
     let detector = AnalyticUnit.getDetectorByType(analyticUnitType);
 
-    const data = query(unit, detector);
+    const data = await query(unit, detector);
 
     let oldCache = await AnalyticUnitCache.findById(id);
     if(oldCache !== null) {
