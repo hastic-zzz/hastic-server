@@ -14,6 +14,7 @@ import { queryByMetric } from 'grafana-datasource-kit';
 
 import * as _ from 'lodash';
 
+const SECONDS_IN_MINUTE = 60;
 
 type TaskResult = any;
 type DetectionResult = any;
@@ -88,6 +89,37 @@ async function runTask(task: AnalyticsTask): Promise<TaskResult> {
   });
 }
 
+async function query(analyticUnit: AnalyticUnit.AnalyticUnit, detector: AnalyticUnit.DetectorType) {
+  let range;
+  if(detector === AnalyticUnit.DetectorType.PATTERN) {
+    const segments = await Segment.findMany(analyticUnit.id, { labeled: true });
+    if(segments.length === 0) {
+      throw new Error('Need at least 1 labeled segment');
+    }
+
+    range = getQueryRangeForLearningBySegments(segments);
+  } else if(detector === AnalyticUnit.DetectorType.THRESHOLD) {
+    const now = Date.now();
+    range = {
+      from: now - 5 * SECONDS_IN_MINUTE,
+      to: now
+    };
+  }
+  console.debug(`query time range: from ${new Date(range.from)} to ${new Date(range.to)}`);
+  const queryResult = await queryByMetric(
+    analyticUnit.metric,
+    analyticUnit.panelUrl,
+    range.from,
+    range.to,
+    HASTIC_API_KEY
+  );
+  const data = queryResult.values;
+  if(data.length === 0) {
+    throw new Error('Empty data to detect on');
+  }
+  return data;
+}
+
 /**
  * Finds range for selecting subset for learning
  * @param segments labeled segments
@@ -116,21 +148,6 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
       throw new Error('Can`t start learning when it`s already started [' + id + ']');
     }
 
-    let segments = await Segment.findMany(id, { labeled: true });
-    if(segments.length === 0) {
-      throw new Error('Need at least 1 labeled segment');
-    }
-
-    let segmentObjs = segments.map(s => s.toObject());
-
-    let { from, to } = getQueryRangeForLearningBySegments(segments);
-    console.debug(`query time range: from ${new Date(from)} to ${new Date(to)}`);
-    let queryResult = await queryByMetric(analyticUnit.metric, analyticUnit.panelUrl, from, to, HASTIC_API_KEY);
-    let data = queryResult.values;
-    if(data.length === 0) {
-      throw new Error('Empty data to learn on');
-    }
-
     let oldCache = await AnalyticUnitCache.findById(id);
     if(oldCache !== null) {
       oldCache = oldCache.data;
@@ -140,9 +157,16 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
 
     let analyticUnitType = analyticUnit.type;
     let detector = AnalyticUnit.getDetectorByType(analyticUnitType);
-    let taskPayload: any = { detector, analyticUnitType, data, cache: oldCache };
+    let taskPayload: any = { detector, analyticUnitType, cache: oldCache };
 
     if(detector === AnalyticUnit.DetectorType.PATTERN) {
+      let segments = await Segment.findMany(id, { labeled: true });
+      if(segments.length === 0) {
+        throw new Error('Need at least 1 labeled segment');
+      }
+
+      let segmentObjs = segments.map(s => s.toObject());
+
       let deletedSegments = await Segment.findMany(id, { deleted: true });
       let deletedSegmentsObjs = deletedSegments.map(s => s.toObject());
       segmentObjs = _.concat(segmentObjs, deletedSegmentsObjs);
@@ -151,6 +175,8 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
       const threshold = await Threshold.findOne(id);
       taskPayload.threshold = threshold;
     }
+
+    taskPayload.data = await query(analyticUnit, detector);
 
     let task = new AnalyticsTask(
       id, AnalyticsTaskType.LEARN, taskPayload
@@ -178,18 +204,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId) {
     let analyticUnitType = unit.type;
     let detector = AnalyticUnit.getDetectorByType(analyticUnitType);
 
-    let segments = await Segment.findMany(id, { labeled: true });
-    if(segments.length === 0) {
-      throw new Error('Need at least 1 labeled segment');
-    }
-
-    let { from, to } = getQueryRangeForLearningBySegments(segments);
-    console.debug(`query time range: from ${new Date(from)} to ${new Date(to)}`);
-    let queryResult = await queryByMetric(unit.metric, unit.panelUrl, from, to, HASTIC_API_KEY);
-    let data = queryResult.values;
-    if(data.length === 0) {
-      throw new Error('Empty data to detect on');
-    }
+    const data = query(unit, detector);
 
     let oldCache = await AnalyticUnitCache.findById(id);
     if(oldCache !== null) {
