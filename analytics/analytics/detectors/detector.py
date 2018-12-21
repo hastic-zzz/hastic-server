@@ -1,7 +1,7 @@
 from models import ModelCache
 from abc import ABC, abstractmethod
 from pandas import DataFrame
-from typing import Optional
+from typing import Optional, Union
 
 
 class Detector(ABC):
