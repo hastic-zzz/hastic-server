@@ -1,6 +1,7 @@
 import { router as analyticUnitsRouter } from './routes/analytic_units_router';
 import { router as segmentsRouter } from './routes/segments_router';
 import { router as panelRouter } from './routes/panel_router';
+import { router as thresholdRouter } from './routes/threshold_router';
 
 import * as AnalyticsController from './controllers/analytics_controller';
 
@@ -38,6 +39,7 @@ var rootRouter = new Router();
 rootRouter.use('/analyticUnits', analyticUnitsRouter.routes(), analyticUnitsRouter.allowedMethods());
 rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
 rootRouter.use('/panel', panelRouter.routes(), panelRouter.allowedMethods());
+rootRouter.use('/threshold', thresholdRouter.routes(), thresholdRouter.allowedMethods());
 
 rootRouter.get('/', async (ctx) => {
   ctx.response.body = {

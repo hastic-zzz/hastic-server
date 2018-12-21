@@ -58,7 +58,7 @@ export async function findOne(id: AnalyticUnitId): Promise<Threshold | null> {
   return Threshold.fromObject(threshold);
 }
 
-export async function setThreshold(id: AnalyticUnitId, value: number, condition: Condition) {
+export async function updateThreshold(id: AnalyticUnitId, value: number, condition: Condition) {
   if(findOne(id) === null) {
     return db.insertOne({ id, value, condition });
   }
