@@ -38,6 +38,11 @@ export const ANALYTIC_UNIT_TYPES = {
   ]
 };
 
+export enum DetectorType {
+  PATTERN = 'pattern',
+  THRESHOLD = 'threshold'
+};
+
 export type AnalyticUnitId = string;
 export enum AnalyticUnitStatus {
   READY = 'READY',
@@ -169,7 +174,7 @@ export async function setAlert(id: AnalyticUnitId, alert: boolean) {
   return db.updateOne(id, { alert });
 }
 
-export function getDetectorByType(analyticUnitType: string) {
+export function getDetectorByType(analyticUnitType: string): DetectorType {
   let detector;
   _.forOwn(ANALYTIC_UNIT_TYPES, (types, detectorType) => {
     if(_.find(types, { value: analyticUnitType }) !== undefined) {

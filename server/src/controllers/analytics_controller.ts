@@ -2,6 +2,7 @@ import { AnalyticsMessageMethod, AnalyticsMessage } from '../models/analytics_me
 import { AnalyticsTask, AnalyticsTaskType, AnalyticsTaskId } from '../models/analytics_task_model';
 import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import * as Segment from '../models/segment_model';
+import * as Threshold from '../models/threshold_model';
 import * as AnalyticUnit from '../models/analytic_unit_model';
 import { AnalyticsService } from '../services/analytics_service';
 import { sendWebhook } from '../services/notification_service';
@@ -112,7 +113,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
 
     let analyticUnit = await AnalyticUnit.findById(id);
     if(analyticUnit.status === AnalyticUnit.AnalyticUnitStatus.LEARNING) {
-      throw new Error('Can`t starn learning when it`s already started [' + id + ']');
+      throw new Error('Can`t start learning when it`s already started [' + id + ']');
     }
 
     let segments = await Segment.findMany(id, { labeled: true });
@@ -130,8 +131,6 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
       throw new Error('Empty data to learn on');
     }
 
-    let analyticUnitType = analyticUnit.type;
-    let detector = AnalyticUnit.getDetectorByType(analyticUnitType);
     let oldCache = await AnalyticUnitCache.findById(id);
     if(oldCache !== null) {
       oldCache = oldCache.data;
@@ -139,12 +138,22 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
       await AnalyticUnitCache.create(id);
     }
 
-    let deletedSegments = await Segment.findMany(id, { deleted: true });
-    let deletedSegmentsObjs = deletedSegments.map(s => s.toObject());
-    segmentObjs = _.concat(segmentObjs, deletedSegmentsObjs);
+    let analyticUnitType = analyticUnit.type;
+    let detector = AnalyticUnit.getDetectorByType(analyticUnitType);
+    let taskPayload: any = { detector, analyticUnitType, data, cache: oldCache };
+
+    if(detector === AnalyticUnit.DetectorType.PATTERN) {
+      let deletedSegments = await Segment.findMany(id, { deleted: true });
+      let deletedSegmentsObjs = deletedSegments.map(s => s.toObject());
+      segmentObjs = _.concat(segmentObjs, deletedSegmentsObjs);
+      taskPayload.segments = segmentObjs;
+    } else if(detector === AnalyticUnit.DetectorType.THRESHOLD) {
+      const threshold = await Threshold.findOne(id);
+      taskPayload.threshold = threshold;
+    }
 
     let task = new AnalyticsTask(
-      id, AnalyticsTaskType.LEARN, { detector, analyticUnitType, segments: segmentObjs, data, cache: oldCache }
+      id, AnalyticsTaskType.LEARN, taskPayload
     );
     AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
     console.debug(`run task, id:${id}`);
@@ -217,7 +226,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId) {
     await Promise.all([
       Segment.insertSegments(payload.segments),
       AnalyticUnitCache.setData(id, payload.cache),
-      AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime),      
+      AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime),
     ]);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
   } catch(err) {
@@ -247,7 +256,7 @@ export async function deleteNonDetectedSegments(id, payload) {
   Segment.removeSegments(segmentsToRemove.map(s => s.id));
 }
 
-async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitId, detectionResult: DetectionResult): 
+async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitId, detectionResult: DetectionResult):
   Promise<{
     lastDetectionTime: number,
     segments: Segment.Segment[],
@@ -266,18 +275,16 @@ async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitI
     segment => new Segment.Segment(analyticUnitId, segment.from, segment.to, false, false)
   );
   const analyticUnit = await AnalyticUnit.findById(analyticUnitId);
-  if(analyticUnit.alert) {
-    if(!_.isEmpty(segments)) {
-      try {
-        sendWebhook(analyticUnit.name, _.last(segments));
-      } catch(err) {
-        console.error(`Error while sending webhook: ${err.message}`);
-      }
+  if (!_.isEmpty(segments) && analyticUnit.alert) {
+    try {
+      sendWebhook(analyticUnit.name, _.last(segments));
+    } catch(err) {
+      console.error(`Error while sending webhook: ${err.message}`);
     }
   }
   return {
     lastDetectionTime: detectionResult.lastDetectionTime,
-    segments: segments,
+    segments,
     cache: detectionResult.cache
   };
 
@@ -321,8 +328,23 @@ export async function updateSegments(
   ]);
   removed = removed.map(s => s._id);
 
+  runFirstLearning(id);
+  return { addedIds, removed };
+}
+
+export async function updateThreshold(
+  id: AnalyticUnit.AnalyticUnitId,
+  value: number,
+  condition: Threshold.Condition
+) {
+  await Threshold.updateThreshold(id, value, condition);
+
+  runFirstLearning(id);
+}
+
+async function runFirstLearning(id: AnalyticUnit.AnalyticUnitId) {
   // TODO: move setting status somehow "inside" learning
   await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.PENDING);
-  runLearning(id).then(() => runDetect(id));
-  return { addedIds, removed };
+  runLearning(id)
+    .then(() => runDetect(id));
 }

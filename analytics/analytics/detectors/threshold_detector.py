@@ -15,7 +15,7 @@ class ThresholdDetector(Detector):
     def __init__(self):
         pass
 
-    def train(self, dataframe: pd.DataFrame, segments: list, cache: Optional[ModelCache]) -> ModelCache:
+    def train(self, dataframe: pd.DataFrame, threshold: dict, cache: Optional[ModelCache]) -> ModelCache:
         pass
 
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
