@@ -15,6 +15,7 @@ export const ANALYTIC_UNITS_DATABASE_PATH = path.join(DATA_PATH, 'analytic_units
 export const SEGMENTS_DATABASE_PATH = path.join(DATA_PATH, 'segments.db');
 export const ANALYTIC_UNIT_CACHES_DATABASE_PATH = path.join(DATA_PATH, 'analytic_unit_caches.db');
 export const PANELS_DATABASE_PATH = path.join(DATA_PATH, 'panels.db');
+export const THRESHOLD_DATABASE_PATH = path.join(DATA_PATH, 'treshold.db');
 
 
 export const HASTIC_PORT = getConfigField('HASTIC_PORT', '8000');
