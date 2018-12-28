@@ -101,7 +101,7 @@ async function query(analyticUnit: AnalyticUnit.AnalyticUnit, detector: Analytic
   } else if(detector === AnalyticUnit.DetectorType.THRESHOLD) {
     const now = Date.now();
     range = {
-      from: now - 5 * SECONDS_IN_MINUTE,
+      from: now - 5 * SECONDS_IN_MINUTE * 1000,
       to: now
     };
   }
