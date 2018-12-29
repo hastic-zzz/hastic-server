@@ -100,6 +100,13 @@ class TestDataset(unittest.TestCase):
             model.fit(dataframe, segments, dict())
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
+    
+    def test_prepare_data_for_nan(self):
+        data_val = [np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,  np.NaN, np.NaN]
+        data_ind = [1523889000000 + i for i in range(len(data))]
+        data = {data_val, data_ind}
+        result = create_dataframe(data_val)
+        self.assertEqual(prepare_data(data), result)
 
 if __name__ == '__main__':
     unittest.main()
