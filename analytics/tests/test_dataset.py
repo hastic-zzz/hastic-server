@@ -1,5 +1,6 @@
 import unittest
 import pandas as pd
+import numpy as np 
 from analytic_unit_manager import prepare_data
 import models
 
@@ -103,10 +104,10 @@ class TestDataset(unittest.TestCase):
     
     def test_prepare_data_for_nan(self):
         data_val = [np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,  np.NaN, np.NaN]
-        data_ind = [1523889000000 + i for i in range(len(data))]
-        data = {data_val, data_ind}
-        result = create_dataframe(data_val)
-        self.assertEqual(prepare_data(data), result)
+        #data_ind = [1523889000000 + i for i in range(len(data_val))]
+        #data = {'value': data_val, 'index': data_ind}
+        data_val = create_dataframe(data_val)
+        self.assertEqual(prepare_data(data_val), data_val)
 
 if __name__ == '__main__':
     unittest.main()
