@@ -94,11 +94,13 @@ export class DataPuller {
       if(cache !== null) {
         cache = cache.data
       }
+      const detector = AnalyticUnit.getDetectorByType(analyticUnit.type);
       let payload = {
         data: payloadValues,
         from: time,
         to: now,
-        pattern: analyticUnit.type,
+        analyticUnitType: analyticUnit.type,
+        detector,
         cache
       };
       this._unitTimes[analyticUnit.id] = now;

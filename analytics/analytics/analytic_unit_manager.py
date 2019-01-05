@@ -74,7 +74,9 @@ class AnalyticUnitManager:
         worker = self.__ensure_worker(analytic_unit_id, payload['detector'], payload['analyticUnitType'])
         data = prepare_data(payload['data'])
         if task['type'] == 'PUSH':
-            return await worker.recieve_data(data, payload['cache'])
+            # TODO: do it a better way
+            res = await worker.recieve_data(data, payload['cache'])
+            return res.update({ 'analyticUnitId': analytic_unit_id })
         elif task['type'] == 'LEARN':
             if 'segments' in payload:
                 return await worker.do_train(payload['segments'], data, payload['cache'])
