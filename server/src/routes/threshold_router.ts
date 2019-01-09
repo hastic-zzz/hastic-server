@@ -9,8 +9,9 @@ import * as _ from 'lodash';
 
 async function getThresholds(ctx: Router.IRouterContext) {
   try {
-    const ids: AnalyticUnitId = ctx.request.query.ids;
-    if(ids === undefined || _.isEmpty(ids)) {
+    const ids: AnalyticUnitId[] = ctx.request.query.ids.split(',');
+
+    if(ids === undefined) {
       throw new Error('analyticUnitIds (ids) are missing');
     }
 

@@ -27,12 +27,15 @@ class ThresholdDetector(Detector):
         value = cache['value']
         condition = cache['condition']
 
-        last_entry = dataframe.iloc[-1]
+        dataframe_without_nans = dataframe.dropna()
+        if len(dataframe_without_nans) == 0:
+            return dict()
+        last_entry = dataframe_without_nans.iloc[-1]
         last_value = last_entry['value']
         # TODO: convert from nanoseconds to millisecond in a better way: not by dividing by 10^6
         last_time = last_entry['timestamp'].value / 1000000
 
-        segment = (last_time, last_time)
+        segment = ({ 'from': last_time, 'to': last_time })
         segments = []
         if condition == '>':
             if last_value > value:
@@ -57,4 +60,4 @@ class ThresholdDetector(Detector):
         }
 
     def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
-        return self.detect(self.bucket.data, cache)
+        return self.detect(data, cache)
