@@ -103,7 +103,8 @@ class TestDataset(unittest.TestCase):
             self.fail('Model {} raised unexpectedly'.format(model_name))
     
     def test_prepare_data_for_nan(self):
-        data_val = [np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,  np.NaN, np.NaN]
+        data_val = [[np.NaN, 1523889000000], [np.NaN, 1523889000001], [np.NaN, 1523889000002], [
+            np.NaN, 1523889000003], [np.NaN, 1523889000004],  [np.NaN, 1523889000005], [np.NaN, 1523889000006]]
         #data_ind = [1523889000000 + i for i in range(len(data_val))]
         #data = {'value': data_val, 'index': data_ind}
         data_val = create_dataframe(data_val)

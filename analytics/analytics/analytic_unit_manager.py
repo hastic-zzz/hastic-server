@@ -30,6 +30,7 @@ def prepare_data(data: list):
         - converts 'timestamp' column to pd.Datetime,
         - subtracts min value from dataset
     """
+    print(type(data))
     data = pd.DataFrame(data, columns=['timestamp', 'value'])
     
     data['timestamp'] = pd.to_datetime(data['timestamp'], unit='ms')
