@@ -30,11 +30,11 @@ def prepare_data(data: list):
         - converts 'timestamp' column to pd.Datetime,
         - subtracts min value from dataset
     """
-    print(type(data))
+    
     data = pd.DataFrame(data, columns=['timestamp', 'value'])
     
     data['timestamp'] = pd.to_datetime(data['timestamp'], unit='ms')
-    if not np.isnan(min(data['value'])):
+    if not np.isnan(data['value'].min()):
         data['value'] = data['value'] - min(data['value'])
 
     return data

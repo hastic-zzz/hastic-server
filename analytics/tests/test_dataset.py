@@ -102,13 +102,19 @@ class TestDataset(unittest.TestCase):
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
     
+    def test_prepare_data_for_nonetype(self):
+        data = [[1523889000000, None], [1523889000001, None], [1523889000002, None]]
+        try:
+            data = prepare_data(data)
+        except ValueError:
+            self.fail('Model {} raised unexpectedly'.format(model_name))  
+    
     def test_prepare_data_for_nan(self):
-        data_val = [[np.NaN, 1523889000000], [np.NaN, 1523889000001], [np.NaN, 1523889000002], [
-            np.NaN, 1523889000003], [np.NaN, 1523889000004],  [np.NaN, 1523889000005], [np.NaN, 1523889000006]]
-        #data_ind = [1523889000000 + i for i in range(len(data_val))]
-        #data = {'value': data_val, 'index': data_ind}
-        data_val = create_dataframe(data_val)
-        self.assertEqual(prepare_data(data_val), data_val)
+        data = [[1523889000000, np.NaN], [1523889000001, np.NaN], [1523889000002, np.NaN]]
+        try:
+            data = prepare_data(data)
+        except ValueError:
+            self.fail('Model {} raised unexpectedly'.format(model_name))
 
 if __name__ == '__main__':
     unittest.main()
