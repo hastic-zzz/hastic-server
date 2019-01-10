@@ -1,5 +1,6 @@
 import unittest
 import pandas as pd
+import numpy as np 
 from analytic_unit_manager import prepare_data
 import models
 
@@ -98,6 +99,20 @@ class TestDataset(unittest.TestCase):
             model = models.JumpModel()
             model_name = model.__class__.__name__
             model.fit(dataframe, segments, dict())
+        except ValueError:
+            self.fail('Model {} raised unexpectedly'.format(model_name))
+    
+    def test_prepare_data_for_nonetype(self):
+        data = [[1523889000000, None], [1523889000001, None], [1523889000002, None]]
+        try:
+            data = prepare_data(data)
+        except ValueError:
+            self.fail('Model {} raised unexpectedly'.format(model_name))  
+    
+    def test_prepare_data_for_nan(self):
+        data = [[1523889000000, np.NaN], [1523889000001, np.NaN], [1523889000002, np.NaN]]
+        try:
+            data = prepare_data(data)
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
 

@@ -31,9 +31,8 @@ def prepare_data(data: list):
         - subtracts min value from dataset
     """
     data = pd.DataFrame(data, columns=['timestamp', 'value'])
-
     data['timestamp'] = pd.to_datetime(data['timestamp'], unit='ms')
-    if not np.isnan(min(data['value'])):
+    if not np.isnan(data['value'].min()):
         data['value'] = data['value'] - min(data['value'])
 
     return data
