@@ -115,6 +115,15 @@ class TestDataset(unittest.TestCase):
             data = prepare_data(data)
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
+    
+    def test_prepare_data_output_fon_nan(self):
+        data_nan = [[1523889000000, np.NaN], [1523889000001, np.NaN], [1523889000002, np.NaN]]
+        data_none = [[1523889000000, None], [1523889000001, None], [1523889000002, None]]
+        return_data_nan = prepare_data(data_nan)
+        return_data_none = prepare_data(data_none)
+        for i in range(len(return_data_nan)):
+            self.assertTrue(np.isnan(return_data_nan.value[i]))
+            self.assertTrue(np.isnan(return_data_none.value[i]))
 
 if __name__ == '__main__':
     unittest.main()
