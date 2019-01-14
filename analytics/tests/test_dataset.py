@@ -121,10 +121,10 @@ class TestDataset(unittest.TestCase):
         data_none = [[1523889000000, None], [1523889000001, None], [1523889000002, None]]
         return_data_nan = prepare_data(data_nan)
         return_data_none = prepare_data(data_none)
-        for item in return_data_nan:
-            self.assertTrue(np.isnan(item.value))
-        for item in return_data_none:
-            self.assertTrue(np.isnan(item.value))
+        for item in return_data_nan.value:
+            self.assertTrue(np.isnan(item))
+        for item in return_data_none.value:
+            self.assertTrue(np.isnan(item))
 
 if __name__ == '__main__':
     unittest.main()

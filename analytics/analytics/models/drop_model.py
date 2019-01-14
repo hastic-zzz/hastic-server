@@ -28,6 +28,7 @@ class DropModel(Model):
         }
 
     def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
+        data = utils.cut_dataframe(dataframe)
         data = dataframe['value']
         confidences = []
         convolve_list = []
@@ -101,6 +102,7 @@ class DropModel(Model):
             self.state['conv_del_max'] = self.state['WINDOW_SIZE']
 
     def do_detect(self, dataframe: pd.DataFrame) -> list:
+        data = utils.cut_dataframe(dataframe)
         data = dataframe['value']
         possible_drops = utils.find_drop(data, self.state['DROP_HEIGHT'], self.state['DROP_LENGTH'] + 1)
 

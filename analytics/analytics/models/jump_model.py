@@ -29,6 +29,7 @@ class JumpModel(Model):
         }
 
     def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
+        data = utils.cut_dataframe(dataframe)
         data = dataframe['value']
         confidences = []
         convolve_list = []
@@ -102,6 +103,7 @@ class JumpModel(Model):
             self.state['conv_del_max'] = self.state['WINDOW_SIZE']
 
     def do_detect(self, dataframe: pd.DataFrame) -> list:
+        data = utils.cut_dataframe(dataframe)
         data = dataframe['value']
         possible_jumps = utils.find_jump(data, self.state['JUMP_HEIGHT'], self.state['JUMP_LENGTH'] + 1)
 

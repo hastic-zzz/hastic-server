@@ -28,6 +28,7 @@ class PeakModel(Model):
         }
 
     def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
+        data = utils.cut_dataframe(dataframe)
         data = dataframe['value']
         confidences = []
         convolve_list = []
@@ -87,6 +88,7 @@ class PeakModel(Model):
             self.state['conv_del_max'] = self.state['WINDOW_SIZE']
 
     def do_detect(self, dataframe: pd.DataFrame):
+        data = utils.cut_dataframe(dataframe)
         data = dataframe['value']
         window_size = int(len(data)/SMOOTHING_COEFF) #test ws on flat data
         all_maxs = argrelextrema(np.array(data), np.greater)[0]
