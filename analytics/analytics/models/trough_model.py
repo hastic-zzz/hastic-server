@@ -28,7 +28,8 @@ class TroughModel(Model):
         }
 
     def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
-        data = dataframe['value']
+        data = utils.cut_dataframe(dataframe)
+        data = data['value']
         confidences = []
         convolve_list = []
         patterns_list = []
@@ -88,7 +89,8 @@ class TroughModel(Model):
             self.state['conv_del_max'] = self.state['WINDOW_SIZE']
 
     def do_detect(self, dataframe: pd.DataFrame):
-        data = dataframe['value']
+        data = utils.cut_dataframe(dataframe)
+        data = data['value']
         window_size = int(len(data)/SMOOTHING_COEFF) #test ws on flat data
         all_mins = argrelextrema(np.array(data), np.less)[0]
 

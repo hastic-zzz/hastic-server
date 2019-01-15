@@ -273,4 +273,8 @@ def pattern_intersection(segment_data: list, median: float, pattern_type: str) -
 
     return [x for (idx, x) in enumerate(center_index) if idx not in delete_index]
 
-    
+def cut_dataframe(data: pd.DataFrame) -> pd.DataFrame:
+    data_min = data['value'].min()
+    if not np.isnan(data_min) and data_min > 0:
+        data['value'] = data['value'] - data_min
+    return data

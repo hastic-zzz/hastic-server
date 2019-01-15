@@ -28,7 +28,8 @@ class GeneralModel(Model):
         self.all_conv = []
 
     def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
-        data = dataframe['value']
+        data = utils.cut_dataframe(dataframe)
+        data = data['value']
         convolve_list = []
         patterns_list = []
         for segment in segments:
@@ -79,7 +80,8 @@ class GeneralModel(Model):
             self.state['conv_del_max'] = self.state['WINDOW_SIZE']
 
     def do_detect(self, dataframe: pd.DataFrame) -> list:
-        data = dataframe['value']
+        data = utils.cut_dataframe(dataframe)
+        data = data['value']
         pat_data = self.model_gen
         y = max(pat_data)
 
