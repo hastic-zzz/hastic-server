@@ -6,7 +6,8 @@ import * as Threshold from '../models/threshold_model';
 import * as AnalyticUnit from '../models/analytic_unit_model';
 import { AnalyticsService } from '../services/analytics_service';
 import { sendWebhook } from '../services/notification_service';
-import { HASTIC_API_KEY } from '../config'
+import { HASTIC_API_KEY } from '../config';
+import { PANEL_URL } from '../config';
 import { DataPuller } from '../services/data_puller';
 
 import { queryByMetric } from 'grafana-datasource-kit';
@@ -106,9 +107,17 @@ async function query(analyticUnit: AnalyticUnit.AnalyticUnit, detector: Analytic
     };
   }
   console.debug(`query time range: from ${new Date(range.from)} to ${new Date(range.to)}`);
+
+  let panelUrl;
+  if(PANEL_URL !== null) {
+    panelUrl = PANEL_URL; 
+  } else {
+    panelUrl = analyticUnit.panelUrl;
+  }
+
   const queryResult = await queryByMetric(
     analyticUnit.metric,
-    analyticUnit.panelUrl,
+    panelUrl,
     range.from,
     range.to,
     HASTIC_API_KEY
