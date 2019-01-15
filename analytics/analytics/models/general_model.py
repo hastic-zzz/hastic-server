@@ -29,7 +29,7 @@ class GeneralModel(Model):
 
     def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
         data = utils.cut_dataframe(dataframe)
-        data = dataframe['value']
+        data = data['value']
         convolve_list = []
         patterns_list = []
         for segment in segments:
@@ -81,7 +81,7 @@ class GeneralModel(Model):
 
     def do_detect(self, dataframe: pd.DataFrame) -> list:
         data = utils.cut_dataframe(dataframe)
-        data = dataframe['value']
+        data = data['value']
         pat_data = self.model_gen
         y = max(pat_data)
 
