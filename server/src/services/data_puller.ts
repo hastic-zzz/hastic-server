@@ -2,8 +2,7 @@ import { AnalyticsTask, AnalyticsTaskType } from '../models/analytics_task_model
 import * as AnalyticUnit from '../models/analytic_unit_model';
 import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import { AnalyticsService } from './analytics_service';
-import { HASTIC_API_KEY } from '../config';
-import { PANEL_URL } from '../config';
+import { HASTIC_API_KEY, GRAFANA_URL } from '../config';
 
 import { queryByMetric } from 'grafana-datasource-kit';
 
@@ -38,12 +37,12 @@ export class DataPuller {
     }
 
     let panelUrl;
-    if(PANEL_URL !== null) {
-      panelUrl = PANEL_URL;
+    if(GRAFANA_URL !== null) {
+      panelUrl = GRAFANA_URL;
     } else {
       panelUrl = unit.panelUrl
     }
-    
+
     return queryByMetric(unit.metric, panelUrl, from, to, HASTIC_API_KEY);
     
   }
