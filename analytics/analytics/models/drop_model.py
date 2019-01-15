@@ -29,7 +29,7 @@ class DropModel(Model):
 
     def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
         data = utils.cut_dataframe(dataframe)
-        data = dataframe['value']
+        data = data['value']
         confidences = []
         convolve_list = []
         drop_height_list = []
@@ -103,7 +103,7 @@ class DropModel(Model):
 
     def do_detect(self, dataframe: pd.DataFrame) -> list:
         data = utils.cut_dataframe(dataframe)
-        data = dataframe['value']
+        data = data['value']
         possible_drops = utils.find_drop(data, self.state['DROP_HEIGHT'], self.state['DROP_LENGTH'] + 1)
 
         return self.__filter_detection(possible_drops, data)
