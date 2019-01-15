@@ -40,7 +40,7 @@ export class DataPuller {
     if(GRAFANA_URL !== null) {
       panelUrl = GRAFANA_URL;
     } else {
-      panelUrl = unit.panelUrl
+      panelUrl = unit.panelUrl;
     }
 
     return queryByMetric(unit.metric, panelUrl, from, to, HASTIC_API_KEY);
