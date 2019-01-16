@@ -130,7 +130,7 @@ async function updateMetric(ctx: Router.IRouterContext) {
     ctx.response.status = 500;
     ctx.response.body = {
       code: 500,
-      message: `PATCH /analyticUnits/datasource error: ${e.message}`
+      message: `PATCH /analyticUnits/metric error: ${e.message}`
     };
   }
 }
