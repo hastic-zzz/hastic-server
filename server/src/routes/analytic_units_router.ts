@@ -105,7 +105,37 @@ async function createUnit(ctx: Router.IRouterContext) {
   }
 }
 
-async function setAlert(ctx: Router.IRouterContext) {
+async function updateMetric(ctx: Router.IRouterContext) {
+  try {
+    const { analyticUnitId, metric, datasource } = ctx.request.body as {
+      analyticUnitId: AnalyticUnit.AnalyticUnitId, metric: any, datasource: any
+    };
+    if(analyticUnitId === undefined) {
+      throw new Error('Cannot update undefined id');
+    }
+    if(metric === undefined) {
+      throw new Error('Cannot set undefined metric');
+    }
+    if(datasource === undefined) {
+      throw new Error('Cannot set undefined datasource');
+    }
+
+    await AnalyticsController.setMetric(analyticUnitId, metric, datasource);
+
+    ctx.response.body = {
+      code: 200,
+      message: 'Success'
+    };
+  } catch (e) {
+    ctx.response.status = 500;
+    ctx.response.body = {
+      code: 500,
+      message: `PATCH /analyticUnits/metric error: ${e.message}`
+    };
+  }
+}
+
+async function updateAlert(ctx: Router.IRouterContext) {
   try {
     const { analyticUnitId, alert } = ctx.request.body as {
       analyticUnitId: AnalyticUnit.AnalyticUnitId, alert: boolean
@@ -160,6 +190,7 @@ router.get('/', getUnit);
 router.get('/units', getUnits);
 router.get('/status', getStatus);
 router.get('/types', getTypes);
-router.patch('/alert', setAlert);
+router.patch('/metric', updateMetric);
+router.patch('/alert', updateAlert);
 router.post('/', createUnit);
 router.delete('/', deleteUnit);
