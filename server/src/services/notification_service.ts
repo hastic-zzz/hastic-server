@@ -37,8 +37,7 @@ export async function sendWebhook(analyticUnitName: string, segment: Segment) {
   };
 
   try {
-    const response = await axios(options);
-    console.log(response);
+    await axios(options);
   } catch(err) {
     console.error(`Can't send alert to ${HASTIC_WEBHOOK_URL}. Error: ${err.message}`);
   }
