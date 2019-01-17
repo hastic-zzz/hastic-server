@@ -8,6 +8,8 @@ services:
     environment:
       HASTIC_API_KEY: ${HASTIC_API_KEY}
       ZMQ_CONNECTION_STRING: ${ZMQ_CONNECTION_STRING}
+      HASTIC_WEBHOOK_URL: ${HASTIC_WEBHOOK_URL}
+      HASTIC_WEBHOOK_TYPE: ${HASTIC_WEBHOOK_TYPE}
     ports:
       - 8000:8000
     volumes:
