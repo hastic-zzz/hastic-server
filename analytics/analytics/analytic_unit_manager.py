@@ -1,7 +1,8 @@
 from typing import Dict
 import pandas as pd
 import numpy as np
-import logging, traceback
+import logging as log
+import traceback
 from concurrent.futures import Executor, ThreadPoolExecutor
 
 import detectors
@@ -9,7 +10,7 @@ from analytic_unit_worker import AnalyticUnitWorker
 from models import ModelCache
 
 
-logger = logging.getLogger('AnalyticUnitManager')
+logger = log.getLogger('AnalyticUnitManager')
 WORKERS_EXECUTORS = 20
 
 AnalyticUnitId = str
@@ -73,7 +74,8 @@ class AnalyticUnitManager:
         if task['type'] == 'PUSH':
             # TODO: do it a better way
             res = await worker.recieve_data(data, payload['cache'])
-            return res.update({ 'analyticUnitId': analytic_unit_id })
+            res.update({ 'analyticUnitId': analytic_unit_id })
+            return res
         elif task['type'] == 'LEARN':
             if 'segments' in payload:
                 return await worker.do_train(payload['segments'], data, payload['cache'])
@@ -89,13 +91,13 @@ class AnalyticUnitManager:
     async def handle_analytic_task(self, task):
         try:
             result_payload = await self.__handle_analytic_task(task)
-            return {
+            result_message =  {
                 'status': 'SUCCESS',
                 'payload': result_payload
             }
+            return result_message
         except Exception as e:
             error_text = traceback.format_exc()
-            logger.error("handle_analytic_task exception: '%s'" % error_text)
             # TODO: move result to a class which renders to json for messaging to analytics
             return {
                 'status': 'FAILED',

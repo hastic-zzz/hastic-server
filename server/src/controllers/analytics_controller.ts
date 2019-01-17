@@ -302,8 +302,10 @@ async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitI
     try {
       sendWebhook(analyticUnit.name, _.last(segments));
     } catch(err) {
-      console.error(`Error while sending webhook: ${err.message}`);
+      console.error(`error while sending webhook: ${err.message}`);
     }
+  } else {
+    console.debug(`skip sending webhook for ${analyticUnitId}`);
   }
   return {
     lastDetectionTime: detectionResult.lastDetectionTime,
