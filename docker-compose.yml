@@ -12,10 +12,12 @@ services:
       - 8000:8000
     volumes:
       - data-volume:/var/www/data
+    restart: on-failure
 
   analytics:
     image: hastic/analytics:latest
     build: analytics
+    restart: on-failure
 
 volumes:
   data-volume:

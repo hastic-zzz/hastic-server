@@ -7,7 +7,6 @@ import { HASTIC_API_KEY, GRAFANA_URL } from '../config';
 import { queryByMetric } from 'grafana-datasource-kit';
 
 import * as _ from 'lodash';
-import { Condition } from '../models/threshold_model';
 
 
 type MetricDataChunk = { values: [number, number][], columns: string[] };
