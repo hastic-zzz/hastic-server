@@ -340,6 +340,11 @@ export async function setAlert(analyticUnitId: AnalyticUnit.AnalyticUnitId, aler
   }
 }
 
+export async function setMetric(analyticUnitId: AnalyticUnit.AnalyticUnitId, metric: any, datasource: any) {
+  metric.datasource = datasource;
+  AnalyticUnit.setMetric(analyticUnitId, metric);
+}
+
 export async function updateSegments(
   id: AnalyticUnit.AnalyticUnitId,
   segmentsToInsert: Segment.Segment[],
