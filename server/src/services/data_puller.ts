@@ -84,7 +84,7 @@ export class DataPuller {
   }
 
   private async _runAnalyticUnitPuller(analyticUnit: AnalyticUnit.AnalyticUnit) {
-    console.log(`run analytic unit puller for ${analyticUnit.id}`);
+    console.debug(`run data puller for analytic unit ${analyticUnit.id}`);
     // TODO: lastDetectionTime can be in ns
     const time = analyticUnit.lastDetectionTime + 1 || Date.now();
     this._unitTimes[analyticUnit.id] = time;
@@ -100,7 +100,6 @@ export class DataPuller {
       }
 
       if(data.values.length === 0) {
-        console.log(`empty data for ${analyticUnit.id}`);
         continue;
       }
 
@@ -120,7 +119,6 @@ export class DataPuller {
         cache
       };
       this._unitTimes[analyticUnit.id] = now;
-      console.log(`try push data for ${analyticUnit.id}`);
       this.pushData(analyticUnit, payload);
     }
   }
@@ -128,14 +126,17 @@ export class DataPuller {
   async * getDataGenerator(analyticUnit: AnalyticUnit.AnalyticUnit, duration: number):
     AsyncIterableIterator<MetricDataChunk> {
 
-    if(!this.analyticsService.ready) {
-      return {
-        columns: [],
-        values: []
-      }
-    }
-
     const getData = async () => {
+      if(!this.analyticsService.ready) {
+        console.debug(`data generator: analytic service not ready, return empty result while wait service`);
+        while(!this.analyticsService.ready) {
+          return {
+            columns: [],
+            values: []
+          };
+        }
+      }
+
       try {
         const time = this._unitTimes[analyticUnit.id]
         const now = Date.now();
