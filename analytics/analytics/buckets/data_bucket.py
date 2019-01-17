@@ -6,6 +6,7 @@ class DataBucket(object):
 
     def __init__(self):
         self.data = pd.DataFrame([], columns=['timestamp', 'value'])
+
     def receive_data(self, data: pd.DataFrame):
         self.data = self.data.append(data, ignore_index=True)
 

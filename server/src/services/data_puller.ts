@@ -43,7 +43,10 @@ export class DataPuller {
       panelUrl = unit.panelUrl;
     }
 
-    return queryByMetric(unit.metric, panelUrl, from, to, HASTIC_API_KEY);
+    let startTime = Date.now();
+    let data = queryByMetric(unit.metric, panelUrl, from, to, HASTIC_API_KEY);
+    console.log(`data puller: query took ${Date.now() - startTime}ms for unit id ${unit.id}`);
+    return data;
     
   }
 
@@ -55,6 +58,7 @@ export class DataPuller {
 
     try {
       this.analyticsService.sendTask(task);
+      console.log(`data puller successfuly pushed data for unit id: ${unit.id}`);
     } catch(e) {
       console.log(`data puller got error while push data ${e.message}`);
     }
@@ -70,15 +74,16 @@ export class DataPuller {
       this._runAnalyticUnitPuller(analyticUnit);
     });
 
-    console.log('Data puller started');
+    console.log('data puller started');
   }
 
   public stopPuller() {
     this._unitTimes = {};
-    console.log('Data puller stopped');
+    console.log('data puller stopped');
   }
 
   private async _runAnalyticUnitPuller(analyticUnit: AnalyticUnit.AnalyticUnit) {
+    console.debug(`run data puller for analytic unit ${analyticUnit.id}`);
     // TODO: lastDetectionTime can be in ns
     const time = analyticUnit.lastDetectionTime + 1 || Date.now();
     this._unitTimes[analyticUnit.id] = time;
@@ -89,6 +94,7 @@ export class DataPuller {
 
     for await (const data of dataGenerator) {
       if(!_.has(this._unitTimes, analyticUnit.id)) {
+        console.log(`data puller: ${analyticUnit.id} not in _unitTimes, break`);
         break;
       }
 
@@ -119,20 +125,21 @@ export class DataPuller {
   async * getDataGenerator(analyticUnit: AnalyticUnit.AnalyticUnit, duration: number):
     AsyncIterableIterator<MetricDataChunk> {
 
-    if(!this.analyticsService.ready) {
-      return {
-        columns: [],
-        values: []
-      }
-    }
-
     const getData = async () => {
+      if(!this.analyticsService.ready) {
+        console.debug(`data generator: analytic service not ready, return empty result while wait service`);
+        return {
+          columns: [],
+          values: []
+        };
+      }
+
       try {
         const time = this._unitTimes[analyticUnit.id]
         const now = Date.now();
         return await this.pullData(analyticUnit, time, now);
       } catch(err) {
-        throw new Error(`Error while pulling data: ${err.message}`);
+        throw new Error(`error while pulling data: ${err.message}`);
       }
     }
 
