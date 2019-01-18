@@ -1,8 +1,8 @@
+import { Segment } from '../models/segment_model';
 import { HASTIC_WEBHOOK_URL, HASTIC_WEBHOOK_TYPE, HASTIC_WEBHOOK_SECRET } from '../config';
 
 import axios from 'axios';
 import * as querystring from 'querystring';
-import { Segment } from '../models/segment_model';
 
 
 // TODO: send webhook with payload without dep to AnalyticUnit
