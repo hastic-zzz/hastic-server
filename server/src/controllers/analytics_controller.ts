@@ -5,7 +5,7 @@ import * as Segment from '../models/segment_model';
 import * as Threshold from '../models/threshold_model';
 import * as AnalyticUnit from '../models/analytic_unit_model';
 import { AnalyticsService } from '../services/analytics_service';
-import { sendWebhook } from '../services/notification_service';
+import { AlertService } from '../services/alert_service';
 import { HASTIC_API_KEY, GRAFANA_URL } from '../config';
 import { DataPuller } from '../services/data_puller';
 
@@ -23,6 +23,7 @@ export type TaskResolver = (taskResult: TaskResult) => void;
 const taskResolvers = new Map<AnalyticsTaskId, TaskResolver>();
 
 let analyticsService: AnalyticsService = undefined;
+let alertService: AlertService = undefined;
 let dataPuller: DataPuller;
 
 
@@ -74,12 +75,17 @@ async function onMessage(message: AnalyticsMessage) {
 
 export function init() {
   analyticsService = new AnalyticsService(onMessage);
+
+  alertService = new AlertService();
+  alertService.startAlerting();
+
   dataPuller = new DataPuller(analyticsService);
   dataPuller.runPuller();
 }
 
 export function terminate() {
   analyticsService.close();
+  alertService.stopAlerting();
 }
 
 async function runTask(task: AnalyticsTask): Promise<TaskResult> {
@@ -300,7 +306,7 @@ async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitI
   const analyticUnit = await AnalyticUnit.findById(analyticUnitId);
   if (!_.isEmpty(segments) && analyticUnit.alert) {
     try {
-      sendWebhook(analyticUnit.name, _.last(segments));
+      alertService.recieveAlert(analyticUnit, _.last(segments));
     } catch(err) {
       console.error(`error while sending webhook: ${err.message}`);
     }
@@ -336,8 +342,10 @@ export async function setAlert(analyticUnitId: AnalyticUnit.AnalyticUnitId, aler
     if(alert) {
       const analyticUnit = await AnalyticUnit.findById(analyticUnitId);
       dataPuller.addUnit(analyticUnit);
+      alertService.addAnalyticUnit(analyticUnit);
     } else {
       dataPuller.deleteUnit(analyticUnitId);
+      alertService.removeAnalyticUnit(analyticUnitId);
     }
   }
 }
