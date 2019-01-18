@@ -17,6 +17,7 @@ class ThresholdDetector(Detector):
         pass
 
     def train(self, dataframe: pd.DataFrame, threshold: dict, cache: Optional[ModelCache]) -> ModelCache:
+        log.debug('run train for threshold detector')
         return {
             'cache': {
                 'value': threshold['value'],
@@ -25,6 +26,7 @@ class ThresholdDetector(Detector):
         }
 
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
+        log.debug('run detect for threshold detector')
         value = cache['value']
         condition = cache['condition']
 
@@ -52,7 +54,7 @@ class ThresholdDetector(Detector):
         elif condition == '<':
             if last_value < value:
                 segments.append(segment)
-
+        log.debug('seg {}'.format(segments))
         return {
             'cache': cache,
             'segments': segments,
@@ -60,4 +62,5 @@ class ThresholdDetector(Detector):
         }
 
     def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
+        log.debug('threshhold recieve data')
         return self.detect(data, cache)

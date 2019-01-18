@@ -129,12 +129,10 @@ export class DataPuller {
     const getData = async () => {
       if(!this.analyticsService.ready) {
         console.debug(`data generator: analytic service not ready, return empty result while wait service`);
-        while(!this.analyticsService.ready) {
-          return {
-            columns: [],
-            values: []
-          };
-        }
+        return {
+          columns: [],
+          values: []
+        };
       }
 
       try {
