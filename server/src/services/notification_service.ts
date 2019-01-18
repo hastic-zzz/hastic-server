@@ -1,8 +1,9 @@
-import { Segment } from '../models/segment_model';
 import { HASTIC_WEBHOOK_URL, HASTIC_WEBHOOK_TYPE, HASTIC_WEBHOOK_SECRET } from '../config';
 
 import axios from 'axios';
 import * as querystring from 'querystring';
+import { Segment } from '../models/segment_model';
+import { Socket } from 'net';
 
 
 // TODO: send webhook with payload without dep to AnalyticUnit
@@ -13,7 +14,7 @@ export async function sendWebhook(analyticUnitName: string, segment: Segment) {
     to: segment.to 
   };
 
-  console.log(`Sending alert name:${alert.analyticUnitName} from:${new Date(alert.from)} to:${new Date(alert.to)}`);
+  console.log(`Sending alert name:${analyticUnitName} from:${new Date(segment.from)} to:${new Date(segment.to)}`);
 
   if(HASTIC_WEBHOOK_URL === null) {
     throw new Error(`Can't send alert, HASTIC_WEBHOOK_URL is undefined`);
