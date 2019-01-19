@@ -64,6 +64,7 @@ export type FindManyQuery = {
   error?: string
 };
 
+
 export class AnalyticUnit {
   constructor(
     public name: string,
@@ -74,8 +75,9 @@ export class AnalyticUnit {
     public id?: AnalyticUnitId,
     public lastDetectionTime?: number,
     public status?: AnalyticUnitStatus,
-    public error?: string,
+    public error?: string
   ) {
+
     if(name === undefined) {
       throw new Error(`Missing field "name"`);
     }
