@@ -40,24 +40,24 @@ root.addHandler(logging_handler)
 
 async def handle_task(task: object):
     try:
-
-        logger.info("Command is OK")
+        task_type = task['type']
+        logger.info("Got {} task with id {}, analyticUnitId {}".format(task_type, task['_id'], task['analyticUnitId']))
 
         task_result_payload = {
             '_id': task['_id'],
-            'task': task['type'],
+            'task': task_type,
             'analyticUnitId': task['analyticUnitId'],
             'status': "IN_PROGRESS"
         }
 
-        if not task['type'] == 'PUSH':
+        if not task_type == 'PUSH':
             message = services.server_service.ServerMessage('TASK_RESULT', task_result_payload)
             await server_service.send_message(message)
 
         res = await analytic_unit_manager.handle_analytic_task(task)
         res['_id'] = task['_id']
 
-        if not task['type'] == 'PUSH':
+        if not task_type == 'PUSH':
             message = services.server_service.ServerMessage('TASK_RESULT', res)
             await server_service.send_message(message)
 

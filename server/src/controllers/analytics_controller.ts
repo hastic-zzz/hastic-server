@@ -299,6 +299,7 @@ async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitI
       `Missing lastDetectionTime in result or it is corrupted: ${JSON.stringify(detectionResult)}`
     );
   }
+  console.debug(`got detection result with ${detectionResult.segments.length} segments`);
 
   const segments = detectionResult.segments.map(
     segment => new Segment.Segment(analyticUnitId, segment.from, segment.to, false, false)
@@ -311,7 +312,14 @@ async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitI
       console.error(`error while sending webhook: ${err.message}`);
     }
   } else {
-    console.debug(`skip sending webhook for ${analyticUnitId}`);
+    let reasons = [];
+    if(!analyticUnit.alert) {
+      reasons.push('alerting disabled');
+    }
+    if(_.isEmpty(segments)) {
+      reasons.push('segments empty');
+    }
+    console.debug(`skip sending webhook for ${analyticUnit.id}, ${reasons.join(', ')}`);
   }
   return {
     lastDetectionTime: detectionResult.lastDetectionTime,
