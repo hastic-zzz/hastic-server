@@ -40,8 +40,11 @@ class JumpModel(Model):
             if segment['labeled']:
                 segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
                 percent_of_nans = segment_data.isnull().sum() / len(segment_data)
-                if percent_of_nans > 0 or len(segment_data) == 0:
+                if percent_of_nans > 0.1 or len(segment_data) == 0:
                     continue
+                if percent_of_nans > 0:
+                    nan_list = utils.find_nan_indexes(segment_data)
+                    segment_data = utils.nan_to_zero(segment_data, nan_list)
                 confidence = utils.find_confidence(segment_data)
                 confidences.append(confidence)
                 segment_cent_index, jump_height, jump_length = utils.find_parameters(segment_data, segment_from_index, 'jump')

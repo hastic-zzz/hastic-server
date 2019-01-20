@@ -36,8 +36,11 @@ class GeneralModel(Model):
             if segment['labeled']:
                 segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
                 percent_of_nans = segment_data.isnull().sum() / len(segment_data)
-                if percent_of_nans > 0 or len(segment_data) == 0:
+                if percent_of_nans > 0.1 or len(segment_data) == 0:
                     continue
+                if percent_of_nans > 0:
+                    nan_list = utils.find_nan_indexes(segment_data)
+                    segment_data = utils.nan_to_zero(segment_data, nan_list)
                 center_ind = segment_from_index + math.ceil((segment_to_index - segment_from_index) / 2)
                 self.ipats.append(center_ind)
                 segment_data = utils.get_interval(data, center_ind, self.state['WINDOW_SIZE'])
