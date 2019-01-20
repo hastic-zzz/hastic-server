@@ -32,7 +32,8 @@ def resolve_model_by_pattern(pattern: str) -> models.Model:
 
 class PatternDetector(Detector):
 
-    def __init__(self, pattern_type):
+    def __init__(self, pattern_type, analytic_unit_id):
+        self.analytic_unit_id = analytic_unit_id
         self.pattern_type = pattern_type
         self.model = resolve_model_by_pattern(self.pattern_type)
         self.window_size = 150
@@ -78,5 +79,8 @@ class PatternDetector(Detector):
             excess_data = len(self.bucket.data) - self.window_size
             self.bucket.drop_data(excess_data)
             return res
+        else:
+            filling = len(self.bucket.data)*100 / self.window_size
+            logging.debug('bucket for {} {}% full'.format(self.analytic_unit_id, filling))
         
         return None

@@ -44,8 +44,14 @@ function onTaskResult(taskResult: TaskResult) {
   }
 }
 
-function onDetect(detectionResult: DetectionResult) {
-  processDetectionResult(detectionResult.analyticUnitId, detectionResult);
+async function onDetect(detectionResult: DetectionResult) {
+  let id = detectionResult.analyticUnitId;
+  let payload = await processDetectionResult(id, detectionResult);
+  await Promise.all([
+    Segment.insertSegments(payload.segments),
+    AnalyticUnitCache.setData(id, payload.cache),
+    AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime),
+  ]);
 }
 
 async function onMessage(message: AnalyticsMessage) {
@@ -58,7 +64,7 @@ async function onMessage(message: AnalyticsMessage) {
   }
 
   if(message.method === AnalyticsMessageMethod.DETECT) {
-    onDetect(message.payload.payload);
+    await onDetect(message.payload.payload);
     methodResolved = true;
   }
 
