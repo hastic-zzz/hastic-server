@@ -35,7 +35,7 @@ class PatternDetector(Detector):
     def __init__(self, pattern_type):
         self.pattern_type = pattern_type
         self.model = resolve_model_by_pattern(self.pattern_type)
-        self.window_size = 100
+        self.window_size = 150
         self.bucket = DataBucket()
         self.bucket_full_reported = False
 
