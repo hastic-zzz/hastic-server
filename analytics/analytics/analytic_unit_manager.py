@@ -16,7 +16,7 @@ WORKERS_EXECUTORS = 20
 AnalyticUnitId = str
 
 
-def get_detector_by_type(detector_type: str, analytic_unit_type: str, analytic_unit_id: str) -> detectors.Detector:
+def get_detector_by_type(detector_type: str, analytic_unit_type: str, analytic_unit_id: AnalyticUnitId) -> detectors.Detector:
     if detector_type == 'pattern':
         return detectors.PatternDetector(analytic_unit_type, analytic_unit_id)
     elif detector_type == 'threshold':

@@ -29,10 +29,10 @@ def resolve_model_by_pattern(pattern: str) -> models.Model:
         return models.CustomModel()
     raise ValueError('Unknown pattern "%s"' % pattern)
 
-
+AnalyticUnitId = str
 class PatternDetector(Detector):
 
-    def __init__(self, pattern_type, analytic_unit_id):
+    def __init__(self, pattern_type: str, analytic_unit_id: AnalyticUnitId):
         self.analytic_unit_id = analytic_unit_id
         self.pattern_type = pattern_type
         self.model = resolve_model_by_pattern(self.pattern_type)
@@ -66,8 +66,6 @@ class PatternDetector(Detector):
 
     def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
         self.bucket.receive_data(data.dropna())
-        #if cache != None:
-        #    self.window_size = cache['WINDOW_SIZE']
 
         if len(self.bucket.data) >= self.window_size and cache != None:
             if not self.bucket_full_reported:
