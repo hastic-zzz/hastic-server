@@ -47,7 +47,7 @@ class PatternDetector(Detector):
         }
 
     def detect(self, dataframe: pd.DataFrame, cache: Optional[models.ModelCache]) -> dict:
-        logging.debug('got {} data points for detection'.format(len(dataframe)))
+        logger.debug('Unit {} got {} data points for detection'.format(self.analytic_unit_id, len(dataframe)))
         # TODO: split and sleep (https://github.com/hastic/hastic-server/pull/124#discussion_r214085643)
         detected = self.model.detect(dataframe, cache)
 
