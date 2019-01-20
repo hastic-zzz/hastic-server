@@ -71,7 +71,7 @@ class PatternDetector(Detector):
 
         if len(self.bucket.data) >= self.window_size and cache != None:
             if not self.bucket_full_reported:
-                logging.debug('bucket full, run detect')
+                logging.debug('{} unit`s bucket full, run detect'.format(self.analytic_unit_id))
                 self.bucket_full_reported = True
 
             res = self.detect(self.bucket.data, cache)
