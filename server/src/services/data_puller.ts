@@ -58,7 +58,7 @@ export class DataPuller {
 
     try {
       this.analyticsService.sendTask(task);
-      console.log(`data puller successfuly pushed data for unit id: ${unit.id}`);
+      console.log(`data puller successfuly pushed ${data.data.length} points for unit id: ${unit.id}`);
     } catch(e) {
       console.log(`data puller got error while push data ${e.message}`);
     }
