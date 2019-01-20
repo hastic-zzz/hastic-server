@@ -16,9 +16,9 @@ WORKERS_EXECUTORS = 20
 AnalyticUnitId = str
 
 
-def get_detector_by_type(detector_type: str, analytic_unit_type: str) -> detectors.Detector:
+def get_detector_by_type(detector_type: str, analytic_unit_type: str, analytic_unit_id: str) -> detectors.Detector:
     if detector_type == 'pattern':
-        return detectors.PatternDetector(analytic_unit_type)
+        return detectors.PatternDetector(analytic_unit_type, analytic_unit_id)
     elif detector_type == 'threshold':
         return detectors.ThresholdDetector()
 
@@ -52,7 +52,7 @@ class AnalyticUnitManager:
         if analytic_unit_id in self.analytic_workers:
             # TODO: check that type is the same
             return self.analytic_workers[analytic_unit_id]
-        detector = get_detector_by_type(detector_type, analytic_unit_type)
+        detector = get_detector_by_type(detector_type, analytic_unit_type, analytic_unit_id)
         worker = AnalyticUnitWorker(analytic_unit_id, detector, self.workers_executor)
         self.analytic_workers[analytic_unit_id] = worker
         return worker
