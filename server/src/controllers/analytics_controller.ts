@@ -168,6 +168,10 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
       throw new Error('Can`t start learning when it`s already started [' + id + ']');
     }
 
+    if(!isAnalyticReady()) {
+      throw new Error('Analytics is not ready');
+    }
+
     let oldCache = await AnalyticUnitCache.findById(id);
     if(oldCache !== null) {
       oldCache = oldCache.data;
@@ -205,7 +209,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
     console.debug(`run task, id:${id}`);
     let result = await runTask(task);
     if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
-      throw new Error(result.error)
+      throw new Error(result.error);
     }
     await AnalyticUnitCache.setData(id, result.payload.cache);
   } catch (err) {
@@ -219,6 +223,10 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId) {
   let previousLastDetectionTime: number = undefined;
 
   try {
+    if(!isAnalyticReady()) {
+      throw new Error('Analytics is not ready');
+    }
+
     let unit = await AnalyticUnit.findById(id);
     previousLastDetectionTime = unit.lastDetectionTime;
     let analyticUnitType = unit.type;
@@ -240,21 +248,10 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId) {
     console.debug(`run task, id:${id}`);
     let result = await runTask(task);
     if(result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
-      return [];
+      throw new Error(result.error);
     }
 
     let payload = await processDetectionResult(id, result.payload);
-
-    // TODO: implement segments merging without removing labeled
-    // if(segments.length > 0 && payload.segments.length > 0) {
-    //   let lastOldSegment = segments[segments.length - 1];
-    //   let firstNewSegment = payload.segments[0];
-
-    //   if(firstNewSegment.from <= lastOldSegment.to) {
-    //     payload.segments[0].from = lastOldSegment.from;
-    //     Segment.removeSegments([lastOldSegment.id])
-    //   }
-    // }
 
     await deleteNonDetectedSegments(id, payload);
 
