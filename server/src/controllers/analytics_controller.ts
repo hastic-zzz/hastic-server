@@ -307,23 +307,14 @@ async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitI
   }
   console.debug(`got detection result for ${analyticUnitId} with ${detectionResult.segments.length} segments`);
 
-  let sortedSegments: {from, to}[] = detectionResult.segments;
-  sortedSegments = sortedSegments.sort((a, b) => {
-    if(a.from > b.from) {
-      return 1;
-    }
-    if(a.from < b.from) {
-      return -1;
-    }
-    return 0;
-  });
+  const sortedSegments: {from, to}[] = _.sortBy(detectionResult.segments, 'from');
   const segments = sortedSegments.map(
     segment => new Segment.Segment(analyticUnitId, segment.from, segment.to, false, false)
   );
   const analyticUnit = await AnalyticUnit.findById(analyticUnitId);
   if (!_.isEmpty(segments) && analyticUnit.alert) {
     try {
-      alertService.recieveAlert(analyticUnit, _.last(segments));
+      alertService.receiveAlert(analyticUnit, _.last(segments));
     } catch(err) {
       console.error(`error while sending webhook: ${err.message}`);
     }
