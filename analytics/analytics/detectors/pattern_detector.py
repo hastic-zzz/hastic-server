@@ -71,7 +71,6 @@ class PatternDetector(Detector):
 
         if len(self.bucket.data) >= self.window_size and cache != None:
             res = self.detect(self.bucket.data, cache)
-
             excess_data = len(self.bucket.data) - self.max_window_size
             self.bucket.drop_data(excess_data)
             return res
