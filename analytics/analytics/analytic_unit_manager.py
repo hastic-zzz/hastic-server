@@ -102,5 +102,5 @@ class AnalyticUnitManager:
             # TODO: move result to a class which renders to json for messaging to analytics
             return {
                 'status': 'FAILED',
-                'error': str(e)
+                'error': repr(e)
             }
