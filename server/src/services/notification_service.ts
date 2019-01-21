@@ -13,7 +13,9 @@ export async function sendWebhook(analyticUnitName: string, segment: Segment) {
     to: segment.to 
   };
 
-  console.log(`Sending alert name:${alert.analyticUnitName} from:${new Date(alert.from)} to:${new Date(alert.to)}`);
+  const fromTime = new Date(alert.from).toLocaleTimeString();
+  const toTime = new Date(alert.to).toLocaleTimeString();
+  console.log(`Sending alert unit:${alert.analyticUnitName} from: ${fromTime} to: ${toTime}`);
 
   if(HASTIC_WEBHOOK_URL === null) {
     throw new Error(`Can't send alert, HASTIC_WEBHOOK_URL is undefined`);

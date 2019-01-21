@@ -305,15 +305,16 @@ async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitI
       `Missing lastDetectionTime in result or it is corrupted: ${JSON.stringify(detectionResult)}`
     );
   }
-  console.debug(`got detection result with ${detectionResult.segments.length} segments`);
+  console.debug(`got detection result for ${analyticUnitId} with ${detectionResult.segments.length} segments`);
 
-  const segments = detectionResult.segments.map(
+  const sortedSegments: {from, to}[] = _.sortBy(detectionResult.segments, 'from');
+  const segments = sortedSegments.map(
     segment => new Segment.Segment(analyticUnitId, segment.from, segment.to, false, false)
   );
   const analyticUnit = await AnalyticUnit.findById(analyticUnitId);
   if (!_.isEmpty(segments) && analyticUnit.alert) {
     try {
-      alertService.recieveAlert(analyticUnit, _.last(segments));
+      alertService.receiveAlert(analyticUnit, _.last(segments));
     } catch(err) {
       console.error(`error while sending webhook: ${err.message}`);
     }

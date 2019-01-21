@@ -6,36 +6,52 @@ import { Segment } from '../models/segment_model';
 
 
 export class Alert {
-  constructor(protected analyticUnit: AnalyticUnit.AnalyticUnit, protected sender) {};
-  public recieve(segment: Segment) {
-    this.sender(this.analyticUnit, segment);
+  public enabled = true;
+  constructor(protected analyticUnit: AnalyticUnit.AnalyticUnit) {};
+  public receive(segment: Segment) {
+    if(this.enabled) {
+      sendWebhook(this.analyticUnit.name, segment);
+    }
   };
-  public update(now: number) {};
 }
 
-class PatternAlert extends Alert {};
+class PatternAlert extends Alert {
+
+  private lastSentSegment: Segment;
+
+  public receive(segment: Segment) {
+    if(this.lastSentSegment === undefined || !segment.equals(this.lastSentSegment) ) {
+      this.lastSentSegment = segment;
+      if(this.enabled) {
+        sendWebhook(this.analyticUnit.name, segment);
+      }
+    }
+  }
+};
 
 
 class ThresholdAlert extends Alert {
   EXPIRE_PERIOD_MS = 60000;
   lastOccurence = 0;
 
-  public recieve(segment: Segment) {
+  public receive(segment: Segment) {
     if(this.lastOccurence === 0) {
       this.lastOccurence = segment.from;
-      this.sender(this.analyticUnit, segment);
+      if(this.enabled) {
+        sendWebhook(this.analyticUnit.name, segment);
+      }
     } else {
 
       if(segment.from - this.lastOccurence > this.EXPIRE_PERIOD_MS) {
-        console.debug(`difference detween threshold occurences ${segment.from - this.lastOccurence}, send alert`);
-        this.sender(this.analyticUnit, segment);
+        if(this.enabled) {
+          console.debug(`time between threshold occurences ${segment.from - this.lastOccurence}ms, send alert`);
+          sendWebhook(this.analyticUnit.name, segment);
+        }
       }
 
       this.lastOccurence = segment.from;
     }
   }
-
-  public update(now: number) {}
 }
 
 
@@ -43,26 +59,23 @@ export class AlertService {
 
   private _alerts: { [id: string]: Alert; };
   private _alertingEnable: boolean;
-  private _sender: any;
 
   constructor() {
     this._alerts = {}
-    this._alertingEnable = false;
-    this._sender = (analyticUnit: AnalyticUnit.AnalyticUnit, segment: Segment) => {
-      if(this._alertingEnable) {
-        sendWebhook(analyticUnit.name, segment);
-      }
-    }
   }
 
-  public recieveAlert(analyticUnit: AnalyticUnit.AnalyticUnit, segment: Segment) {
+  public receiveAlert(analyticUnit: AnalyticUnit.AnalyticUnit, segment: Segment) {
+    if(!this._alertingEnable) {
+      return;
+    }
+
     let id = analyticUnit.id;
 
     if(!_.has(this._alerts, id)) {
       this.addAnalyticUnit(analyticUnit);
     }
 
-    this._alerts[id].recieve(segment);
+    this._alerts[id].receive(segment);
   };
 
   public addAnalyticUnit(analyticUnit: AnalyticUnit.AnalyticUnit) {
@@ -72,7 +85,7 @@ export class AlertService {
     alertsType[AnalyticUnit.DetectorType.THRESHOLD] = ThresholdAlert;
     alertsType[AnalyticUnit.DetectorType.PATTERN] = PatternAlert;
 
-    this._alerts[analyticUnit.id] = new alertsType[detector](analyticUnit, this._sender);
+    this._alerts[analyticUnit.id] = new alertsType[detector](analyticUnit);
   }
 
   public removeAnalyticUnit(analyticUnitId: AnalyticUnit.AnalyticUnitId) {
