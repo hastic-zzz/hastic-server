@@ -56,7 +56,9 @@ export class DataPuller {
 
     try {
       this.analyticsService.sendTask(task);
-      console.log(`data puller successfuly pushed ${data.data.length} points for unit id: ${unit.id}`);
+      let fromTime = new Date(data.from).toLocaleTimeString();
+      let toTime = new Date(data.to).toLocaleTimeString();
+      console.log(`pushed ${data.data.length} points to unit: ${unit.id} ${fromTime}-${toTime}`);
     } catch(e) {
       console.log(`data puller got error while push data ${e.message}`);
     }
@@ -109,14 +111,14 @@ export class DataPuller {
       const detector = AnalyticUnit.getDetectorByType(analyticUnit.type);
       let payload = {
         data: payloadValues,
-        from: time,
+        from: this._unitTimes[analyticUnit.id],
         to: now,
         analyticUnitType: analyticUnit.type,
         detector,
         cache
       };
-      this._unitTimes[analyticUnit.id] = now;
       this.pushData(analyticUnit, payload);
+      this._unitTimes[analyticUnit.id] = now;
     }
   }
 

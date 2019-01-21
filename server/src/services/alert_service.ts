@@ -13,7 +13,17 @@ export class Alert {
   public update(now: number) {};
 }
 
-class PatternAlert extends Alert {};
+class PatternAlert extends Alert {
+
+  private lastSendedSegment: Segment;
+
+  public recieve(segment: Segment) {
+    if(this.lastSendedSegment === undefined || !segment.equals(this.lastSendedSegment) ) {
+      this.lastSendedSegment = segment;
+      this.sender(this.analyticUnit, segment);
+    }
+  }
+};
 
 
 class ThresholdAlert extends Alert {
@@ -27,7 +37,7 @@ class ThresholdAlert extends Alert {
     } else {
 
       if(segment.from - this.lastOccurence > this.EXPIRE_PERIOD_MS) {
-        console.debug(`difference detween threshold occurences ${segment.from - this.lastOccurence}, send alert`);
+        console.debug(`time between threshold occurences ${segment.from - this.lastOccurence}ms, send alert`);
         this.sender(this.analyticUnit, segment);
       }
 

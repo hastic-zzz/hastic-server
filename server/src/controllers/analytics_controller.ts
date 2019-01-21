@@ -305,9 +305,19 @@ async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitI
       `Missing lastDetectionTime in result or it is corrupted: ${JSON.stringify(detectionResult)}`
     );
   }
-  console.debug(`got detection result with ${detectionResult.segments.length} segments`);
+  console.debug(`got detection result for ${analyticUnitId} with ${detectionResult.segments.length} segments`);
 
-  const segments = detectionResult.segments.map(
+  let sortedSegments: {from, to}[] = detectionResult.segments;
+  sortedSegments = sortedSegments.sort((a, b) => {
+    if(a.from > b.from) {
+      return 1;
+    }
+    if(a.from < b.from) {
+      return -1;
+    }
+    return 0;
+  });
+  const segments = sortedSegments.map(
     segment => new Segment.Segment(analyticUnitId, segment.from, segment.to, false, false)
   );
   const analyticUnit = await AnalyticUnit.findById(analyticUnitId);
