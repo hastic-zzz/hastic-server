@@ -35,10 +35,9 @@ class TroughModel(Model):
         patterns_list = []
         for segment in segments:
             if segment['labeled']:
-                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
-                percent_of_nans = segment_data.isnull().sum() / len(segment_data)
-                if percent_of_nans > 0 or len(segment_data) == 0:
-                    continue
+                segment_from_index = segment.get('from')
+                segment_to_index = segment.get('to')
+                segment_data = segment.get('data')
                 confidence = utils.find_confidence(segment_data)
                 confidences.append(confidence)
                 segment_min_index = segment_data.idxmin()
@@ -53,10 +52,9 @@ class TroughModel(Model):
         del_conv_list = []
         for segment in segments:
             if segment['deleted']:
-                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
-                percent_of_nans = segment_data.isnull().sum() / len(segment_data)
-                if percent_of_nans > 0 or len(segment_data) == 0:
-                    continue
+                segment_from_index = segment.get('from')
+                segment_to_index = segment.get('to')
+                segment_data = segment.get('data')
                 del_min_index = segment_data.idxmin()
                 deleted_trough = utils.get_interval(data, del_min_index, self.state['WINDOW_SIZE'])
                 deleted_trough = utils.subtract_min_without_nan(deleted_trough)

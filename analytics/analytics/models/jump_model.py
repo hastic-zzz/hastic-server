@@ -38,10 +38,9 @@ class JumpModel(Model):
         patterns_list = []
         for segment in segments:
             if segment['labeled']:
-                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
-                percent_of_nans = segment_data.isnull().sum() / len(segment_data)
-                if percent_of_nans > 0 or len(segment_data) == 0:
-                    continue
+                segment_from_index = segment.get('from')
+                segment_to_index = segment.get('to')
+                segment_data = segment.get('data')
                 confidence = utils.find_confidence(segment_data)
                 confidences.append(confidence)
                 segment_cent_index, jump_height, jump_length = utils.find_parameters(segment_data, segment_from_index, 'jump')
@@ -58,9 +57,9 @@ class JumpModel(Model):
         del_conv_list = []
         for segment in segments:
             if segment['deleted']:
-                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
-                if len(segment_data) == 0:
-                    continue
+                segment_from_index = segment.get('from')
+                segment_to_index = segment.get('to')
+                segment_data = segment.get('data')
                 segment_cent_index = utils.find_parameters(segment_data, segment_from_index, 'jump')[0]
                 deleted_jump = utils.get_interval(data, segment_cent_index, self.state['WINDOW_SIZE'])
                 deleted_jump = utils.subtract_min_without_nan(labeled_jump)
