@@ -37,7 +37,7 @@ class Model(ABC):
                 if percent_of_nans > 0:
                     nan_list = utils.find_nan_indexes(segment_data)
                     segment_data = utils.nan_to_zero(segment_data, nan_list)
-                segment.update({'from': segment_from_index}, {'to': segment_to_index}, {'data': segment_data})
+                segment.update({'from': segment_from_index, 'to': segment_to_index, 'data': segment_data})
                 segment_length = abs(segment_to_index - segment_from_index)
                 segment_length_list.append(segment_length)
                 filtered_segments.append(segment)
