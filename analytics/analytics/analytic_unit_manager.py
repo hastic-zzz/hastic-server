@@ -98,6 +98,7 @@ class AnalyticUnitManager:
             return result_message
         except Exception as e:
             error_text = traceback.format_exc()
+            logger.error("handle_analytic_task Exception: '%s'" % error_text)
             # TODO: move result to a class which renders to json for messaging to analytics
             return {
                 'status': 'FAILED',
