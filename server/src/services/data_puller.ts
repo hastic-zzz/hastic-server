@@ -43,9 +43,7 @@ export class DataPuller {
       panelUrl = unit.panelUrl;
     }
 
-    let startTime = Date.now();
     let data = queryByMetric(unit.metric, panelUrl, from, to, HASTIC_API_KEY);
-    console.log(`data puller: query took ${Date.now() - startTime}ms for unit id ${unit.id}`);
     return data;
     
   }

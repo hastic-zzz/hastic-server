@@ -36,9 +36,9 @@ class PatternDetector(Detector):
         self.analytic_unit_id = analytic_unit_id
         self.pattern_type = pattern_type
         self.model = resolve_model_by_pattern(self.pattern_type)
-        self.window_size = 150
+        self.max_window_size = 150
+        self.window_size = 0
         self.bucket = DataBucket()
-        self.bucket_full_reported = False
 
     def train(self, dataframe: pd.DataFrame, segments: list, cache: Optional[models.ModelCache]) -> models.ModelCache:
         # TODO: pass only part of dataframe that has segments
@@ -66,19 +66,13 @@ class PatternDetector(Detector):
 
     def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
         self.bucket.receive_data(data.dropna())
+        if cache and self.window_size == 0:
+            self.window_size = cache['WINDOW_SIZE']
 
         if len(self.bucket.data) >= self.window_size and cache != None:
-            if not self.bucket_full_reported:
-                logging.debug('{} unit`s bucket full, run detect'.format(self.analytic_unit_id))
-                self.bucket_full_reported = True
-
             res = self.detect(self.bucket.data, cache)
-
-            excess_data = len(self.bucket.data) - self.window_size
+            excess_data = len(self.bucket.data) - self.max_window_size
             self.bucket.drop_data(excess_data)
             return res
-        else:
-            filling = len(self.bucket.data)*100 / self.window_size
-            logging.debug('bucket for {} {}% full'.format(self.analytic_unit_id, filling))
         
         return None
