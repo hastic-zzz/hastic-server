@@ -24,26 +24,29 @@ class Model(ABC):
 
         self.segments = segments
         segment_length_list = []
-        segment_list = []
+        filtered_segments = []
         for segment in self.segments:
-            if segment['labeled']:
-                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
+            if segment['labeled'] or segment['deleted']:
+                parse_segment_dict = utils.parse_segment(segment, dataframe)
+                segment_from_index = parse_segment_dict.get('from')
+                segment_to_index = parse_segment_dict.get('to')
+                segment_data = parse_segment_dict.get('data')
                 percent_of_nans = segment_data.isnull().sum() / len(segment_data)
                 if percent_of_nans > 0.1 or len(segment_data) == 0:
                     continue
                 if percent_of_nans > 0:
                     nan_list = utils.find_nan_indexes(segment_data)
                     segment_data = utils.nan_to_zero(segment_data, nan_list)
-                segment.update({'segment_data' : segment_data})
+                segment.update({'from': segment_from_index}, {'to': segment_to_index}, {'data': segment_data})
                 segment_length = abs(segment_to_index - segment_from_index)
                 segment_length_list.append(segment_length)
-                segment_list.append(segment)
-        segments = segment_list
+                filtered_segments.append(segment)
+                    
         if len(segment_length_list) > 0:
             self.state['WINDOW_SIZE'] = math.ceil(max(segment_length_list) / 2)
         else:
             self.state['WINDOW_SIZE'] = 0
-        self.do_fit(dataframe, segments)
+        self.do_fit(dataframe, filtered_segments)
         return self.state
 
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> dict:

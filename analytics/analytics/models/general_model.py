@@ -34,13 +34,9 @@ class GeneralModel(Model):
         patterns_list = []
         for segment in segments:
             if segment['labeled']:
-                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
-                percent_of_nans = segment_data.isnull().sum() / len(segment_data)
-                if percent_of_nans > 0.1 or len(segment_data) == 0:
-                    continue
-                if percent_of_nans > 0:
-                    nan_list = utils.find_nan_indexes(segment_data)
-                    segment_data = utils.nan_to_zero(segment_data, nan_list)
+                segment_from_index = segment.get('from')
+                segment_to_index = segment.get('to')
+                segment_data = segment.get('data')
                 center_ind = segment_from_index + math.ceil((segment_to_index - segment_from_index) / 2)
                 self.ipats.append(center_ind)
                 segment_data = utils.get_interval(data, center_ind, self.state['WINDOW_SIZE'])
@@ -53,9 +49,9 @@ class GeneralModel(Model):
         del_conv_list = []
         for segment in segments:
             if segment['deleted']:
-                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
-                if len(segment_data) == 0:
-                    continue
+                segment_from_index = segment.get('from')
+                segment_to_index = segment.get('to')
+                segment_data = segment.get('data')
                 del_mid_index = segment_from_index + math.ceil((segment_to_index - segment_from_index) / 2)
                 deleted_pat = utils.get_interval(data, del_mid_index, self.state['WINDOW_SIZE'])
                 deleted_pat = utils.subtract_min_without_nan(segment_data)
