@@ -24,13 +24,21 @@ class Model(ABC):
 
         self.segments = segments
         segment_length_list = []
+        segment_list = []
         for segment in self.segments:
             if segment['labeled']:
-                segment_from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
-                segment_to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
-
+                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
+                percent_of_nans = segment_data.isnull().sum() / len(segment_data)
+                if percent_of_nans > 0.1 or len(segment_data) == 0:
+                    continue
+                if percent_of_nans > 0:
+                    nan_list = utils.find_nan_indexes(segment_data)
+                    segment_data = utils.nan_to_zero(segment_data, nan_list)
+                segment.update({'segment_data' : segment_data})
                 segment_length = abs(segment_to_index - segment_from_index)
                 segment_length_list.append(segment_length)
+                segment_list.append(segment)
+        segments = segment_list
         if len(segment_length_list) > 0:
             self.state['WINDOW_SIZE'] = math.ceil(max(segment_length_list) / 2)
         else:
