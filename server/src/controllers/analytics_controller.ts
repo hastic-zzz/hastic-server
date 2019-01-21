@@ -168,6 +168,10 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
       throw new Error('Can`t start learning when it`s already started [' + id + ']');
     }
 
+    if(!isAnalyticReady()) {
+      throw new Error('Analytics is not ready');
+    }
+
     let oldCache = await AnalyticUnitCache.findById(id);
     if(oldCache !== null) {
       oldCache = oldCache.data;
@@ -219,6 +223,10 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId) {
   let previousLastDetectionTime: number = undefined;
 
   try {
+    if(!isAnalyticReady()) {
+      throw new Error('Analytics is not ready');
+    }
+    
     let unit = await AnalyticUnit.findById(id);
     previousLastDetectionTime = unit.lastDetectionTime;
     let analyticUnitType = unit.type;
