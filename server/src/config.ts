@@ -64,7 +64,7 @@ function getPackageVersion() {
       let packageJson: any = getJsonDataSync(packageFile);
       return packageJson.version;
     } else {
-      console.debug(`Can't find package file ${packageFile}`);
+      console.log(`Can't find package file ${packageFile}`);
       return null;
     }
   }
