@@ -79,3 +79,11 @@ class Model(ABC):
             'segments': segments,
             'cache': self.state
         }
+
+    def _update_fiting_result(self, state: dict, confidences: list, convolve_list: list, del_conv_list: list, default=self.state['WINDOW_SIZE']):
+        if type(state) is dict:
+            state['confidence'], _ = utils.get_min_max(confidences, 1.5)
+            state['convolve_min'], self.state['convolve_max'] = utils.get_min_max(convolve_list, default)
+            state['conv_del_min'], self.state['conv_del_max'] = utils.get_min_max(del_conv_list, default)
+        else:
+            raise ValueError('got non-dict as state for update fiting result: {}'.format(state))

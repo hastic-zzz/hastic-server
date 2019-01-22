@@ -27,17 +27,13 @@ class GeneralModel(Model):
         }
         self.all_conv = []
 
-    def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         convolve_list = []
         patterns_list = []
-        for segment in segments:
-            if segment['labeled']:
-                segment_from_index = segment.get('from')
-                segment_to_index = segment.get('to')
-                segment_data = segment.get('data')
-                center_ind = segment_from_index + math.ceil((segment_to_index - segment_from_index) / 2)
+        for segment in labeled_segments:
+                center_ind = segment.from + math.ceil(segment.length / 2)
                 self.ipats.append(center_ind)
                 segment_data = utils.get_interval(data, center_ind, self.state['WINDOW_SIZE'])
                 segment_data = utils.subtract_min_without_nan(segment_data)
@@ -47,16 +43,12 @@ class GeneralModel(Model):
         convolve_list = utils.get_convolve(self.ipats, self.model_gen, data, self.state['WINDOW_SIZE'])
 
         del_conv_list = []
-        for segment in segments:
-            if segment['deleted']:
-                segment_from_index = segment.get('from')
-                segment_to_index = segment.get('to')
-                segment_data = segment.get('data')
-                del_mid_index = segment_from_index + math.ceil((segment_to_index - segment_from_index) / 2)
-                deleted_pat = utils.get_interval(data, del_mid_index, self.state['WINDOW_SIZE'])
-                deleted_pat = utils.subtract_min_without_nan(segment_data)
-                del_conv_pat = scipy.signal.fftconvolve(deleted_pat, self.model_gen)
-                del_conv_list.append(max(del_conv_pat))
+        for segment in deleted_segments:
+            del_mid_index = segment.from + math.ceil(segment.length) / 2)
+            deleted_pat = utils.get_interval(data, del_mid_index, self.state['WINDOW_SIZE'])
+            deleted_pat = utils.subtract_min_without_nan(deleted_pat)
+            del_conv_pat = scipy.signal.fftconvolve(deleted_pat, self.model_gen)
+            del_conv_list.append(max(del_conv_pat))
 
         if len(convolve_list) > 0:
             self.state['convolve_max'] = float(max(convolve_list))

@@ -27,64 +27,33 @@ class PeakModel(Model):
             'conv_del_max': 55000,
         }
 
-    def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         confidences = []
         convolve_list = []
         patterns_list = []
-        for segment in segments:
-            if segment['labeled']:
-                segment_from_index = segment.get('from')
-                segment_to_index = segment.get('to')
-                segment_data = segment.get('data')
-                confidence = utils.find_confidence(segment_data)
-                confidences.append(confidence)
-                segment_max_index = segment_data.idxmax()
-                self.ipeaks.append(segment_max_index)
-                labeled = utils.get_interval(data, segment_max_index, self.state['WINDOW_SIZE'])
-                labeled = utils.subtract_min_without_nan(labeled)
-                patterns_list.append(labeled)
+        for segment in labeled_segments:
+            confidence = utils.find_confidence(segment.data)
+            confidences.append(confidence)
+            segment_max_index = segment.data.idxmax()
+            self.ipeaks.append(segment_max_index)
+            labeled = utils.get_interval(data, segment_max_index, self.state['WINDOW_SIZE'])
+            labeled = utils.subtract_min_without_nan(labeled)
+            patterns_list.append(labeled)
 
         self.model = utils.get_av_model(patterns_list)
         convolve_list = utils.get_convolve(self.ipeaks, self.model, data, self.state['WINDOW_SIZE'])
 
         del_conv_list = []
-        for segment in segments:
-            if segment['deleted']:
-                segment_from_index = segment.get('from')
-                segment_to_index = segment.get('to')
-                segment_data = segment.get('data')
-                del_max_index = segment_data.idxmax()
-                deleted = utils.get_interval(data, del_max_index, self.state['WINDOW_SIZE'])
-                deleted = utils.subtract_min_without_nan(deleted)
-                del_conv = scipy.signal.fftconvolve(deleted, self.model)
-                del_conv_list.append(max(del_conv))
+        for segment in deleted_segments:
+            del_max_index = segment.data.idxmax()
+            deleted = utils.get_interval(data, del_max_index, self.state['WINDOW_SIZE'])
+            deleted = utils.subtract_min_without_nan(deleted)
+            del_conv = scipy.signal.fftconvolve(deleted, self.model)
+            del_conv_list.append(max(del_conv))
 
-        if len(confidences) > 0:
-            self.state['confidence'] = float(min(confidences))
-        else:
-            self.state['confidence'] = 1.5
-
-        if len(convolve_list) > 0:
-            self.state['convolve_max'] = float(max(convolve_list))
-        else:
-            self.state['convolve_max'] = self.state['WINDOW_SIZE']
-
-        if len(convolve_list) > 0:
-            self.state['convolve_min'] = float(min(convolve_list))
-        else:
-            self.state['convolve_min'] = self.state['WINDOW_SIZE']
-
-        if len(del_conv_list) > 0:
-            self.state['conv_del_min'] = float(min(del_conv_list))
-        else:
-            self.state['conv_del_min'] = self.state['WINDOW_SIZE']
-
-        if len(del_conv_list) > 0:
-            self.state['conv_del_max'] = float(max(del_conv_list))
-        else:
-            self.state['conv_del_max'] = self.state['WINDOW_SIZE']
+        self._update_fiting_result(self.state, confidence, convolve_list, del_conv_list)
 
     def do_detect(self, dataframe: pd.DataFrame):
         data = utils.cut_dataframe(dataframe)

@@ -278,3 +278,8 @@ def cut_dataframe(data: pd.DataFrame) -> pd.DataFrame:
     if not np.isnan(data_min) and data_min > 0:
         data['value'] = data['value'] - data_min
     return data
+
+def get_min_max(array, default):
+    minimum = float(min(array)) if array else default
+    maximum = float(max(array)) if array else default
+    return minimum, maximum
