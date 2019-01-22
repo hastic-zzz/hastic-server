@@ -117,7 +117,7 @@ async function query(analyticUnit: AnalyticUnit.AnalyticUnit, detector: Analytic
       to: now
     };
   }
-  console.debug(`query time range: from ${new Date(range.from)} to ${new Date(range.to)}`);
+  console.log(`query time range: from ${new Date(range.from)} to ${new Date(range.to)}`);
 
   let panelUrl;
   if(GRAFANA_URL !== null) {
@@ -160,7 +160,7 @@ function getQueryRangeForLearningBySegments(segments: Segment.Segment[]) {
 }
 
 export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
-  console.debug('learning started...');
+  console.log('learning started...');
   try {
 
     let analyticUnit = await AnalyticUnit.findById(id);
@@ -206,7 +206,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
       id, AnalyticsTaskType.LEARN, taskPayload
     );
     AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
-    console.debug(`run task, id:${id}`);
+    console.log(`run task, id:${id}`);
     let result = await runTask(task);
     if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
       throw new Error(result.error);
@@ -245,7 +245,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId) {
       AnalyticsTaskType.DETECT,
       { detector, analyticUnitType, lastDetectionTime: unit.lastDetectionTime, data, cache: oldCache }
     );
-    console.debug(`run task, id:${id}`);
+    console.log(`run task, id:${id}`);
     let result = await runTask(task);
     if(result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
       throw new Error(result.error);
@@ -302,7 +302,7 @@ async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitI
       `Missing lastDetectionTime in result or it is corrupted: ${JSON.stringify(detectionResult)}`
     );
   }
-  console.debug(`got detection result for ${analyticUnitId} with ${detectionResult.segments.length} segments`);
+  console.log(`got detection result for ${analyticUnitId} with ${detectionResult.segments.length} segments`);
 
   const sortedSegments: {from, to}[] = _.sortBy(detectionResult.segments, 'from');
   const segments = sortedSegments.map(
@@ -323,7 +323,7 @@ async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitI
     if(_.isEmpty(segments)) {
       reasons.push('segments empty');
     }
-    console.debug(`skip sending webhook for ${analyticUnit.id}, ${reasons.join(', ')}`);
+    console.log(`skip sending webhook for ${analyticUnit.id}, ${reasons.join(', ')}`);
   }
   return {
     lastDetectionTime: detectionResult.lastDetectionTime,

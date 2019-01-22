@@ -83,7 +83,7 @@ export class DataPuller {
   }
 
   private async _runAnalyticUnitPuller(analyticUnit: AnalyticUnit.AnalyticUnit) {
-    console.debug(`run data puller for analytic unit ${analyticUnit.id}`);
+    console.log(`run data puller for analytic unit ${analyticUnit.id}`);
     // TODO: lastDetectionTime can be in ns
     const time = analyticUnit.lastDetectionTime + 1 || Date.now();
     this._unitTimes[analyticUnit.id] = time;
@@ -127,7 +127,7 @@ export class DataPuller {
 
     const getData = async () => {
       if(!this.analyticsService.ready) {
-        console.debug(`data generator: analytic service not ready, return empty result while wait service`);
+        console.log(`data generator: analytic service not ready, return empty result while wait service`);
         return {
           columns: [],
           values: []

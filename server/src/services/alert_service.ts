@@ -44,7 +44,7 @@ class ThresholdAlert extends Alert {
 
       if(segment.from - this.lastOccurence > this.EXPIRE_PERIOD_MS) {
         if(this.enabled) {
-          console.debug(`time between threshold occurences ${segment.from - this.lastOccurence}ms, send alert`);
+          console.log(`time between threshold occurences ${segment.from - this.lastOccurence}ms, send alert`);
           sendWebhook(this.analyticUnit.name, segment);
         }
       }
