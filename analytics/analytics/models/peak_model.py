@@ -17,7 +17,7 @@ class PeakModel(Model):
         super()
         self.segments = []
         self.ipeaks = []
-        self.model_peak = []
+        self.model = []
         self.state = {
             'confidence': 1.5,
             'convolve_max': 570000,
@@ -42,12 +42,12 @@ class PeakModel(Model):
                 confidences.append(confidence)
                 segment_max_index = segment_data.idxmax()
                 self.ipeaks.append(segment_max_index)
-                labeled_peak = utils.get_interval(data, segment_max_index, self.state['WINDOW_SIZE'])
-                labeled_peak = utils.subtract_min_without_nan(labeled_peak)
-                patterns_list.append(labeled_peak)
+                labeled = utils.get_interval(data, segment_max_index, self.state['WINDOW_SIZE'])
+                labeled = utils.subtract_min_without_nan(labeled)
+                patterns_list.append(labeled)
 
-        self.model_peak = utils.get_av_model(patterns_list)
-        convolve_list = utils.get_convolve(self.ipeaks, self.model_peak, data, self.state['WINDOW_SIZE'])
+        self.model = utils.get_av_model(patterns_list)
+        convolve_list = utils.get_convolve(self.ipeaks, self.model, data, self.state['WINDOW_SIZE'])
 
         del_conv_list = []
         for segment in segments:
@@ -56,10 +56,10 @@ class PeakModel(Model):
                 segment_to_index = segment.get('to')
                 segment_data = segment.get('data')
                 del_max_index = segment_data.idxmax()
-                deleted_peak = utils.get_interval(data, del_max_index, self.state['WINDOW_SIZE'])
-                deleted_peak = utils.subtract_min_without_nan(deleted_peak)
-                del_conv_peak = scipy.signal.fftconvolve(deleted_peak, self.model_peak)
-                del_conv_list.append(max(del_conv_peak))
+                deleted = utils.get_interval(data, del_max_index, self.state['WINDOW_SIZE'])
+                deleted = utils.subtract_min_without_nan(deleted)
+                del_conv = scipy.signal.fftconvolve(deleted, self.model)
+                del_conv_list.append(max(del_conv))
 
         if len(confidences) > 0:
             self.state['confidence'] = float(min(confidences))
@@ -111,7 +111,7 @@ class PeakModel(Model):
 
         if len(segments) == 0 or len(self.ipeaks) == 0:
             return []
-        pattern_data = self.model_peak
+        pattern_data = self.model
         for segment in segments:
             if segment > self.state['WINDOW_SIZE']:
                 convol_data = utils.get_interval(data, segment, self.state['WINDOW_SIZE'])
