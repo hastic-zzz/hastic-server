@@ -37,11 +37,11 @@ def segments_box(segments):
     max_time = pd.to_datetime(max_time, unit='ms')
     return min_time, max_time
 
-def find_pattern(data: pd.Series, height: float, lenght: int, pattern_type: str) -> list:
+def find_pattern(data: pd.Series, height: float, length: int, pattern_type: str) -> list:
     pattern_list = []
-    right_bound = len(data) - lenght - 1
+    right_bound = len(data) - length - 1
     for i in range(right_bound):
-        for x in range(1, lenght):
+        for x in range(1, length):
             if pattern_type == 'jump':
                 if(data[i + x] > data[i] + height):
                     pattern_list.append(i)
