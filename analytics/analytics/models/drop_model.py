@@ -27,7 +27,7 @@ class DropModel(Model):
             'conv_del_max': 55000,
         }
 
-    def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         confidences = []
@@ -35,70 +35,32 @@ class DropModel(Model):
         drop_height_list = []
         drop_length_list = []
         patterns_list = []
-        for segment in segments:
-            if segment['labeled']:
-                segment_from_index = segment.get('from')
-                segment_to_index = segment.get('to')
-                segment_data = segment.get('data')
-                confidence = utils.find_confidence(segment_data)
-                confidences.append(confidence)
-                segment_cent_index, drop_height, drop_length = utils.find_parameters(segment_data, segment_from_index, 'drop')
-                drop_height_list.append(drop_height)
-                drop_length_list.append(drop_length)
-                self.idrops.append(segment_cent_index)
-                labeled_drop = utils.get_interval(data, segment_cent_index, self.state['WINDOW_SIZE'])
-                labeled_drop = utils.subtract_min_without_nan(labeled_drop)
-                patterns_list.append(labeled_drop)
+
+        for segment in labeled_segments:
+            confidence = utils.find_confidence(segment.data)
+            confidences.append(confidence)
+            segment_cent_index, drop_height, drop_length = utils.find_parameters(segment.data, segment.start, 'drop')
+            drop_height_list.append(drop_height)
+            drop_length_list.append(drop_length)
+            self.idrops.append(segment_cent_index)
+            labeled_drop = utils.get_interval(data, segment_cent_index, self.state['WINDOW_SIZE'])
+            labeled_drop = utils.subtract_min_without_nan(labeled_drop)
+            patterns_list.append(labeled_drop)
 
         self.model_drop = utils.get_av_model(patterns_list)
         convolve_list = utils.get_convolve(self.idrops, self.model_drop, data, self.state['WINDOW_SIZE'])
 
         del_conv_list = []
-        for segment in segments:
-            if segment['deleted']:
-                segment_from_index = segment.get('from')
-                segment_to_index = segment.get('to')
-                segment_data = segment.get('data')
-                segment_cent_index = utils.find_parameters(segment_data, segment_from_index, 'drop')[0]
-                deleted_drop = utils.get_interval(data, segment_cent_index, self.state['WINDOW_SIZE'])
-                deleted_drop = utils.subtract_min_without_nan(deleted_drop)
-                del_conv_drop = scipy.signal.fftconvolve(deleted_drop, self.model_drop)
-                del_conv_list.append(max(del_conv_drop))
+        for segment in deleted_segments:
+            segment_cent_index = utils.find_parameters(segment.data, segment.start, 'drop')[0]
+            deleted_drop = utils.get_interval(data, segment_cent_index, self.state['WINDOW_SIZE'])
+            deleted_drop = utils.subtract_min_without_nan(deleted_drop)
+            del_conv_drop = scipy.signal.fftconvolve(deleted_drop, self.model_drop)
+            if len(del_conv_drop): del_conv_list.append(max(del_conv_drop))
 
-        if len(confidences) > 0:
-            self.state['confidence'] = float(min(confidences))
-        else:
-            self.state['confidence'] = 1.5
-
-        if len(convolve_list) > 0:
-            self.state['convolve_max'] = float(max(convolve_list))
-        else:
-            self.state['convolve_max'] = self.state['WINDOW_SIZE']
-
-        if len(convolve_list) > 0:
-            self.state['convolve_min'] = float(min(convolve_list))
-        else:
-            self.state['convolve_min'] = self.state['WINDOW_SIZE']
-
-        if len(drop_height_list) > 0:
-            self.state['DROP_HEIGHT'] = int(min(drop_height_list))
-        else:
-            self.state['DROP_HEIGHT'] = 1
-
-        if len(drop_length_list) > 0:
-            self.state['DROP_LENGTH'] = int(max(drop_length_list))
-        else:
-            self.state['DROP_LENGTH'] = 1
-
-        if len(del_conv_list) > 0:
-            self.state['conv_del_min'] = float(min(del_conv_list))
-        else:
-            self.state['conv_del_min'] = self.state['WINDOW_SIZE']
-
-        if len(del_conv_list) > 0:
-            self.state['conv_del_max'] = float(max(del_conv_list))
-        else:
-            self.state['conv_del_max'] = self.state['WINDOW_SIZE']
+        self._update_fiting_result(self.state, confidences, convolve_list, del_conv_list)
+        self.state['DROP_HEIGHT'] = int(min(drop_height_list, default = 1))
+        self.state['DROP_LENGTH'] = int(max(drop_length_list, default = 1))
 
     def do_detect(self, dataframe: pd.DataFrame) -> list:
         data = utils.cut_dataframe(dataframe)

@@ -1,12 +1,37 @@
 import utils
 
 from abc import ABC, abstractmethod
+from attrdict import AttrDict
 from typing import Optional
 import pandas as pd
 import math
 
 ModelCache = dict
 
+class Segment(AttrDict):
+
+    __percent_of_nans = 0
+
+    def __init__(self, dataframe: pd.DataFrame, segment_map: dict):
+        self.update(segment_map)
+        self.start = utils.timestamp_to_index(dataframe, pd.to_datetime(self['from'], unit='ms'))
+        self.end = utils.timestamp_to_index(dataframe, pd.to_datetime(self['to'], unit='ms'))
+        self.length = abs(self.end - self.start)
+
+        assert len(dataframe['value']) >= self.end + 1, \
+            'segment {}-{} out of dataframe length={}'.format(self.start, self.end+1, len(dataframe['value']))
+
+        self.data = dataframe['value'][self.start: self.end + 1]
+
+    @property
+    def percent_of_nans(self):
+        if not self.__percent_of_nans:
+            self.__percent_of_nans = self.data.isnull().sum() / len(self.data)
+        return self.__percent_of_nans
+
+    def convert_nan_to_zero(self):
+        nan_list = utils.find_nan_indexes(self.data)
+        self.data = utils.nan_to_zero(self.data, nan_list)
 
 class Model(ABC):
 
@@ -22,31 +47,24 @@ class Model(ABC):
         if type(cache) is ModelCache:
             self.state = cache
 
-        self.segments = segments
-        segment_length_list = []
-        filtered_segments = []
-        for segment in self.segments:
-            if segment['labeled'] or segment['deleted']:
-                parse_segment_dict = utils.parse_segment(segment, dataframe)
-                segment_from_index = parse_segment_dict.get('from')
-                segment_to_index = parse_segment_dict.get('to')
-                segment_data = parse_segment_dict.get('data')
-                percent_of_nans = segment_data.isnull().sum() / len(segment_data)
-                if percent_of_nans > 0.1 or len(segment_data) == 0:
+        max_length = 0
+        labeled = []
+        deleted = []
+        for segment_map in segments:
+            if segment_map['labeled'] or segment_map['deleted']:
+                segment = Segment(dataframe, segment_map)
+                if segment.percent_of_nans > 0.1 or len(segment.data) == 0:
                     continue
-                if percent_of_nans > 0:
-                    nan_list = utils.find_nan_indexes(segment_data)
-                    segment_data = utils.nan_to_zero(segment_data, nan_list)
-                segment.update({'from': segment_from_index, 'to': segment_to_index, 'data': segment_data})
-                segment_length = abs(segment_to_index - segment_from_index)
-                segment_length_list.append(segment_length)
-                filtered_segments.append(segment)
+                if segment.percent_of_nans > 0:
+                    segment.convert_nan_to_zero()
+
+                max_length = max(segment.length, max_length)
+                if segment.labeled: labeled.append(segment)
+                if segment.deleted: deleted.append(segment)
                     
-        if len(segment_length_list) > 0:
-            self.state['WINDOW_SIZE'] = math.ceil(max(segment_length_list) / 2)
-        else:
-            self.state['WINDOW_SIZE'] = 0
-        self.do_fit(dataframe, filtered_segments)
+
+        self.state['WINDOW_SIZE'] = math.ceil(max_length / 2) if max_length else 0
+        self.do_fit(dataframe, labeled, deleted)
         return self.state
 
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
@@ -64,3 +82,11 @@ class Model(ABC):
             'segments': segments,
             'cache': self.state
         }
+
+    def _update_fiting_result(self, state: dict, confidences: list, convolve_list: list, del_conv_list: list) -> None:
+        if type(state) is dict:
+            state['confidence'] = float(min(confidences, default = 1.5))
+            state['convolve_min'], state['convolve_max'] = utils.get_min_max(convolve_list, state['WINDOW_SIZE'])
+            state['conv_del_min'], state['conv_del_max'] = utils.get_min_max(del_conv_list, state['WINDOW_SIZE'])
+        else:
+            raise ValueError('got non-dict as state for update fiting result: {}'.format(state))
