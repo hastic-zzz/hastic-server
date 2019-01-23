@@ -85,7 +85,7 @@ class Model(ABC):
 
     def _update_fiting_result(self, state: dict, confidences: list, convolve_list: list, del_conv_list: list) -> None:
         if type(state) is dict:
-            state['confidence'], _ = utils.get_min_max(confidences, 1.5)
+            state['confidence'] = float(min(confidences, default=1.5))
             state['convolve_min'], state['convolve_max'] = utils.get_min_max(convolve_list, state['WINDOW_SIZE'])
             state['conv_del_min'], state['conv_del_max'] = utils.get_min_max(del_conv_list, state['WINDOW_SIZE'])
         else:
