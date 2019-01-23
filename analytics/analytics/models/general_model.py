@@ -48,7 +48,7 @@ class GeneralModel(Model):
             deleted_pat = utils.get_interval(data, del_mid_index, self.state['WINDOW_SIZE'])
             deleted_pat = utils.subtract_min_without_nan(deleted_pat)
             del_conv_pat = scipy.signal.fftconvolve(deleted_pat, self.model_gen)
-            if del_conv_pat: del_conv_list.append(max(del_conv_pat))
+            if len(del_conv_pat): del_conv_list.append(max(del_conv_pat))
 
         self.state['convolve_min'], self.state['convolve_max'] = utils.get_min_max(convolve_list, self.state['WINDOW_SIZE']/3)
         self.state['conv_del_min'], self.state['conv_del_max'] = utils.get_min_max(del_conv_list, self.state['WINDOW_SIZE'])

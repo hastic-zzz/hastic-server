@@ -56,7 +56,7 @@ class DropModel(Model):
             deleted_drop = utils.get_interval(data, segment_cent_index, self.state['WINDOW_SIZE'])
             deleted_drop = utils.subtract_min_without_nan(deleted_drop)
             del_conv_drop = scipy.signal.fftconvolve(deleted_drop, self.model_drop)
-            if del_conv_drop: del_conv_list.append(max(del_conv_drop))
+            if len(del_conv_drop): del_conv_list.append(max(del_conv_drop))
 
         self._update_fiting_result(self.state, confidences, convolve_list, del_conv_list)
         self.state['DROP_HEIGHT'] = int(min(drop_height_list, default=1))

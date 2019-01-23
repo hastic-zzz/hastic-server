@@ -56,7 +56,7 @@ class JumpModel(Model):
             deleted_jump = utils.get_interval(data, segment_cent_index, self.state['WINDOW_SIZE'])
             deleted_jump = utils.subtract_min_without_nan(deleted_jump)
             del_conv_jump = scipy.signal.fftconvolve(deleted_jump, self.model_jump)
-            if del_conv_jump: del_conv_list.append(max(del_conv_jump))
+            if len(del_conv_jump): del_conv_list.append(max(del_conv_jump))
 
         self._update_fiting_result(self.state, confidences, convolve_list, del_conv_list)
         self.state['JUMP_HEIGHT'] = float(min(jump_height_list, default=1))

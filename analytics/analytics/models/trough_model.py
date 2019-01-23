@@ -52,7 +52,7 @@ class TroughModel(Model):
             deleted = utils.get_interval(data, del_min_index, self.state['WINDOW_SIZE'])
             deleted = utils.subtract_min_without_nan(deleted)
             del_conv = scipy.signal.fftconvolve(deleted, self.model)
-            if del_conv: del_conv_list.append(max(del_conv))
+            if len(del_conv): del_conv_list.append(max(del_conv))
 
         self._update_fiting_result(self.state, confidences, convolve_list, del_conv_list)
 
