@@ -39,7 +39,7 @@ def segments_box(segments):
 
 def find_pattern(data: pd.Series, height: float, lenght: int, pattern_type: str) -> list:
     pattern_list = []
-    right_bound = len(data) - length - 1
+    right_bound = len(data) - lenght - 1
     for i in range(right_bound):
         for x in range(1, lenght):
             if pattern_type == 'jump':
@@ -280,6 +280,4 @@ def cut_dataframe(data: pd.DataFrame) -> pd.DataFrame:
     return data
 
 def get_min_max(array, default):
-    minimum = float(min(array)) if array else default
-    maximum = float(max(array)) if array else default
-    return minimum, maximum
+    return float(min(array, default=default)), float(max(array, default=default))

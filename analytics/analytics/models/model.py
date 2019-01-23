@@ -16,8 +16,12 @@ class Segment(AttrDict):
         self.update(segment_map)
         self.start = utils.timestamp_to_index(dataframe, pd.to_datetime(self['from'], unit='ms'))
         self.end = utils.timestamp_to_index(dataframe, pd.to_datetime(self['to'], unit='ms'))
-        self.data = dataframe['value'][self.start: self.end + 1]
         self.length = abs(self.end - self.start)
+
+        assert len(dataframe['value']) >= self.end + 1, \
+            'segment {}-{} out of dataframe length={}'.format(self.start, self.end+1, len(dataframe['value']))
+
+        self.data = dataframe['value'][self.start: self.end + 1]
 
     @property
     def percent_of_nans(self):
@@ -81,7 +85,7 @@ class Model(ABC):
 
     def _update_fiting_result(self, state: dict, confidences: list, convolve_list: list, del_conv_list: list) -> None:
         if type(state) is dict:
-            state['confidence'], tmp_max = utils.get_min_max(confidences, 1.5)
+            state['confidence'], _ = utils.get_min_max(confidences, 1.5)
             state['convolve_min'], state['convolve_max'] = utils.get_min_max(convolve_list, state['WINDOW_SIZE'])
             state['conv_del_min'], state['conv_del_max'] = utils.get_min_max(del_conv_list, state['WINDOW_SIZE'])
         else:
