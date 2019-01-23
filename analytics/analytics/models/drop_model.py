@@ -59,8 +59,8 @@ class DropModel(Model):
             if len(del_conv_drop): del_conv_list.append(max(del_conv_drop))
 
         self._update_fiting_result(self.state, confidences, convolve_list, del_conv_list)
-        self.state['DROP_HEIGHT'] = int(min(drop_height_list, default=1))
-        self.state['DROP_LENGTH'] = int(max(drop_length_list, default=1))
+        self.state['DROP_HEIGHT'] = int(min(drop_height_list, default = 1))
+        self.state['DROP_LENGTH'] = int(max(drop_length_list, default = 1))
 
     def do_detect(self, dataframe: pd.DataFrame) -> list:
         data = utils.cut_dataframe(dataframe)

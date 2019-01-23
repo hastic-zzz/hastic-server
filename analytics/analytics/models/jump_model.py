@@ -59,8 +59,8 @@ class JumpModel(Model):
             if len(del_conv_jump): del_conv_list.append(max(del_conv_jump))
 
         self._update_fiting_result(self.state, confidences, convolve_list, del_conv_list)
-        self.state['JUMP_HEIGHT'] = float(min(jump_height_list, default=1))
-        self.state['JUMP_LENGTH'] = int(max(jump_length_list, default=1))
+        self.state['JUMP_HEIGHT'] = float(min(jump_height_list, default = 1))
+        self.state['JUMP_LENGTH'] = int(max(jump_length_list, default = 1))
 
     def do_detect(self, dataframe: pd.DataFrame) -> list:
         data = utils.cut_dataframe(dataframe)
