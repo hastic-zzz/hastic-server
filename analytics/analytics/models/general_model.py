@@ -30,30 +30,28 @@ class GeneralModel(Model):
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
-        win_size = self.state['WINDOW_SIZE']
-
         convolve_list = []
         patterns_list = []
         for segment in labeled_segments:
                 center_ind = segment.start + math.ceil(segment.length / 2)
                 self.ipats.append(center_ind)
-                segment_data = utils.get_interval(data, center_ind, win_size)
+                segment_data = utils.get_interval(data, center_ind, self.state['WINDOW_SIZE'])
                 segment_data = utils.subtract_min_without_nan(segment_data)
                 patterns_list.append(segment_data)
 
         self.model_gen = utils.get_av_model(patterns_list)
-        convolve_list = utils.get_convolve(self.ipats, self.model_gen, data, win_size)
+        convolve_list = utils.get_convolve(self.ipats, self.model_gen, data, self.state['WINDOW_SIZE'])
 
         del_conv_list = []
         for segment in deleted_segments:
             del_mid_index = segment.start + math.ceil(segment.length / 2)
-            deleted_pat = utils.get_interval(data, del_mid_index, win_size)
+            deleted_pat = utils.get_interval(data, del_mid_index, self.state['WINDOW_SIZE'])
             deleted_pat = utils.subtract_min_without_nan(deleted_pat)
             del_conv_pat = scipy.signal.fftconvolve(deleted_pat, self.model_gen)
             if del_conv_pat: del_conv_list.append(max(del_conv_pat))
 
-        self.state['convolve_min'], self.state['convolve_max'] = utils.get_min_max(convolve_list, win_size/3)
-        self.state['conv_del_min'], self.state['conv_del_max'] = utils.get_min_max(del_conv_list, win_size)
+        self.state['convolve_min'], self.state['convolve_max'] = utils.get_min_max(convolve_list, self.state['WINDOW_SIZE']/3)
+        self.state['conv_del_min'], self.state['conv_del_max'] = utils.get_min_max(del_conv_list, self.state['WINDOW_SIZE'])
 
     def do_detect(self, dataframe: pd.DataFrame) -> list:
         data = utils.cut_dataframe(dataframe)

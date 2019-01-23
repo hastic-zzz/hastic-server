@@ -30,8 +30,6 @@ class TroughModel(Model):
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
-        win_size = self.state['WINDOW_SIZE']
-
         confidences = []
         convolve_list = []
         patterns_list = []
@@ -41,17 +39,17 @@ class TroughModel(Model):
             confidences.append(confidence)
             segment_min_index = segment.data.idxmin()
             self.itroughs.append(segment_min_index)
-            labeled = utils.get_interval(data, segment_min_index, win_size)
+            labeled = utils.get_interval(data, segment_min_index, self.state['WINDOW_SIZE'])
             labeled = utils.subtract_min_without_nan(labeled)
             patterns_list.append(labeled)
 
         self.model = utils.get_av_model(patterns_list)
-        convolve_list = utils.get_convolve(self.itroughs, self.model, data, win_size)
+        convolve_list = utils.get_convolve(self.itroughs, self.model, data, self.state['WINDOW_SIZE'])
 
         del_conv_list = []
         for segment in deleted_segments:
             del_min_index = segment.data.idxmin()
-            deleted = utils.get_interval(data, del_min_index, win_size)
+            deleted = utils.get_interval(data, del_min_index, self.state['WINDOW_SIZE'])
             deleted = utils.subtract_min_without_nan(deleted)
             del_conv = scipy.signal.fftconvolve(deleted, self.model)
             if del_conv: del_conv_list.append(max(del_conv))
