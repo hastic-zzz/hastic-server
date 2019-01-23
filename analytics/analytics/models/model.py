@@ -1,27 +1,26 @@
 import utils
 
 from abc import ABC, abstractmethod
+from attrdict import AttrDict
 from typing import Optional
 import pandas as pd
 import math
 
 ModelCache = dict
 
-class Segment(dict):
+class Segment(AttrDict):
 
-    self.__percent_of_nans = 0
+    __percent_of_nans = 0
 
     def __init__(self, dataframe: pd.DataFrame, segment_map: dict):
-        super(Segment, self).__init__(**segment_map)
-        self.__dict__ = self
         self.update(segment_map)
-        self.from = timestamp_to_index(dataframe, pd.to_datetime(self.from, unit='ms'))
-        self.to = timestamp_to_index(dataframe, pd.to_datetime(self.to, unit='ms'))
-        self.data = dataframe['value'][start: end + 1]
-        self.length = abs(self.to - self.from)
+        self.start = utils.timestamp_to_index(dataframe, pd.to_datetime(self['from'], unit='ms'))
+        self.end = utils.timestamp_to_index(dataframe, pd.to_datetime(self['to'], unit='ms'))
+        self.data = dataframe['value'][self.start: self.end + 1]
+        self.length = abs(self.end - self.start)
 
     @property
-    def percent_of_nans:
+    def percent_of_nans(self):
         if not self.__percent_of_nans:
             self.__percent_of_nans = self.data.isnull().sum() / len(self.data)
         return self.__percent_of_nans
@@ -49,7 +48,7 @@ class Model(ABC):
         deleted = []
         for segment_map in segments:
             if segment_map['labeled'] or segment_map['deleted']:
-                segment = Segemnt(dataframe, segment_map)
+                segment = Segment(dataframe, segment_map)
                 if segment.percent_of_nans > 0.1 or len(segment.data) == 0:
                     continue
                 if segment.percent_of_nans > 0:
@@ -80,10 +79,10 @@ class Model(ABC):
             'cache': self.state
         }
 
-    def _update_fiting_result(self, state: dict, confidences: list, convolve_list: list, del_conv_list: list, default=self.state['WINDOW_SIZE']):
+    def _update_fiting_result(self, state: dict, confidences: list, convolve_list: list, del_conv_list: list) -> None:
         if type(state) is dict:
-            state['confidence'], _ = utils.get_min_max(confidences, 1.5)
-            state['convolve_min'], self.state['convolve_max'] = utils.get_min_max(convolve_list, default)
-            state['conv_del_min'], self.state['conv_del_max'] = utils.get_min_max(del_conv_list, default)
+            state['confidence'], tmp_max = utils.get_min_max(confidences, 1.5)
+            state['convolve_min'], state['convolve_max'] = utils.get_min_max(convolve_list, state['WINDOW_SIZE'])
+            state['conv_del_min'], state['conv_del_max'] = utils.get_min_max(del_conv_list, state['WINDOW_SIZE'])
         else:
             raise ValueError('got non-dict as state for update fiting result: {}'.format(state))

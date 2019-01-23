@@ -33,7 +33,7 @@ class GeneralModel(Model):
         convolve_list = []
         patterns_list = []
         for segment in labeled_segments:
-                center_ind = segment.from + math.ceil(segment.length / 2)
+                center_ind = segment.start + math.ceil(segment.length / 2)
                 self.ipats.append(center_ind)
                 segment_data = utils.get_interval(data, center_ind, self.state['WINDOW_SIZE'])
                 segment_data = utils.subtract_min_without_nan(segment_data)
@@ -44,7 +44,7 @@ class GeneralModel(Model):
 
         del_conv_list = []
         for segment in deleted_segments:
-            del_mid_index = segment.from + math.ceil(segment.length) / 2)
+            del_mid_index = segment.start + math.ceil(segment.length / 2)
             deleted_pat = utils.get_interval(data, del_mid_index, self.state['WINDOW_SIZE'])
             deleted_pat = utils.subtract_min_without_nan(deleted_pat)
             del_conv_pat = scipy.signal.fftconvolve(deleted_pat, self.model_gen)

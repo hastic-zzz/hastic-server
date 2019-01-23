@@ -39,7 +39,7 @@ class DropModel(Model):
         for segment in labeled_segments:
             confidence = utils.find_confidence(segment.data)
             confidences.append(confidence)
-            segment_cent_index, drop_height, drop_length = utils.find_parameters(segment.data, segment.from, 'drop')
+            segment_cent_index, drop_height, drop_length = utils.find_parameters(segment.data, segment.start, 'drop')
             drop_height_list.append(drop_height)
             drop_length_list.append(drop_length)
             self.idrops.append(segment_cent_index)
@@ -52,13 +52,13 @@ class DropModel(Model):
 
         del_conv_list = []
         for segment in deleted_segments:
-            segment_cent_index = utils.find_parameters(segment.data, segment.from, 'drop')[0]
+            segment_cent_index = utils.find_parameters(segment.data, segment.start, 'drop')[0]
             deleted_drop = utils.get_interval(data, segment_cent_index, self.state['WINDOW_SIZE'])
             deleted_drop = utils.subtract_min_without_nan(deleted_drop)
             del_conv_drop = scipy.signal.fftconvolve(deleted_drop, self.model_drop)
             del_conv_list.append(max(del_conv_drop))
 
-        self._update_fiting_result(self.state, confidence, convolve_list, del_conv_list)
+        self._update_fiting_result(self.state, confidences, convolve_list, del_conv_list)
         self.state['DROP_HEIGHT'] = int(min(drop_height_list)) if drop_height_list else 1
         self.state['DROP_LENGTH'] = int(max(drop_length_list)) if drop_length_list else 1
 

@@ -53,7 +53,7 @@ class TroughModel(Model):
             del_conv = scipy.signal.fftconvolve(deleted, self.model)
             del_conv_list.append(max(del_conv))
 
-        self._update_fiting_result(self.state, confidence, convolve_list, del_conv_list)
+        self._update_fiting_result(self.state, confidences, convolve_list, del_conv_list)
 
     def do_detect(self, dataframe: pd.DataFrame):
         data = utils.cut_dataframe(dataframe)

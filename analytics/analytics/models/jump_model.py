@@ -39,7 +39,7 @@ class JumpModel(Model):
         for segment in labeled_segments:
             confidence = utils.find_confidence(segment.data)
             confidences.append(confidence)
-            segment_cent_index, jump_height, jump_length = utils.find_parameters(segment.data, segment.from, 'jump')
+            segment_cent_index, jump_height, jump_length = utils.find_parameters(segment.data, segment.start, 'jump')
             jump_height_list.append(jump_height)
             jump_length_list.append(jump_length)
             self.ijumps.append(segment_cent_index)
@@ -52,13 +52,13 @@ class JumpModel(Model):
 
         del_conv_list = []
         for segment in deleted_segments:
-            segment_cent_index = utils.find_parameters(segment.data, segment.from, 'jump')[0]
+            segment_cent_index = utils.find_parameters(segment.data, segment.start, 'jump')[0]
             deleted_jump = utils.get_interval(data, segment_cent_index, self.state['WINDOW_SIZE'])
             deleted_jump = utils.subtract_min_without_nan(deleted_jump)
             del_conv_jump = scipy.signal.fftconvolve(deleted_jump, self.model_jump)
             del_conv_list.append(max(del_conv_jump))
 
-        self._update_fiting_result(self.state, confidence, convolve_list, del_conv_list)
+        self._update_fiting_result(self.state, confidences, convolve_list, del_conv_list)
         self.state['JUMP_HEIGHT'] = float(min(jump_height_list)) if jump_height_list else 1
         self.state['JUMP_LENGTH'] = int(max(jump_length_list)) if jump_length_list else 1
 
