@@ -98,7 +98,13 @@ export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promis
 export async function insertSegments(segments: Segment[]) {
   let segmentIdsToRemove: SegmentId[] = [];
   let segmentsToInsert: Segment[] = [];
+  let learningSegments: Segment[] = await db.findMany({labeled: true, deleted: false});
   for(let segment of segments) {
+    let intersectedLearning = learningSegments.filter(s => segment.from <= s.to && segment.to >= s.from);
+    if(intersectedLearning.length > 0) {
+      continue;
+    }
+
     let intersectedSegments = await db.findMany({
       analyticUnitId: segments[0].analyticUnitId,
       to: { $gte: segment.from },
