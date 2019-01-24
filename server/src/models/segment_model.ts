@@ -100,7 +100,7 @@ export async function insertSegments(segments: Segment[]) {
   let segmentIdsToRemove: SegmentId[] = [];
   let segmentsToInsert: Segment[] = [];
   let learningSegments: Segment[] = await db.findMany({
-    analyticUnitId: analyticUnitId,
+    analyticUnitId,
     labeled: true,
     deleted: false
   });
@@ -111,7 +111,7 @@ export async function insertSegments(segments: Segment[]) {
     }
 
     let intersectedSegments = await db.findMany({
-      analyticUnitId: analyticUnitId,
+      analyticUnitId,
       to: { $gte: segment.from },
       from: { $lte: segment.to },
       labeled: segment.labeled,
