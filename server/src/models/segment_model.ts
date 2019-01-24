@@ -105,7 +105,9 @@ export async function insertSegments(segments: Segment[]) {
     deleted: false
   });
   for(let segment of segments) {
-    let intersectedLearning = learningSegments.filter(s => segment.from <= s.to && segment.to >= s.from);
+    let intersectedLearning = learningSegments.filter(s => {
+      return segment.from <= s.to && segment.to >= s.from;
+    });
     if(intersectedLearning.length > 0) {
       continue;
     }
