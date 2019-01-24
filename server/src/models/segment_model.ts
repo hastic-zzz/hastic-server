@@ -96,9 +96,14 @@ export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promis
 }
 
 export async function insertSegments(segments: Segment[]) {
+  let analyticUnitId: AnalyticUnitId = segments[0].analyticUnitId
   let segmentIdsToRemove: SegmentId[] = [];
   let segmentsToInsert: Segment[] = [];
-  let learningSegments: Segment[] = await db.findMany({labeled: true, deleted: false});
+  let learningSegments: Segment[] = await db.findMany({
+    analyticUnitId: analyticUnitId,
+    labeled: true,
+    deleted: false
+  });
   for(let segment of segments) {
     let intersectedLearning = learningSegments.filter(s => segment.from <= s.to && segment.to >= s.from);
     if(intersectedLearning.length > 0) {
@@ -106,7 +111,7 @@ export async function insertSegments(segments: Segment[]) {
     }
 
     let intersectedSegments = await db.findMany({
-      analyticUnitId: segments[0].analyticUnitId,
+      analyticUnitId: analyticUnitId,
       to: { $gte: segment.from },
       from: { $lte: segment.to },
       labeled: segment.labeled,
@@ -127,7 +132,7 @@ export async function insertSegments(segments: Segment[]) {
   }
 
   await db.removeMany(segmentIdsToRemove);
-  return db.insertMany(segments.map(s => s.toObject()));
+  return db.insertMany(segmentsToInsert.map(s => s.toObject()));
 }
 
 export async function setSegmentsDeleted(ids: SegmentId[]) {
