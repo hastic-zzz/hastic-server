@@ -52,7 +52,6 @@ class ThresholdDetector(Detector):
         elif condition == '<':
             if last_value < value:
                 segments.append(segment)
-        log.debug('seg {}'.format(segments))
         return {
             'cache': cache,
             'segments': segments,
