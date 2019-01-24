@@ -49,7 +49,7 @@ export class Threshold {
 }
 
 export async function findOne(id: AnalyticUnitId): Promise<Threshold | null> {
-  const query: any = { id };
+  const query: any = { _id: id };
 
   const threshold = await db.findOne(query);
   if(threshold === null) {
@@ -61,9 +61,9 @@ export async function findOne(id: AnalyticUnitId): Promise<Threshold | null> {
 export async function updateThreshold(id: AnalyticUnitId, value: number, condition: Condition) {
   const threshold = await db.findOne(id);
   if(threshold === null) {
-    return db.insertOne({ id, value, condition });
+    return db.insertOne({ _id: id, value, condition });
   }
-  return db.updateOne({ id }, { value, condition });
+  return db.updateOne({ _id: id }, { value, condition });
 }
 
 export async function removeThreshold(id: AnalyticUnitId) {
