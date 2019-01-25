@@ -74,8 +74,10 @@ class AnalyticUnitManager:
         if task['type'] == 'PUSH':
             # TODO: do it a better way
             res = await worker.recieve_data(data, payload['cache'])
-            res.update({ 'analyticUnitId': analytic_unit_id })
-            return res
+            if res:
+                res.update({ 'analyticUnitId': analytic_unit_id })
+                return res
+            return None
         elif task['type'] == 'LEARN':
             if 'segments' in payload:
                 return await worker.do_train(payload['segments'], data, payload['cache'])
