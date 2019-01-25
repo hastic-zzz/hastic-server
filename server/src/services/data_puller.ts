@@ -2,7 +2,7 @@ import { AnalyticsTask, AnalyticsTaskType } from '../models/analytics_task_model
 import * as AnalyticUnit from '../models/analytic_unit_model';
 import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import { AnalyticsService } from './analytics_service';
-import { HASTIC_API_KEY } from '../config';
+import { HASTIC_API_KEY, GRAFANA_URL } from '../config';
 
 import { queryByMetric } from 'grafana-datasource-kit';
 
@@ -36,7 +36,16 @@ export class DataPuller {
       throw Error(`data puller: can't pull undefined unit`);
     }
 
-    return queryByMetric(unit.metric, unit.panelUrl, from, to, HASTIC_API_KEY);
+    let panelUrl;
+    if(GRAFANA_URL !== null) {
+      panelUrl = GRAFANA_URL;
+    } else {
+      panelUrl = unit.panelUrl;
+    }
+
+    let data = queryByMetric(unit.metric, panelUrl, from, to, HASTIC_API_KEY);
+    return data;
+    
   }
 
   private pushData(unit: AnalyticUnit.AnalyticUnit, data: any) {
@@ -47,6 +56,9 @@ export class DataPuller {
 
     try {
       this.analyticsService.sendTask(task);
+      let fromTime = new Date(data.from).toLocaleTimeString();
+      let toTime = new Date(data.to).toLocaleTimeString();
+      console.log(`pushed ${data.data.length} points to unit: ${unit.id} ${fromTime}-${toTime}`);
     } catch(e) {
       console.log(`data puller got error while push data ${e.message}`);
     }
@@ -62,15 +74,16 @@ export class DataPuller {
       this._runAnalyticUnitPuller(analyticUnit);
     });
 
-    console.log('Data puller started');
+    console.log('data puller started');
   }
 
   public stopPuller() {
     this._unitTimes = {};
-    console.log('Data puller stopped');
+    console.log('data puller stopped');
   }
 
   private async _runAnalyticUnitPuller(analyticUnit: AnalyticUnit.AnalyticUnit) {
+    console.log(`run data puller for analytic unit ${analyticUnit.id}`);
     // TODO: lastDetectionTime can be in ns
     const time = analyticUnit.lastDetectionTime + 1 || Date.now();
     this._unitTimes[analyticUnit.id] = time;
@@ -81,6 +94,7 @@ export class DataPuller {
 
     for await (const data of dataGenerator) {
       if(!_.has(this._unitTimes, analyticUnit.id)) {
+        console.log(`data puller: ${analyticUnit.id} not in _unitTimes, break`);
         break;
       }
 
@@ -94,35 +108,38 @@ export class DataPuller {
       if(cache !== null) {
         cache = cache.data
       }
+      const detector = AnalyticUnit.getDetectorByType(analyticUnit.type);
       let payload = {
         data: payloadValues,
-        from: time,
+        from: this._unitTimes[analyticUnit.id],
         to: now,
-        pattern: analyticUnit.type,
+        analyticUnitType: analyticUnit.type,
+        detector,
         cache
       };
-      this._unitTimes[analyticUnit.id] = now;
       this.pushData(analyticUnit, payload);
+      this._unitTimes[analyticUnit.id] = now;
     }
   }
 
   async * getDataGenerator(analyticUnit: AnalyticUnit.AnalyticUnit, duration: number):
     AsyncIterableIterator<MetricDataChunk> {
 
-    if(!this.analyticsService.ready) {
-      return {
-        columns: [],
-        values: []
-      }
-    }
-
     const getData = async () => {
+      if(!this.analyticsService.ready) {
+        console.log(`data generator: analytic service not ready, return empty result while wait service`);
+        return {
+          columns: [],
+          values: []
+        };
+      }
+
       try {
         const time = this._unitTimes[analyticUnit.id]
         const now = Date.now();
         return await this.pullData(analyticUnit, time, now);
       } catch(err) {
-        throw new Error(`Error while pulling data: ${err.message}`);
+        throw new Error(`error while pulling data: ${err.message}`);
       }
     }
 

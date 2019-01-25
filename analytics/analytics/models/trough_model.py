@@ -17,7 +17,7 @@ class TroughModel(Model):
         super()
         self.segments = []
         self.itroughs = []
-        self.model_trough = []
+        self.model = []
         self.state = {
             'confidence': 1.5,
             'convolve_max': 570000,
@@ -27,68 +27,38 @@ class TroughModel(Model):
             'conv_del_max': 55000,
         }
 
-    def do_fit(self, dataframe: pd.DataFrame, segments: list) -> None:
-        data = dataframe['value']
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list) -> None:
+        data = utils.cut_dataframe(dataframe)
+        data = data['value']
         confidences = []
         convolve_list = []
         patterns_list = []
-        for segment in segments:
-            if segment['labeled']:
-                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
-                percent_of_nans = segment_data.isnull().sum() / len(segment_data)
-                if percent_of_nans > 0 or len(segment_data) == 0:
-                    continue
-                confidence = utils.find_confidence(segment_data)
-                confidences.append(confidence)
-                segment_min_index = segment_data.idxmin()
-                self.itroughs.append(segment_min_index)
-                labeled_trough = utils.get_interval(data, segment_min_index, self.state['WINDOW_SIZE'])
-                labeled_trough = utils.subtract_min_without_nan(labeled_trough)
-                patterns_list.append(labeled_trough)
 
-        self.model_trough = utils.get_av_model(patterns_list)
-        convolve_list = utils.get_convolve(self.itroughs, self.model_trough, data, self.state['WINDOW_SIZE'])
+        for segment in labeled_segments:
+            confidence = utils.find_confidence(segment.data)
+            confidences.append(confidence)
+            segment_min_index = segment.data.idxmin()
+            self.itroughs.append(segment_min_index)
+            labeled = utils.get_interval(data, segment_min_index, self.state['WINDOW_SIZE'])
+            labeled = utils.subtract_min_without_nan(labeled)
+            patterns_list.append(labeled)
+
+        self.model = utils.get_av_model(patterns_list)
+        convolve_list = utils.get_convolve(self.itroughs, self.model, data, self.state['WINDOW_SIZE'])
 
         del_conv_list = []
-        for segment in segments:
-            if segment['deleted']:
-                segment_from_index, segment_to_index, segment_data = utils.parse_segment(segment, dataframe)
-                percent_of_nans = segment_data.isnull().sum() / len(segment_data)
-                if percent_of_nans > 0 or len(segment_data) == 0:
-                    continue
-                del_min_index = segment_data.idxmin()
-                deleted_trough = utils.get_interval(data, del_min_index, self.state['WINDOW_SIZE'])
-                deleted_trough = utils.subtract_min_without_nan(deleted_trough)
-                del_conv_trough = scipy.signal.fftconvolve(deleted_trough, self.model_trough)
-                del_conv_list.append(max(del_conv_trough))
+        for segment in deleted_segments:
+            del_min_index = segment.data.idxmin()
+            deleted = utils.get_interval(data, del_min_index, self.state['WINDOW_SIZE'])
+            deleted = utils.subtract_min_without_nan(deleted)
+            del_conv = scipy.signal.fftconvolve(deleted, self.model)
+            if len(del_conv): del_conv_list.append(max(del_conv))
 
-        if len(confidences) > 0:
-            self.state['confidence'] = float(min(confidences))
-        else:
-            self.state['confidence'] = 1.5
-
-        if len(convolve_list) > 0:
-            self.state['convolve_max'] = float(max(convolve_list))
-        else:
-            self.state['convolve_max'] = self.state['WINDOW_SIZE']
-
-        if len(convolve_list) > 0:
-            self.state['convolve_min'] = float(min(convolve_list))
-        else:
-            self.state['convolve_min'] = self.state['WINDOW_SIZE']
-
-        if len(del_conv_list) > 0:
-            self.state['conv_del_min'] = float(min(del_conv_list))
-        else:
-            self.state['conv_del_min'] = self.state['WINDOW_SIZE']
-
-        if len(del_conv_list) > 0:
-            self.state['conv_del_max'] = float(max(del_conv_list))
-        else:
-            self.state['conv_del_max'] = self.state['WINDOW_SIZE']
+        self._update_fiting_result(self.state, confidences, convolve_list, del_conv_list)
 
     def do_detect(self, dataframe: pd.DataFrame):
-        data = dataframe['value']
+        data = utils.cut_dataframe(dataframe)
+        data = data['value']
         window_size = int(len(data)/SMOOTHING_COEFF) #test ws on flat data
         all_mins = argrelextrema(np.array(data), np.less)[0]
 
@@ -111,7 +81,7 @@ class TroughModel(Model):
         if len(segments) == 0 or len(self.itroughs) == 0 :
             segments = []
             return segments
-        pattern_data = self.model_trough
+        pattern_data = self.model
         for segment in segments:
             if segment > self.state['WINDOW_SIZE']:
                 convol_data = utils.get_interval(data, segment, self.state['WINDOW_SIZE'])

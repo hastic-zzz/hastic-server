@@ -15,6 +15,7 @@ export const ANALYTIC_UNITS_DATABASE_PATH = path.join(DATA_PATH, 'analytic_units
 export const SEGMENTS_DATABASE_PATH = path.join(DATA_PATH, 'segments.db');
 export const ANALYTIC_UNIT_CACHES_DATABASE_PATH = path.join(DATA_PATH, 'analytic_unit_caches.db');
 export const PANELS_DATABASE_PATH = path.join(DATA_PATH, 'panels.db');
+export const THRESHOLD_DATABASE_PATH = path.join(DATA_PATH, 'treshold.db');
 
 
 export const HASTIC_PORT = getConfigField('HASTIC_PORT', '8000');
@@ -22,6 +23,7 @@ export const ZMQ_IPC_PATH = getConfigField('ZMQ_IPC_PATH', path.join(os.tmpdir()
 export const ZMQ_DEV_PORT = getConfigField('ZMQ_DEV_PORT', '8002');
 export const ZMQ_HOST = getConfigField('ZMQ_HOST', '127.0.0.1');
 export const HASTIC_API_KEY = getConfigField('HASTIC_API_KEY');
+export const GRAFANA_URL = getConfigField('GRAFANA_URL', null);
 export const HASTIC_WEBHOOK_URL = getConfigField('HASTIC_WEBHOOK_URL', null);
 export const HASTIC_WEBHOOK_TYPE = getConfigField('HASTIC_WEBHOOK_TYPE', 'application/x-www-form-urlencoded');
 export const HASTIC_WEBHOOK_SECRET = getConfigField('HASTIC_WEBHOOK_SECRET', null);
@@ -62,7 +64,7 @@ function getPackageVersion() {
       let packageJson: any = getJsonDataSync(packageFile);
       return packageJson.version;
     } else {
-      console.debug(`Can't find package file ${packageFile}`);
+      console.log(`Can't find package file ${packageFile}`);
       return null;
     }
   }
@@ -72,13 +74,18 @@ function getGitInfo() {
   let gitRoot = path.join(__dirname, '../../.git');
   let gitHeadFile = path.join(gitRoot, 'HEAD');
   if(!fs.existsSync(gitHeadFile)) {
-    console.debug(`Can't find git HEAD file ${gitHeadFile}`);
+    console.error(`Can't find git HEAD file ${gitHeadFile}`);
     return null;
   }
-  const rev = fs.readFileSync(gitHeadFile).toString();
-  let branchPath = rev.indexOf(':') === -1 ? rev : rev.slice(5, -1);
+  const ref = fs.readFileSync(gitHeadFile).toString();
+  let branchPath = ref.indexOf(':') === -1 ? ref : ref.slice(5, -1);
   let branch = branchPath.split('/').pop();
-  let commitHash = fs.readFileSync(`${gitRoot}/${branchPath}`).toString().slice(0, 7);
+  const branchFilename = `${gitRoot}/${branchPath}`;
+  if(!fs.existsSync(branchFilename)) {
+    console.error(`Can't find git branch file ${branchFilename}`);
+    return null;
+  }
+  let commitHash = fs.readFileSync(branchFilename).toString().slice(0, 7);
   return { branch, commitHash };
 }
 

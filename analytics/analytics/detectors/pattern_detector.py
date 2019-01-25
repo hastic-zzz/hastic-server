@@ -29,13 +29,15 @@ def resolve_model_by_pattern(pattern: str) -> models.Model:
         return models.CustomModel()
     raise ValueError('Unknown pattern "%s"' % pattern)
 
-
+AnalyticUnitId = str
 class PatternDetector(Detector):
 
-    def __init__(self, pattern_type):
+    def __init__(self, pattern_type: str, analytic_unit_id: AnalyticUnitId):
+        self.analytic_unit_id = analytic_unit_id
         self.pattern_type = pattern_type
         self.model = resolve_model_by_pattern(self.pattern_type)
-        self.window_size = 100
+        self.max_window_size = 150
+        self.window_size = 0
         self.bucket = DataBucket()
 
     def train(self, dataframe: pd.DataFrame, segments: list, cache: Optional[models.ModelCache]) -> models.ModelCache:
@@ -46,6 +48,7 @@ class PatternDetector(Detector):
         }
 
     def detect(self, dataframe: pd.DataFrame, cache: Optional[models.ModelCache]) -> dict:
+        logger.debug('Unit {} got {} data points for detection'.format(self.analytic_unit_id, len(dataframe)))
         # TODO: split and sleep (https://github.com/hastic/hastic-server/pull/124#discussion_r214085643)
         detected = self.model.detect(dataframe, cache)
 
@@ -63,13 +66,12 @@ class PatternDetector(Detector):
 
     def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
         self.bucket.receive_data(data.dropna())
-        if cache != None:
+        if cache and self.window_size == 0:
             self.window_size = cache['WINDOW_SIZE']
 
         if len(self.bucket.data) >= self.window_size and cache != None:
             res = self.detect(self.bucket.data, cache)
-
-            excess_data = len(self.bucket.data) - self.window_size
+            excess_data = len(self.bucket.data) - self.max_window_size
             self.bucket.drop_data(excess_data)
             return res
         

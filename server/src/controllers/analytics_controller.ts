@@ -2,10 +2,11 @@ import { AnalyticsMessageMethod, AnalyticsMessage } from '../models/analytics_me
 import { AnalyticsTask, AnalyticsTaskType, AnalyticsTaskId } from '../models/analytics_task_model';
 import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import * as Segment from '../models/segment_model';
+import * as Threshold from '../models/threshold_model';
 import * as AnalyticUnit from '../models/analytic_unit_model';
 import { AnalyticsService } from '../services/analytics_service';
-import { sendWebhook } from '../services/notification_service';
-import { HASTIC_API_KEY } from '../config'
+import { AlertService } from '../services/alert_service';
+import { HASTIC_API_KEY, GRAFANA_URL } from '../config';
 import { DataPuller } from '../services/data_puller';
 
 import { queryByMetric } from 'grafana-datasource-kit';
@@ -13,6 +14,7 @@ import { queryByMetric } from 'grafana-datasource-kit';
 
 import * as _ from 'lodash';
 
+const SECONDS_IN_MINUTE = 60;
 
 type TaskResult = any;
 type DetectionResult = any;
@@ -21,6 +23,7 @@ export type TaskResolver = (taskResult: TaskResult) => void;
 const taskResolvers = new Map<AnalyticsTaskId, TaskResolver>();
 
 let analyticsService: AnalyticsService = undefined;
+let alertService: AlertService = undefined;
 let dataPuller: DataPuller;
 
 
@@ -41,8 +44,14 @@ function onTaskResult(taskResult: TaskResult) {
   }
 }
 
-function onDetect(detectionResult: DetectionResult) {
-  processDetectionResult(detectionResult.analyticUnitId, detectionResult);
+async function onDetect(detectionResult: DetectionResult) {
+  let id = detectionResult.analyticUnitId;
+  let payload = await processDetectionResult(id, detectionResult);
+  await Promise.all([
+    Segment.insertSegments(payload.segments),
+    AnalyticUnitCache.setData(id, payload.cache),
+    AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime),
+  ]);
 }
 
 async function onMessage(message: AnalyticsMessage) {
@@ -55,7 +64,7 @@ async function onMessage(message: AnalyticsMessage) {
   }
 
   if(message.method === AnalyticsMessageMethod.DETECT) {
-    onDetect(message.payload.payload);
+    await onDetect(message.payload.payload);
     methodResolved = true;
   }
 
@@ -72,12 +81,17 @@ async function onMessage(message: AnalyticsMessage) {
 
 export function init() {
   analyticsService = new AnalyticsService(onMessage);
+
+  alertService = new AlertService();
+  alertService.startAlerting();
+
   dataPuller = new DataPuller(analyticsService);
   dataPuller.runPuller();
 }
 
 export function terminate() {
   analyticsService.close();
+  alertService.stopAlerting();
 }
 
 async function runTask(task: AnalyticsTask): Promise<TaskResult> {
@@ -85,6 +99,45 @@ async function runTask(task: AnalyticsTask): Promise<TaskResult> {
     taskResolvers.set(task.id, resolver); // it will be resolved in onTaskResult()
     analyticsService.sendTask(task);      // we dont wait for result here
   });
+}
+
+async function query(analyticUnit: AnalyticUnit.AnalyticUnit, detector: AnalyticUnit.DetectorType) {
+  let range;
+  if(detector === AnalyticUnit.DetectorType.PATTERN) {
+    const segments = await Segment.findMany(analyticUnit.id, { labeled: true });
+    if(segments.length === 0) {
+      throw new Error('Need at least 1 labeled segment');
+    }
+
+    range = getQueryRangeForLearningBySegments(segments);
+  } else if(detector === AnalyticUnit.DetectorType.THRESHOLD) {
+    const now = Date.now();
+    range = {
+      from: now - 5 * SECONDS_IN_MINUTE * 1000,
+      to: now
+    };
+  }
+  console.log(`query time range: from ${new Date(range.from)} to ${new Date(range.to)}`);
+
+  let panelUrl;
+  if(GRAFANA_URL !== null) {
+    panelUrl = GRAFANA_URL; 
+  } else {
+    panelUrl = analyticUnit.panelUrl;
+  }
+
+  const queryResult = await queryByMetric(
+    analyticUnit.metric,
+    panelUrl,
+    range.from,
+    range.to,
+    HASTIC_API_KEY
+  );
+  const data = queryResult.values;
+  if(data.length === 0) {
+    throw new Error('Empty data to detect on');
+  }
+  return data;
 }
 
 /**
@@ -107,30 +160,18 @@ function getQueryRangeForLearningBySegments(segments: Segment.Segment[]) {
 }
 
 export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
-  console.debug('learning started...');
+  console.log('learning started...');
   try {
 
     let analyticUnit = await AnalyticUnit.findById(id);
     if(analyticUnit.status === AnalyticUnit.AnalyticUnitStatus.LEARNING) {
-      throw new Error('Can`t starn learning when it`s already started [' + id + ']');
+      throw new Error('Can`t start learning when it`s already started [' + id + ']');
     }
 
-    let segments = await Segment.findMany(id, { labeled: true });
-    if(segments.length === 0) {
-      throw new Error('Need at least 1 labeled segment');
+    if(!isAnalyticReady()) {
+      throw new Error('Analytics is not ready');
     }
 
-    let segmentObjs = segments.map(s => s.toObject());
-
-    let { from, to } = getQueryRangeForLearningBySegments(segments);
-    console.debug(`query time range: from ${new Date(from)} to ${new Date(to)}`);
-    let queryResult = await queryByMetric(analyticUnit.metric, analyticUnit.panelUrl, from, to, HASTIC_API_KEY);
-    let data = queryResult.values;
-    if(data.length === 0) {
-      throw new Error('Empty data to learn on');
-    }
-
-    let pattern = analyticUnit.type;
     let oldCache = await AnalyticUnitCache.findById(id);
     if(oldCache !== null) {
       oldCache = oldCache.data;
@@ -138,18 +179,37 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
       await AnalyticUnitCache.create(id);
     }
 
-    let deletedSegments = await Segment.findMany(id, { deleted: true });
-    let deletedSegmentsObjs = deletedSegments.map(s => s.toObject());
-    segmentObjs = _.concat(segmentObjs, deletedSegmentsObjs);
+    let analyticUnitType = analyticUnit.type;
+    let detector = AnalyticUnit.getDetectorByType(analyticUnitType);
+    let taskPayload: any = { detector, analyticUnitType, cache: oldCache };
+
+    if(detector === AnalyticUnit.DetectorType.PATTERN) {
+      let segments = await Segment.findMany(id, { labeled: true });
+      if(segments.length === 0) {
+        throw new Error('Need at least 1 labeled segment');
+      }
+
+      let segmentObjs = segments.map(s => s.toObject());
+
+      let deletedSegments = await Segment.findMany(id, { deleted: true });
+      let deletedSegmentsObjs = deletedSegments.map(s => s.toObject());
+      segmentObjs = _.concat(segmentObjs, deletedSegmentsObjs);
+      taskPayload.segments = segmentObjs;
+    } else if(detector === AnalyticUnit.DetectorType.THRESHOLD) {
+      const threshold = await Threshold.findOne(id);
+      taskPayload.threshold = threshold;
+    }
+
+    taskPayload.data = await query(analyticUnit, detector);
 
     let task = new AnalyticsTask(
-      id, AnalyticsTaskType.LEARN, { pattern, segments: segmentObjs, data, cache: oldCache }
+      id, AnalyticsTaskType.LEARN, taskPayload
     );
     AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
-    console.debug(`run task, id:${id}`);
+    console.log(`run task, id:${id}`);
     let result = await runTask(task);
     if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
-      throw new Error(result.error)
+      throw new Error(result.error);
     }
     await AnalyticUnitCache.setData(id, result.payload.cache);
   } catch (err) {
@@ -163,22 +223,16 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId) {
   let previousLastDetectionTime: number = undefined;
 
   try {
+    if(!isAnalyticReady()) {
+      throw new Error('Analytics is not ready');
+    }
+
     let unit = await AnalyticUnit.findById(id);
     previousLastDetectionTime = unit.lastDetectionTime;
-    let pattern = unit.type;
+    let analyticUnitType = unit.type;
+    let detector = AnalyticUnit.getDetectorByType(analyticUnitType);
 
-    let segments = await Segment.findMany(id, { labeled: true });
-    if(segments.length === 0) {
-      throw new Error('Need at least 1 labeled segment');
-    }
-
-    let { from, to } = getQueryRangeForLearningBySegments(segments);
-    console.debug(`query time range: from ${new Date(from)} to ${new Date(to)}`);
-    let queryResult = await queryByMetric(unit.metric, unit.panelUrl, from, to, HASTIC_API_KEY);
-    let data = queryResult.values;
-    if(data.length === 0) {
-      throw new Error('Empty data to detect on');
-    }
+    const data = await query(unit, detector);
 
     let oldCache = await AnalyticUnitCache.findById(id);
     if(oldCache !== null) {
@@ -189,33 +243,22 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId) {
     let task = new AnalyticsTask(
       id,
       AnalyticsTaskType.DETECT,
-      { pattern, lastDetectionTime: unit.lastDetectionTime, data, cache: oldCache }
+      { detector, analyticUnitType, lastDetectionTime: unit.lastDetectionTime, data, cache: oldCache }
     );
-    console.debug(`run task, id:${id}`);
+    console.log(`run task, id:${id}`);
     let result = await runTask(task);
     if(result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
-      return [];
+      throw new Error(result.error);
     }
 
     let payload = await processDetectionResult(id, result.payload);
-
-    // TODO: implement segments merging without removing labeled
-    // if(segments.length > 0 && payload.segments.length > 0) {
-    //   let lastOldSegment = segments[segments.length - 1];
-    //   let firstNewSegment = payload.segments[0];
-
-    //   if(firstNewSegment.from <= lastOldSegment.to) {
-    //     payload.segments[0].from = lastOldSegment.from;
-    //     Segment.removeSegments([lastOldSegment.id])
-    //   }
-    // }
 
     await deleteNonDetectedSegments(id, payload);
 
     await Promise.all([
       Segment.insertSegments(payload.segments),
       AnalyticUnitCache.setData(id, payload.cache),
-      AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime),      
+      AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime),
     ]);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
   } catch(err) {
@@ -245,7 +288,7 @@ export async function deleteNonDetectedSegments(id, payload) {
   Segment.removeSegments(segmentsToRemove.map(s => s.id));
 }
 
-async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitId, detectionResult: DetectionResult): 
+async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitId, detectionResult: DetectionResult):
   Promise<{
     lastDetectionTime: number,
     segments: Segment.Segment[],
@@ -259,23 +302,32 @@ async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitI
       `Missing lastDetectionTime in result or it is corrupted: ${JSON.stringify(detectionResult)}`
     );
   }
+  console.log(`got detection result for ${analyticUnitId} with ${detectionResult.segments.length} segments`);
 
-  const segments = detectionResult.segments.map(
+  const sortedSegments: {from, to}[] = _.sortBy(detectionResult.segments, 'from');
+  const segments = sortedSegments.map(
     segment => new Segment.Segment(analyticUnitId, segment.from, segment.to, false, false)
   );
   const analyticUnit = await AnalyticUnit.findById(analyticUnitId);
-  if(analyticUnit.alert) {
-    if(!_.isEmpty(segments)) {
-      try {
-        sendWebhook(analyticUnit.name, _.last(segments));
-      } catch(err) {
-        console.error(`Error while sending webhook: ${err.message}`);
-      }
+  if (!_.isEmpty(segments) && analyticUnit.alert) {
+    try {
+      alertService.receiveAlert(analyticUnit, _.last(segments));
+    } catch(err) {
+      console.error(`error while sending webhook: ${err.message}`);
     }
+  } else {
+    let reasons = [];
+    if(!analyticUnit.alert) {
+      reasons.push('alerting disabled');
+    }
+    if(_.isEmpty(segments)) {
+      reasons.push('segments empty');
+    }
+    console.log(`skip sending webhook for ${analyticUnit.id}, ${reasons.join(', ')}`);
   }
   return {
     lastDetectionTime: detectionResult.lastDetectionTime,
-    segments: segments,
+    segments,
     cache: detectionResult.cache
   };
 
@@ -302,10 +354,17 @@ export async function setAlert(analyticUnitId: AnalyticUnit.AnalyticUnitId, aler
     if(alert) {
       const analyticUnit = await AnalyticUnit.findById(analyticUnitId);
       dataPuller.addUnit(analyticUnit);
+      alertService.addAnalyticUnit(analyticUnit);
     } else {
       dataPuller.deleteUnit(analyticUnitId);
+      alertService.removeAnalyticUnit(analyticUnitId);
     }
   }
+}
+
+export async function setMetric(analyticUnitId: AnalyticUnit.AnalyticUnitId, metric: any, datasource: any) {
+  metric.datasource = datasource;
+  AnalyticUnit.setMetric(analyticUnitId, metric);
 }
 
 export async function updateSegments(
@@ -319,8 +378,23 @@ export async function updateSegments(
   ]);
   removed = removed.map(s => s._id);
 
+  runFirstLearning(id);
+  return { addedIds, removed };
+}
+
+export async function updateThreshold(
+  id: AnalyticUnit.AnalyticUnitId,
+  value: number,
+  condition: Threshold.Condition
+) {
+  await Threshold.updateThreshold(id, value, condition);
+
+  runFirstLearning(id);
+}
+
+async function runFirstLearning(id: AnalyticUnit.AnalyticUnitId) {
   // TODO: move setting status somehow "inside" learning
   await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.PENDING);
-  runLearning(id).then(() => runDetect(id));
-  return { addedIds, removed };
+  runLearning(id)
+    .then(() => runDetect(id));
 }

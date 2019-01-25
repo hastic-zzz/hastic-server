@@ -1,6 +1,7 @@
 data
 dist
 config.json
+.env
 
 node_modules/
 

@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 import math
 
+RELATIVE_TOLERANCE = 1e-1
+
 class TestUtils(unittest.TestCase):
 
     #example test for test's workflow purposes
@@ -14,8 +16,7 @@ class TestUtils(unittest.TestCase):
         segment = [1, 2, 0, 6, 8, 5, 3]
         utils_result = utils.find_confidence(segment)
         result = 1.6
-        relative_tolerance = 1e-2
-        self.assertTrue(math.isclose(utils_result, result, rel_tol = relative_tolerance))
+        self.assertTrue(math.isclose(utils_result, result, rel_tol = RELATIVE_TOLERANCE))
     
     def test_confidence_all_nan_value(self):
         segment = [np.NaN, np.NaN, np.NaN, np.NaN]
@@ -25,8 +26,7 @@ class TestUtils(unittest.TestCase):
         data = [np.NaN, np.NaN, 0, 8]
         utils_result = utils.find_confidence(data)
         result = 1.6
-        relative_tolerance = 1e-2
-        self.assertTrue(math.isclose(utils_result, result, rel_tol = relative_tolerance))
+        self.assertTrue(math.isclose(utils_result, result, rel_tol = RELATIVE_TOLERANCE))
     
     def test_interval_all_normal_value(self):
         data = [1, 2, 1, 2, 4, 1, 2, 4, 5, 6]
@@ -81,9 +81,76 @@ class TestUtils(unittest.TestCase):
         data = []
         pattern_index = []
         window_size = 2
+        window_size_zero = 0
         av_model = []
         result = []
         self.assertEqual(utils.get_convolve(pattern_index, av_model, data, window_size), result)
+        self.assertEqual(utils.get_convolve(pattern_index, av_model, data, window_size_zero), result)
+    
+    def test_find_jump_parameters_center(self):
+        segment = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+        segment = pd.Series(segment)
+        jump_center = [10, 11]
+        self.assertIn(utils.find_parameters(segment, 0, 'jump')[0], jump_center)
+    
+    def test_find_jump_parameters_height(self):
+        segment = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+        segment = pd.Series(segment)
+        jump_height = [3.5, 4]
+        self.assertGreaterEqual(utils.find_parameters(segment, 0, 'jump')[1], jump_height[0])
+        self.assertLessEqual(utils.find_parameters(segment, 0, 'jump')[1], jump_height[1])
+    
+    def test_find_jump_parameters_length(self):
+        segment = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+        segment = pd.Series(segment)
+        jump_length = 2
+        self.assertEqual(utils.find_parameters(segment, 0, 'jump')[2], jump_length)
+    
+    def test_find_drop_parameters_center(self):
+        segment = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        segment = pd.Series(segment)
+        drop_center = [14, 15, 16]
+        self.assertIn(utils.find_parameters(segment, 0, 'drop')[0], drop_center)
+    
+    def test_find_drop_parameters_height(self):
+        segment = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        segment = pd.Series(segment)
+        drop_height = [3.5, 4]
+        self.assertGreaterEqual(utils.find_parameters(segment, 0, 'drop')[1], drop_height[0])
+        self.assertLessEqual(utils.find_parameters(segment, 0, 'drop')[1], drop_height[1])
+    
+    def test_find_drop_parameters_length(self):
+        segment = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        segment = pd.Series(segment)
+        drop_length = 2
+        self.assertEqual(utils.find_parameters(segment, 0, 'drop')[2], drop_length)
+    
+    def test_get_av_model_empty_data(self):
+        patterns_list = []
+        result = []
+        self.assertEqual(utils.get_av_model(patterns_list), result)
+    
+    def test_find_jump_nan_data(self):
+        data = [np.NaN, np.NaN, np.NaN, np.NaN]
+        data = pd.Series(data)
+        length = 2
+        height = 3
+        length_zero = 0
+        height_zero = 0
+        result = []
+        self.assertEqual(utils.find_jump(data, height, length), result)
+        self.assertEqual(utils.find_jump(data, height_zero, length_zero), result)
+    
+    def test_find_drop_nan_data(self):
+        data = [np.NaN, np.NaN, np.NaN, np.NaN]
+        data = pd.Series(data)
+        length = 2
+        height = 3
+        length_zero = 0
+        height_zero = 0
+        result = []
+        self.assertEqual(utils.find_drop(data, height, length), result)
+        self.assertEqual(utils.find_drop(data, height_zero, length_zero), result)
     
     def test_get_distribution_density(self):
         segment = [1, 1, 1, 3, 5, 5, 5]
@@ -91,43 +158,37 @@ class TestUtils(unittest.TestCase):
         result = (3, 5, 1)
         self.assertEqual(utils.get_distribution_density(segment), result)
     
-    def test_find_jump_parameters_center(self):
-        segment = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
-        segment = pd.Series(segment)
-        jump_center = [10, 11]
-        self.assertIn(utils.find_jump_parameters(segment, 0)[0], jump_center)
+    def test_get_distribution_density_right(self):
+        data = [1.0, 5.0, 5.0, 4.0]
+        data = pd.Series(data)
+        median = 3.0
+        max_line = 5.0
+        min_line = 1.0
+        utils_result = utils.get_distribution_density(data)
+        self.assertTrue(math.isclose(utils_result[0], median, rel_tol = RELATIVE_TOLERANCE))
+        self.assertTrue(math.isclose(utils_result[1], max_line, rel_tol = RELATIVE_TOLERANCE))
+        self.assertTrue(math.isclose(utils_result[2], min_line, rel_tol = RELATIVE_TOLERANCE))
     
-    def test_find_jump_parameters_height(self):
-        segment = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
-        segment = pd.Series(segment)
-        jump_height = [3.5, 4]
-        self.assertGreaterEqual(utils.find_jump_parameters(segment, 0)[1], jump_height[0])
-        self.assertLessEqual(utils.find_jump_parameters(segment, 0)[1], jump_height[1])
+    def test_get_distribution_density_left(self):
+        data = [1.0, 1.0, 2.0, 1.0, 5.0]
+        data = pd.Series(data)
+        median = 3.0
+        max_line = 5.0
+        min_line = 1.0
+        utils_result = utils.get_distribution_density(data)
+        self.assertTrue(math.isclose(utils_result[0], median, rel_tol = RELATIVE_TOLERANCE))
+        self.assertTrue(math.isclose(utils_result[1], max_line, rel_tol = RELATIVE_TOLERANCE))
+        self.assertTrue(math.isclose(utils_result[2], min_line, rel_tol = RELATIVE_TOLERANCE))
     
-    def test_find_jump_parameters_length(self):
-        segment = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+    def test_get_distribution_density_short_data(self):
+        data = [1.0, 5.0]
+        data = pd.Series(data)
+        segment = [1.0]
         segment = pd.Series(segment)
-        jump_length = 2
-        self.assertEqual(utils.find_jump_parameters(segment, 0)[2], jump_length)
-    
-    def test_find_drop_parameters_center(self):
-        segment = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-        segment = pd.Series(segment)
-        drop_center = [14, 15]
-        self.assertIn(utils.find_drop_parameters(segment, 0)[0], drop_center)
-    
-    def test_find_drop_parameters_height(self):
-        segment = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-        segment = pd.Series(segment)
-        drop_height = [3.5, 4]
-        self.assertGreaterEqual(utils.find_drop_parameters(segment, 0)[1], drop_height[0])
-        self.assertLessEqual(utils.find_drop_parameters(segment, 0)[1], drop_height[1])
-    
-    def test_find_drop_parameters_length(self):
-        segment = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-        segment = pd.Series(segment)
-        drop_length = 2
-        self.assertEqual(utils.find_drop_parameters(segment, 0)[2], drop_length)
+        utils_result_data = utils.get_distribution_density(data)
+        utils_result_segment = utils.get_distribution_density(segment)
+        self.assertEqual(len(utils_result_data), 3)
+        self.assertEqual(utils_result_segment, (0, 0, 0))
 
 if __name__ == '__main__':
     unittest.main()

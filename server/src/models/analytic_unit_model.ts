@@ -2,9 +2,46 @@ import { Collection, makeDBQ } from '../services/data_service';
 
 import { Metric } from 'grafana-datasource-kit';
 
+import * as _ from 'lodash';
 
 let db = makeDBQ(Collection.ANALYTIC_UNITS);
 
+
+export const ANALYTIC_UNIT_TYPES = {
+  pattern: [
+    {
+      name: 'General',
+      value: 'GENERAL'
+    },
+    {
+      name: 'Peaks',
+      value: 'PEAK'
+    },
+    {
+      name: 'Troughs',
+      value: 'TROUGH'
+    },
+    {
+      name: 'Jumps',
+      value: 'JUMP'
+    },
+    {
+      name: 'Drops',
+      value: 'DROP'
+    }
+  ],
+  threshold: [
+    {
+      name: 'Threshold',
+      value: 'THRESHOLD'
+    }
+  ]
+};
+
+export enum DetectorType {
+  PATTERN = 'pattern',
+  THRESHOLD = 'threshold'
+};
 
 export type AnalyticUnitId = string;
 export enum AnalyticUnitStatus {
@@ -27,18 +64,20 @@ export type FindManyQuery = {
   error?: string
 };
 
+
 export class AnalyticUnit {
   constructor(
     public name: string,
     public panelUrl: string,
     public type: string,
-    public metric: Metric,
+    public metric?: Metric,
     public alert?: boolean,
     public id?: AnalyticUnitId,
     public lastDetectionTime?: number,
     public status?: AnalyticUnitStatus,
-    public error?: string,
+    public error?: string
   ) {
+
     if(name === undefined) {
       throw new Error(`Missing field "name"`);
     }
@@ -48,18 +87,20 @@ export class AnalyticUnit {
     if(type === undefined) {
       throw new Error(`Missing field "type"`);
     }
-    if(metric === undefined) {
-      throw new Error(`Missing field "metric"`);
-    }
   }
 
   public toObject() {
+    let metric;
+    if(this.metric !== undefined) {
+      metric = this.metric.toObject();
+    }
+
     return {
       _id: this.id,
       name: this.name,
       panelUrl: this.panelUrl,
       type: this.type,
-      metric: this.metric.toObject(),
+      metric,
       alert: this.alert,
       lastDetectionTime: this.lastDetectionTime,
       status: this.status,
@@ -71,11 +112,15 @@ export class AnalyticUnit {
     if(obj === undefined) {
       throw new Error('obj is undefined');
     }
+    let metric: Metric;
+    if(obj.metric !== undefined) {
+      metric = Metric.fromObject(obj.metric);
+    }
     return new AnalyticUnit(
       obj.name,
       obj.panelUrl,
       obj.type,
-      Metric.fromObject(obj.metric),
+      metric,
       obj.alert,
       obj._id,
       obj.lastDetectionTime,
@@ -135,4 +180,22 @@ export async function setDetectionTime(id: AnalyticUnitId, lastDetectionTime: nu
 
 export async function setAlert(id: AnalyticUnitId, alert: boolean) {
   return db.updateOne(id, { alert });
+}
+
+export async function setMetric(id: AnalyticUnitId, metric: Metric) {
+  return db.updateOne(id, { metric });
+}
+
+export function getDetectorByType(analyticUnitType: string): DetectorType {
+  let detector;
+  _.forOwn(ANALYTIC_UNIT_TYPES, (types, detectorType) => {
+    if(_.find(types, { value: analyticUnitType }) !== undefined) {
+      detector = detectorType;
+    }
+  });
+
+  if(detector === undefined) {
+    throw new Error(`Can't find detector for analytic unit of type "${analyticUnitType}"`);
+  }
+  return detector;
 }

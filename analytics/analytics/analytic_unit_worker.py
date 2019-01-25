@@ -2,7 +2,7 @@ import config
 import detectors
 import logging
 import pandas as pd
-from typing import Optional
+from typing import Optional, Union
 from models import ModelCache
 from concurrent.futures import Executor, CancelledError
 import asyncio
@@ -19,10 +19,10 @@ class AnalyticUnitWorker:
         self._training_feature: asyncio.Future = None
 
     async def do_train(
-        self, segments: list, data: pd.DataFrame, cache: Optional[ModelCache]
+        self, payload: Union[list, dict], data: pd.DataFrame, cache: Optional[ModelCache]
     ) -> ModelCache:
         self._training_feature = asyncio.get_event_loop().run_in_executor(
-            self._executor, self._detector.train, data, segments, cache
+            self._executor, self._detector.train, data, payload, cache
         )
         try:
             new_cache: ModelCache = await self._training_feature
