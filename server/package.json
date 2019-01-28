@@ -13,7 +13,7 @@
     "type": "git",
     "url": "git+https://github.com/hastic/hastic-server.git"
   },
-  "author": "Hastic Core Team",
+  "author": "CorpGlory Inc.",
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/hastic/hastic-server/issues"
