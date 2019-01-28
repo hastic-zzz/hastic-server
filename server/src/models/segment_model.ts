@@ -97,7 +97,7 @@ export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promis
 
 export async function insertSegments(segments: Segment[]) {
   if(_.isEmpty(segments)) {
-    return;
+    return [];
   }
   let analyticUnitId: AnalyticUnitId = segments[0].analyticUnitId;
   let segmentIdsToRemove: SegmentId[] = [];
