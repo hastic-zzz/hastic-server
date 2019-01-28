@@ -10,6 +10,7 @@ services:
       HASTIC_API_KEY: ${HASTIC_API_KEY}
       HASTIC_WEBHOOK_URL: ${HASTIC_WEBHOOK_URL}
       HASTIC_WEBHOOK_TYPE: ${HASTIC_WEBHOOK_TYPE}
+      GRAFANA_URL: ${GRAFANA_URL}
     ports:
       - 8000:8000
     volumes:
