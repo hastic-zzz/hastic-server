@@ -37,7 +37,7 @@ export const ZMQ_CONNECTION_STRING = createZMQConnectionString();
 
 
 function getConfigField(field: string, defaultVal?: any) {
-  let val = defaultVal;
+  let val;
 
   if(process.env[field] !== undefined) {
     val = process.env[field];
@@ -50,7 +50,10 @@ function getConfigField(field: string, defaultVal?: any) {
   }
 
   if(val === undefined || val == '') {
-    throw new Error(`Please configure ${field}`);
+    if(defaultVal === undefined) {
+      throw new Error(`Please configure ${field}`);
+    }
+    return defaultVal;
   }
   return val;
 }
