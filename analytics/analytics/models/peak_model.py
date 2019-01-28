@@ -33,25 +33,37 @@ class PeakModel(Model):
         confidences = []
         convolve_list = []
         patterns_list = []
+        pattern_width = []
+        pattern_height = []
+        pattern_timestamp = []
         for segment in labeled_segments:
-            confidence = utils.find_confidence(segment.data)
+            confidence = utils.find_confidence(segment.data)[0]
             confidences.append(confidence)
             segment_max_index = segment.data.idxmax()
             self.ipeaks.append(segment_max_index)
+            pattern_timestamp.append(dataframe['timestamp'][segment_max_index])
             labeled = utils.get_interval(data, segment_max_index, self.state['WINDOW_SIZE'])
             labeled = utils.subtract_min_without_nan(labeled)
             patterns_list.append(labeled)
+            pattern_height.append(utils.find_confidence(labeled)[1])
+            pattern_width.append(utils.find_peak_width(labeled))
 
         self.model = utils.get_av_model(patterns_list)
         convolve_list = utils.get_convolve(self.ipeaks, self.model, data, self.state['WINDOW_SIZE'])
 
         del_conv_list = []
+        delete_pattern_width = []
+        delete_pattern_height = []
+        delete_pattern_timestamp = []
         for segment in deleted_segments:
             del_max_index = segment.data.idxmax()
+            delete_pattern_timestamp.append(dataframe['timestamp'][del_max_index])
             deleted = utils.get_interval(data, del_max_index, self.state['WINDOW_SIZE'])
             deleted = utils.subtract_min_without_nan(deleted)
             del_conv = scipy.signal.fftconvolve(deleted, self.model)
             if len(del_conv): del_conv_list.append(max(del_conv))
+            delete_pattern_height.append(utils.find_confidence(deleted)[1])
+            delete_pattern_width.append(utils.find_peak_width(deleted))
 
         self._update_fiting_result(self.state, confidences, convolve_list, del_conv_list)
 

@@ -37,7 +37,7 @@ class JumpModel(Model):
         jump_length_list = []
         patterns_list = []
         for segment in labeled_segments:
-            confidence = utils.find_confidence(segment.data)
+            confidence = utils.find_confidence(segment.data)[0]
             confidences.append(confidence)
             segment_cent_index, jump_height, jump_length = utils.find_parameters(segment.data, segment.start, 'jump')
             jump_height_list.append(jump_height)

@@ -37,7 +37,7 @@ class DropModel(Model):
         patterns_list = []
 
         for segment in labeled_segments:
-            confidence = utils.find_confidence(segment.data)
+            confidence = utils.find_confidence(segment.data)[0]
             confidences.append(confidence)
             segment_cent_index, drop_height, drop_length = utils.find_parameters(segment.data, segment.start, 'drop')
             drop_height_list.append(drop_height)
