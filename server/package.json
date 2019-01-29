@@ -13,7 +13,7 @@
     "type": "git",
     "url": "git+https://github.com/hastic/hastic-server.git"
   },
-  "author": "Hastic Core Team",
+  "author": "CorpGlory Inc.",
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/hastic/hastic-server/issues"
@@ -38,7 +38,7 @@
     "es6-promise": "^4.2.4",
     "event-stream": "3.3.4",
     "file-loader": "^1.1.11",
-    "grafana-datasource-kit": "0.1.6",
+    "grafana-datasource-kit": "0.1.7",
     "jest": "^23.1.1",
     "koa": "^2.0.46",
     "koa-bodyparser": "^4.2.0",

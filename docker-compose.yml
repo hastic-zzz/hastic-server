@@ -1,15 +1,16 @@
-version: '2'
+version: '2.1'
 services:
   server:
     image: hastic/server:latest
-    build: 
+    build:
       dockerfile: server/Dockerfile
       context: .
     environment:
+      ZMQ_CONNECTION_STRING: ${ZMQ_CONNECTION_STRING:-tcp://analytics:8002}
       HASTIC_API_KEY: ${HASTIC_API_KEY}
-      ZMQ_CONNECTION_STRING: ${ZMQ_CONNECTION_STRING}
       HASTIC_WEBHOOK_URL: ${HASTIC_WEBHOOK_URL}
       HASTIC_WEBHOOK_TYPE: ${HASTIC_WEBHOOK_TYPE}
+      GRAFANA_URL: ${GRAFANA_URL}
     ports:
       - 8000:8000
     volumes:
