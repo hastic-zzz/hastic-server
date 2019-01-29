@@ -44,7 +44,7 @@ class GeneralModel(Model):
 
         self.model_gen = utils.get_av_model(patterns_list)
         convolve_list = utils.get_convolve(self.ipats, self.model_gen, data, self.state['WINDOW_SIZE'])
-        correlation_list = utils.get_correlation(self.ipeaks, self.model, data, self.state['WINDOW_SIZE'])
+        correlation_list = utils.get_correlation(self.ipats, self.model_gen, data, self.state['WINDOW_SIZE'])
 
         del_conv_list = []
         delete_pattern_timestamp = []

@@ -52,7 +52,7 @@ class JumpModel(Model):
 
         self.model_jump = utils.get_av_model(patterns_list)
         convolve_list = utils.get_convolve(self.ijumps, self.model_jump, data, self.state['WINDOW_SIZE'])
-        correlation_list = utils.get_correlation(self.ipeaks, self.model, data, self.state['WINDOW_SIZE'])
+        correlation_list = utils.get_correlation(self.ijumps, self.model_jump, data, self.state['WINDOW_SIZE'])
 
         del_conv_list = []
         delete_pattern_timestamp = []

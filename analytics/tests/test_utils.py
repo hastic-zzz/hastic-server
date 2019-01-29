@@ -14,17 +14,17 @@ class TestUtils(unittest.TestCase):
     
     def test_confidence_all_normal_value(self):
         segment = [1, 2, 0, 6, 8, 5, 3]
-        utils_result = utils.find_confidence(segment)
+        utils_result = utils.find_confidence(segment)[0]
         result = 1.6
         self.assertTrue(math.isclose(utils_result, result, rel_tol = RELATIVE_TOLERANCE))
     
     def test_confidence_all_nan_value(self):
         segment = [np.NaN, np.NaN, np.NaN, np.NaN]
-        self.assertEqual(utils.find_confidence(segment), 0)
+        self.assertEqual(utils.find_confidence(segment)[0], 0)
     
     def test_confidence_with_nan_value(self):
         data = [np.NaN, np.NaN, 0, 8]
-        utils_result = utils.find_confidence(data)
+        utils_result = utils.find_confidence(data)[0]
         result = 1.6
         self.assertTrue(math.isclose(utils_result, result, rel_tol = RELATIVE_TOLERANCE))
     

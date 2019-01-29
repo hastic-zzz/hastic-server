@@ -51,7 +51,7 @@ class TroughModel(Model):
 
         self.model = utils.get_av_model(patterns_list)
         convolve_list = utils.get_convolve(self.itroughs, self.model, data, self.state['WINDOW_SIZE'])
-        correlation_list = utils.get_correlation(self.ipeaks, self.model, data, self.state['WINDOW_SIZE'])
+        correlation_list = utils.get_correlation(self.itroughs, self.model, data, self.state['WINDOW_SIZE'])
 
         del_conv_list = []
         delete_pattern_width = []
