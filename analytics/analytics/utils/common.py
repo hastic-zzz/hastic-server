@@ -4,6 +4,7 @@ import scipy.signal
 from scipy.fftpack import fft
 from scipy.signal import argrelextrema
 from scipy.stats import gaussian_kde
+from scipy.stats.stats import pearsonr
 from typing import Union
 import utils
 
@@ -227,6 +228,19 @@ def get_convolve(segments: list, av_model: list, data: pd.Series, window_size: i
         convolve_list.append(max(auto_convolve))
         convolve_list.append(max(convolve_segment))
     return convolve_list
+
+def get_correlation(segments: list, av_model: list, data: pd.Series, window_size: int) -> list:
+    labeled_segment = []
+    correlation_list = []
+    p_value_list = []
+    for segment in segments:
+        labeled_segment = utils.get_interval(data, segment, window_size)
+        labeled_segment = utils.subtract_min_without_nan(labeled_segment)
+        labeled_segment = utils.check_nan_values(labeled_segment)
+        correlation = pearsonr(labeled_segment, av_model)
+        correlation_list.append(correlation[0])
+        p_value_list.append(correlation[1])
+    return correlation_list
 
 def get_distribution_density(segment: pd.Series) -> float:
     if len(segment) < 2:

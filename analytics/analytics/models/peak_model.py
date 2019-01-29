@@ -32,6 +32,7 @@ class PeakModel(Model):
         data = data['value']
         confidences = []
         convolve_list = []
+        correlation_list = []
         patterns_list = []
         pattern_width = []
         pattern_height = []
@@ -50,6 +51,7 @@ class PeakModel(Model):
 
         self.model = utils.get_av_model(patterns_list)
         convolve_list = utils.get_convolve(self.ipeaks, self.model, data, self.state['WINDOW_SIZE'])
+        correlation_list = utils.get_correlation(self.ipeaks, self.model, data, self.state['WINDOW_SIZE'])
 
         del_conv_list = []
         delete_pattern_width = []

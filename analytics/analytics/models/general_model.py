@@ -31,20 +31,26 @@ class GeneralModel(Model):
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         convolve_list = []
+        correlation_list = []
         patterns_list = []
+        pattern_timestamp = []
         for segment in labeled_segments:
                 center_ind = segment.start + math.ceil(segment.length / 2)
                 self.ipats.append(center_ind)
+                pattern_timestamp.append(dataframe['timestamp'][center_ind])
                 segment_data = utils.get_interval(data, center_ind, self.state['WINDOW_SIZE'])
                 segment_data = utils.subtract_min_without_nan(segment_data)
                 patterns_list.append(segment_data)
 
         self.model_gen = utils.get_av_model(patterns_list)
         convolve_list = utils.get_convolve(self.ipats, self.model_gen, data, self.state['WINDOW_SIZE'])
+        correlation_list = utils.get_correlation(self.ipeaks, self.model, data, self.state['WINDOW_SIZE'])
 
         del_conv_list = []
+        delete_pattern_timestamp = []
         for segment in deleted_segments:
             del_mid_index = segment.start + math.ceil(segment.length / 2)
+            delete_pattern_timestamp.append(dataframe['timestamp'][del_mid_index])
             deleted_pat = utils.get_interval(data, del_mid_index, self.state['WINDOW_SIZE'])
             deleted_pat = utils.subtract_min_without_nan(deleted_pat)
             del_conv_pat = scipy.signal.fftconvolve(deleted_pat, self.model_gen)
