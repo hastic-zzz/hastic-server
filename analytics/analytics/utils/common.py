@@ -155,47 +155,38 @@ def nan_to_zero(segment: Union[pd.Series, list], nan_list: list) -> Union[pd.Ser
             segment[val] = 0
     return segment
 
-def find_confidence(segment: pd.Series) -> [float, float]:
+def find_confidence(segment: pd.Series) -> (float, float):
     segment = utils.check_nan_values(segment)
     segment_min = min(segment)
     segment_max = max(segment)
     height = segment_max - segment_min
-    return CONFIDENCE_FACTOR * height, height
+    if height:
+        return (CONFIDENCE_FACTOR * height, height)
+    else:
+        return (0, 0)
 
-def find_peak_width(pattern: pd.Series) -> int:
+def find_width(pattern: pd.Series, selector) -> int:
     pattern = pattern.values
-    center = pattern.argmax()
-    pattern_right = pattern[:center]
-    pattern_min_index = utils.find_last_min(pattern_right)
-    right_width = center - pattern_min_index
-    pattern_left = pattern[center:]
-    pattern_min_index = pattern_left.argmin()
-    left_width = pattern_min_index
+    center = utils.find_extremum_index(pattern, selector)
+    pattern_left = pattern[:center]
+    pattern_right = pattern[center:]
+    left_extremum_index = utils.find_last_extremum(pattern_left, selector)
+    right_extremum_index = utils.find_extremum_index(pattern_right, not selector)
+    left_width = center - left_extremum_index
+    right_width = right_extremum_index + 1
     return right_width + left_width
 
-def find_trough_width(pattern: pd.Series) -> int:
-    pattern = pattern.values
-    center = pattern.argmin()
-    pattern_right = pattern[:center]
-    pattern_max_index = utils.find_last_max(pattern_right)
-    right_width = center - pattern_max_index
-    pattern_left = pattern[center:]
-    pattern_max_index = pattern_left.argmax()
-    left_width = pattern_max_index
-    return right_width + left_width
-
-
-def find_last_min(segment: np.ndarray) -> int:
+def find_last_extremum(segment: np.ndarray, selector: bool) -> int:
     segment = segment[::-1]
-    first_min_index = segment.argmin()
-    last_min_index = len(segment) - first_min_index - 1
-    return last_min_index
+    first_extremum_ind = find_extremum_index(segment, not selector)
+    last_extremum_ind = len(segment) - first_extremum_ind - 1
+    return last_extremum_ind
 
-def find_last_max(segment: np.ndarray) -> int:
-    segment = segment[::-1]
-    first_max_index = segment.argmax()
-    last_max_index = len(segment) - first_max_index - 1
-    return last_max_index
+def find_extremum_index(segment: np.ndarray, selector: bool) -> int:
+    if selector:
+        return segment.argmax()
+    else:
+        return segment.argmin()
 
 def get_interval(data: pd.Series, center: int, window_size: int) -> pd.Series:
     left_bound = center - window_size
