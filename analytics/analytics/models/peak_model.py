@@ -47,7 +47,7 @@ class PeakModel(Model):
             labeled = utils.subtract_min_without_nan(labeled)
             patterns_list.append(labeled)
             pattern_height.append(utils.find_confidence(labeled)[1])
-            pattern_width.append(utils.find_peak_width(labeled, True))
+            pattern_width.append(utils.find_width(labeled, True))
 
         self.model = utils.get_av_model(patterns_list)
         convolve_list = utils.get_convolve(self.ipeaks, self.model, data, self.state['WINDOW_SIZE'])
@@ -65,7 +65,7 @@ class PeakModel(Model):
             del_conv = scipy.signal.fftconvolve(deleted, self.model)
             if len(del_conv): del_conv_list.append(max(del_conv))
             delete_pattern_height.append(utils.find_confidence(deleted)[1])
-            delete_pattern_width.append(utils.find_peak_width(deleted, True))
+            delete_pattern_width.append(utils.find_width(deleted, True))
 
         self._update_fiting_result(self.state, confidences, convolve_list, del_conv_list)
 
