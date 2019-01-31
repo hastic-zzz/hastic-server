@@ -26,6 +26,9 @@ class PeakModel(Model):
             'conv_del_min': 54000,
             'conv_del_max': 55000,
         }
+    
+    def find_segment_center(self, segment: pd.Series) -> int:
+        return segment.idxmax()
 
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list) -> None:
         data = utils.cut_dataframe(dataframe)
@@ -40,9 +43,9 @@ class PeakModel(Model):
         for segment in labeled_segments:
             confidence = utils.find_confidence(segment.data)[0]
             confidences.append(confidence)
-            segment_max_index = segment.data.idxmax()
+            segment_max_index = self.find_segment_center(segment.data)
             self.ipeaks.append(segment_max_index)
-            pattern_timestamp.append(dataframe['timestamp'][segment_max_index])
+            pattern_timestamp.append(segment['center_time'])
             labeled = utils.get_interval(data, segment_max_index, self.state['WINDOW_SIZE'])
             labeled = utils.subtract_min_without_nan(labeled)
             patterns_list.append(labeled)

@@ -43,6 +43,10 @@ class Model(ABC):
     def do_detect(self, dataframe: pd.DataFrame) -> list:
         pass
 
+    @abstractmethod
+    def find_segment_center(self, segment: pd.Series) -> int:
+        pass
+
     def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[ModelCache]) -> ModelCache:
         if type(cache) is ModelCache:
             self.state = cache
@@ -57,7 +61,9 @@ class Model(ABC):
                     continue
                 if segment.percent_of_nans > 0:
                     segment.convert_nan_to_zero()
-
+                center_index = self.find_segment_center(segment.data)
+                pattern_timestamp = dataframe['timestamp'][center_index]
+                segment.update({'center_time': pattern_timestamp})
                 max_length = max(segment.length, max_length)
                 if segment.labeled: labeled.append(segment)
                 if segment.deleted: deleted.append(segment)
