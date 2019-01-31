@@ -28,11 +28,13 @@ class ThresholdDetector(Detector):
         value = cache['value']
         condition = cache['condition']
 
+        logger.debug('{} {}-{}'.format(len(dataframe), dataframe.iloc[0]['timestamp'], dataframe.iloc[-1]['timestamp']))
         dataframe_without_nans = dataframe.dropna()
         if len(dataframe_without_nans) == 0:
             return dict()
         last_entry = dataframe_without_nans.iloc[-1]
         last_value = last_entry['value']
+        logger.debug(last_value)
 
         now = int(time()) * 1000
         segment = ({ 'from': now, 'to': now })
@@ -59,4 +61,5 @@ class ThresholdDetector(Detector):
         }
 
     def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
-        return self.detect(data, cache)
+        result = self.detect(data, cache)
+        return result if result else None

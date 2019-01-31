@@ -7,7 +7,7 @@ rpm_node8:
 			-v `pwd`/analytics:/root/rpmbuild/analytics \
 			-v `pwd`/build/rpmbuild:/root/rpmbuild/rpm \
 			-v `pwd`/dist/RPMS_8:/root/rpmbuild/RPMS \
-			-e "NODE_VERSION=8.0.0" \
+			-e "NODE_VERSION=v8.0.0" \
 			-e "RPM_NODE_VERSION=8" \
 			-e "HASTIC_RELEASE_VERSION=`cat server/package.json| jq -r .version | sed 's/-/_/g'`" \
 			amper43/hastic-rpmbuilder rpmbuild -ba rpm/hastic-server.spec
@@ -17,7 +17,7 @@ rpm_node6:
 			-v `pwd`/analytics:/root/rpmbuild/analytics \
 			-v `pwd`/build/rpmbuild:/root/rpmbuild/rpm \
 			-v `pwd`/dist/RPMS_6:/root/rpmbuild/RPMS \
-			-e "NODE_VERSION=6.14.0" \
+			-e "NODE_VERSION=v6.14.0" \
 			-e "RPM_NODE_VERSION=6" \
 			-e "HASTIC_RELEASE_VERSION=`cat server/package.json| jq -r .version | sed 's/-/_/g'`" \
 			amper43/hastic-rpmbuilder rpmbuild -ba rpm/hastic-server.spec
