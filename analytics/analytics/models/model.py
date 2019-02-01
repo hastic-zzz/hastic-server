@@ -21,6 +21,9 @@ class Segment(AttrDict):
         if callable(center_finder):
             self.center_index = center_finder(dataframe, self.start, self.end)
             self.pattern_timestamp = dataframe['timestamp'][self.center_index]
+        else:
+            self.center_index = self.start + math.ceil(self.length / 2)
+            self.pattern_timestamp = dataframe['timestamp'][self.center_index]
         
         assert len(dataframe['value']) >= self.end + 1, \
             'segment {}-{} out of dataframe length={}'.format(self.start, self.end+1, len(dataframe['value']))
