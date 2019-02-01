@@ -91,39 +91,39 @@ class TestUtils(unittest.TestCase):
         segment = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
         segment = pd.Series(segment)
         jump_center = [10, 11]
-        self.assertIn(utils.find_parameters(segment, 0, 'jump')[0], jump_center)
+        self.assertIn(utils.find_pattern_center(segment, 0, 'jump'), jump_center)
     
     def test_find_jump_parameters_height(self):
         segment = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
         segment = pd.Series(segment)
         jump_height = [3.5, 4]
-        self.assertGreaterEqual(utils.find_parameters(segment, 0, 'jump')[1], jump_height[0])
-        self.assertLessEqual(utils.find_parameters(segment, 0, 'jump')[1], jump_height[1])
+        self.assertGreaterEqual(utils.find_parameters(segment, 0, 'jump')[0], jump_height[0])
+        self.assertLessEqual(utils.find_parameters(segment, 0, 'jump')[0], jump_height[1])
     
     def test_find_jump_parameters_length(self):
         segment = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
         segment = pd.Series(segment)
         jump_length = 2
-        self.assertEqual(utils.find_parameters(segment, 0, 'jump')[2], jump_length)
+        self.assertEqual(utils.find_parameters(segment, 0, 'jump')[1], jump_length)
     
     def test_find_drop_parameters_center(self):
         segment = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         segment = pd.Series(segment)
         drop_center = [14, 15, 16]
-        self.assertIn(utils.find_parameters(segment, 0, 'drop')[0], drop_center)
+        self.assertIn(utils.find_pattern_center(segment, 0, 'drop'), drop_center)
     
     def test_find_drop_parameters_height(self):
         segment = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         segment = pd.Series(segment)
         drop_height = [3.5, 4]
-        self.assertGreaterEqual(utils.find_parameters(segment, 0, 'drop')[1], drop_height[0])
-        self.assertLessEqual(utils.find_parameters(segment, 0, 'drop')[1], drop_height[1])
+        self.assertGreaterEqual(utils.find_parameters(segment, 0, 'drop')[0], drop_height[0])
+        self.assertLessEqual(utils.find_parameters(segment, 0, 'drop')[0], drop_height[1])
     
     def test_find_drop_parameters_length(self):
         segment = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         segment = pd.Series(segment)
         drop_length = 2
-        self.assertEqual(utils.find_parameters(segment, 0, 'drop')[2], drop_length)
+        self.assertEqual(utils.find_parameters(segment, 0, 'drop')[1], drop_length)
     
     def test_get_av_model_empty_data(self):
         patterns_list = []
@@ -189,6 +189,13 @@ class TestUtils(unittest.TestCase):
         utils_result_segment = utils.get_distribution_density(segment)
         self.assertEqual(len(utils_result_data), 3)
         self.assertEqual(utils_result_segment, (0, 0, 0))
+    
+    def test_find_pattern_jump_center(self):
+        data = [1.0, 1.0, 1.0, 5.0, 5.0, 5.0]
+        data = pd.Series(data)
+        median = 3.0
+        result = 3
+        self.assertEqual(result, utils.find_pattern_center(data, 0, 'jump'))
 
 if __name__ == '__main__':
     unittest.main()
