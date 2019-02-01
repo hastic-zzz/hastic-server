@@ -270,6 +270,9 @@ def find_parameters(segment_data: pd.Series, segment_from_index: int, pat_type: 
     segment_cent_index = pat_center + segment_from_index
     return segment_cent_index, height, length
 
+def find_center_hard_segemnts():
+    pass
+
 def find_length(segment_data: pd.Series, segment_min_line: float, segment_max_line: float, pat_type: str) -> int:
     x_abscissa = np.arange(0, len(segment_data))
     segment_max = max(segment_data)

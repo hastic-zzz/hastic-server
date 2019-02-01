@@ -26,6 +26,9 @@ class DropModel(Model):
             'conv_del_min': 54000,
             'conv_del_max': 55000,
         }
+    
+    def find_segment_center(self, segment: pd.Series) -> int:
+        return segment.idxmax()
 
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list) -> None:
         data = utils.cut_dataframe(dataframe)
