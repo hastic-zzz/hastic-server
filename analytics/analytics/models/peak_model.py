@@ -45,9 +45,9 @@ class PeakModel(Model):
         for segment in labeled_segments:
             confidence = utils.find_confidence(segment.data)[0]
             confidences.append(confidence)
-            segment_max_index = segment['center_index']
+            segment_max_index = segment.center_index
             self.ipeaks.append(segment_max_index)
-            pattern_timestamp.append(segment['pattern_timestamp'])
+            pattern_timestamp.append(segment.pattern_timestamp)
             labeled = utils.get_interval(data, segment_max_index, self.state['WINDOW_SIZE'])
             labeled = utils.subtract_min_without_nan(labeled)
             patterns_list.append(labeled)
@@ -63,8 +63,8 @@ class PeakModel(Model):
         delete_pattern_height = []
         delete_pattern_timestamp = []
         for segment in deleted_segments:
-            del_max_index = segment['center_index']
-            delete_pattern_timestamp.append(segment['pattern_timestamp'])
+            del_max_index = segment.center_index
+            delete_pattern_timestamp.append(segment.pattern_timestamp)
             deleted = utils.get_interval(data, del_max_index, self.state['WINDOW_SIZE'])
             deleted = utils.subtract_min_without_nan(deleted)
             del_conv = scipy.signal.fftconvolve(deleted, self.model)

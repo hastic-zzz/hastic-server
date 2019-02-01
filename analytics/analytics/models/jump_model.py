@@ -47,12 +47,12 @@ class JumpModel(Model):
         for segment in labeled_segments:
             confidence = utils.find_confidence(segment.data)[0]
             confidences.append(confidence)
-            segment_cent_index = segment['center_index']
+            segment_cent_index = segment.center_index
             jump_height, jump_length = utils.find_parameters(segment.data, segment.start, 'jump')
             jump_height_list.append(jump_height)
             jump_length_list.append(jump_length)
             self.ijumps.append(segment_cent_index)
-            pattern_timestamp.append(segment['pattern_timestamp'])
+            pattern_timestamp.append(segment.pattern_timestamp)
             labeled_jump = utils.get_interval(data, segment_cent_index, self.state['WINDOW_SIZE'])
             labeled_jump = utils.subtract_min_without_nan(labeled_jump)
             patterns_list.append(labeled_jump)
@@ -64,8 +64,8 @@ class JumpModel(Model):
         del_conv_list = []
         delete_pattern_timestamp = []
         for segment in deleted_segments:
-            segment_cent_index = segment['center_index']
-            delete_pattern_timestamp.append(segment['pattern_timestamp'])
+            segment_cent_index = segment.center_index
+            delete_pattern_timestamp.append(segment.pattern_timestamp)
             deleted_jump = utils.get_interval(data, segment_cent_index, self.state['WINDOW_SIZE'])
             deleted_jump = utils.subtract_min_without_nan(deleted_jump)
             del_conv_jump = scipy.signal.fftconvolve(deleted_jump, self.model_jump)

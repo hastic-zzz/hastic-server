@@ -41,9 +41,9 @@ class GeneralModel(Model):
         patterns_list = []
         pattern_timestamp = []
         for segment in labeled_segments:
-                center_ind = segment['center_index']
+                center_ind = segment.center_index
                 self.ipats.append(center_ind)
-                pattern_timestamp.append(segment['pattern_timestamp'])
+                pattern_timestamp.append(segment.pattern_timestamp)
                 segment_data = utils.get_interval(data, center_ind, self.state['WINDOW_SIZE'])
                 segment_data = utils.subtract_min_without_nan(segment_data)
                 patterns_list.append(segment_data)
@@ -55,8 +55,8 @@ class GeneralModel(Model):
         del_conv_list = []
         delete_pattern_timestamp = []
         for segment in deleted_segments:
-            del_mid_index = segment['center_index']
-            delete_pattern_timestamp.append(segment['pattern_timestamp'])
+            del_mid_index = segment.center_index
+            delete_pattern_timestamp.append(segment.pattern_timestamp)
             deleted_pat = utils.get_interval(data, del_mid_index, self.state['WINDOW_SIZE'])
             deleted_pat = utils.subtract_min_without_nan(deleted_pat)
             del_conv_pat = scipy.signal.fftconvolve(deleted_pat, self.model_gen)
