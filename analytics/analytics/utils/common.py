@@ -265,13 +265,14 @@ def find_parameters(segment_data: pd.Series, segment_from_index: int, pat_type: 
     segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(segment)
     height = 0.95 * (segment_max_line - segment_min_line)
     length = utils.find_length(segment_data, segment_min_line, segment_max_line, pat_type)
-    cen_ind = utils.pattern_intersection(segment_data.tolist(), segment_median, pat_type)
+    return height, length
+
+def find_pattern_center(segment_data: pd.Series, segment_from_index: int, pattern_type: str):
+    segment_median = utils.get_distribution_density(segment_data)[0]
+    cen_ind = utils.pattern_intersection(segment_data.tolist(), segment_median, pattern_type)
     pat_center = cen_ind[0]
     segment_cent_index = pat_center + segment_from_index
-    return segment_cent_index, height, length
-
-def find_center_hard_segemnts():
-    pass
+    return segment_cent_index
 
 def find_length(segment_data: pd.Series, segment_min_line: float, segment_max_line: float, pat_type: str) -> int:
     x_abscissa = np.arange(0, len(segment_data))

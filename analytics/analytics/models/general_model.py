@@ -27,8 +27,11 @@ class GeneralModel(Model):
         }
         self.all_conv = []
     
-    def find_segment_center(self, segment: pd.Series) -> int:
-        return segment.idxmax()
+    def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
+        data = dataframe['value']
+        segment = data[start: end]
+        center_ind = start + math.ceil((end - start) / 2)
+        return center_ind
 
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list) -> None:
         data = utils.cut_dataframe(dataframe)
@@ -38,9 +41,9 @@ class GeneralModel(Model):
         patterns_list = []
         pattern_timestamp = []
         for segment in labeled_segments:
-                center_ind = segment.start + math.ceil(segment.length / 2)
+                center_ind = segment['center_index']
                 self.ipats.append(center_ind)
-                pattern_timestamp.append(dataframe['timestamp'][center_ind])
+                pattern_timestamp.append(segment['pattern_timestamp'])
                 segment_data = utils.get_interval(data, center_ind, self.state['WINDOW_SIZE'])
                 segment_data = utils.subtract_min_without_nan(segment_data)
                 patterns_list.append(segment_data)
@@ -52,8 +55,8 @@ class GeneralModel(Model):
         del_conv_list = []
         delete_pattern_timestamp = []
         for segment in deleted_segments:
-            del_mid_index = segment.start + math.ceil(segment.length / 2)
-            delete_pattern_timestamp.append(dataframe['timestamp'][del_mid_index])
+            del_mid_index = segment['center_index']
+            delete_pattern_timestamp.append(segment['pattern_timestamp'])
             deleted_pat = utils.get_interval(data, del_mid_index, self.state['WINDOW_SIZE'])
             deleted_pat = utils.subtract_min_without_nan(deleted_pat)
             del_conv_pat = scipy.signal.fftconvolve(deleted_pat, self.model_gen)

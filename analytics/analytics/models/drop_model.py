@@ -27,8 +27,11 @@ class DropModel(Model):
             'conv_del_max': 55000,
         }
     
-    def find_segment_center(self, segment: pd.Series) -> int:
-        return segment.idxmax()
+    def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
+        data = dataframe['value']
+        segment = data[start: end]
+        segment_center_index = utils.find_pattern_center(segment, start, 'drop')
+        return segment_center_index
 
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list) -> None:
         data = utils.cut_dataframe(dataframe)
@@ -43,11 +46,12 @@ class DropModel(Model):
         for segment in labeled_segments:
             confidence = utils.find_confidence(segment.data)[0]
             confidences.append(confidence)
-            segment_cent_index, drop_height, drop_length = utils.find_parameters(segment.data, segment.start, 'drop')
+            segment_cent_index = segment['center_index']
+            drop_height, drop_length = utils.find_parameters(segment.data, segment.start, 'drop')
             drop_height_list.append(drop_height)
             drop_length_list.append(drop_length)
             self.idrops.append(segment_cent_index)
-            pattern_timestamp.append(dataframe['timestamp'][segment_cent_index])
+            pattern_timestamp.append(segment['pattern_timestamp'])
             labeled_drop = utils.get_interval(data, segment_cent_index, self.state['WINDOW_SIZE'])
             labeled_drop = utils.subtract_min_without_nan(labeled_drop)
             patterns_list.append(labeled_drop)
@@ -59,8 +63,8 @@ class DropModel(Model):
         del_conv_list = []
         delete_pattern_timestamp = []
         for segment in deleted_segments:
-            segment_cent_index = utils.find_parameters(segment.data, segment.start, 'drop')[0]
-            delete_pattern_timestamp.append(dataframe['timestamp'][segment_cent_index])
+            segment_cent_index = segment['center_index']
+            delete_pattern_timestamp.append(segment['pattern_timestamp'])
             deleted_drop = utils.get_interval(data, segment_cent_index, self.state['WINDOW_SIZE'])
             deleted_drop = utils.subtract_min_without_nan(deleted_drop)
             del_conv_drop = scipy.signal.fftconvolve(deleted_drop, self.model_drop)

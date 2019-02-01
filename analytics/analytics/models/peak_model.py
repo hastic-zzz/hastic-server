@@ -63,8 +63,8 @@ class PeakModel(Model):
         delete_pattern_height = []
         delete_pattern_timestamp = []
         for segment in deleted_segments:
-            del_max_index = segment.data.idxmax()
-            delete_pattern_timestamp.append(dataframe['timestamp'][del_max_index])
+            del_max_index = segment['center_index']
+            delete_pattern_timestamp.append(segment['pattern_timestamp'])
             deleted = utils.get_interval(data, del_max_index, self.state['WINDOW_SIZE'])
             deleted = utils.subtract_min_without_nan(deleted)
             del_conv = scipy.signal.fftconvolve(deleted, self.model)
