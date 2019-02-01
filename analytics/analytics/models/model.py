@@ -12,12 +12,19 @@ class Segment(AttrDict):
 
     __percent_of_nans = 0
 
-    def __init__(self, dataframe: pd.DataFrame, segment_map: dict):
+    def __init__(self, dataframe: pd.DataFrame, segment_map: dict, center_finder = None):
         self.update(segment_map)
         self.start = utils.timestamp_to_index(dataframe, pd.to_datetime(self['from'], unit='ms'))
         self.end = utils.timestamp_to_index(dataframe, pd.to_datetime(self['to'], unit='ms'))
         self.length = abs(self.end - self.start)
 
+        if callable(center_finder):
+            self.center_index = center_finder(dataframe, self.start, self.end)
+            self.pattern_timestamp = dataframe['timestamp'][self.center_index]
+        else:
+            self.center_index = self.start + math.ceil(self.length / 2)
+            self.pattern_timestamp = dataframe['timestamp'][self.center_index]
+        
         assert len(dataframe['value']) >= self.end + 1, \
             'segment {}-{} out of dataframe length={}'.format(self.start, self.end+1, len(dataframe['value']))
 
@@ -43,6 +50,10 @@ class Model(ABC):
     def do_detect(self, dataframe: pd.DataFrame) -> list:
         pass
 
+    @abstractmethod
+    def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
+        pass
+
     def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[ModelCache]) -> ModelCache:
         if type(cache) is ModelCache:
             self.state = cache
@@ -52,12 +63,11 @@ class Model(ABC):
         deleted = []
         for segment_map in segments:
             if segment_map['labeled'] or segment_map['deleted']:
-                segment = Segment(dataframe, segment_map)
+                segment = Segment(dataframe, segment_map, self.find_segment_center)
                 if segment.percent_of_nans > 0.1 or len(segment.data) == 0:
                     continue
                 if segment.percent_of_nans > 0:
                     segment.convert_nan_to_zero()
-
                 max_length = max(segment.length, max_length)
                 if segment.labeled: labeled.append(segment)
                 if segment.deleted: deleted.append(segment)

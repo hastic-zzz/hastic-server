@@ -26,32 +26,51 @@ class PeakModel(Model):
             'conv_del_min': 54000,
             'conv_del_max': 55000,
         }
+    
+    def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
+        data = dataframe['value']
+        segment = data[start: end]
+        return segment.idxmax()
 
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         confidences = []
         convolve_list = []
+        correlation_list = []
         patterns_list = []
+        pattern_width = []
+        pattern_height = []
+        pattern_timestamp = []
         for segment in labeled_segments:
-            confidence = utils.find_confidence(segment.data)
+            confidence = utils.find_confidence(segment.data)[0]
             confidences.append(confidence)
-            segment_max_index = segment.data.idxmax()
+            segment_max_index = segment.center_index
             self.ipeaks.append(segment_max_index)
+            pattern_timestamp.append(segment.pattern_timestamp)
             labeled = utils.get_interval(data, segment_max_index, self.state['WINDOW_SIZE'])
             labeled = utils.subtract_min_without_nan(labeled)
             patterns_list.append(labeled)
+            pattern_height.append(utils.find_confidence(labeled)[1])
+            pattern_width.append(utils.find_width(labeled, True))
 
         self.model = utils.get_av_model(patterns_list)
         convolve_list = utils.get_convolve(self.ipeaks, self.model, data, self.state['WINDOW_SIZE'])
+        correlation_list = utils.get_correlation(self.ipeaks, self.model, data, self.state['WINDOW_SIZE'])
 
         del_conv_list = []
+        delete_pattern_width = []
+        delete_pattern_height = []
+        delete_pattern_timestamp = []
         for segment in deleted_segments:
-            del_max_index = segment.data.idxmax()
+            del_max_index = segment.center_index
+            delete_pattern_timestamp.append(segment.pattern_timestamp)
             deleted = utils.get_interval(data, del_max_index, self.state['WINDOW_SIZE'])
             deleted = utils.subtract_min_without_nan(deleted)
             del_conv = scipy.signal.fftconvolve(deleted, self.model)
             if len(del_conv): del_conv_list.append(max(del_conv))
+            delete_pattern_height.append(utils.find_confidence(deleted)[1])
+            delete_pattern_width.append(utils.find_width(deleted, True))
 
         self._update_fiting_result(self.state, confidences, convolve_list, del_conv_list)
 
