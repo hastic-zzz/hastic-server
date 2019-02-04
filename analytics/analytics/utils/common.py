@@ -326,6 +326,3 @@ def cut_dataframe(data: pd.DataFrame) -> pd.DataFrame:
 
 def get_min_max(array, default):
     return float(min(array, default=default)), float(max(array, default=default))
-
-
-

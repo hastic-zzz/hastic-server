@@ -27,8 +27,10 @@ class PeakModel(Model):
             'conv_del_max': 55000,
         }
     
-    def get_model_type(self) -> bool:
-        return True
+    def get_model_type(self) -> (str, bool):
+        model = 'peak'
+        type_model = True
+        return (model, type_model)
     
     def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
         data = dataframe['value']

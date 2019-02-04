@@ -27,28 +27,22 @@ class GeneralModel(Model):
         }
         self.all_conv = []
     
+    def get_model_type(self) -> (str, bool):
+        model = 'general'
+        type_model = True
+        return (model, type_model)
+    
     def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
         data = dataframe['value']
         segment = data[start: end]
         center_ind = start + math.ceil((end - start) / 2)
         return center_ind
 
-    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
-        convolve_list = []
-        correlation_list = []
-        patterns_list = []
-        pattern_timestamp = []
-        for segment in labeled_segments:
-                center_ind = segment.center_index
-                self.ipats.append(center_ind)
-                pattern_timestamp.append(segment.pattern_timestamp)
-                segment_data = utils.get_interval(data, center_ind, self.state['WINDOW_SIZE'])
-                segment_data = utils.subtract_min_without_nan(segment_data)
-                patterns_list.append(segment_data)
-
-        self.model_gen = utils.get_av_model(patterns_list)
+        self.ipats = learning_info['segment_center_list']
+        self.model_gen = utils.get_av_model(learning_info['patterns_list'])
         convolve_list = utils.get_convolve(self.ipats, self.model_gen, data, self.state['WINDOW_SIZE'])
         correlation_list = utils.get_correlation(self.ipats, self.model_gen, data, self.state['WINDOW_SIZE'])
 
