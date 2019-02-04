@@ -43,7 +43,7 @@ class Segment(AttrDict):
 class Model(ABC):
 
     @abstractmethod
-    def do_fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[ModelCache]) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[ModelCache], learning_info: dict) -> None:
         pass
 
     @abstractmethod
@@ -54,10 +54,21 @@ class Model(ABC):
     def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
         pass
 
+    @abstractmethod
+    def get_model_type(self) -> bool:
+        pass
+
     def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[ModelCache]) -> ModelCache:
         if type(cache) is ModelCache:
             self.state = cache
-
+        learning_info = {
+            'confidence': [],
+            'patterns_list': [],
+            'pattern_width': [],
+            'pattern_height': [],
+            'pattern_timestamp': [],
+            'segment_center_list': [],
+        }
         max_length = 0
         labeled = []
         deleted = []
@@ -72,9 +83,10 @@ class Model(ABC):
                 if segment.labeled: labeled.append(segment)
                 if segment.deleted: deleted.append(segment)
                     
-
         self.state['WINDOW_SIZE'] = math.ceil(max_length / 2) if max_length else 0
-        self.do_fit(dataframe, labeled, deleted)
+        pattern_type = self.get_model_type()
+        learning_info = self.get_parameters_from_segments(dataframe, learning_info, labeled, deleted, pattern_type)
+        self.do_fit(dataframe, labeled, deleted, learning_info)
         return self.state
 
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
@@ -100,3 +112,19 @@ class Model(ABC):
             state['conv_del_min'], state['conv_del_max'] = utils.get_min_max(del_conv_list, state['WINDOW_SIZE'])
         else:
             raise ValueError('got non-dict as state for update fiting result: {}'.format(state))
+    
+    def get_parameters_from_segments(self, dataframe: pd.DataFrame, learning_info: dict, labeled: list, deleted: list, pattern_type: bool) -> dict:
+        data = dataframe['value']
+        for segment in labeled:
+            confidence = utils.find_confidence(segment.data)[0]
+            learning_info['confidence'].append(confidence)
+            segment_center = segment.center_index
+            learning_info['segment_center_list'].append(segment_center)
+            learning_info['pattern_timestamp'].append(segment.pattern_timestamp)
+            aligned_segment = utils.get_interval(data, segment_center, self.state['WINDOW_SIZE'])
+            aligned_segment = utils.subtract_min_without_nan(aligned_segment)
+            learning_info['patterns_list'].append(aligned_segment)
+            learning_info['pattern_height'].append(utils.find_confidence(aligned_segment)[1])
+            learning_info['pattern_width'].append(utils.find_width(aligned_segment, pattern_type))
+        return learning_info
+        
