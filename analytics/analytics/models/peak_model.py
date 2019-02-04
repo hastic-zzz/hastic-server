@@ -39,13 +39,8 @@ class PeakModel(Model):
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         window_size = self.state['WINDOW_SIZE']
-        confidences = learning_info['confidence']
-        patterns_list = learning_info['patterns_list']
-        pattern_width = learning_info['pattern_width']
-        pattern_height = learning_info['pattern_height']
-        pattern_timestamp = learning_info['pattern_timestamp']
         self.ipeaks = learning_info['segment_center_list']
-        self.model = utils.get_av_model(patterns_list)
+        self.model = utils.get_av_model(learning_info['patterns_list'])
         convolve_list = utils.get_convolve(self.ipeaks, self.model, data, window_size)
         correlation_list = utils.get_correlation(self.ipeaks, self.model, data, window_size)
 
@@ -63,7 +58,7 @@ class PeakModel(Model):
             delete_pattern_height.append(utils.find_confidence(deleted)[1])
             delete_pattern_width.append(utils.find_width(deleted, True))
 
-        self._update_fiting_result(self.state, confidences, convolve_list, del_conv_list)
+        self._update_fiting_result(self.state, learning_info['confidence'], convolve_list, del_conv_list)
 
     def do_detect(self, dataframe: pd.DataFrame):
         data = utils.cut_dataframe(dataframe)

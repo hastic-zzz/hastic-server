@@ -61,14 +61,6 @@ class Model(ABC):
     def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[ModelCache]) -> ModelCache:
         if type(cache) is ModelCache:
             self.state = cache
-        learning_info = {
-            'confidence': [],
-            'patterns_list': [],
-            'pattern_width': [],
-            'pattern_height': [],
-            'pattern_timestamp': [],
-            'segment_center_list': [],
-        }
         max_length = 0
         labeled = []
         deleted = []
@@ -85,7 +77,7 @@ class Model(ABC):
                     
         self.state['WINDOW_SIZE'] = math.ceil(max_length / 2) if max_length else 0
         pattern_type = self.get_model_type()
-        learning_info = self.get_parameters_from_segments(dataframe, learning_info, labeled, deleted, pattern_type)
+        learning_info = self.get_parameters_from_segments(dataframe, labeled, deleted, pattern_type)
         self.do_fit(dataframe, labeled, deleted, learning_info)
         return self.state
 
@@ -113,7 +105,15 @@ class Model(ABC):
         else:
             raise ValueError('got non-dict as state for update fiting result: {}'.format(state))
     
-    def get_parameters_from_segments(self, dataframe: pd.DataFrame, learning_info: dict, labeled: list, deleted: list, pattern_type: bool) -> dict:
+    def get_parameters_from_segments(self, dataframe: pd.DataFrame, labeled: list, deleted: list, pattern_type: bool) -> dict:
+        learning_info = {
+            'confidence': [],
+            'patterns_list': [],
+            'pattern_width': [],
+            'pattern_height': [],
+            'pattern_timestamp': [],
+            'segment_center_list': [],
+        }
         data = dataframe['value']
         for segment in labeled:
             confidence = utils.find_confidence(segment.data)[0]

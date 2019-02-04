@@ -327,25 +327,5 @@ def cut_dataframe(data: pd.DataFrame) -> pd.DataFrame:
 def get_min_max(array, default):
     return float(min(array, default=default)), float(max(array, default=default))
 
-def get_parameters_from_segments(data: pd.Series, segments: list, window_size: int, pattern_type:bool):
-    confidence = []
-    patterns_list = []
-    pattern_width = []
-    pattern_height = []
-    pattern_timestamp = []
-    segment_center_list = []
-    for segment in segments:
-        confidence = utils.find_confidence(segment.data)[0]
-        confidence.append(confidence)
-        segment_center = segment.center_index
-        segment_center_list.append(segment_center)
-        pattern_timestamp.append(segment.pattern_timestamp)
-        aligned_segment = utils.get_interval(data, segment_center, window_size)
-        aligned_segment = utils.subtract_min_without_nan(aligned_segment)
-        patterns_list.append(aligned_segment)
-        pattern_height.append(utils.find_confidence(aligned_segment)[1])
-        pattern_width.append(utils.find_width(aligned_segment, pattern_type))
-    
-    return (confidence, patterns_list, pattern_width, pattern_height, pattern_timestamp, segment_center_list)
 
 

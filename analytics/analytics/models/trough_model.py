@@ -27,34 +27,20 @@ class TroughModel(Model):
             'conv_del_max': 55000,
         }
     
+    def get_model_type(self) -> bool:
+        return False
+    
     def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
         data = dataframe['value']
         segment = data[start: end]
         return segment.idxmin()
 
-    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
-        confidences = []
-        convolve_list = []
-        correlation_list = []
-        patterns_list = []
-        pattern_width = []
-        pattern_height = []
-        pattern_timestamp = []
-        for segment in labeled_segments:
-            confidence = utils.find_confidence(segment.data)[0]
-            confidences.append(confidence)
-            segment_min_index = segment.center_index
-            self.itroughs.append(segment_min_index)
-            pattern_timestamp.append(segment.pattern_timestamp)
-            labeled = utils.get_interval(data, segment_min_index, self.state['WINDOW_SIZE'])
-            labeled = utils.subtract_min_without_nan(labeled)
-            patterns_list.append(labeled)
-            pattern_height.append(utils.find_confidence(labeled)[1])
-            pattern_width.append(utils.find_width(labeled, False))
-
-        self.model = utils.get_av_model(patterns_list)
+        window_size = self.state['WINDOW_SIZE']
+        self.itroughs = learning_info['segment_center_list']
+        self.model = utils.get_av_model(learning_info['patterns_list'])
         convolve_list = utils.get_convolve(self.itroughs, self.model, data, self.state['WINDOW_SIZE'])
         correlation_list = utils.get_correlation(self.itroughs, self.model, data, self.state['WINDOW_SIZE'])
 
