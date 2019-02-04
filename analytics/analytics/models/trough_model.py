@@ -41,8 +41,8 @@ class TroughModel(Model):
         window_size = self.state['WINDOW_SIZE']
         self.itroughs = learning_info['segment_center_list']
         self.model = utils.get_av_model(learning_info['patterns_list'])
-        convolve_list = utils.get_convolve(self.itroughs, self.model, data, self.state['WINDOW_SIZE'])
-        correlation_list = utils.get_correlation(self.itroughs, self.model, data, self.state['WINDOW_SIZE'])
+        convolve_list = utils.get_convolve(self.itroughs, self.model, data, window_size)
+        correlation_list = utils.get_correlation(self.itroughs, self.model, data, window_size)
 
         del_conv_list = []
         delete_pattern_width = []
@@ -51,14 +51,14 @@ class TroughModel(Model):
         for segment in deleted_segments:
             del_min_index = segment.center_index
             delete_pattern_timestamp.append(segment.pattern_timestamp)
-            deleted = utils.get_interval(data, del_min_index, self.state['WINDOW_SIZE'])
+            deleted = utils.get_interval(data, del_min_index, window_size)
             deleted = utils.subtract_min_without_nan(deleted)
             del_conv = scipy.signal.fftconvolve(deleted, self.model)
             if len(del_conv): del_conv_list.append(max(del_conv))
             delete_pattern_height.append(utils.find_confidence(deleted)[1])
             delete_pattern_width.append(utils.find_width(deleted, False))
 
-        self._update_fiting_result(self.state, confidences, convolve_list, del_conv_list)
+        self._update_fiting_result(self.state, learning_info['confidence'], convolve_list, del_conv_list)
 
     def do_detect(self, dataframe: pd.DataFrame):
         data = utils.cut_dataframe(dataframe)
