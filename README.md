@@ -33,5 +33,3 @@ See also:
 
 Please visit https://hastic.io/downloads
 
-## [Docker installation](https://github.com/hastic/hastic-server/wiki/Docker)
-
