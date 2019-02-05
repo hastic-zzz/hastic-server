@@ -34,7 +34,7 @@ class ThresholdDetector(Detector):
 
         dataframe_without_nans = dataframe.dropna()
         if len(dataframe_without_nans) == 0:
-            if condition == 'No data':
+            if condition == 'NO_DATA':
                 segments.append(segment)
                 return {
                     'cache': cache,
