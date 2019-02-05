@@ -6,6 +6,7 @@ from typing import Optional
 from detectors import Detector
 from models import ModelCache
 from time import time
+from utils import convert_sec_to_ms
 
 
 logger = log.getLogger('THRESHOLD_DETECTOR')
@@ -28,7 +29,7 @@ class ThresholdDetector(Detector):
         value = cache['value']
         condition = cache['condition']
 
-        now = int(time()) * 1000
+        now = convert_sec_to_ms(time())
         segment = ({'from': now, 'to': now})
         segments = []
 

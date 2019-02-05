@@ -24,8 +24,8 @@ def exponential_smoothing(series, alpha):
 
 def anomalies_to_timestamp(anomalies):
     for anomaly in anomalies:
-        anomaly['from'] = int(anomaly['from'].timestamp() * 1000)
-        anomaly['to'] = int(anomaly['to'].timestamp() * 1000)
+        anomaly['from'] = convert_sec_to_ms(anomaly['from'].timestamp())
+        anomaly['to'] = convert_sec_to_ms(anomaly['to'].timestamp())
     return anomalies
 
 def segments_box(segments):
@@ -326,3 +326,6 @@ def cut_dataframe(data: pd.DataFrame) -> pd.DataFrame:
 
 def get_min_max(array, default):
     return float(min(array, default=default)), float(max(array, default=default))
+
+def convert_sec_to_ms(sec):
+    return int(sec) * 1000
