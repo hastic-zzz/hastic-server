@@ -26,41 +26,40 @@ class DropModel(Model):
             'conv_del_min': 54000,
             'conv_del_max': 55000,
         }
+    
+    def get_model_type(self) -> (str, bool):
+        model = 'drop'
+        type_model = False
+        return (model, type_model)
+    
+    def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
+        data = dataframe['value']
+        segment = data[start: end]
+        segment_center_index = utils.find_pattern_center(segment, start, 'drop')
+        return segment_center_index
 
-    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
-        confidences = []
-        convolve_list = []
-        drop_height_list = []
-        drop_length_list = []
-        patterns_list = []
-
-        for segment in labeled_segments:
-            confidence = utils.find_confidence(segment.data)
-            confidences.append(confidence)
-            segment_cent_index, drop_height, drop_length = utils.find_parameters(segment.data, segment.start, 'drop')
-            drop_height_list.append(drop_height)
-            drop_length_list.append(drop_length)
-            self.idrops.append(segment_cent_index)
-            labeled_drop = utils.get_interval(data, segment_cent_index, self.state['WINDOW_SIZE'])
-            labeled_drop = utils.subtract_min_without_nan(labeled_drop)
-            patterns_list.append(labeled_drop)
-
-        self.model_drop = utils.get_av_model(patterns_list)
-        convolve_list = utils.get_convolve(self.idrops, self.model_drop, data, self.state['WINDOW_SIZE'])
+        window_size = self.state['WINDOW_SIZE']
+        self.idrops = learning_info['segment_center_list']
+        self.model_drop = utils.get_av_model(learning_info['patterns_list'])
+        convolve_list = utils.get_convolve(self.idrops, self.model_drop, data, window_size)
+        correlation_list = utils.get_correlation(self.idrops, self.model_drop, data, window_size)
 
         del_conv_list = []
+        delete_pattern_timestamp = []
         for segment in deleted_segments:
-            segment_cent_index = utils.find_parameters(segment.data, segment.start, 'drop')[0]
-            deleted_drop = utils.get_interval(data, segment_cent_index, self.state['WINDOW_SIZE'])
+            segment_cent_index = segment.center_index
+            delete_pattern_timestamp.append(segment.pattern_timestamp)
+            deleted_drop = utils.get_interval(data, segment_cent_index, window_size)
             deleted_drop = utils.subtract_min_without_nan(deleted_drop)
             del_conv_drop = scipy.signal.fftconvolve(deleted_drop, self.model_drop)
             if len(del_conv_drop): del_conv_list.append(max(del_conv_drop))
 
-        self._update_fiting_result(self.state, confidences, convolve_list, del_conv_list)
-        self.state['DROP_HEIGHT'] = int(min(drop_height_list, default = 1))
-        self.state['DROP_LENGTH'] = int(max(drop_length_list, default = 1))
+        self._update_fiting_result(self.state, learning_info['confidence'], convolve_list, del_conv_list)
+        self.state['DROP_HEIGHT'] = int(min(learning_info['pattern_height'], default = 1))
+        self.state['DROP_LENGTH'] = int(max(learning_info['pattern_width'], default = 1))
 
     def do_detect(self, dataframe: pd.DataFrame) -> list:
         data = utils.cut_dataframe(dataframe)

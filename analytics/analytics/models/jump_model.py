@@ -27,40 +27,40 @@ class JumpModel(Model):
             'conv_del_min': 54000,
             'conv_del_max': 55000,
         }
+    
+    def get_model_type(self) -> (str, bool):
+        model = 'jump'
+        type_model = True
+        return (model, type_model)
+    
+    def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
+        data = dataframe['value']
+        segment = data[start: end]
+        segment_center_index = utils.find_pattern_center(segment, start, 'jump')
+        return segment_center_index
 
-    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
-        confidences = []
-        convolve_list = []
-        jump_height_list = []
-        jump_length_list = []
-        patterns_list = []
-        for segment in labeled_segments:
-            confidence = utils.find_confidence(segment.data)
-            confidences.append(confidence)
-            segment_cent_index, jump_height, jump_length = utils.find_parameters(segment.data, segment.start, 'jump')
-            jump_height_list.append(jump_height)
-            jump_length_list.append(jump_length)
-            self.ijumps.append(segment_cent_index)
-            labeled_jump = utils.get_interval(data, segment_cent_index, self.state['WINDOW_SIZE'])
-            labeled_jump = utils.subtract_min_without_nan(labeled_jump)
-            patterns_list.append(labeled_jump)
-
-        self.model_jump = utils.get_av_model(patterns_list)
-        convolve_list = utils.get_convolve(self.ijumps, self.model_jump, data, self.state['WINDOW_SIZE'])
+        window_size = self.state['WINDOW_SIZE']
+        self.ijumps = learning_info['segment_center_list']
+        self.model_jump = utils.get_av_model(learning_info['patterns_list'])
+        convolve_list = utils.get_convolve(self.ijumps, self.model_jump, data, window_size)
+        correlation_list = utils.get_correlation(self.ijumps, self.model_jump, data, window_size)
 
         del_conv_list = []
+        delete_pattern_timestamp = []
         for segment in deleted_segments:
-            segment_cent_index = utils.find_parameters(segment.data, segment.start, 'jump')[0]
-            deleted_jump = utils.get_interval(data, segment_cent_index, self.state['WINDOW_SIZE'])
+            segment_cent_index = segment.center_index
+            delete_pattern_timestamp.append(segment.pattern_timestamp)
+            deleted_jump = utils.get_interval(data, segment_cent_index, window_size)
             deleted_jump = utils.subtract_min_without_nan(deleted_jump)
             del_conv_jump = scipy.signal.fftconvolve(deleted_jump, self.model_jump)
             if len(del_conv_jump): del_conv_list.append(max(del_conv_jump))
 
-        self._update_fiting_result(self.state, confidences, convolve_list, del_conv_list)
-        self.state['JUMP_HEIGHT'] = float(min(jump_height_list, default = 1))
-        self.state['JUMP_LENGTH'] = int(max(jump_length_list, default = 1))
+        self._update_fiting_result(self.state, learning_info['confidence'], convolve_list, del_conv_list)
+        self.state['JUMP_HEIGHT'] = float(min(learning_info['pattern_height'], default = 1))
+        self.state['JUMP_LENGTH'] = int(max(learning_info['pattern_width'], default = 1))
 
     def do_detect(self, dataframe: pd.DataFrame) -> list:
         data = utils.cut_dataframe(dataframe)

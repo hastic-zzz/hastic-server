@@ -23,8 +23,8 @@ Implementation of analytics unit for Hastic.
 See also:
 * [Getting started](https://github.com/hastic/hastic-server/wiki#getting-started)
 * [FAQ](https://github.com/hastic/hastic-server/wiki/FAQ)
-* [Hastic Grafana App](https://github.com/hastic/hastic-grafana-app) - Hastic visualisation plugin for Grafana
-* [Webhooks](https://github.com/hastic/hastic-server/wiki/Webhooks) - notifications about events
+* [Hastic Grafana App](https://github.com/hastic/hastic-grafana-app) -- [Grafana](https://grafana.com/) application for visualisation of configuration
+* [Webhooks](https://github.com/hastic/hastic-server/wiki/Webhooks) -- notifications about events
 * [Installation from source](https://github.com/hastic/hastic-server/wiki/Installation-from-source)
 * [Changelog](https://github.com/hastic/hastic-server/wiki/Changelog)
 * [Roadmap](https://github.com/hastic/hastic-server/wiki/Roadmap)
