@@ -59,4 +59,5 @@ class ThresholdDetector(Detector):
         }
 
     def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
-        return self.detect(data, cache)
+        result = self.detect(data, cache)
+        return result if result else None
