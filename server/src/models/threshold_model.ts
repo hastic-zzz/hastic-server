@@ -12,7 +12,8 @@ export enum Condition {
   ABOVE_OR_EQUAL = '>=',
   EQUAL = '=',
   LESS_OR_EQUAL = '<=',
-  LESS = '<'
+  LESS = '<',
+  NO_DATA = 'No data'
 };
 
 export class Threshold {

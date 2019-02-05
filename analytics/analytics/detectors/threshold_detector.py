@@ -28,15 +28,25 @@ class ThresholdDetector(Detector):
         value = cache['value']
         condition = cache['condition']
 
+        now = int(time()) * 1000
+        segment = ({'from': now, 'to': now})
+        segments = []
+
         dataframe_without_nans = dataframe.dropna()
         if len(dataframe_without_nans) == 0:
-            return dict()
+            if condition == 'No data':
+                segments.append(segment)
+                return {
+                    'cache': cache,
+                    'segments': segments,
+                    'lastDetectionTime': now
+                }
+            else:
+                return None
+
         last_entry = dataframe_without_nans.iloc[-1]
         last_value = last_entry['value']
 
-        now = int(time()) * 1000
-        segment = ({ 'from': now, 'to': now })
-        segments = []
         if condition == '>':
             if last_value > value:
                 segments.append(segment)
