@@ -103,6 +103,19 @@ class TestDataset(unittest.TestCase):
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
     
+    def test_drop_empty_segment(self):
+        data_val = [1.0, 1.0, 1.0, 1.0, 1.0, 5.0, 5.0, 5.0, 5.0, 1.0, 1.0, 1.0, 1.0, 9.0, 9.0, 9.0, 9.0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        dataframe = create_dataframe(data_val)
+        segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000019, 'to': 1523889000025, 'labeled': True, 'deleted': False},
+                    {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000002, 'to': 1523889000008, 'labeled': True, 'deleted': False}]
+
+        try:
+            model = models.DropModel()
+            model_name = model.__class__.__name__
+            model.fit(dataframe, segments, dict())
+        except ValueError:
+            self.fail('Model {} raised unexpectedly'.format(model_name))
+
     def test_value_error_dataset_input_should_have_multiple_elements(self):
         data_val = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 5.0, 5.0, 4.0, 5.0, 5.0, 6.0, 5.0, 1.0, 2.0, 3.0, 4.0, 5.0,3.0,3.0,2.0,7.0,8.0,9.0,8.0,7.0,6.0]
         dataframe = create_dataframe(data_val)
@@ -138,6 +151,22 @@ class TestDataset(unittest.TestCase):
             self.assertTrue(np.isnan(item))
         for item in return_data_none.value:
             self.assertTrue(np.isnan(item))
+    
+    def test_three_value_segment(self):
+        data_val = [1.0, 1.0, 1.0, 1.0, 1.0, 5.0, 2.0, 5.0, 5.0, 1.0, 1.0, 1.0, 1.0, 9.0, 9.0, 9.0, 9.0, 2.0, 3.0, 4.0, 5.0, 4.0, 2.0, 1.0, 3.0, 4.0]
+        dataframe = create_dataframe(data_val)
+        segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000004, 'to': 1523889000006, 'labeled': True, 'deleted': False}]
+
+        model_instances = [
+            models.GeneralModel(),
+            models.PeakModel(),
+        ]
+        try:
+            for model in model_instances:
+                model_name = model.__class__.__name__
+                model.fit(dataframe, segments, dict())
+        except ValueError:
+            self.fail('Model {} raised unexpectedly'.format(model_name))
 
 if __name__ == '__main__':
     unittest.main()
