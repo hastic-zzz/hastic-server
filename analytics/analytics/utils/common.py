@@ -22,12 +22,6 @@ def exponential_smoothing(series, alpha):
         result.append(alpha * series[n] + (1 - alpha) * result[n - 1])
     return result
 
-def anomalies_to_timestamp(anomalies):
-    for anomaly in anomalies:
-        anomaly['from'] = convert_sec_to_ms(anomaly['from'].timestamp())
-        anomaly['to'] = convert_sec_to_ms(anomaly['to'].timestamp())
-    return anomalies
-
 def segments_box(segments):
     max_time = 0
     min_time = float("inf")
