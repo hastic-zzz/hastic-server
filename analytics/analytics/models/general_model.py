@@ -63,8 +63,8 @@ class GeneralModel(Model):
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         pat_data = self.model_gen
-        if len(pat_data.nonzero()[0]) == 0:
-            raise NameError('Labeled patterns must not be empty')
+        if pat_data.count(0) == len(pat_data):
+            raise ValueError('Labeled patterns must not be empty')
 
         for i in range(self.state['WINDOW_SIZE'] * 2, len(data)):
             watch_data = data[i - self.state['WINDOW_SIZE'] * 2: i]
