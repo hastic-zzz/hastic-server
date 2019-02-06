@@ -6,6 +6,7 @@ from typing import Optional
 from detectors import Detector
 from models import ModelCache
 from time import time
+from utils import convert_sec_to_ms
 
 
 logger = log.getLogger('THRESHOLD_DETECTOR')
@@ -28,15 +29,25 @@ class ThresholdDetector(Detector):
         value = cache['value']
         condition = cache['condition']
 
+        now = convert_sec_to_ms(time())
+        segment = ({'from': now, 'to': now})
+        segments = []
+
         dataframe_without_nans = dataframe.dropna()
         if len(dataframe_without_nans) == 0:
-            return dict()
+            if condition == 'NO_DATA':
+                segments.append(segment)
+                return {
+                    'cache': cache,
+                    'segments': segments,
+                    'lastDetectionTime': now
+                }
+            else:
+                return None
+
         last_entry = dataframe_without_nans.iloc[-1]
         last_value = last_entry['value']
 
-        now = int(time()) * 1000
-        segment = ({ 'from': now, 'to': now })
-        segments = []
         if condition == '>':
             if last_value > value:
                 segments.append(segment)
