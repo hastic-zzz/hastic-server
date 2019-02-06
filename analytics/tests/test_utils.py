@@ -196,6 +196,17 @@ class TestUtils(unittest.TestCase):
         median = 3.0
         result = 3
         self.assertEqual(result, utils.find_pattern_center(data, 0, 'jump'))
+    
+    def test_get_convolve_wrong_index(self):
+        data = [1.0, 5.0, 2.0, 1.0, 6.0, 2.0]
+        data = pd.Series(data)
+        segemnts = [1, 11]
+        av_model = [0.0, 4.0, 0.0]
+        window_size = 1
+        try:
+            utils.get_convolve(segemnts, av_model, data, window_size)
+        except ValueError:
+            self.fail('Method get_convolve raised unexpectedly')
 
 if __name__ == '__main__':
     unittest.main()

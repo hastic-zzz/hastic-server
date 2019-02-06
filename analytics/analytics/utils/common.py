@@ -5,6 +5,7 @@ from scipy.fftpack import fft
 from scipy.signal import argrelextrema
 from scipy.stats import gaussian_kde
 from scipy.stats.stats import pearsonr
+import math
 from typing import Union
 import utils
 
@@ -81,7 +82,6 @@ def ar_mean(numbers):
 def get_av_model(patterns_list):
     if len(patterns_list) == 0:
         return []
-
     x = len(patterns_list[0])
     if len(patterns_list) > 1 and len(patterns_list[1]) != x:
         raise NameError(
@@ -210,8 +210,10 @@ def get_convolve(segments: list, av_model: list, data: pd.Series, window_size: i
         labeled_segment = utils.check_nan_values(labeled_segment)
         auto_convolve = scipy.signal.fftconvolve(labeled_segment, labeled_segment)
         convolve_segment = scipy.signal.fftconvolve(labeled_segment, av_model)
-        convolve_list.append(max(auto_convolve))
-        convolve_list.append(max(convolve_segment))
+        if len(auto_convolve) > 0:
+            convolve_list.append(max(auto_convolve))
+        if len(convolve_segment) > 0:
+            convolve_list.append(max(convolve_segment))
     return convolve_list
 
 def get_correlation(segments: list, av_model: list, data: pd.Series, window_size: int) -> list:
@@ -228,7 +230,7 @@ def get_correlation(segments: list, av_model: list, data: pd.Series, window_size
     return correlation_list
 
 def get_distribution_density(segment: pd.Series) -> float:
-    if len(segment) < 2:
+    if len(segment) < 2 or len(segment.nonzero()[0]) == 0:
         return (0, 0, 0)
     min_jump = min(segment)
     max_jump = max(segment)
@@ -264,8 +266,11 @@ def find_parameters(segment_data: pd.Series, segment_from_index: int, pat_type: 
 def find_pattern_center(segment_data: pd.Series, segment_from_index: int, pattern_type: str):
     segment_median = utils.get_distribution_density(segment_data)[0]
     cen_ind = utils.pattern_intersection(segment_data.tolist(), segment_median, pattern_type)
-    pat_center = cen_ind[0]
-    segment_cent_index = pat_center + segment_from_index
+    if len(cen_ind) > 0:
+        pat_center = cen_ind[0]
+        segment_cent_index = pat_center + segment_from_index
+    else: 
+        segment_cent_index = math.ceil((len(segment_data)) / 2)
     return segment_cent_index
 
 def find_length(segment_data: pd.Series, segment_min_line: float, segment_max_line: float, pat_type: str) -> int:

@@ -87,7 +87,7 @@ class JumpModel(Model):
             if segment > self.state['WINDOW_SIZE'] and segment < (len(data) - self.state['WINDOW_SIZE']):
                 convol_data = utils.get_interval(data, segment, self.state['WINDOW_SIZE'])
                 percent_of_nans = convol_data.isnull().sum() / len(convol_data)
-                if percent_of_nans > 0.5:
+                if len(convol_data) == 0 or percent_of_nans > 0.5:
                     delete_list.append(segment)
                     continue
                 elif 0 < percent_of_nans <= 0.5:
