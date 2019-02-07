@@ -167,6 +167,7 @@ class TestDataset(unittest.TestCase):
                 model.fit(dataframe, segments, dict())
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
+
     def test_general_for_two_labeling(self):
         data_val = [1.0, 2.0, 5.0, 2.0, 1.0, 1.0, 3.0, 6.0, 4.0, 2.0, 1.0, 0, 0]
         dataframe = create_dataframe(data_val)
