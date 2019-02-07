@@ -66,6 +66,7 @@ class GeneralModel(Model):
         if pat_data.count(0) == len(pat_data):
             raise ValueError('Labeled patterns must not be empty')
 
+        self.all_conv = []
         for i in range(self.state['WINDOW_SIZE'] * 2, len(data)):
             watch_data = data[i - self.state['WINDOW_SIZE'] * 2: i]
             watch_data = utils.subtract_min_without_nan(watch_data)
