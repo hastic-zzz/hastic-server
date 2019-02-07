@@ -173,7 +173,6 @@ class TestDataset(unittest.TestCase):
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000001, 'to': 1523889000003, 'labeled': True, 'deleted': False}]
         model = models.GeneralModel()
-        model_name = model.__class__.__name__
         model.fit(dataframe, segments, dict())
         result = len(data_val) + 1
         for _ in range(2):
