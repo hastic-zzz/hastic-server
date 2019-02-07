@@ -172,14 +172,14 @@ class TestDataset(unittest.TestCase):
         data_val = [1.0, 2.0, 5.0, 2.0, 1.0, 1.0, 3.0, 6.0, 4.0, 2.0, 1.0, 0, 0]
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000001, 'to': 1523889000003, 'labeled': True, 'deleted': False}]
-        try:
-            model = models.GeneralModel()
-            model_name = model.__class__.__name__
-            for _ in range(2):
-                model.fit(dataframe, segments, dict())
-                model.do_detect(dataframe)
-        except ValueError:
-            self.fail('Model {} raised unexpectedly'.format(model_name))
+        model = models.GeneralModel()
+        model_name = model.__class__.__name__
+        model.fit(dataframe, segments, dict())
+        result = len(data_val) + 1
+        for _ in range(2):
+            model.do_detect(dataframe)
+            max_pattern_index = max(model.do_detect(dataframe))
+            self.assertLessEqual(max_pattern_index, result)
 
 
 if __name__ == '__main__':
