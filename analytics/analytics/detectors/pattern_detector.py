@@ -9,6 +9,7 @@ from typing import Optional
 from detectors import Detector
 from buckets import DataBucket
 from models import ModelCache
+from utils import convert_pd_timestamp_to_ms
 
 
 logger = logging.getLogger('PATTERN_DETECTOR')
@@ -56,8 +57,7 @@ class PatternDetector(Detector):
         newCache = detected['cache']
 
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
-        # TODO: convert from nanoseconds to millisecond in a better way: not by dividing by 10^6
-        last_detection_time = last_dataframe_time.value / 1000000
+        last_detection_time = convert_pd_timestamp_to_ms(last_dataframe_time)
         return {
             'cache': newCache,
             'segments': segments,
