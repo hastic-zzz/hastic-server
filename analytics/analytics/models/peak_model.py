@@ -16,9 +16,9 @@ class PeakModel(Model):
     def __init__(self):
         super()
         self.segments = []
-        self.ipeaks = []
-        self.model = []
         self.state = {
+            'ipeaks': [],
+            'model_peak': [],
             'confidence': 1.5,
             'convolve_max': 570000,
             'convolve_min': 530000,
@@ -41,10 +41,10 @@ class PeakModel(Model):
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         window_size = self.state['WINDOW_SIZE']
-        self.ipeaks = learning_info['segment_center_list']
-        self.model = utils.get_av_model(learning_info['patterns_list'])
-        convolve_list = utils.get_convolve(self.ipeaks, self.model, data, window_size)
-        correlation_list = utils.get_correlation(self.ipeaks, self.model, data, window_size)
+        self.state['ipeaks'] = learning_info['segment_center_list']
+        self.state['model_peak'] = utils.get_av_model(learning_info['patterns_list'])
+        convolve_list = utils.get_convolve(self.state['ipeaks'], self.state['model_peak'], data, window_size)
+        correlation_list = utils.get_correlation(self.state['ipeaks'], self.state['model_peak'], data, window_size)
 
         del_conv_list = []
         delete_pattern_width = []
@@ -55,7 +55,7 @@ class PeakModel(Model):
             delete_pattern_timestamp.append(segment.pattern_timestamp)
             deleted = utils.get_interval(data, del_max_index, window_size)
             deleted = utils.subtract_min_without_nan(deleted)
-            del_conv = scipy.signal.fftconvolve(deleted, self.model)
+            del_conv = scipy.signal.fftconvolve(deleted, self.state['model_peak'])
             if len(del_conv): del_conv_list.append(max(del_conv))
             delete_pattern_height.append(utils.find_confidence(deleted)[1])
             delete_pattern_width.append(utils.find_width(deleted, True))
@@ -85,9 +85,9 @@ class PeakModel(Model):
         close_patterns = utils.close_filtering(segments, variance_error)
         segments = utils.best_pattern(close_patterns, data, 'max')
 
-        if len(segments) == 0 or len(self.ipeaks) == 0:
+        if len(segments) == 0 or len(self.state['ipeaks']) == 0:
             return []
-        pattern_data = self.model
+        pattern_data = self.state['model_peak']
         for segment in segments:
             if segment > self.state['WINDOW_SIZE']:
                 convol_data = utils.get_interval(data, segment, self.state['WINDOW_SIZE'])

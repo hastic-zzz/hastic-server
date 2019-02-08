@@ -15,9 +15,9 @@ class JumpModel(Model):
     def __init__(self):
         super()
         self.segments = []
-        self.ijumps = []
-        self.model_jump = []
         self.state = {
+            'ijupms': [],
+            'model_jump': [],
             'confidence': 1.5,
             'convolve_max': 230,
             'convolve_min': 230,
@@ -43,10 +43,10 @@ class JumpModel(Model):
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         window_size = self.state['WINDOW_SIZE']
-        self.ijumps = learning_info['segment_center_list']
-        self.model_jump = utils.get_av_model(learning_info['patterns_list'])
-        convolve_list = utils.get_convolve(self.ijumps, self.model_jump, data, window_size)
-        correlation_list = utils.get_correlation(self.ijumps, self.model_jump, data, window_size)
+        self.state['ijumps'] = learning_info['segment_center_list']
+        self.state['model_jump'] = utils.get_av_model(learning_info['patterns_list'])
+        convolve_list = utils.get_convolve(self.state['ijumps'], self.state['model_jump'], data, window_size)
+        correlation_list = utils.get_correlation(self.state['ijumps'], self.state['model_jump'], data, window_size)
 
         del_conv_list = []
         delete_pattern_timestamp = []
@@ -55,7 +55,7 @@ class JumpModel(Model):
             delete_pattern_timestamp.append(segment.pattern_timestamp)
             deleted_jump = utils.get_interval(data, segment_cent_index, window_size)
             deleted_jump = utils.subtract_min_without_nan(deleted_jump)
-            del_conv_jump = scipy.signal.fftconvolve(deleted_jump, self.model_jump)
+            del_conv_jump = scipy.signal.fftconvolve(deleted_jump, self.state['model_jump'])
             if len(del_conv_jump): del_conv_list.append(max(del_conv_jump))
 
         self._update_fiting_result(self.state, learning_info['confidence'], convolve_list, del_conv_list)
@@ -75,10 +75,10 @@ class JumpModel(Model):
         close_patterns = utils.close_filtering(segments, variance_error)
         segments = utils.best_pattern(close_patterns, data, 'max')
 
-        if len(segments) == 0 or len(self.ijumps) == 0 :
+        if len(segments) == 0 or len(self.state['ijumps']) == 0 :
             segments = []
             return segments
-        pattern_data = self.model_jump
+        pattern_data = self.state['model_jump']
         upper_bound = self.state['convolve_max'] * 1.2
         lower_bound = self.state['convolve_min'] * 0.8
         delete_up_bound = self.state['conv_del_max'] * 1.02
