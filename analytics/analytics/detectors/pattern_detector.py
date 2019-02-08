@@ -65,14 +65,21 @@ class PatternDetector(Detector):
         }
 
     def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
-        self.bucket.receive_data(data.dropna())
+        data_without_nan = data.dropna()
+
+        if len(data_without_nan) == 0:
+            return None
+
+        self.bucket.receive_data(data_without_nan)
         if cache and self.window_size == 0:
             self.window_size = cache['WINDOW_SIZE']
 
+        res = self.detect(self.bucket.data, cache)
         if len(self.bucket.data) >= self.window_size and cache != None:
-            res = self.detect(self.bucket.data, cache)
             excess_data = len(self.bucket.data) - self.max_window_size
             self.bucket.drop_data(excess_data)
-            return res
         
-        return None
+        if res:
+            return res
+        else:
+            return None
