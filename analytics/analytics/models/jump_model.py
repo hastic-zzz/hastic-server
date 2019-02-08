@@ -16,7 +16,7 @@ class JumpModel(Model):
         super()
         self.segments = []
         self.state = {
-            'ijupms': [],
+            'ijumps': [],
             'model_jump': [],
             'confidence': 1.5,
             'convolve_max': 230,
