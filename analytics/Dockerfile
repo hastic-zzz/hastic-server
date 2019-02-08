@@ -17,4 +17,4 @@ VOLUME [ "/var/www/data" ]
 
 COPY . /var/www/analytics/
 
-CMD ["python", "bin/server"]
+CMD ["python", "-u", "bin/server"]
