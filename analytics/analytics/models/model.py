@@ -86,10 +86,9 @@ class Model(ABC):
             self.state = cache
 
         result = self.do_detect(dataframe)
-        # TODO: convert from ns to ms more proper way (not dividing by 10^6)
         segments = [(
-            dataframe['timestamp'][x - 1].value / 1000000,
-            dataframe['timestamp'][x + 1].value / 1000000
+            utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][x - 1]),
+            utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][x + 1])
         ) for x in result]
 
         return {
