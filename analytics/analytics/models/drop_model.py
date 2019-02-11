@@ -42,7 +42,7 @@ class DropModel(Model):
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         window_size = self.state['WINDOW_SIZE']
-        self.state['idrops'] = learning_info['segment_center_list']
+        self.state['idrops'] = list(set(self.state['idrops'] + learning_info['segment_center_list']))
         self.state['model_drop'] = utils.get_av_model(learning_info['patterns_list'])
         convolve_list = utils.get_convolve(self.state['idrops'], self.state['model_drop'], data, window_size)
         correlation_list = utils.get_correlation(self.state['idrops'], self.state['model_drop'], data, window_size)

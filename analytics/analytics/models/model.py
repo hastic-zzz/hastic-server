@@ -59,7 +59,7 @@ class Model(ABC):
         pass
 
     def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[ModelCache]) -> ModelCache:
-        if type(cache) is ModelCache:
+        if type(cache) is ModelCache and cache:
             self.state = cache
         max_length = 0
         labeled = []
