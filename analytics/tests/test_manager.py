@@ -57,7 +57,12 @@ class TestDataset(aiounittest.AsyncTestCase):
         return self._fill_task(uid, data, 'DETECT', analytic_unit_type, cache=cache)
 
     def _get_test_dataset(self, pattern) -> tuple:
-        #data, segments
+        """
+        pattern name: ([dataset values], [list of segments])
+
+        segment - (begin, end) - indexes in dataset values
+        returns dataset in format (data: List[int], segments: List[List[int]])
+        """
         datasets = {
             'PEAK': ([0, 0, 1, 2, 3, 4, 3, 2, 1, 0, 0], [[2, 8]]),
             'JUMP': ([0, 0, 1, 2, 3, 4, 4, 4], [[1, 6]]),
