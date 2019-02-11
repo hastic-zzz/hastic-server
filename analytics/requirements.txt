@@ -1,5 +1,6 @@
 altgraph==0.15
 attrdict==2.0.0
+aiounittest==1.1.0
 future==0.16.0
 macholib==1.9
 numpy==1.14.5
