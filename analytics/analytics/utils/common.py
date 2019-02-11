@@ -91,11 +91,8 @@ def get_av_model(patterns_list):
         av_val = []
         for val in patterns_list:
             if type(val) == pd.Series:
-                av_val.append(val.values[i])
-            elif type(val) == list:
-                av_val.append(val[i])
-            else:
-                raise ValueError('Wrong type of patterns value')
+                val = val.values
+        av_val.append(val[i])
         model_pat.append(ar_mean(av_val))
     return model_pat
 

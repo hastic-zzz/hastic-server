@@ -43,7 +43,7 @@ class JumpModel(Model):
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         window_size = self.state['WINDOW_SIZE']
-        self.state['ijumps'] = list(set(self.state['ijumps'] + learning_info['segment_center_list']))
+        self.state['ijumps'] = list(set(self.state.get('ijumps', []) + learning_info['segment_center_list']))
         self.state['model_jump'] = utils.get_av_model(learning_info['patterns_list'])
         convolve_list = utils.get_convolve(self.state['ijumps'], self.state['model_jump'], data, window_size)
         correlation_list = utils.get_correlation(self.state['ijumps'], self.state['model_jump'], data, window_size)

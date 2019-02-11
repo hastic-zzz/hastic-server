@@ -41,7 +41,7 @@ class TroughModel(Model):
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         window_size = self.state['WINDOW_SIZE']
-        self.state['itroughs'] = list(set(self.state['itroughs'] + learning_info['segment_center_list']))
+        self.state['itroughs'] = list(set(self.state.get('itroughs', []) + learning_info['segment_center_list']))
         self.state['model_trough'] = utils.get_av_model(learning_info['patterns_list'])
         convolve_list = utils.get_convolve(self.state['itroughs'], self.state['model_trough'], data, window_size)
         correlation_list = utils.get_correlation(self.state['itroughs'], self.state['model_trough'], data, window_size)

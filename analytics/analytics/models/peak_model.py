@@ -41,7 +41,7 @@ class PeakModel(Model):
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         window_size = self.state['WINDOW_SIZE']
-        self.state['ipeaks'] = list(set(self.state['ipeaks'] + learning_info['segment_center_list']))
+        self.state['ipeaks'] = list(set(self.state.get('ipeaks', []) + learning_info['segment_center_list']))
         self.state['model_peak'] = utils.get_av_model(learning_info['patterns_list'])
         convolve_list = utils.get_convolve(self.state['ipeaks'], self.state['model_peak'], data, window_size)
         correlation_list = utils.get_correlation(self.state['ipeaks'], self.state['model_peak'], data, window_size)

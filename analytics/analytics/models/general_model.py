@@ -40,7 +40,7 @@ class GeneralModel(Model):
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
-        self.state['ipats'] = list(set(self.state['ipats'] + learning_info['segment_center_list']))
+        self.state['ipats'] = list(set(self.state.get('ipats', []) + learning_info['segment_center_list']))
         self.state['model_gen'] = utils.get_av_model(learning_info['patterns_list'])
         convolve_list = utils.get_convolve(self.state['ipats'], self.state['model_gen'], data, self.state['WINDOW_SIZE'])
         correlation_list = utils.get_correlation(self.state['ipats'], self.state['model_gen'], data, self.state['WINDOW_SIZE'])
