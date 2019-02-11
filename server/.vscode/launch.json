@@ -14,7 +14,13 @@
       "sourceMapPathOverrides": {
         "webpack:///./*": "c:\\Projects\\hastic-server\\server\\*"
       },
-      //"outFiles": [ "/home/alex/Projects/hastic-server/server.js" ],
+      "linux": {
+        "sourceMapPathOverrides": {
+          "webpack:///./~/*": "${workspaceRoot}/node_modules/*",
+          "webpack:///./*": "${workspaceRoot}/*",
+          "webpack:///*": "*"
+        }
+      },
       "port": 9229,
       "restart": true,
       "trace": true,
