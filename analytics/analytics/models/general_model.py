@@ -15,10 +15,9 @@ class GeneralModel(Model):
 
     def __init__(self):
         super()
-        self.segments = []
-        self.ipats = []
-        self.model_gen = []
         self.state = {
+            'ipats': [],
+            'model_gen': [],
             'convolve_max': 240,
             'convolve_min': 200,
             'WINDOW_SIZE': 240,
@@ -41,10 +40,10 @@ class GeneralModel(Model):
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
-        self.ipats = learning_info['segment_center_list']
-        self.model_gen = utils.get_av_model(learning_info['patterns_list'])
-        convolve_list = utils.get_convolve(self.ipats, self.model_gen, data, self.state['WINDOW_SIZE'])
-        correlation_list = utils.get_correlation(self.ipats, self.model_gen, data, self.state['WINDOW_SIZE'])
+        self.state['ipats'] = learning_info['segment_center_list']
+        self.state['model_gen'] = utils.get_av_model(learning_info['patterns_list'])
+        convolve_list = utils.get_convolve(self.state['ipats'], self.state['model_gen'], data, self.state['WINDOW_SIZE'])
+        correlation_list = utils.get_correlation(self.state['ipats'], self.state['model_gen'], data, self.state['WINDOW_SIZE'])
 
         del_conv_list = []
         delete_pattern_timestamp = []
@@ -53,7 +52,7 @@ class GeneralModel(Model):
             delete_pattern_timestamp.append(segment.pattern_timestamp)
             deleted_pat = utils.get_interval(data, del_mid_index, self.state['WINDOW_SIZE'])
             deleted_pat = utils.subtract_min_without_nan(deleted_pat)
-            del_conv_pat = scipy.signal.fftconvolve(deleted_pat, self.model_gen)
+            del_conv_pat = scipy.signal.fftconvolve(deleted_pat, self.state['model_gen'])
             if len(del_conv_pat): del_conv_list.append(max(del_conv_pat))
 
         self.state['convolve_min'], self.state['convolve_max'] = utils.get_min_max(convolve_list, self.state['WINDOW_SIZE'] / 3)
@@ -62,7 +61,7 @@ class GeneralModel(Model):
     def do_detect(self, dataframe: pd.DataFrame) -> list:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
-        pat_data = self.model_gen
+        pat_data = self.state['model_gen']
         if pat_data.count(0) == len(pat_data):
             raise ValueError('Labeled patterns must not be empty')
 
@@ -78,7 +77,7 @@ class GeneralModel(Model):
         return set(item + self.state['WINDOW_SIZE'] for item in filtered)
 
     def __filter_detection(self, segments: list, data: list):
-        if len(segments) == 0 or len(self.ipats) == 0:
+        if len(segments) == 0 or len(self.state['ipats']) == 0:
             return []
         delete_list = []
         for val in segments:
