@@ -75,8 +75,8 @@ class Model(ABC):
                 max_length = max(segment.length, max_length)
                 if segment.labeled: labeled.append(segment)
                 if segment.deleted: deleted.append(segment)
-                    
-        self.state['WINDOW_SIZE'] = math.ceil(max_length / 2) if max_length else 0
+        if self.state.get('WINDOW_SIZE') == 240:            
+            self.state['WINDOW_SIZE'] = math.ceil(max_length / 2) if max_length else 0
         model, model_type = self.get_model_type()
         learning_info = self.get_parameters_from_segments(dataframe, labeled, deleted, model, model_type)
         if len(self.state.get('pattern_center', [])) > 0 and len(self.state.get('pattern_model', [])) > 0:

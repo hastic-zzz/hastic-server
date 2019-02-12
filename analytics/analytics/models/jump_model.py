@@ -75,7 +75,7 @@ class JumpModel(Model):
         close_patterns = utils.close_filtering(segments, variance_error)
         segments = utils.best_pattern(close_patterns, data, 'max')
 
-        if len(segments) == 0 or len(self.state['pattern_center']) == 0 :
+        if len(segments) == 0 or len(self.state.get('pattern_center', [])) == 0:
             segments = []
             return segments
         pattern_data = self.state['pattern_model']

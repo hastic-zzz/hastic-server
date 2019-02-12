@@ -77,7 +77,7 @@ class GeneralModel(Model):
         return set(item + self.state['WINDOW_SIZE'] for item in filtered)
 
     def __filter_detection(self, segments: list, data: list):
-        if len(segments) == 0 or len(self.state['pattern_center']) == 0:
+        if len(segments) == 0 or len(self.state.get('pattern_center', [])) == 0:
             return []
         delete_list = []
         for val in segments:

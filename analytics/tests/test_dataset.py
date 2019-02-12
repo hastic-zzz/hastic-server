@@ -218,8 +218,8 @@ class TestDataset(unittest.TestCase):
 
     def test_jump_model_for_cache(self):
         cache = {
-            'ijumps': [2, 6],
-            'model_jump': [5, 0.5, 4],
+            'pattern_center': [2, 6],
+            'pattern_model': [5, 0.5, 4],
             'confidence': 2,
             'convolve_max': 8,
             'convolve_min': 7,
@@ -232,7 +232,7 @@ class TestDataset(unittest.TestCase):
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000012, 'labeled': True, 'deleted': False}]
         model = models.JumpModel()
         result = model.fit(dataframe, segments, cache)
-        self.assertEqual(len(result['ijumps']), 3)
+        self.assertEqual(len(result['pattern_center']), 3)
 
 
 if __name__ == '__main__':
