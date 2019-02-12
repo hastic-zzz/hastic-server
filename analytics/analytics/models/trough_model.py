@@ -17,8 +17,8 @@ class TroughModel(Model):
         super()
         self.segments = []
         self.state = {
-            'itroughs': [],
-            'model_trough': [],
+            'pattern_center': [],
+            'pattern_model': [],
             'confidence': 1.5,
             'convolve_max': 570000,
             'convolve_min': 530000,
@@ -41,10 +41,10 @@ class TroughModel(Model):
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         window_size = self.state['WINDOW_SIZE']
-        self.state['itroughs'] = list(set(self.state.get('itroughs', []) + learning_info['segment_center_list']))
-        self.state['model_trough'] = utils.get_av_model(learning_info['patterns_list'])
-        convolve_list = utils.get_convolve(self.state['itroughs'], self.state['model_trough'], data, window_size)
-        correlation_list = utils.get_correlation(self.state['itroughs'], self.state['model_trough'], data, window_size)
+        self.state['pattern_center'] = list(set(self.state.get('pattern_center', []) + learning_info['segment_center_list']))
+        self.state['pattern_model'] = utils.get_av_model(learning_info['patterns_list'])
+        convolve_list = utils.get_convolve(self.state['pattern_center'], self.state['pattern_model'], data, window_size)
+        correlation_list = utils.get_correlation(self.state['pattern_center'], self.state['pattern_model'], data, window_size)
 
         del_conv_list = []
         delete_pattern_width = []
@@ -55,7 +55,7 @@ class TroughModel(Model):
             delete_pattern_timestamp.append(segment.pattern_timestamp)
             deleted = utils.get_interval(data, del_min_index, window_size)
             deleted = utils.subtract_min_without_nan(deleted)
-            del_conv = scipy.signal.fftconvolve(deleted, self.state['model_trough'])
+            del_conv = scipy.signal.fftconvolve(deleted, self.state['pattern_model'])
             if len(del_conv): del_conv_list.append(max(del_conv))
             delete_pattern_height.append(utils.find_confidence(deleted)[1])
             delete_pattern_width.append(utils.find_width(deleted, False))
@@ -84,10 +84,10 @@ class TroughModel(Model):
         variance_error = self.state['WINDOW_SIZE']
         close_patterns = utils.close_filtering(segments, variance_error)
         segments = utils.best_pattern(close_patterns, data, 'min')
-        if len(segments) == 0 or len(self.state['itroughs']) == 0 :
+        if len(segments) == 0 or len(self.state['pattern_center']) == 0 :
             segments = []
             return segments
-        pattern_data = self.state['model_trough']
+        pattern_data = self.state['pattern_model']
         for segment in segments:
             if segment > self.state['WINDOW_SIZE']:
                 convol_data = utils.get_interval(data, segment, self.state['WINDOW_SIZE'])

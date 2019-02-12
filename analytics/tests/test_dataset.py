@@ -197,7 +197,7 @@ class TestDataset(unittest.TestCase):
         model = models.PeakModel()
         result = model.fit(dataframe, segments, cache)
         self.assertEqual(len(result['ipeaks']), 3)
-    
+
     def test_trough_model_for_cache(self):
         cache = {
             'itroughs': [2, 6],
@@ -215,6 +215,24 @@ class TestDataset(unittest.TestCase):
         model = models.TroughModel()
         result = model.fit(dataframe, segments, cache)
         self.assertEqual(len(result['itroughs']), 3)
+
+    def test_jump_model_for_cache(self):
+        cache = {
+            'ijumps': [2, 6],
+            'model_jump': [5, 0.5, 4],
+            'confidence': 2,
+            'convolve_max': 8,
+            'convolve_min': 7,
+            'WINDOW_SIZE': 1,
+            'conv_del_min': 0,
+            'conv_del_max': 0,
+        }
+        data_val = [1.0, 1.0, 1.0, 4.0, 4.0, 0.0, 0.0, 5.0, 5.0, 0.0, 0.0, 4.0, 4.0, 4.0, 4.0]
+        dataframe = create_dataframe(data_val)
+        segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000012, 'labeled': True, 'deleted': False}]
+        model = models.JumpModel()
+        result = model.fit(dataframe, segments, cache)
+        self.assertEqual(len(result['ijumps']), 3)
 
 
 if __name__ == '__main__':
