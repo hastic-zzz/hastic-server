@@ -23,7 +23,7 @@ class JumpModel(Model):
             'convolve_min': 230,
             'JUMP_HEIGHT': 1,
             'JUMP_LENGTH': 1,
-            'WINDOW_SIZE': 240,
+            'WINDOW_SIZE': 0,
             'conv_del_min': 54000,
             'conv_del_max': 55000,
         }

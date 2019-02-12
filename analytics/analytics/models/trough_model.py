@@ -22,7 +22,7 @@ class TroughModel(Model):
             'confidence': 1.5,
             'convolve_max': 570000,
             'convolve_min': 530000,
-            'WINDOW_SIZE': 240,
+            'WINDOW_SIZE': 0,
             'conv_del_min': 54000,
             'conv_del_max': 55000,
         }
