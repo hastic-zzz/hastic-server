@@ -59,7 +59,8 @@ class Model(ABC):
         pass
 
     def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[ModelCache]) -> ModelCache:
-        if type(cache) is ModelCache:
+        data = dataframe['value']
+        if type(cache) is ModelCache and cache:
             self.state = cache
         max_length = 0
         labeled = []
@@ -74,10 +75,15 @@ class Model(ABC):
                 max_length = max(segment.length, max_length)
                 if segment.labeled: labeled.append(segment)
                 if segment.deleted: deleted.append(segment)
-                    
-        self.state['WINDOW_SIZE'] = math.ceil(max_length / 2) if max_length else 0
+        if self.state.get('WINDOW_SIZE') == 0:            
+            self.state['WINDOW_SIZE'] = math.ceil(max_length / 2) if max_length else 0
         model, model_type = self.get_model_type()
         learning_info = self.get_parameters_from_segments(dataframe, labeled, deleted, model, model_type)
+        if self.state.get('pattern_center') and self.state.get('pattern_model'):
+            for center in self.state['pattern_center']:
+                aligned_segment = utils.get_interval(data, center, self.state['WINDOW_SIZE'])
+                aligned_segment = utils.subtract_min_without_nan(aligned_segment)
+                learning_info['patterns_list'].append(aligned_segment)
         self.do_fit(dataframe, labeled, deleted, learning_info)
         return self.state
 

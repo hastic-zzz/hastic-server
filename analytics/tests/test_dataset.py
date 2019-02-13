@@ -179,6 +179,60 @@ class TestDataset(unittest.TestCase):
             model.do_detect(dataframe)
             max_pattern_index = max(model.do_detect(dataframe))
             self.assertLessEqual(max_pattern_index, result)
+    
+    def test_peak_model_for_cache(self):
+        cache = {
+            'pattern_center': [1, 6],
+            'model_peak': [1, 4, 0],
+            'confidence': 2,
+            'convolve_max': 8,
+            'convolve_min': 7,
+            'WINDOW_SIZE': 1,
+            'conv_del_min': 0,
+            'conv_del_max': 0,
+        }
+        data_val = [2.0, 5.0, 1.0, 1.0, 1.0, 2.0, 5.0, 1.0, 1.0, 2.0, 3.0, 7.0, 1.0, 1.0, 1.0]
+        dataframe = create_dataframe(data_val)
+        segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000012, 'labeled': True, 'deleted': False}]
+        model = models.PeakModel()
+        result = model.fit(dataframe, segments, cache)
+        self.assertEqual(len(result['pattern_center']), 3)
+
+    def test_trough_model_for_cache(self):
+        cache = {
+            'pattern_center': [2, 6],
+            'pattern_model': [5, 0.5, 4],
+            'confidence': 2,
+            'convolve_max': 8,
+            'convolve_min': 7,
+            'WINDOW_SIZE': 1,
+            'conv_del_min': 0,
+            'conv_del_max': 0,
+        }
+        data_val = [5.0, 5.0, 1.0, 4.0, 5.0, 5.0, 0.0, 4.0, 5.0, 5.0, 6.0, 1.0, 5.0, 5.0, 5.0]
+        dataframe = create_dataframe(data_val)
+        segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000012, 'labeled': True, 'deleted': False}]
+        model = models.TroughModel()
+        result = model.fit(dataframe, segments, cache)
+        self.assertEqual(len(result['pattern_center']), 3)
+
+    def test_jump_model_for_cache(self):
+        cache = {
+            'pattern_center': [2, 6],
+            'pattern_model': [5, 0.5, 4],
+            'confidence': 2,
+            'convolve_max': 8,
+            'convolve_min': 7,
+            'WINDOW_SIZE': 1,
+            'conv_del_min': 0,
+            'conv_del_max': 0,
+        }
+        data_val = [1.0, 1.0, 1.0, 4.0, 4.0, 0.0, 0.0, 5.0, 5.0, 0.0, 0.0, 4.0, 4.0, 4.0, 4.0]
+        dataframe = create_dataframe(data_val)
+        segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000012, 'labeled': True, 'deleted': False}]
+        model = models.JumpModel()
+        result = model.fit(dataframe, segments, cache)
+        self.assertEqual(len(result['pattern_center']), 3)
 
 
 if __name__ == '__main__':

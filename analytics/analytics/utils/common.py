@@ -84,14 +84,15 @@ def get_av_model(patterns_list):
         return []
     x = len(patterns_list[0])
     if len(patterns_list) > 1 and len(patterns_list[1]) != x:
-        raise NameError(
-            'All elements of patterns_list should have same length')
+        raise ValueError('All elements of patterns_list should have same length')
 
     model_pat = []
     for i in range(x):
         av_val = []
-        for j in patterns_list:
-            av_val.append(j.values[i])
+        for val in patterns_list:
+            if type(val) == pd.Series:
+                val = val.values
+        av_val.append(val[i])
         model_pat.append(ar_mean(av_val))
     return model_pat
 
