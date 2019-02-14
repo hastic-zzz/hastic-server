@@ -95,6 +95,9 @@ def get_av_model(patterns_list):
     return model_pat
 
 def get_same_length(patterns_list):
+    for pat in patterns_list:
+        if type(pat) == pd.Series:
+            pat = pat.tolist()
     patterns_list = list(filter(lambda x: x != [], patterns_list))
     if len(patterns_list) < 2:
         return patterns_list
