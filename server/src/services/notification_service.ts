@@ -40,7 +40,7 @@ export async function sendInfoWebhook(message: any) {
   }
 }
 
-export async function sendWebhook(payload: any, contentType=HASTIC_WEBHOOK_TYPE) {
+export async function sendWebhook(payload: any, contentType = HASTIC_WEBHOOK_TYPE) {
   if(HASTIC_WEBHOOK_URL === null) {
     throw new Error(`Can't send alert, HASTIC_WEBHOOK_URL is undefined`);
   }
