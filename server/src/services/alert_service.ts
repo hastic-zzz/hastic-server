@@ -81,7 +81,7 @@ export class AlertService {
   public onStateChange(message: string, optionalInfo={}) {
     let message_payload = {
       message
-    }
+    };
     sendInfoWebhook(Object.assign(message_payload, optionalInfo));
   }
 
