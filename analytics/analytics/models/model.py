@@ -102,11 +102,12 @@ class Model(ABC):
             'cache': self.state
         }
 
-    def _update_fiting_result(self, state: dict, confidences: list, convolve_list: list, del_conv_list: list) -> None:
+    def _update_fiting_result(self, state: dict, confidences: list, convolve_list: list, del_conv_list: list, height_list: list) -> None:
         if type(state) is dict:
             state['confidence'] = float(min(confidences, default = 1.5))
             state['convolve_min'], state['convolve_max'] = utils.get_min_max(convolve_list, state['WINDOW_SIZE'])
-            state['conv_del_min'], state['conv_del_max'] = utils.get_min_max(del_conv_list, state['WINDOW_SIZE'])
+            state['conv_del_min'], state['conv_del_max'] = utils.get_min_max(del_conv_list, 0)
+            state['height_min'], state['height_max'] = utils.get_min_max(height_list, 0)
         else:
             raise ValueError('got non-dict as state for update fiting result: {}'.format(state))
     
@@ -118,6 +119,7 @@ class Model(ABC):
             'pattern_height': [],
             'pattern_timestamp': [],
             'segment_center_list': [],
+            'pattern_value': [],
         }
         data = dataframe['value']
         for segment in labeled:
@@ -129,6 +131,7 @@ class Model(ABC):
             aligned_segment = utils.get_interval(data, segment_center, self.state['WINDOW_SIZE'])
             aligned_segment = utils.subtract_min_without_nan(aligned_segment)
             learning_info['patterns_list'].append(aligned_segment)
+            learning_info['pattern_value'].append(aligned_segment[self.state['WINDOW_SIZE']])
             if model == 'peak' or model == 'trough':
                 learning_info['pattern_height'].append(utils.find_confidence(aligned_segment)[1])
                 learning_info['pattern_width'].append(utils.find_width(aligned_segment, model_type))
