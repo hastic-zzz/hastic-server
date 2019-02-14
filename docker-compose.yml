@@ -21,6 +21,10 @@ services:
     image: hastic/analytics:latest
     build: analytics
     restart: always
+    command: ${HASTIC_ANALYTICS_COMMAND}
+    #set HASTIC_ANALYTICS_COMMAND="python -um ptvsd --host 0.0.0.0 --port 5678 bin/server" for remote debug
+    ports:
+      - 5678:5678
 
 volumes:
   data-volume:
