@@ -78,7 +78,7 @@ export class AlertService {
     this._alerts[id].receive(segment);
   };
 
-  public onStateChange(message: string, optionalInfo={}) {
+  public onStateChange(message: string, optionalInfo = {}) {
     let message_payload = {
       message
     };
