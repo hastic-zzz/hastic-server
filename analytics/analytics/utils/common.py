@@ -80,21 +80,37 @@ def ar_mean(numbers):
     return float(sum(numbers)) / max(len(numbers), 1)
 
 def get_av_model(patterns_list):
+    patterns_list = get_same_length(patterns_list)
     if len(patterns_list) == 0:
         return []
-    x = len(patterns_list[0])
-    if len(patterns_list) > 1 and len(patterns_list[1]) != x:
-        raise ValueError('All elements of patterns_list should have same length')
-
+    pat_length = len(patterns_list[0])
     model_pat = []
-    for i in range(x):
+    for i in range(pat_length):
         av_val = []
         for val in patterns_list:
             if type(val) == pd.Series:
                 val = val.values
-        av_val.append(val[i])
+            av_val.append(val[i])
         model_pat.append(ar_mean(av_val))
     return model_pat
+
+def get_same_length(patterns_list):
+    patterns_list = list(filter(lambda x: x != [], patterns_list))
+    if len(patterns_list) < 2:
+        return patterns_list
+    #max_length = max(map(len, patterns_list))
+    max_length = len(patterns_list[0])
+    for pat in patterns_list:
+        if len(pat) > max_length:
+            max_length = len(pat)
+    if max_length == patterns_list[0]:
+        return patterns_list
+    for pat in patterns_list:
+        if len(pat) < max_length:
+            length_difference = max_length - len(pat)
+            added_values = list(0 for _ in range(length_difference))
+            pat.extend(added_values)
+    return patterns_list
 
 def close_filtering(pattern_list, win_size):
     if len(pattern_list) == 0:
