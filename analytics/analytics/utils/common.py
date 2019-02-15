@@ -83,13 +83,10 @@ def get_av_model(patterns_list):
     if len(patterns_list) == 0:
         return []
     patterns_list = get_same_length(patterns_list)
-    pat_length = len(patterns_list[0])
     model_pat = []
-    for i in range(pat_length):
-        av_val = []
-        for val in patterns_list:
-            av_val.append(val[i])
-        model_pat.append(ar_mean(av_val))
+    value_list = list(map(list, zip(*patterns_list)))
+    for val in value_list:
+        model_pat.append(ar_mean(val))
     return model_pat
 
 def get_same_length(patterns_list):
