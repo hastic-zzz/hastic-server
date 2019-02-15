@@ -329,11 +329,3 @@ def cut_dataframe(data: pd.DataFrame) -> pd.DataFrame:
 def get_min_max(array, default):
     return float(min(array, default=default)), float(max(array, default=default))
 
-
-def filter_segments(pattern_parameter: float, up_bound: float, low_bound: float, factor: float) -> bool:
-    up_bound = up_bound * (1 + factor)
-    low_bound = low_bound * (1 - factor)
-    if pattern_parameter > up_bound or pattern_parameter < low_bound:
-        return True
-    return False
-
