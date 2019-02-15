@@ -79,11 +79,6 @@ class Model(ABC):
             self.state['WINDOW_SIZE'] = math.ceil(max_length / 2) if max_length else 0
         model, model_type = self.get_model_type()
         learning_info = self.get_parameters_from_segments(dataframe, labeled, deleted, model, model_type)
-        if self.state.get('pattern_center') and self.state.get('pattern_model'):
-            for center in self.state['pattern_center']:
-                aligned_segment = utils.get_interval(data, center, self.state['WINDOW_SIZE'])
-                aligned_segment = utils.subtract_min_without_nan(aligned_segment)
-                learning_info['patterns_list'].append(aligned_segment)
         self.do_fit(dataframe, labeled, deleted, learning_info)
         return self.state
 
