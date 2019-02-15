@@ -1,6 +1,8 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
+import * as url from 'url-parse';
+
 import { getJsonDataSync } from './services/json_service';
 
 
@@ -23,7 +25,7 @@ export const ZMQ_IPC_PATH = getConfigField('ZMQ_IPC_PATH', path.join(os.tmpdir()
 export const ZMQ_DEV_PORT = getConfigField('ZMQ_DEV_PORT', '8002');
 export const ZMQ_HOST = getConfigField('ZMQ_HOST', '127.0.0.1');
 export const HASTIC_API_KEY = getConfigField('HASTIC_API_KEY');
-export const GRAFANA_URL = getConfigField('GRAFANA_URL', null);
+export const GRAFANA_URL = checkUrl(getConfigField('GRAFANA_URL', null));
 export const HASTIC_WEBHOOK_URL = getConfigField('HASTIC_WEBHOOK_URL', null);
 export const HASTIC_WEBHOOK_TYPE = getConfigField('HASTIC_WEBHOOK_TYPE', 'application/x-www-form-urlencoded');
 export const HASTIC_WEBHOOK_SECRET = getConfigField('HASTIC_WEBHOOK_SECRET', null);
@@ -56,6 +58,25 @@ function getConfigField(field: string, defaultVal?: any) {
     return defaultVal;
   }
   return val;
+}
+
+function checkUrl(grafanaUrl) {
+  let urlObj = new url(grafanaUrl);
+  console.log(urlObj);
+  if (urlObj.protocol != 'http:' && urlObj.protocol != 'https:') {
+    urlObj.protocol = 'http';
+    console.log(urlObj);
+  } else if (urlObj.slashes === false) {
+    throw 'Provide proper slashes after the protocol like this "http://" in GRAFANA_URL field in config.json and restart'
+  } else if (isNaN(urlObj.port) && (urlObj.port !== '')) {
+    throw 'Provide valid port number in GRAFANA_URL field in config.json and restart'
+  } else if (urlObj.pathname !== '') {
+    if (urlObj.pathname.slice(-1) === '/') {
+      throw 'Please remove the "/" (slash) at the end of GRAFANA_URL field in config.json and restart'
+    }
+  }
+  let finalUrl = urlObj.protocol + '//' + urlObj.hostname;
+  return finalUrl;
 }
 
 function getPackageVersion() {
