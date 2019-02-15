@@ -33,3 +33,6 @@ See also:
 
 Please visit https://hastic.io/downloads
 
+## Support and Consulting
+
+Commercial support, consulting, professional services — please send us your inquiry to ping@hastic.io
