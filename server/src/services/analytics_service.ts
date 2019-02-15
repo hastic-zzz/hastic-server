@@ -1,6 +1,7 @@
 import { AnalyticsTask, AnalyticsTaskType } from '../models/analytics_task_model';
 import { AnalyticsMessageMethod, AnalyticsMessage } from '../models/analytics_message_model';
 import * as config from '../config';
+import { AlertService } from './alert_service';
 
 import * as zmq from 'zeromq';
 
@@ -11,6 +12,7 @@ import * as path from 'path';
 
 export class AnalyticsService {
 
+  private _alertService = new AlertService();
   private _requester: any;
   private _ready: boolean = false;
   private _pingResponded = false;
@@ -167,7 +169,9 @@ export class AnalyticsService {
   }
 
   private async _onAnalyticsDown() {
-    console.log('Analytics is down');
+    let msg = 'Analytics is down';
+    console.log(msg);
+    this._alertService.onStateChange(msg);
     if(this._productionMode && !this._inDocker) {
       await AnalyticsService._runAnalyticsProcess(this._zmqConnectionString);
     }
