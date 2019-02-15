@@ -229,11 +229,31 @@ class TestDataset(unittest.TestCase):
         }
         data_val = [1.0, 1.0, 1.0, 4.0, 4.0, 0.0, 0.0, 5.0, 5.0, 0.0, 0.0, 4.0, 4.0, 4.0, 4.0]
         dataframe = create_dataframe(data_val)
-        segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000012, 'labeled': True, 'deleted': False}]
+        segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 152388900009, 'to': 1523889000013, 'labeled': True, 'deleted': False}]
         model = models.JumpModel()
         result = model.fit(dataframe, segments, cache)
         self.assertEqual(len(result['pattern_center']), 3)
 
+    def test_models_for_pattern_model_cache(self):
+        cache = {
+            'pattern_center': [4, 12],
+            'pattern_model': [],
+            'confidence': 2,
+            'convolve_max': 8,
+            'convolve_min': 7,
+            'WINDOW_SIZE': 2,
+            'conv_del_min': 0,
+            'conv_del_max': 0,
+        }
+        data_val = [5.0, 5.0, 5.0, 5.0, 1.0, 1.0, 1.0, 1.0, 9.0, 9.0, 9.0, 9.0, 0, 0, 0, 0, 0, 0, 6.0, 6.0, 6.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+        dataframe = create_dataframe(data_val)
+        segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000019, 'to': 1523889000024, 'labeled': True, 'deleted': False}]
+        try:
+            model = models.DropModel()
+            model_name = model.__class__.__name__
+            model.fit(dataframe, segments, cache)
+        except ValueError:
+            self.fail('Model {} raised unexpectedly'.format(model_name))
 
 if __name__ == '__main__':
     unittest.main()

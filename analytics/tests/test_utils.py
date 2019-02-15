@@ -129,7 +129,12 @@ class TestUtils(unittest.TestCase):
         patterns_list = []
         result = []
         self.assertEqual(utils.get_av_model(patterns_list), result)
-    
+
+    def test_get_av_model_normal_data(self):
+        patterns_list = [[1, 1, 1], [2, 2, 2],[3,3,3]]
+        result = [2.0, 2.0, 2.0]
+        self.assertEqual(utils.get_av_model(patterns_list), result)
+
     def test_find_jump_nan_data(self):
         data = [np.NaN, np.NaN, np.NaN, np.NaN]
         data = pd.Series(data)
@@ -205,6 +210,13 @@ class TestUtils(unittest.TestCase):
         window_size = 1
         try:
             utils.get_convolve(segemnts, av_model, data, window_size)
+        except ValueError:
+            self.fail('Method get_convolve raised unexpectedly')
+    
+    def test_get_av_model_for_different_length(self):
+        patterns_list = [[1.0, 1.0, 2.0], [4.0, 4.0], [2.0, 2.0, 2.0], [3.0, 3.0], []]
+        try:
+            utils.get_av_model(patterns_list)
         except ValueError:
             self.fail('Method get_convolve raised unexpectedly')
 
