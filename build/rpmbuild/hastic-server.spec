@@ -13,7 +13,7 @@ Group: Installation Script
 License: Apache-2.0
 URL: hastic.io
 BuildRoot: %{buildroot}
-Requires: nodejs >= %{getenv:NODE_VERSION}
+Requires: nodejs
 AutoReqProv: no
 AutoReq: no
 BuildArch: noarch
@@ -58,11 +58,11 @@ npm run build
 popd
 
 %install
-mkdir -p %{buildroot}/usr/lib/hastic-server/server
+mkdir -p %{buildroot}/usr/lib/hastic-server/server/dist
 mkdir -p %{buildroot}/usr/lib/hastic-server/analytics/dist/server
-cp -r server %{buildroot}/usr/lib/hastic-server/
+cp -r server/dist %{buildroot}/usr/lib/hastic-server/dist
 cp -r analytics/dist/server/ %{buildroot}/usr/lib/hastic-server/analytics/dist/
-chmod +x %{buildroot}/usr/lib/hastic-server/analytics/dist/server/server
+chmod +x analytics/dist/server/server
 
 %post
 mkdir -p /etc/hastic-server/
