@@ -56,8 +56,8 @@ export class DataPuller {
 
     try {
       this.analyticsService.sendTask(task);
-      let fromTime = new Date(_.first(data.data.values)).toLocaleTimeString();
-      let toTime = new Date(_.last(data.data.values)).toLocaleTimeString();
+      let fromTime = new Date(data.from).toLocaleTimeString();
+      let toTime = new Date(data.to).toLocaleTimeString();
       console.log(`pushed ${data.data.length} points to unit: ${unit.id} ${fromTime}-${toTime}`);
     } catch(e) {
       console.log(`data puller got error while push data ${e.message}`);
