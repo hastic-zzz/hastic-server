@@ -102,7 +102,7 @@ class PeakModel(Model):
                     convol_data = utils.nan_to_zero(convol_data, nan_list)
                     pattern_data = utils.nan_to_zero(pattern_data, nan_list)
                 conv = scipy.signal.fftconvolve(convol_data, pattern_data)
-                if max(conv) > self.state['convolve_max'] * 1.05 or max(conv) < self.state['convolve_min'] * 0.95:
+                if max(conv) > self.state['convolve_max'] * 1.2 or max(conv) < self.state['convolve_min'] * 0.9:
                     delete_list.append(segment)
                 elif max(conv) < self.state['conv_del_max'] * 1.02 and max(conv) > self.state['conv_del_min'] * 0.98:
                     delete_list.append(segment)
