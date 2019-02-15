@@ -92,6 +92,12 @@ class PeakModel(Model):
         if len(segments) == 0 or len(self.state.get('pattern_model', [])) == 0:
             return []
         pattern_data = self.state['pattern_model']
+        up_height = self.state['height_max'] * 1.1
+        low_height = self.state['height_min'] * 0.9
+        up_conv = self.state['convolve_max'] * 1.3
+        low_conv = self.state['convolve_min'] * 0.8
+        up_del_conv = self.state['conv_del_max'] * 1.02
+        low_del_conv = self.state['conv_del_min'] * 0.98
         for segment in segments:
             if segment > self.state['WINDOW_SIZE']:
                 convol_data = utils.get_interval(data, segment, self.state['WINDOW_SIZE'])
@@ -104,19 +110,15 @@ class PeakModel(Model):
                     nan_list = utils.find_nan_indexes(convol_data)
                     convol_data = utils.nan_to_zero(convol_data, nan_list)
                     pattern_data = utils.nan_to_zero(pattern_data, nan_list)
-                if not convol_data:
-                    delete_list.append(segment)
-                    continue
                 conv = scipy.signal.fftconvolve(convol_data, pattern_data)
-                pattern_height = convol_data[self.state['WINDOW_SIZE']]
-                if utils.filter_segments(segment, )
-                if pattern_height > self.state['height_max'] * 1.1 or pattern_height < self.state['height_min'] * 0.9:
+                pattern_height = convol_data.values[self.state['WINDOW_SIZE']]
+                if pattern_height > up_height or pattern_height < low_height:
                     delete_list.append(segment)
                     continue
-                if max(conv) > self.state['convolve_max'] * 1.2 or max(conv) < self.state['convolve_min'] * 0.8:
+                if max(conv) > up_conv or max(conv) < low_conv:
                     delete_list.append(segment)
                     continue
-                if max(conv) < self.state['conv_del_max'] * 1.02 and max(conv) > self.state['conv_del_min'] * 0.98:
+                if max(conv) < up_del_conv and max(conv) > low_del_conv:
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)

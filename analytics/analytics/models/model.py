@@ -119,7 +119,7 @@ class Model(ABC):
             'pattern_height': [],
             'pattern_timestamp': [],
             'segment_center_list': [],
-            'pattern_value': [],
+            'patterns_value': [],
         }
         data = dataframe['value']
         for segment in labeled:
@@ -131,7 +131,7 @@ class Model(ABC):
             aligned_segment = utils.get_interval(data, segment_center, self.state['WINDOW_SIZE'])
             aligned_segment = utils.subtract_min_without_nan(aligned_segment)
             learning_info['patterns_list'].append(aligned_segment)
-            learning_info['pattern_value'].append(aligned_segment[self.state['WINDOW_SIZE']])
+            learning_info['patterns_value'].append(aligned_segment.values[self.state['WINDOW_SIZE']])
             if model == 'peak' or model == 'trough':
                 learning_info['pattern_height'].append(utils.find_confidence(aligned_segment)[1])
                 learning_info['pattern_width'].append(utils.find_width(aligned_segment, model_type))
