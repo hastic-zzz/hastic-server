@@ -56,7 +56,7 @@ class PeakModel(Model):
             delete_pattern_timestamp.append(segment.pattern_timestamp)
             deleted = utils.get_interval(data, del_max_index, window_size)
             deleted = utils.subtract_min_without_nan(deleted)
-            del_conv = scipy.signal.fftconvolve(deleted, self.state['pattern_model'])
+            del_conv = scipy.signal.fftconvolve(deleted.values, self.state['pattern_model'])
             if len(del_conv): del_conv_list.append(max(del_conv))
             delete_pattern_height.append(utils.find_confidence(deleted)[1])
             delete_pattern_width.append(utils.find_width(deleted, True))
@@ -101,7 +101,7 @@ class PeakModel(Model):
                     nan_list = utils.find_nan_indexes(convol_data)
                     convol_data = utils.nan_to_zero(convol_data, nan_list)
                     pattern_data = utils.nan_to_zero(pattern_data, nan_list)
-                conv = scipy.signal.fftconvolve(convol_data, pattern_data)
+                conv = scipy.signal.fftconvolve(convol_data.values, pattern_data)
                 if max(conv) > self.state['convolve_max'] * 1.05 or max(conv) < self.state['convolve_min'] * 0.95:
                     delete_list.append(segment)
                 elif max(conv) < self.state['conv_del_max'] * 1.02 and max(conv) > self.state['conv_del_min'] * 0.98:

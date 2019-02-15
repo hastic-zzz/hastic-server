@@ -80,8 +80,8 @@ def ar_mean(numbers):
     return float(sum(numbers)) / max(len(numbers), 1)
 
 def get_av_model(patterns_list):
-    if len(patterns_list) < 2:
-        return patterns_list
+    if len(patterns_list) == 0:
+        return []
     patterns_list = get_same_length(patterns_list)
     pat_length = len(patterns_list[0])
     model_pat = []
