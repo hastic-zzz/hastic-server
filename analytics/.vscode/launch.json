@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}\\bin\\server",
             "windows": {
-              "program": "${workspaceFolder}\\bin\\server"
+                "program": "${workspaceFolder}\\bin\\server"
             },
             "linux": {
                 "program": "${workspaceFolder}/bin/server"

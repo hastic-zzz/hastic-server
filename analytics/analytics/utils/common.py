@@ -4,6 +4,8 @@ import scipy.signal
 from scipy.fftpack import fft
 from scipy.signal import argrelextrema
 from scipy.stats import gaussian_kde
+from scipy.stats.stats import pearsonr
+import math
 from typing import Union
 import utils
 
@@ -20,12 +22,6 @@ def exponential_smoothing(series, alpha):
             series[n] = 0
         result.append(alpha * series[n] + (1 - alpha) * result[n - 1])
     return result
-
-def anomalies_to_timestamp(anomalies):
-    for anomaly in anomalies:
-        anomaly['from'] = int(anomaly['from'].timestamp() * 1000)
-        anomaly['to'] = int(anomaly['to'].timestamp() * 1000)
-    return anomalies
 
 def segments_box(segments):
     max_time = 0
@@ -84,21 +80,23 @@ def ar_mean(numbers):
     return float(sum(numbers)) / max(len(numbers), 1)
 
 def get_av_model(patterns_list):
-    if len(patterns_list) == 0:
-        return []
+    if not patterns_list:  return []
+    patterns_list = get_same_length(patterns_list)
+    value_list = list(map(list, zip(*patterns_list)))
+    return list(map(ar_mean, value_list))
 
-    x = len(patterns_list[0])
-    if len(patterns_list) > 1 and len(patterns_list[1]) != x:
-        raise NameError(
-            'All elements of patterns_list should have same length')
-
-    model_pat = []
-    for i in range(x):
-        av_val = []
-        for j in patterns_list:
-            av_val.append(j.values[i])
-        model_pat.append(ar_mean(av_val))
-    return model_pat
+def get_same_length(patterns_list):
+    for index in range(len(patterns_list)):
+        if type(patterns_list[index]) == pd.Series:
+            patterns_list[index] = patterns_list[index].tolist()
+    patterns_list = list(filter(None, patterns_list))
+    max_length = max(map(len, patterns_list))
+    for pat in patterns_list:
+        if len(pat) < max_length:
+            length_difference = max_length - len(pat)
+            added_values = list(0 for _ in range(length_difference))
+            pat.extend(added_values)
+    return patterns_list
 
 def close_filtering(pattern_list, win_size):
     if len(pattern_list) == 0:
@@ -154,11 +152,38 @@ def nan_to_zero(segment: Union[pd.Series, list], nan_list: list) -> Union[pd.Ser
             segment[val] = 0
     return segment
 
-def find_confidence(segment: pd.Series) -> float:
+def find_confidence(segment: pd.Series) -> (float, float):
     segment = utils.check_nan_values(segment)
     segment_min = min(segment)
     segment_max = max(segment)
-    return CONFIDENCE_FACTOR * (segment_max - segment_min)
+    height = segment_max - segment_min
+    if height:
+        return (CONFIDENCE_FACTOR * height, height)
+    else:
+        return (0, 0)
+
+def find_width(pattern: pd.Series, selector) -> int:
+    pattern = pattern.values
+    center = utils.find_extremum_index(pattern, selector)
+    pattern_left = pattern[:center]
+    pattern_right = pattern[center:]
+    left_extremum_index = utils.find_last_extremum(pattern_left, selector)
+    right_extremum_index = utils.find_extremum_index(pattern_right, not selector)
+    left_width = center - left_extremum_index
+    right_width = right_extremum_index + 1
+    return right_width + left_width
+
+def find_last_extremum(segment: np.ndarray, selector: bool) -> int:
+    segment = segment[::-1]
+    first_extremum_ind = find_extremum_index(segment, not selector)
+    last_extremum_ind = len(segment) - first_extremum_ind - 1
+    return last_extremum_ind
+
+def find_extremum_index(segment: np.ndarray, selector: bool) -> int:
+    if selector:
+        return segment.argmax()
+    else:
+        return segment.argmin()
 
 def get_interval(data: pd.Series, center: int, window_size: int) -> pd.Series:
     left_bound = center - window_size
@@ -188,12 +213,27 @@ def get_convolve(segments: list, av_model: list, data: pd.Series, window_size: i
         labeled_segment = utils.check_nan_values(labeled_segment)
         auto_convolve = scipy.signal.fftconvolve(labeled_segment, labeled_segment)
         convolve_segment = scipy.signal.fftconvolve(labeled_segment, av_model)
-        convolve_list.append(max(auto_convolve))
-        convolve_list.append(max(convolve_segment))
+        if len(auto_convolve) > 0:
+            convolve_list.append(max(auto_convolve))
+        if len(convolve_segment) > 0:
+            convolve_list.append(max(convolve_segment))
     return convolve_list
 
+def get_correlation(segments: list, av_model: list, data: pd.Series, window_size: int) -> list:
+    labeled_segment = []
+    correlation_list = []
+    p_value_list = []
+    for segment in segments:
+        labeled_segment = utils.get_interval(data, segment, window_size)
+        labeled_segment = utils.subtract_min_without_nan(labeled_segment)
+        labeled_segment = utils.check_nan_values(labeled_segment)
+        correlation = pearsonr(labeled_segment, av_model)
+        correlation_list.append(correlation[0])
+        p_value_list.append(correlation[1])
+    return correlation_list
+
 def get_distribution_density(segment: pd.Series) -> float:
-    if len(segment) < 2:
+    if len(segment) < 2 or len(segment.nonzero()[0]) == 0:
         return (0, 0, 0)
     min_jump = min(segment)
     max_jump = max(segment)
@@ -224,10 +264,17 @@ def find_parameters(segment_data: pd.Series, segment_from_index: int, pat_type: 
     segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(segment)
     height = 0.95 * (segment_max_line - segment_min_line)
     length = utils.find_length(segment_data, segment_min_line, segment_max_line, pat_type)
-    cen_ind = utils.pattern_intersection(segment_data.tolist(), segment_median, pat_type)
-    pat_center = cen_ind[0]
-    segment_cent_index = pat_center + segment_from_index
-    return segment_cent_index, height, length
+    return height, length
+
+def find_pattern_center(segment_data: pd.Series, segment_from_index: int, pattern_type: str):
+    segment_median = utils.get_distribution_density(segment_data)[0]
+    cen_ind = utils.pattern_intersection(segment_data.tolist(), segment_median, pattern_type)
+    if len(cen_ind) > 0:
+        pat_center = cen_ind[0]
+        segment_cent_index = pat_center + segment_from_index
+    else: 
+        segment_cent_index = math.ceil((len(segment_data)) / 2)
+    return segment_cent_index
 
 def find_length(segment_data: pd.Series, segment_min_line: float, segment_max_line: float, pat_type: str) -> int:
     x_abscissa = np.arange(0, len(segment_data))
@@ -281,3 +328,4 @@ def cut_dataframe(data: pd.DataFrame) -> pd.DataFrame:
 
 def get_min_max(array, default):
     return float(min(array, default=default)), float(max(array, default=default))
+

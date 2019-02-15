@@ -23,33 +23,16 @@ Implementation of analytics unit for Hastic.
 See also:
 * [Getting started](https://github.com/hastic/hastic-server/wiki#getting-started)
 * [FAQ](https://github.com/hastic/hastic-server/wiki/FAQ)
-* [Hastic Grafana App](https://github.com/hastic/hastic-grafana-app) - Hastic visualisation plugin for Grafana
-* [Webhooks](https://github.com/hastic/hastic-server/wiki/Webhooks) - notifications about events
+* [Hastic Grafana App](https://github.com/hastic/hastic-grafana-app) -- [Grafana](https://grafana.com/) application for visualisation of configuration
+* [Webhooks](https://github.com/hastic/hastic-server/wiki/Webhooks) -- notifications about events
 * [Installation from source](https://github.com/hastic/hastic-server/wiki/Installation-from-source)
 * [Changelog](https://github.com/hastic/hastic-server/wiki/Changelog)
 * [Roadmap](https://github.com/hastic/hastic-server/wiki/Roadmap)
 
-## Download & Install on Linux
+## Download & Install
 
-You need only [nodejs >= 6.14](https://nodejs.org/en/download/) on your machine.
+Please visit https://hastic.io/downloads
 
-### Node 6
-```
-wget https://github.com/hastic/hastic-server/releases/download/0.2.6-alpha/hastic-server-0.2.6-alpha-node-6.tar.gz
-tar -zxvf hastic-server-0.2.6-alpha-node-6.tar.gz
-cd hastic-server-0.2.6-alpha/server/dist
-node server
-```
+## Support and Consulting
 
-### Node 8
-```
-wget https://github.com/hastic/hastic-server/releases/download/0.2.6-alpha/hastic-server-0.2.6-alpha-node-8.tar.gz
-tar -zxvf hastic-server-0.2.6-alpha-node-8.tar.gz
-cd hastic-server-0.2.6-alpha/server/dist
-node server
-```
-
-**Make sure that HASTIC_PORT is opened in your firewall. Default value is 8000.**
-
-## [Docker installation](https://github.com/hastic/hastic-server/wiki/Docker)
-
+Commercial support, consulting, professional services — please send us your inquiry at ping@hastic.io

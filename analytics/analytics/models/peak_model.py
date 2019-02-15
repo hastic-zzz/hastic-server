@@ -16,44 +16,52 @@ class PeakModel(Model):
     def __init__(self):
         super()
         self.segments = []
-        self.ipeaks = []
-        self.model = []
         self.state = {
+            'pattern_center': [],
+            'pattern_model': [],
             'confidence': 1.5,
             'convolve_max': 570000,
             'convolve_min': 530000,
-            'WINDOW_SIZE': 240,
+            'WINDOW_SIZE': 0,
             'conv_del_min': 54000,
             'conv_del_max': 55000,
         }
+    
+    def get_model_type(self) -> (str, bool):
+        model = 'peak'
+        type_model = True
+        return (model, type_model)
+    
+    def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
+        data = dataframe['value']
+        segment = data[start: end]
+        return segment.idxmax()
 
-    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
-        confidences = []
-        convolve_list = []
-        patterns_list = []
-        for segment in labeled_segments:
-            confidence = utils.find_confidence(segment.data)
-            confidences.append(confidence)
-            segment_max_index = segment.data.idxmax()
-            self.ipeaks.append(segment_max_index)
-            labeled = utils.get_interval(data, segment_max_index, self.state['WINDOW_SIZE'])
-            labeled = utils.subtract_min_without_nan(labeled)
-            patterns_list.append(labeled)
-
-        self.model = utils.get_av_model(patterns_list)
-        convolve_list = utils.get_convolve(self.ipeaks, self.model, data, self.state['WINDOW_SIZE'])
+        window_size = self.state['WINDOW_SIZE']
+        last_pattern_center = self.state.get('pattern_center', [])
+        self.state['pattern_center'] = list(set(last_pattern_center + learning_info['segment_center_list']))
+        self.state['pattern_model'] = utils.get_av_model(learning_info['patterns_list'])
+        convolve_list = utils.get_convolve(self.state['pattern_center'], self.state['pattern_model'], data, window_size)
+        correlation_list = utils.get_correlation(self.state['pattern_center'], self.state['pattern_model'], data, window_size)
 
         del_conv_list = []
+        delete_pattern_width = []
+        delete_pattern_height = []
+        delete_pattern_timestamp = []
         for segment in deleted_segments:
-            del_max_index = segment.data.idxmax()
-            deleted = utils.get_interval(data, del_max_index, self.state['WINDOW_SIZE'])
+            del_max_index = segment.center_index
+            delete_pattern_timestamp.append(segment.pattern_timestamp)
+            deleted = utils.get_interval(data, del_max_index, window_size)
             deleted = utils.subtract_min_without_nan(deleted)
-            del_conv = scipy.signal.fftconvolve(deleted, self.model)
+            del_conv = scipy.signal.fftconvolve(deleted, self.state['pattern_model'])
             if len(del_conv): del_conv_list.append(max(del_conv))
+            delete_pattern_height.append(utils.find_confidence(deleted)[1])
+            delete_pattern_width.append(utils.find_width(deleted, True))
 
-        self._update_fiting_result(self.state, confidences, convolve_list, del_conv_list)
+        self._update_fiting_result(self.state, learning_info['confidence'], convolve_list, del_conv_list)
 
     def do_detect(self, dataframe: pd.DataFrame):
         data = utils.cut_dataframe(dataframe)
@@ -78,9 +86,9 @@ class PeakModel(Model):
         close_patterns = utils.close_filtering(segments, variance_error)
         segments = utils.best_pattern(close_patterns, data, 'max')
 
-        if len(segments) == 0 or len(self.ipeaks) == 0:
+        if len(segments) == 0 or len(self.state.get('pattern_center', [])) == 0:
             return []
-        pattern_data = self.model
+        pattern_data = self.state['pattern_model']
         for segment in segments:
             if segment > self.state['WINDOW_SIZE']:
                 convol_data = utils.get_interval(data, segment, self.state['WINDOW_SIZE'])
@@ -94,7 +102,7 @@ class PeakModel(Model):
                     convol_data = utils.nan_to_zero(convol_data, nan_list)
                     pattern_data = utils.nan_to_zero(pattern_data, nan_list)
                 conv = scipy.signal.fftconvolve(convol_data, pattern_data)
-                if max(conv) > self.state['convolve_max'] * 1.05 or max(conv) < self.state['convolve_min'] * 0.95:
+                if max(conv) > self.state['convolve_max'] * 1.2 or max(conv) < self.state['convolve_min'] * 0.9:
                     delete_list.append(segment)
                 elif max(conv) < self.state['conv_del_max'] * 1.02 and max(conv) > self.state['conv_del_min'] * 0.98:
                     delete_list.append(segment)
