@@ -25,6 +25,8 @@ class TroughModel(Model):
             'WINDOW_SIZE': 0,
             'conv_del_min': 54000,
             'conv_del_max': 55000,
+            'height_max': 0,
+            'height_min': 0,
         }
     
     def get_model_type(self) -> (str, bool):
@@ -109,7 +111,7 @@ class TroughModel(Model):
                     convol_data = utils.nan_to_zero(convol_data, nan_list)
                     pattern_data = utils.nan_to_zero(pattern_data, nan_list)
                 conv = scipy.signal.fftconvolve(convol_data, pattern_data)
-                pattern_height = convol_data.values[self.state['WINDOW_SIZE']]
+                pattern_height = convol_data.values.max()
                 if pattern_height > up_height or pattern_height < low_height:
                     delete_list.append(segment)
                     continue

@@ -130,13 +130,14 @@ class Model(ABC):
             aligned_segment = utils.get_interval(data, segment_center, self.state['WINDOW_SIZE'])
             aligned_segment = utils.subtract_min_without_nan(aligned_segment)
             learning_info['patterns_list'].append(aligned_segment)
-            learning_info['patterns_value'].append(aligned_segment.values[self.state['WINDOW_SIZE']])
             if model == 'peak' or model == 'trough':
                 learning_info['pattern_height'].append(utils.find_confidence(aligned_segment)[1])
                 learning_info['pattern_width'].append(utils.find_width(aligned_segment, model_type))
+                learning_info['patterns_value'].append(aligned_segment.values.max())
             if model == 'jump' or model == 'drop':
                 pattern_height, pattern_length = utils.find_parameters(segment.data, segment.start, model)
                 learning_info['pattern_height'].append(pattern_height)
                 learning_info['pattern_width'].append(pattern_length)
+                learning_info['patterns_value'].append(aligned_segment.values[self.state['WINDOW_SIZE']])
         return learning_info
         
