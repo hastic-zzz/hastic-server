@@ -10,6 +10,9 @@ import pandas as pd
 
 SMOOTHING_COEFF = 2400
 EXP_SMOOTHING_FACTOR = 0.01
+HEIGHT_ERROR = 0.1
+CONV_ERROR = 0.2
+DEL_CONV_ERROR = 0.02
 
 class PeakModel(Model):
 
@@ -92,12 +95,12 @@ class PeakModel(Model):
         if len(segments) == 0 or len(self.state.get('pattern_model', [])) == 0:
             return []
         pattern_data = self.state['pattern_model']
-        up_height = self.state['height_max'] * 1.1
-        low_height = self.state['height_min'] * 0.9
-        up_conv = self.state['convolve_max'] * 1.3
-        low_conv = self.state['convolve_min'] * 0.8
-        up_del_conv = self.state['conv_del_max'] * 1.02
-        low_del_conv = self.state['conv_del_min'] * 0.98
+        up_height = self.state['height_max'] * (1 + HEIGHT_ERROR)
+        low_height = self.state['height_min'] * (1 - HEIGHT_ERROR)
+        up_conv = self.state['convolve_max'] * (1 + 1.5 * CONV_ERROR)
+        low_conv = self.state['convolve_min'] * (1 - CONV_ERROR)
+        up_del_conv = self.state['conv_del_max'] * (1 + DEL_CONV_ERROR)
+        low_del_conv = self.state['conv_del_min'] * (1 - DEL_CONV_ERROR)
         for segment in segments:
             if segment > self.state['WINDOW_SIZE']:
                 convol_data = utils.get_interval(data, segment, self.state['WINDOW_SIZE'])
