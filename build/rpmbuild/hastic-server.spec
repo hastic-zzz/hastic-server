@@ -60,8 +60,8 @@ popd
 %install
 mkdir -p %{buildroot}/usr/lib/hastic-server/server/dist
 mkdir -p %{buildroot}/usr/lib/hastic-server/analytics/dist/server
-cp -r server/dist %{buildroot}/usr/lib/hastic-server/dist
-cp -r analytics/dist/server/ %{buildroot}/usr/lib/hastic-server/analytics/dist/
+cp -r server/dist %{buildroot}/usr/lib/hastic-server/server/dist/
+cp -r analytics/dist/server %{buildroot}/usr/lib/hastic-server/analytics/dist/
 chmod +x analytics/dist/server/server
 
 %post
@@ -82,8 +82,10 @@ chmod +x /usr/bin/hastic-server
 rm -rf %{buildroot}
 
 %files
-%defattr(644, root, root, 755)
+%defattr(644, -, -, 755)
 /usr/lib/hastic-server
+#%attr(755, -, -) /usr/lib/hastic-server/server/dist/server
+#%attr(755, -, -) /usr/lib/hastic-server/analytics/dist/server
 
 %preun
 rm /usr/bin/hastic-server
