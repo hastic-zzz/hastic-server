@@ -42,6 +42,10 @@ class Segment(AttrDict):
 
 class Model(ABC):
 
+    HEIGHT_ERROR = 0.1
+    CONV_ERROR = 0.2
+    DEL_CONV_ERROR = 0.02
+
     @abstractmethod
     def do_fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[ModelCache], learning_info: dict) -> None:
         pass
