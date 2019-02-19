@@ -82,7 +82,7 @@ chmod +x /usr/bin/hastic-server
 rm -rf %{buildroot}
 
 %files
-%defattr(644, -, -, 755)
+%defattr(644, root, root, 755)
 /usr/lib/hastic-server
 #%attr(755, -, -) /usr/lib/hastic-server/server/dist/server
 #%attr(755, -, -) /usr/lib/hastic-server/analytics/dist/server
