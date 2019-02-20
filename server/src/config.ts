@@ -62,20 +62,27 @@ function getConfigField(field: string, defaultVal?: any) {
 
 function checkUrl(grafanaUrl) {
   let urlObj = new url(grafanaUrl);
-  console.log(urlObj);
-  if (urlObj.protocol != 'http:' && urlObj.protocol != 'https:') {
+  if(urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
     urlObj.protocol = 'http';
-    console.log(urlObj);
-  } else if (urlObj.slashes === false) {
-    throw 'Provide proper slashes after the protocol like this "http://" in GRAFANA_URL field in config.json and restart'
-  } else if (isNaN(urlObj.port) && (urlObj.port !== '')) {
-    throw 'Provide valid port number in GRAFANA_URL field in config.json and restart'
-  } else if (urlObj.pathname !== '') {
-    if (urlObj.pathname.slice(-1) === '/') {
-      throw 'Please remove the "/" (slash) at the end of GRAFANA_URL field in config.json and restart'
-    }
+    console.log('No protocol provided in GRAFANA_URL -> inserting "http:"');
+  }
+  if(urlObj.slashes === false) {
+    urlObj = new url(urlObj.protocol + '//' + urlObj.pathname);
+    console.log('No slashes were provided after the protocol -> inserting slashes');
+  } 
+  if(urlObj.pathname.slice(-1) === '/') {
+    urlObj.pathname = urlObj.pathname.slice(0, -1);
+    console.log('Removing the slash at the end of the GRAFANA_URL')
   }
   let finalUrl = urlObj.protocol + '//' + urlObj.hostname;
+  console.log(urlObj)
+  if(urlObj.port !== '') {
+    finalUrl = finalUrl + ':' + urlObj.port;
+  }
+  if(urlObj.pathname !== '') {
+    finalUrl = finalUrl + urlObj.pathname;
+  }
+  console.log(finalUrl);
   return finalUrl;
 }
 
