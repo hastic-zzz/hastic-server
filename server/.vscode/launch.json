@@ -7,12 +7,16 @@
     {
       "type": "node",
       "request": "attach",
-      "name": "Attach to Remote",
+      "name": "Attach to remote",
       "address": "127.0.0.1",
       "sourceMaps": true,
-      "outFiles": [ "${workspaceFolder}/dist/**/*.js" ],
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
       "sourceMapPathOverrides": {
-        "webpack:///./*": "c:\\Projects\\hastic-server\\server\\*"
+        "webpack:///./~/*": "${workspaceRoot}/node_modules/*",
+        "webpack:///./*": "${workspaceRoot}/*",
+        "webpack:///*": "*"
       },
       "linux": {
         "sourceMapPathOverrides": {
