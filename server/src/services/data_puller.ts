@@ -40,7 +40,7 @@ export class DataPuller {
   );
 
   private _grafanaConnectionRefusedReporter = this._availableReporter(
-    null,
+    'data puller: connected to Grafana',
     `data puller: can't connect to Grafana. Check GRAFANA_URL.`
   );
 
