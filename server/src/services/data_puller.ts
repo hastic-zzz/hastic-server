@@ -41,7 +41,7 @@ export class DataPuller {
 
   private _grafanaConnectionRefusedReporter = this._availableReporter(
     null,
-    `data puller: can't connect to Grafana. Check GRAFANA_URL.`
+    `data puller: can't connect to Grafana. Check GRAFANA_URL`
   );
 
   private _unitTimes: { [analyticUnitId: string]: number } = {};
