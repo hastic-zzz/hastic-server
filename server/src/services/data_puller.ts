@@ -166,7 +166,7 @@ export class DataPuller {
       try {
         const time = this._unitTimes[analyticUnit.id]
         const now = Date.now();
-        let res = await this.pullData(analyticUnit, time, now);
+        const res = await this.pullData(analyticUnit, time, now);
         this._grafanaConnectionRefusedReporter(true);
         return res;
       } catch(err) {
