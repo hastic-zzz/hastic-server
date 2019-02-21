@@ -8,6 +8,8 @@ from scipy.stats.stats import pearsonr
 import math
 from typing import Union
 import utils
+import traceback
+import logging
 
 SHIFT_FACTOR = 0.05
 CONFIDENCE_FACTOR = 0.2
@@ -186,6 +188,13 @@ def find_extremum_index(segment: np.ndarray, selector: bool) -> int:
         return segment.argmin()
 
 def get_interval(data: pd.Series, center: int, window_size: int) -> pd.Series:
+    try:
+        if center >= len(data):
+            raise ValueError('Pattern center is out of data')
+    except ValueError:
+        print("some problem in len data {0} with center: {1}".format(len(data), center))
+        error_text = traceback.format_exc()
+        logging.error("handle_task Exception: '%s'" % error_text)
     left_bound = center - window_size
     right_bound = center + window_size + 1
     if left_bound < 0:
@@ -227,6 +236,8 @@ def get_correlation(segments: list, av_model: list, data: pd.Series, window_size
         labeled_segment = utils.get_interval(data, segment, window_size)
         labeled_segment = utils.subtract_min_without_nan(labeled_segment)
         labeled_segment = utils.check_nan_values(labeled_segment)
+        if len(labeled_segment) == 0 or len(labeled_segment) != len(av_model):
+            continue
         correlation = pearsonr(labeled_segment, av_model)
         correlation_list.append(correlation[0])
         p_value_list.append(correlation[1])
