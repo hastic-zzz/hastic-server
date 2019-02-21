@@ -42,6 +42,10 @@ class Segment(AttrDict):
 
 class Model(ABC):
 
+    HEIGHT_ERROR = 0.1
+    CONV_ERROR = 0.2
+    DEL_CONV_ERROR = 0.02
+
     @abstractmethod
     def do_fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[ModelCache], learning_info: dict) -> None:
         pass
@@ -97,11 +101,12 @@ class Model(ABC):
             'cache': self.state
         }
 
-    def _update_fiting_result(self, state: dict, confidences: list, convolve_list: list, del_conv_list: list) -> None:
+    def _update_fiting_result(self, state: dict, confidences: list, convolve_list: list, del_conv_list: list, height_list: list) -> None:
         if type(state) is dict:
             state['confidence'] = float(min(confidences, default = 1.5))
             state['convolve_min'], state['convolve_max'] = utils.get_min_max(convolve_list, state['WINDOW_SIZE'])
-            state['conv_del_min'], state['conv_del_max'] = utils.get_min_max(del_conv_list, state['WINDOW_SIZE'])
+            state['conv_del_min'], state['conv_del_max'] = utils.get_min_max(del_conv_list, 0)
+            state['height_min'], state['height_max'] = utils.get_min_max(height_list, 0)
         else:
             raise ValueError('got non-dict as state for update fiting result: {}'.format(state))
     
@@ -113,6 +118,7 @@ class Model(ABC):
             'pattern_height': [],
             'pattern_timestamp': [],
             'segment_center_list': [],
+            'patterns_value': [],
         }
         data = dataframe['value']
         for segment in labeled:
@@ -127,9 +133,11 @@ class Model(ABC):
             if model == 'peak' or model == 'trough':
                 learning_info['pattern_height'].append(utils.find_confidence(aligned_segment)[1])
                 learning_info['pattern_width'].append(utils.find_width(aligned_segment, model_type))
+                learning_info['patterns_value'].append(aligned_segment.values.max())
             if model == 'jump' or model == 'drop':
                 pattern_height, pattern_length = utils.find_parameters(segment.data, segment.start, model)
                 learning_info['pattern_height'].append(pattern_height)
                 learning_info['pattern_width'].append(pattern_length)
+                learning_info['patterns_value'].append(aligned_segment.values[self.state['WINDOW_SIZE']])
         return learning_info
         

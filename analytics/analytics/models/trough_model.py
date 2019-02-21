@@ -25,6 +25,8 @@ class TroughModel(Model):
             'WINDOW_SIZE': 0,
             'conv_del_min': 54000,
             'conv_del_max': 55000,
+            'height_max': 0,
+            'height_min': 0,
         }
     
     def get_model_type(self) -> (str, bool):
@@ -46,6 +48,7 @@ class TroughModel(Model):
         self.state['pattern_model'] = utils.get_av_model(learning_info['patterns_list'])
         convolve_list = utils.get_convolve(self.state['pattern_center'], self.state['pattern_model'], data, window_size)
         correlation_list = utils.get_correlation(self.state['pattern_center'], self.state['pattern_model'], data, window_size)
+        height_list = learning_info['patterns_value']
 
         del_conv_list = []
         delete_pattern_width = []
@@ -61,7 +64,7 @@ class TroughModel(Model):
             delete_pattern_height.append(utils.find_confidence(deleted)[1])
             delete_pattern_width.append(utils.find_width(deleted, False))
 
-        self._update_fiting_result(self.state, learning_info['confidence'], convolve_list, del_conv_list)
+        self._update_fiting_result(self.state, learning_info['confidence'], convolve_list, del_conv_list, height_list)
 
     def do_detect(self, dataframe: pd.DataFrame):
         data = utils.cut_dataframe(dataframe)
@@ -89,6 +92,12 @@ class TroughModel(Model):
             segments = []
             return segments
         pattern_data = self.state['pattern_model']
+        up_height = self.state['height_max'] * (1 + self.HEIGHT_ERROR)
+        low_height = self.state['height_min'] * (1 - self.HEIGHT_ERROR)
+        up_conv = self.state['convolve_max'] * (1 + 1.5 * self.CONV_ERROR)
+        low_conv = self.state['convolve_min'] * (1 - self.CONV_ERROR)
+        up_del_conv = self.state['conv_del_max'] * (1 + self.DEL_CONV_ERROR)
+        low_del_conv = self.state['conv_del_min'] * (1 - self.DEL_CONV_ERROR)
         for segment in segments:
             if segment > self.state['WINDOW_SIZE']:
                 convol_data = utils.get_interval(data, segment, self.state['WINDOW_SIZE'])
@@ -102,9 +111,14 @@ class TroughModel(Model):
                     convol_data = utils.nan_to_zero(convol_data, nan_list)
                     pattern_data = utils.nan_to_zero(pattern_data, nan_list)
                 conv = scipy.signal.fftconvolve(convol_data, pattern_data)
-                if max(conv) > self.state['convolve_max'] * 1.1 or max(conv) < self.state['convolve_min'] * 0.9:
+                pattern_height = convol_data.values.max()
+                if pattern_height > up_height or pattern_height < low_height:
                     delete_list.append(segment)
-                elif max(conv) < self.state['conv_del_max'] * 1.02 and max(conv) > self.state['conv_del_min'] * 0.98:
+                    continue
+                if max(conv) > up_conv or max(conv) < low_conv:
+                    delete_list.append(segment)
+                    continue
+                if max(conv) < up_del_conv and max(conv) > low_del_conv:
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
