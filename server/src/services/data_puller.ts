@@ -21,14 +21,14 @@ export class DataPuller {
       if(available && reported) {
         reported = false;
         if(positiveMsg) {
-         console.log(positiveMsg);
+          console.log(positiveMsg);
         }
       }
 
       if(!available && !reported) {
         reported = true;
         if(negativeMsg) {
-          console.log(negativeMsg);
+          console.error(negativeMsg);
         }
       }
     }
@@ -40,7 +40,7 @@ export class DataPuller {
   );
 
   private _grafanaConnectionRefusedReporter = this._availableReporter(
-    null,
+    'data puller: connected to Grafana',
     `data puller: can't connect to Grafana. Check GRAFANA_URL`
   );
 
@@ -166,7 +166,7 @@ export class DataPuller {
       try {
         const time = this._unitTimes[analyticUnit.id]
         const now = Date.now();
-        let res = await this.pullData(analyticUnit, time, now);
+        const res = await this.pullData(analyticUnit, time, now);
         this._grafanaConnectionRefusedReporter(true);
         return res;
       } catch(err) {
