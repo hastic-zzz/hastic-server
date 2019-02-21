@@ -4,7 +4,7 @@ import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import { AnalyticsService } from './analytics_service';
 import { HASTIC_API_KEY, GRAFANA_URL } from '../config';
 
-import { queryByMetric } from 'grafana-datasource-kit';
+import { queryByMetric, ConnectionRefused } from 'grafana-datasource-kit';
 
 import * as _ from 'lodash';
 
@@ -14,6 +14,35 @@ type MetricDataChunk = { values: [number, number][], columns: string[] };
 const PULL_PERIOD_MS = 5000;
 
 export class DataPuller {
+
+  private _availableReporter = (positiveMsg: string|null, negativeMsg: string|null) => {
+    let reported = false;
+    return available => {
+      if(available && reported) {
+        reported = false;
+        if(positiveMsg) {
+          console.log(positiveMsg);
+        }
+      }
+
+      if(!available && !reported) {
+        reported = true;
+        if(negativeMsg) {
+          console.error(negativeMsg);
+        }
+      }
+    }
+  };
+
+  private _analyticReadyReporter = this._availableReporter(
+    'data puller: analytic ready, start pushing',
+    'data puller: analytic service not ready, return empty result'
+  );
+
+  private _grafanaConnectionRefusedReporter = this._availableReporter(
+    'data puller: connected to Grafana',
+    `data puller: can't connect to Grafana. Check GRAFANA_URL`
+  );
 
   private _unitTimes: { [analyticUnitId: string]: number } = {};
 
@@ -126,8 +155,8 @@ export class DataPuller {
     AsyncIterableIterator<MetricDataChunk> {
 
     const getData = async () => {
+      this._analyticReadyReporter(this.analyticsService.ready);
       if(!this.analyticsService.ready) {
-        console.log(`data generator: analytic service not ready, return empty result while wait service`);
         return {
           columns: [],
           values: []
@@ -137,9 +166,21 @@ export class DataPuller {
       try {
         const time = this._unitTimes[analyticUnit.id]
         const now = Date.now();
-        return await this.pullData(analyticUnit, time, now);
+        const res = await this.pullData(analyticUnit, time, now);
+        this._grafanaConnectionRefusedReporter(true);
+        return res;
       } catch(err) {
-        throw new Error(`error while pulling data: ${err.message}`);
+
+        if(err instanceof ConnectionRefused) {
+          this._grafanaConnectionRefusedReporter(false);
+        } else {
+          console.error(`error while pulling data: ${err.message}`);
+        }
+
+        return {
+          columns: [],
+          values: []
+        };
       }
     }
 
