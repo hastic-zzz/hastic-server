@@ -28,7 +28,7 @@ export class DataPuller {
       if(!available && !reported) {
         reported = true;
         if(negativeMsg) {
-          console.log(negativeMsg);
+          console.error(negativeMsg);
         }
       }
     }
