@@ -8,7 +8,6 @@ from scipy.stats.stats import pearsonr
 import math
 from typing import Union
 import utils
-import traceback
 import logging
 
 SHIFT_FACTOR = 0.05
@@ -188,13 +187,9 @@ def find_extremum_index(segment: np.ndarray, selector: bool) -> int:
         return segment.argmin()
 
 def get_interval(data: pd.Series, center: int, window_size: int) -> pd.Series:
-    try:
-        if center >= len(data):
-            raise ValueError('Pattern center is out of data')
-    except ValueError:
-        print("some problem in len data {0} with center: {1}".format(len(data), center))
-        error_text = traceback.format_exc()
-        logging.error("handle_task Exception: '%s'" % error_text)
+    if center >= len(data):
+        logging.warning('Pattern center {} is out of data with len {}'.format(center, len(data)))
+        return []
     left_bound = center - window_size
     right_bound = center + window_size + 1
     if left_bound < 0:
