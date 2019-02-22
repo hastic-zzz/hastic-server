@@ -6,6 +6,7 @@ from typing import Optional
 from detectors import Detector
 from models import ModelCache
 from time import time
+from utils import convert_sec_to_ms, convert_pd_timestamp_to_ms
 
 
 logger = log.getLogger('THRESHOLD_DETECTOR')
@@ -24,34 +25,43 @@ class ThresholdDetector(Detector):
             }
         }
 
-    def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
+    def detect(self, dataframe: pd.DataFrame, cache: ModelCache) -> dict:
+        if cache == None:
+            raise 'Threshold detector error: cannot detect before learning'
         value = cache['value']
         condition = cache['condition']
 
+        now = convert_sec_to_ms(time())
+        segments = []
+
         dataframe_without_nans = dataframe.dropna()
         if len(dataframe_without_nans) == 0:
-            return dict()
-        last_entry = dataframe_without_nans.iloc[-1]
-        last_value = last_entry['value']
+            if condition == 'NO_DATA':
+                segments.append({ 'from': now, 'to': now })
+            else:
+                return None
+        else:
+            last_entry = dataframe_without_nans.iloc[-1]
+            last_time = convert_pd_timestamp_to_ms(last_entry['timestamp'])
+            last_value = last_entry['value']
+            segment = { 'from': last_time, 'to': last_time }
 
-        now = int(time()) * 1000
-        segment = ({ 'from': now, 'to': now })
-        segments = []
-        if condition == '>':
-            if last_value > value:
-                segments.append(segment)
-        elif condition == '>=':
-            if last_value >= value:
-                segments.append(segment)
-        elif condition == '=':
-            if last_value == value:
-                segments.append(segment)
-        elif condition == '<=':
-            if last_value <= value:
-                segments.append(segment)
-        elif condition == '<':
-            if last_value < value:
-                segments.append(segment)
+            if condition == '>':
+                if last_value > value:
+                    segments.append(segment)
+            elif condition == '>=':
+                if last_value >= value:
+                    segments.append(segment)
+            elif condition == '=':
+                if last_value == value:
+                    segments.append(segment)
+            elif condition == '<=':
+                if last_value <= value:
+                    segments.append(segment)
+            elif condition == '<':
+                if last_value < value:
+                    segments.append(segment)
+
         return {
             'cache': cache,
             'segments': segments,

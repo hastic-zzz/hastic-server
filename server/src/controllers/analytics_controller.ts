@@ -9,7 +9,7 @@ import { AlertService } from '../services/alert_service';
 import { HASTIC_API_KEY, GRAFANA_URL } from '../config';
 import { DataPuller } from '../services/data_puller';
 
-import { queryByMetric } from 'grafana-datasource-kit';
+import { queryByMetric, ConnectionRefused } from 'grafana-datasource-kit';
 
 
 import * as _ from 'lodash';
@@ -126,14 +126,24 @@ async function query(analyticUnit: AnalyticUnit.AnalyticUnit, detector: Analytic
     panelUrl = analyticUnit.panelUrl;
   }
 
-  const queryResult = await queryByMetric(
-    analyticUnit.metric,
-    panelUrl,
-    range.from,
-    range.to,
-    HASTIC_API_KEY
-  );
-  const data = queryResult.values;
+  let data;
+
+  try {
+    const queryResult = await queryByMetric(
+      analyticUnit.metric,
+      panelUrl,
+      range.from,
+      range.to,
+      HASTIC_API_KEY
+    );
+    data = queryResult.values;
+  } catch(e) {
+    if(e instanceof ConnectionRefused) {
+      throw new Error(`Can't connect Grafana: ${e.message}, check GRAFANA_URL`);
+    }
+    throw e;
+  }
+
   if(data.length === 0) {
     throw new Error('Empty data to detect on');
   }

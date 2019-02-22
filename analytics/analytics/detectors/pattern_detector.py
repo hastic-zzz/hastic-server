@@ -9,6 +9,7 @@ from typing import Optional
 from detectors import Detector
 from buckets import DataBucket
 from models import ModelCache
+from utils import convert_pd_timestamp_to_ms
 
 
 logger = logging.getLogger('PATTERN_DETECTOR')
@@ -56,8 +57,7 @@ class PatternDetector(Detector):
         newCache = detected['cache']
 
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
-        # TODO: convert from nanoseconds to millisecond in a better way: not by dividing by 10^6
-        last_detection_time = last_dataframe_time.value / 1000000
+        last_detection_time = convert_pd_timestamp_to_ms(last_dataframe_time)
         return {
             'cache': newCache,
             'segments': segments,
@@ -65,14 +65,21 @@ class PatternDetector(Detector):
         }
 
     def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
-        self.bucket.receive_data(data.dropna())
+        data_without_nan = data.dropna()
+
+        if len(data_without_nan) == 0:
+            return None
+
+        self.bucket.receive_data(data_without_nan)
         if cache and self.window_size == 0:
             self.window_size = cache['WINDOW_SIZE']
 
+        res = self.detect(self.bucket.data, cache)
         if len(self.bucket.data) >= self.window_size and cache != None:
-            res = self.detect(self.bucket.data, cache)
             excess_data = len(self.bucket.data) - self.max_window_size
             self.bucket.drop_data(excess_data)
-            return res
         
-        return None
+        if res:
+            return res
+        else:
+            return None
