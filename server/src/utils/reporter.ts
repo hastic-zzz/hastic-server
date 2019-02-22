@@ -2,7 +2,7 @@ export function availableReporter(
   positiveMsg: string|null,
   negativeMsg: string|null,
   positiveAction = console.log,
-  negativeAction=console.error,
+  negativeAction = console.error,
 ) {
   let reported = false;
   return available => {
