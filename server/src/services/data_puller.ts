@@ -17,7 +17,7 @@ const PULL_PERIOD_MS = 5000;
 
 export class DataPuller {
 
-  private _analyticReadyReporter = availableReporter(
+  private _analyticReadyConsoleReporter = availableReporter(
     'data puller: analytic ready, start pushing',
     'data puller: analytic service not ready, return empty result'
   );
@@ -142,7 +142,7 @@ export class DataPuller {
     AsyncIterableIterator<MetricDataChunk> {
 
     const getData = async () => {
-      this._analyticReadyReporter(this.analyticsService.ready);
+      this._analyticReadyConsoleReporter(this.analyticsService.ready);
       if(!this.analyticsService.ready) {
         return {
           columns: [],
