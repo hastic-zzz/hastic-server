@@ -88,12 +88,15 @@ export class AlertService {
   }
 
   public getGrafanaAvailableReporter() {
-    return availableReporter(
+    if(!this._grafanaAvailableReporter) {
+      this._grafanaAvailableReporter = availableReporter(
         'Grafana available',
         'Grafana unavailable for pulling data',
         this.sendMsg,
         this.sendMsg
       );
+    }
+    return this._grafanaAvailableReporter;
   }
 
   public addAnalyticUnit(analyticUnit: AnalyticUnit.AnalyticUnit) {
