@@ -1,4 +1,4 @@
-import { sendAnalyticWebhook, sendInfoWebhook } from './notification_service';
+import { sendAnalyticWebhook, sendInfoWebhook, InfoAlert, WebhookType } from './notification_service';
 
 import * as _ from 'lodash';
 import * as AnalyticUnit from '../models/analytic_unit_model';
@@ -10,7 +10,7 @@ export class Alert {
   constructor(protected analyticUnit: AnalyticUnit.AnalyticUnit) {};
   public receive(segment: Segment) {
     if(this.enabled) {
-      sendAnalyticWebhook(this.analyticUnit.name, segment);
+      sendAnalyticWebhook(this.analyticUnit, segment);
     }
   };
 }
@@ -23,7 +23,7 @@ class PatternAlert extends Alert {
     if(this.lastSentSegment === undefined || !segment.equals(this.lastSentSegment) ) {
       this.lastSentSegment = segment;
       if(this.enabled) {
-        sendAnalyticWebhook(this.analyticUnit.name, segment);
+        sendAnalyticWebhook(this.analyticUnit, segment);
       }
     }
   }
@@ -38,14 +38,14 @@ class ThresholdAlert extends Alert {
     if(this.lastOccurence === 0) {
       this.lastOccurence = segment.from;
       if(this.enabled) {
-        sendAnalyticWebhook(this.analyticUnit.name, segment);
+        sendAnalyticWebhook(this.analyticUnit, segment);
       }
     } else {
 
       if(segment.from - this.lastOccurence > this.EXPIRE_PERIOD_MS) {
         if(this.enabled) {
           console.log(`time between threshold occurences ${segment.from - this.lastOccurence}ms, send alert`);
-          sendAnalyticWebhook(this.analyticUnit.name, segment);
+          sendAnalyticWebhook(this.analyticUnit, segment);
         }
       }
 
@@ -79,7 +79,7 @@ export class AlertService {
   };
 
   public onStateChange(message: string, optionalInfo = {}) {
-    let message_payload = {
+    let infoAlert: InfoAlert = {
       message
     };
     sendInfoWebhook(Object.assign(message_payload, optionalInfo));

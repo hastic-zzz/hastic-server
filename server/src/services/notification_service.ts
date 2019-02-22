@@ -1,4 +1,5 @@
 import { Segment } from '../models/segment_model';
+import * as AnalyticUnit from '../models/analytic_unit_model';
 import { HASTIC_WEBHOOK_URL, HASTIC_WEBHOOK_TYPE, HASTIC_WEBHOOK_SECRET } from '../config';
 
 import axios from 'axios';
@@ -9,10 +10,41 @@ enum ContentType {
   URLENCODED ='application/x-www-form-urlencoded'
 }
 
+export enum WebhookType {
+  DETECT = 'DETECT',
+  FAILURE = 'FAILURE',
+  RECOVERY = 'RECOVERY'
+}
+
+export declare type AnalyticAlert = {
+  type: WebhookType,
+  analyticUnitType: string,
+  analyticUnitName: string,
+  analyticUnitId: AnalyticUnit.AnalyticUnitId,
+  panelUrl: string,
+  from: number,
+  to: number
+  value?: number,
+  segmentFeatures?: any,
+  regionImage?: any
+}
+
+export declare type InfoAlert = {
+  type: WebhookType,
+  message: string,
+  from: number,
+  to: number,
+  params?: any
+}
+
 // TODO: send webhook with payload without dep to AnalyticUnit
-export async function sendAnalyticWebhook(analyticUnitName: string, segment: Segment) {
-  const alert = {
-    analyticUnitName,
+export async function sendAnalyticWebhook(analyticUnit: AnalyticUnit.AnalyticUnit, segment: Segment) {
+  const alert: AnalyticAlert = {
+    type: WebhookType.DETECT,
+    analyticUnitType: analyticUnit.type,
+    analyticUnitName: analyticUnit.name,
+    analyticUnitId: analyticUnit.id,
+    panelUrl: analyticUnit.panelUrl,
     from: segment.from,
     to: segment.to 
   };
@@ -32,8 +64,9 @@ export async function sendAnalyticWebhook(analyticUnitName: string, segment: Seg
   sendWebhook(payload);
 }
 
-export async function sendInfoWebhook(message: any) {
+export async function sendInfoWebhook(message: InfoAlert) {
   if(message && typeof message === 'object') {
+    console.log(`Sending info webhook ${JSON.stringify(message.message)}`);
     sendWebhook(message, ContentType.JSON);
   } else {
     console.error(`skip sending Info webhook, got corrupted message ${message}`);
