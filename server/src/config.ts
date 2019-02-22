@@ -60,7 +60,7 @@ function getConfigField(field: string, defaultVal?: any) {
   return val;
 }
 
-function checkUrl(grafanaUrl) {
+function checkUrl(grafanaUrl: string) {
   let urlObj = new url(grafanaUrl);
   if(urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
     grafanaUrl = 'http:' + grafanaUrl;
@@ -68,13 +68,14 @@ function checkUrl(grafanaUrl) {
     console.log('No protocol provided in GRAFANA_URL -> inserting "http:"');
   }
   if(urlObj.slashes === false) {
-    urlObj = new url(urlObj.protocol + '//' + urlObj.pathname);
+    urlObj = new url(`${urlObj.protocol}//${urlObj.pathname}`);
     console.log('No slashes were provided after the protocol -> inserting slashes');
   } 
   if(urlObj.pathname.slice(-1) === '/') {
     urlObj.pathname = urlObj.pathname.slice(0, -1);
+    console.log('Removing the slash at the end of GRAFANA_URL');
   }
-  let finalUrl = urlObj.protocol + '//' + urlObj.hostname;
+  let finalUrl = `${urlObj.protocol}//${urlObj.hostname}`;
   if(urlObj.port !== '') {
     finalUrl = finalUrl + ':' + urlObj.port;
   }
