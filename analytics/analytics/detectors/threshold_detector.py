@@ -37,14 +37,14 @@ class ThresholdDetector(Detector):
         dataframe_without_nans = dataframe.dropna()
         if len(dataframe_without_nans) == 0:
             if condition == 'NO_DATA':
-                segments.append({ 'from': now, 'to': now })
+                segments.append({ 'from': now, 'to': now , 'params': { value: 'NO_DATA' } })
             else:
                 return None
         else:
             last_entry = dataframe_without_nans.iloc[-1]
             last_time = convert_pd_timestamp_to_ms(last_entry['timestamp'])
             last_value = last_entry['value']
-            segment = { 'from': last_time, 'to': last_time }
+            segment = { 'from': last_time, 'to': last_time, 'params': { value: last_value } }
 
             if condition == '>':
                 if last_value > value:

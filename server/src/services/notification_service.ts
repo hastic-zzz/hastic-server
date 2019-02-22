@@ -13,7 +13,8 @@ enum ContentType {
 export enum WebhookType {
   DETECT = 'DETECT',
   FAILURE = 'FAILURE',
-  RECOVERY = 'RECOVERY'
+  RECOVERY = 'RECOVERY',
+  MESSAGE = 'MESSAGE'
 }
 
 export declare type AnalyticAlert = {
@@ -24,8 +25,7 @@ export declare type AnalyticAlert = {
   panelUrl: string,
   from: number,
   to: number
-  value?: number,
-  segmentFeatures?: any,
+  params?: any,
   regionImage?: any
 }
 
@@ -38,17 +38,7 @@ export declare type InfoAlert = {
 }
 
 // TODO: send webhook with payload without dep to AnalyticUnit
-export async function sendAnalyticWebhook(analyticUnit: AnalyticUnit.AnalyticUnit, segment: Segment) {
-  const alert: AnalyticAlert = {
-    type: WebhookType.DETECT,
-    analyticUnitType: analyticUnit.type,
-    analyticUnitName: analyticUnit.name,
-    analyticUnitId: analyticUnit.id,
-    panelUrl: analyticUnit.panelUrl,
-    from: segment.from,
-    to: segment.to 
-  };
-
+export async function sendAnalyticWebhook(alert: AnalyticAlert) {
   const fromTime = new Date(alert.from).toLocaleTimeString();
   const toTime = new Date(alert.to).toLocaleTimeString();
   console.log(`Sending alert unit:${alert.analyticUnitName} from: ${fromTime} to: ${toTime}`);
@@ -64,12 +54,12 @@ export async function sendAnalyticWebhook(analyticUnit: AnalyticUnit.AnalyticUni
   sendWebhook(payload);
 }
 
-export async function sendInfoWebhook(message: InfoAlert) {
-  if(message && typeof message === 'object') {
-    console.log(`Sending info webhook ${JSON.stringify(message.message)}`);
-    sendWebhook(message, ContentType.JSON);
+export async function sendInfoWebhook(alert: InfoAlert) {
+  if(alert && typeof alert === 'object') {
+    console.log(`Sending info webhook ${JSON.stringify(alert.message)}`);
+    sendWebhook(alert, ContentType.JSON);
   } else {
-    console.error(`skip sending Info webhook, got corrupted message ${message}`);
+    console.error(`skip sending Info webhook, got corrupted message ${alert}`);
   }
 }
 

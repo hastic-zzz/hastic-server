@@ -24,6 +24,7 @@ const taskResolvers = new Map<AnalyticsTaskId, TaskResolver>();
 
 let analyticsService: AnalyticsService = undefined;
 let alertService: AlertService = undefined;
+let grafanaAvailableWebhok: Function = undefined;
 let dataPuller: DataPuller;
 
 
@@ -83,6 +84,7 @@ export function init() {
   analyticsService = new AnalyticsService(onMessage);
 
   alertService = new AlertService();
+  grafanaAvailableWebhok = alertService.getGrafanaAvailableReporter();
   alertService.startAlerting();
 
   dataPuller = new DataPuller(analyticsService);
@@ -137,9 +139,12 @@ async function query(analyticUnit: AnalyticUnit.AnalyticUnit, detector: Analytic
       HASTIC_API_KEY
     );
     data = queryResult.values;
+    grafanaAvailableWebhok(true);
   } catch(e) {
     if(e instanceof ConnectionRefused) {
-      throw new Error(`Can't connect Grafana: ${e.message}, check GRAFANA_URL`);
+      const msg = `Can't connect Grafana: ${e.message}, check GRAFANA_URL`;
+      grafanaAvailableWebhok(false);
+      throw new Error(msg);
     }
     throw e;
   }
