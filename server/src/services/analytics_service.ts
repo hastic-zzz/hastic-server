@@ -1,5 +1,6 @@
 import { AnalyticsTask, AnalyticsTaskType } from '../models/analytics_task_model';
 import { AnalyticsMessageMethod, AnalyticsMessage } from '../models/analytics_message_model';
+import { WebhookType } from '../services/notification_service';
 import * as config from '../config';
 import { AlertService } from './alert_service';
 
@@ -165,13 +166,15 @@ export class AnalyticsService {
   }
 
   private _onAnalyticsUp() {
-    console.log('Analytics is up');
+    const msg = 'Analytics is up';
+    console.log(msg);
+    this._alertService.sendMsg(msg, WebhookType.RECOVERY);
   }
 
   private async _onAnalyticsDown() {
-    let msg = 'Analytics is down';
+    const msg = 'Analytics is down';
     console.log(msg);
-    this._alertService.sendMsg(msg);
+    this._alertService.sendMsg(msg, WebhookType.FAILURE);
     if(this._productionMode && !this._inDocker) {
       await AnalyticsService._runAnalyticsProcess(this._zmqConnectionString);
     }

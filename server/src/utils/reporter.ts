@@ -1,6 +1,6 @@
 export function availableReporter(
-  positiveMsg: string|null,
-  negativeMsg: string|null,
+  positives: any|null,
+  negatives: any|null,
   positiveAction=console.log,
   negativeAction=console.error,
 ) {
@@ -8,15 +8,15 @@ export function availableReporter(
   return available => {
     if(available && reported) {
       reported = false;
-      if(positiveMsg) {
-        positiveAction(positiveMsg);
+      if(positives) {
+        positiveAction.apply(null, positives);
       }
     }
 
     if(!available && !reported) {
       reported = true;
-      if(negativeMsg) {
-        negativeAction(negativeMsg);
+      if(negatives) {
+        negativeAction.apply(null, negatives);
       }
     }
   }

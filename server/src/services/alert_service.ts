@@ -112,8 +112,8 @@ export class AlertService {
   public getGrafanaAvailableReporter() {
     if(!this._grafanaAvailableReporter) {
       this._grafanaAvailableReporter = availableReporter(
-        'Grafana available',
-        'Grafana unavailable for pulling data',
+        ['Grafana available', WebhookType.RECOVERY],
+        ['Grafana unavailable for pulling data', WebhookType.FAILURE],
         this.sendMsg,
         this.sendMsg
       );
