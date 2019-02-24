@@ -3,6 +3,8 @@ import * as AnalyticUnit from '../models/analytic_unit_model';
 import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import { AnalyticsService } from './analytics_service';
 import { HASTIC_API_KEY, GRAFANA_URL } from '../config';
+import { availableReporter } from '../utils/reporter';
+import { AlertService } from './alert_service';
 
 import { queryByMetric, ConnectionRefused } from 'grafana-datasource-kit';
 
@@ -15,38 +17,23 @@ const PULL_PERIOD_MS = 5000;
 
 export class DataPuller {
 
-  private _availableReporter = (positiveMsg: string|null, negativeMsg: string|null) => {
-    let reported = false;
-    return available => {
-      if(available && reported) {
-        reported = false;
-        if(positiveMsg) {
-          console.log(positiveMsg);
-        }
-      }
-
-      if(!available && !reported) {
-        reported = true;
-        if(negativeMsg) {
-          console.error(negativeMsg);
-        }
-      }
-    }
-  };
-
-  private _analyticReadyReporter = this._availableReporter(
+  private _analyticReadyConsoleReporter = availableReporter(
     'data puller: analytic ready, start pushing',
     'data puller: analytic service not ready, return empty result'
   );
 
-  private _grafanaConnectionRefusedReporter = this._availableReporter(
+  private _grafanaAvailableConsoleReporter = availableReporter(
     'data puller: connected to Grafana',
     `data puller: can't connect to Grafana. Check GRAFANA_URL`
   );
 
   private _unitTimes: { [analyticUnitId: string]: number } = {};
+  private _grafanaAvailableWebhook: Function;
 
-  constructor(private analyticsService: AnalyticsService) {};
+  constructor(private analyticsService: AnalyticsService) {
+    const _alertService = new AlertService();
+    this._grafanaAvailableWebhook = _alertService.getGrafanaAvailableReporter();
+  };
 
   public addUnit(analyticUnit: AnalyticUnit.AnalyticUnit) {
     console.log(`start pulling analytic unit ${analyticUnit.id}`);
@@ -155,7 +142,7 @@ export class DataPuller {
     AsyncIterableIterator<MetricDataChunk> {
 
     const getData = async () => {
-      this._analyticReadyReporter(this.analyticsService.ready);
+      this._analyticReadyConsoleReporter(this.analyticsService.ready);
       if(!this.analyticsService.ready) {
         return {
           columns: [],
@@ -167,12 +154,14 @@ export class DataPuller {
         const time = this._unitTimes[analyticUnit.id]
         const now = Date.now();
         const res = await this.pullData(analyticUnit, time, now);
-        this._grafanaConnectionRefusedReporter(true);
+        this._grafanaAvailableConsoleReporter(true);
+        this._grafanaAvailableWebhook(true);
         return res;
       } catch(err) {
 
         if(err instanceof ConnectionRefused) {
-          this._grafanaConnectionRefusedReporter(false);
+          this._grafanaAvailableConsoleReporter(false);
+          this._grafanaAvailableWebhook(false);
         } else {
           console.error(`error while pulling data: ${err.message}`);
         }
