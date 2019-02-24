@@ -55,8 +55,9 @@ function getConfigField(field: string, defaultVal?: any) {
     if(defaultVal === undefined) {
       throw new Error(`Please configure ${field}`);
     }
-    return defaultVal;
+    val = defaultVal;
   }
+  console.log(`${field}: ${val}`);
   return val;
 }
 
