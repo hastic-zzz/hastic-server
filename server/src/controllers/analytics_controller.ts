@@ -9,10 +9,11 @@ import { AlertService } from '../services/alert_service';
 import { HASTIC_API_KEY, GRAFANA_URL } from '../config';
 import { DataPuller } from '../services/data_puller';
 
-import { queryByMetric, ConnectionRefused } from 'grafana-datasource-kit';
+import { queryByMetric, GrafanaUnavailable, DatasourceUnavailable } from 'grafana-datasource-kit';
 
 
 import * as _ from 'lodash';
+import { WebhookType } from '../services/notification_service';
 
 const SECONDS_IN_MINUTE = 60;
 
@@ -141,10 +142,14 @@ async function query(analyticUnit: AnalyticUnit.AnalyticUnit, detector: Analytic
     data = queryResult.values;
     grafanaAvailableWebhok(true);
   } catch(e) {
-    if(e instanceof ConnectionRefused) {
+    if(e instanceof GrafanaUnavailable) {
       const msg = `Can't connect Grafana: ${e.message}, check GRAFANA_URL`;
       grafanaAvailableWebhok(false);
       throw new Error(msg);
+    }
+    if(e instanceof DatasourceUnavailable) {
+      alertService.sendMsg(e.message, WebhookType.FAILURE);
+      throw new Error(e.message);
     }
     throw e;
   }

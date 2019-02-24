@@ -1,6 +1,6 @@
 export function availableReporter(
-  positives: any|null,
-  negatives: any|null,
+  positiveArgs: any|null,
+  negativeArgs: any|null,
   positiveAction=console.log,
   negativeAction=console.error,
 ) {
@@ -8,15 +8,21 @@ export function availableReporter(
   return available => {
     if(available && reported) {
       reported = false;
-      if(positives) {
-        positiveAction.apply(null, positives);
+      if(positiveArgs) {
+        if(!(positiveArgs instanceof Array)) {
+          positiveArgs = [ positiveArgs ];
+        }
+        positiveAction.apply(null, positiveArgs);
       }
     }
 
     if(!available && !reported) {
       reported = true;
-      if(negatives) {
-        negativeAction.apply(null, negatives);
+      if(negativeArgs) {
+        if(!(negativeArgs instanceof Array)) {
+          negativeArgs = [ negativeArgs ];
+        }
+        negativeAction.apply(null, negativeArgs);
       }
     }
   }

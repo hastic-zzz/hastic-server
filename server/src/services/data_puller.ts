@@ -6,9 +6,10 @@ import { HASTIC_API_KEY, GRAFANA_URL } from '../config';
 import { availableReporter } from '../utils/reporter';
 import { AlertService } from './alert_service';
 
-import { queryByMetric, ConnectionRefused } from 'grafana-datasource-kit';
+import { queryByMetric, GrafanaUnavailable, DatasourceUnavailable } from 'grafana-datasource-kit';
 
 import * as _ from 'lodash';
+import { WebhookType } from './notification_service';
 
 
 type MetricDataChunk = { values: [number, number][], columns: string[] };
@@ -28,11 +29,13 @@ export class DataPuller {
   );
 
   private _unitTimes: { [analyticUnitId: string]: number } = {};
+  private _alertService: AlertService;
   private _grafanaAvailableWebhook: Function;
+  private _datasourceAvailableWebhook: { [datasourceUrl: string]: Function } = {};
 
   constructor(private analyticsService: AnalyticsService) {
-    const _alertService = new AlertService();
-    this._grafanaAvailableWebhook = _alertService.getGrafanaAvailableReporter();
+    this._alertService = new AlertService();
+    this._grafanaAvailableWebhook = this._alertService.getGrafanaAvailableReporter();
   };
 
   public addUnit(analyticUnit: AnalyticUnit.AnalyticUnit) {
@@ -159,9 +162,21 @@ export class DataPuller {
         return res;
       } catch(err) {
 
-        if(err instanceof ConnectionRefused) {
+        if(err instanceof GrafanaUnavailable) {
           this._grafanaAvailableConsoleReporter(false);
           this._grafanaAvailableWebhook(false);
+        } else {
+          this._grafanaAvailableWebhook(true);
+        }
+
+        if(err instanceof DatasourceUnavailable) {
+          if(!_.has(this._datasourceAvailableWebhook, err.url)) {
+            this._datasourceAvailableWebhook[err.url] = availableReporter(
+              [`datasource ${err.url} available`, WebhookType.RECOVERY],
+              [err.message, WebhookType.FAILURE]
+            );
+          }
+          this._datasourceAvailableWebhook[err.url](false);
         } else {
           console.error(`error while pulling data: ${err.message}`);
         }
