@@ -1,7 +1,9 @@
+import { getJsonDataSync } from './services/json_service';
+import { normalizeUrl } from './utils/url';
+
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
-import { getJsonDataSync } from './services/json_service';
 
 
 let configFile = path.join(__dirname, '../../config.json');
@@ -23,7 +25,7 @@ export const ZMQ_IPC_PATH = getConfigField('ZMQ_IPC_PATH', path.join(os.tmpdir()
 export const ZMQ_DEV_PORT = getConfigField('ZMQ_DEV_PORT', '8002');
 export const ZMQ_HOST = getConfigField('ZMQ_HOST', '127.0.0.1');
 export const HASTIC_API_KEY = getConfigField('HASTIC_API_KEY');
-export const GRAFANA_URL = getConfigField('GRAFANA_URL', null);
+export const GRAFANA_URL = normalizeUrl(getConfigField('GRAFANA_URL', null));
 export const HASTIC_WEBHOOK_URL = getConfigField('HASTIC_WEBHOOK_URL', null);
 export const HASTIC_WEBHOOK_TYPE = getConfigField('HASTIC_WEBHOOK_TYPE', 'application/x-www-form-urlencoded');
 export const HASTIC_WEBHOOK_SECRET = getConfigField('HASTIC_WEBHOOK_SECRET', null);
