@@ -106,6 +106,7 @@ async function runTask(task: AnalyticsTask): Promise<TaskResult> {
 async function query(analyticUnit: AnalyticUnit.AnalyticUnit, detector: AnalyticUnit.DetectorType) {
   let range;
   if(detector === AnalyticUnit.DetectorType.PATTERN) {
+    // TODO: find labeled OR deleted segments to generate timerange
     const segments = await Segment.findMany(analyticUnit.id, { labeled: true });
     if(segments.length === 0) {
       throw new Error('Need at least 1 labeled segment');
@@ -387,14 +388,11 @@ export async function updateSegments(
   segmentsToInsert: Segment.Segment[],
   removedIds: Segment.SegmentId[]
 ) {
-  let [addedIds, removed] = await Promise.all([
-    Segment.insertSegments(segmentsToInsert),
-    Segment.setSegmentsDeleted(removedIds)
-  ]);
-  removed = removed.map(s => s._id);
+  await Segment.removeSegments(removedIds);
+  const addedIds = await Segment.insertSegments(segmentsToInsert);
 
   runFirstLearning(id);
-  return { addedIds, removed };
+  return { addedIds };
 }
 
 export async function updateThreshold(
