@@ -1,9 +1,9 @@
+import { getJsonDataSync } from './services/json_service';
+import { normalizeUrl } from './utils/url';
+
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
-import * as url from 'url-parse';
-
-import { getJsonDataSync } from './services/json_service';
 
 
 let configFile = path.join(__dirname, '../../config.json');
@@ -25,7 +25,7 @@ export const ZMQ_IPC_PATH = getConfigField('ZMQ_IPC_PATH', path.join(os.tmpdir()
 export const ZMQ_DEV_PORT = getConfigField('ZMQ_DEV_PORT', '8002');
 export const ZMQ_HOST = getConfigField('ZMQ_HOST', '127.0.0.1');
 export const HASTIC_API_KEY = getConfigField('HASTIC_API_KEY');
-export const GRAFANA_URL = checkUrl(getConfigField('GRAFANA_URL', null));
+export const GRAFANA_URL = normalizeUrl(getConfigField('GRAFANA_URL', null));
 export const HASTIC_WEBHOOK_URL = getConfigField('HASTIC_WEBHOOK_URL', null);
 export const HASTIC_WEBHOOK_TYPE = getConfigField('HASTIC_WEBHOOK_TYPE', 'application/x-www-form-urlencoded');
 export const HASTIC_WEBHOOK_SECRET = getConfigField('HASTIC_WEBHOOK_SECRET', null);
@@ -58,31 +58,6 @@ function getConfigField(field: string, defaultVal?: any) {
     return defaultVal;
   }
   return val;
-}
-
-function checkUrl(grafanaUrl: string) {
-  let urlObj = new url(grafanaUrl);
-  if(urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
-    grafanaUrl = 'http:' + grafanaUrl;
-    urlObj = new url(grafanaUrl);
-    console.log('No protocol provided in GRAFANA_URL -> inserting "http:"');
-  }
-  if(urlObj.slashes === false) {
-    urlObj = new url(`${urlObj.protocol}//${urlObj.pathname}`);
-    console.log('No slashes were provided after the protocol -> inserting slashes');
-  } 
-  if(urlObj.pathname.slice(-1) === '/') {
-    urlObj.pathname = urlObj.pathname.slice(0, -1);
-    console.log('Removing the slash at the end of GRAFANA_URL');
-  }
-  let finalUrl = `${urlObj.protocol}//${urlObj.hostname}`;
-  if(urlObj.port !== '') {
-    finalUrl = finalUrl + ':' + urlObj.port;
-  }
-  if(urlObj.pathname !== '') {
-    finalUrl = finalUrl + urlObj.pathname;
-  }
-  return finalUrl;
 }
 
 function getPackageVersion() {
