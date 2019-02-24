@@ -1,6 +1,9 @@
 import * as url from 'url-parse';
 
 export function normalizeUrl(grafanaUrl: string) {
+  if(!grafanaUrl) {
+    return grafanaUrl;
+  }
   let urlObj = new url(grafanaUrl);
   if(urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
     grafanaUrl = `http://${grafanaUrl}`;
