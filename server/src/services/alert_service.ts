@@ -3,6 +3,7 @@ import { sendAnalyticWebhook, sendInfoWebhook } from './notification_service';
 import * as _ from 'lodash';
 import * as AnalyticUnit from '../models/analytic_unit_model';
 import { Segment } from '../models/segment_model';
+import { availableReporter } from '../utils/reporter';
 
 
 export class Alert {
@@ -59,6 +60,7 @@ export class AlertService {
 
   private _alerts: { [id: string]: Alert; };
   private _alertingEnable: boolean;
+  private _grafanaAvailableReporter: Function;
 
   constructor() {
     this._alerts = {}
@@ -78,11 +80,23 @@ export class AlertService {
     this._alerts[id].receive(segment);
   };
 
-  public onStateChange(message: string, optionalInfo = {}) {
+  public sendMsg(message: string, optionalInfo = {}) {
     let message_payload = {
       message
     };
     sendInfoWebhook(Object.assign(message_payload, optionalInfo));
+  }
+
+  public getGrafanaAvailableReporter() {
+    if(!this._grafanaAvailableReporter) {
+      this._grafanaAvailableReporter = availableReporter(
+        'Grafana available',
+        'Grafana unavailable for pulling data',
+        this.sendMsg,
+        this.sendMsg
+      );
+    }
+    return this._grafanaAvailableReporter;
   }
 
   public addAnalyticUnit(analyticUnit: AnalyticUnit.AnalyticUnit) {

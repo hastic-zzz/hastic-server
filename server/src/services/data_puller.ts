@@ -3,8 +3,10 @@ import * as AnalyticUnit from '../models/analytic_unit_model';
 import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import { AnalyticsService } from './analytics_service';
 import { HASTIC_API_KEY, GRAFANA_URL } from '../config';
+import { availableReporter } from '../utils/reporter';
+import { AlertService } from './alert_service';
 
-import { queryByMetric } from 'grafana-datasource-kit';
+import { queryByMetric, ConnectionRefused } from 'grafana-datasource-kit';
 
 import * as _ from 'lodash';
 
@@ -15,9 +17,23 @@ const PULL_PERIOD_MS = 5000;
 
 export class DataPuller {
 
-  private _unitTimes: { [analyticUnitId: string]: number } = {};
+  private _analyticReadyConsoleReporter = availableReporter(
+    'data puller: analytic ready, start pushing',
+    'data puller: analytic service not ready, return empty result'
+  );
 
-  constructor(private analyticsService: AnalyticsService) {};
+  private _grafanaAvailableConsoleReporter = availableReporter(
+    'data puller: connected to Grafana',
+    `data puller: can't connect to Grafana. Check GRAFANA_URL`
+  );
+
+  private _unitTimes: { [analyticUnitId: string]: number } = {};
+  private _grafanaAvailableWebhook: Function;
+
+  constructor(private analyticsService: AnalyticsService) {
+    const _alertService = new AlertService();
+    this._grafanaAvailableWebhook = _alertService.getGrafanaAvailableReporter();
+  };
 
   public addUnit(analyticUnit: AnalyticUnit.AnalyticUnit) {
     console.log(`start pulling analytic unit ${analyticUnit.id}`);
@@ -126,8 +142,8 @@ export class DataPuller {
     AsyncIterableIterator<MetricDataChunk> {
 
     const getData = async () => {
+      this._analyticReadyConsoleReporter(this.analyticsService.ready);
       if(!this.analyticsService.ready) {
-        console.log(`data generator: analytic service not ready, return empty result while wait service`);
         return {
           columns: [],
           values: []
@@ -137,9 +153,23 @@ export class DataPuller {
       try {
         const time = this._unitTimes[analyticUnit.id]
         const now = Date.now();
-        return await this.pullData(analyticUnit, time, now);
+        const res = await this.pullData(analyticUnit, time, now);
+        this._grafanaAvailableConsoleReporter(true);
+        this._grafanaAvailableWebhook(true);
+        return res;
       } catch(err) {
-        throw new Error(`error while pulling data: ${err.message}`);
+
+        if(err instanceof ConnectionRefused) {
+          this._grafanaAvailableConsoleReporter(false);
+          this._grafanaAvailableWebhook(false);
+        } else {
+          console.error(`error while pulling data: ${err.message}`);
+        }
+
+        return {
+          columns: [],
+          values: []
+        };
       }
     }
 
