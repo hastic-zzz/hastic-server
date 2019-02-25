@@ -65,10 +65,10 @@ def find_drop(data, height, length):
 
 def timestamp_to_index(dataframe, timestamp):
     data = dataframe['timestamp']
-
-    for i in range(len(data)):
-        if data[i] >= timestamp:
-            return i
+    idx, = np.where(data > timestamp)
+    if len(idx) > 0:
+        time_ind = int(idx[0])
+    return time_ind
 
 def peak_finder(data, size):
     all_max = []
