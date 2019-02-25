@@ -9,7 +9,7 @@ import { AlertService } from '../services/alert_service';
 import { HASTIC_API_KEY, GRAFANA_URL } from '../config';
 import { DataPuller } from '../services/data_puller';
 
-import { queryByMetric } from 'grafana-datasource-kit';
+import { queryByMetric, ConnectionRefused } from 'grafana-datasource-kit';
 
 
 import * as _ from 'lodash';
@@ -24,6 +24,7 @@ const taskResolvers = new Map<AnalyticsTaskId, TaskResolver>();
 
 let analyticsService: AnalyticsService = undefined;
 let alertService: AlertService = undefined;
+let grafanaAvailableWebhok: Function = undefined;
 let dataPuller: DataPuller;
 
 
@@ -83,6 +84,7 @@ export function init() {
   analyticsService = new AnalyticsService(onMessage);
 
   alertService = new AlertService();
+  grafanaAvailableWebhok = alertService.getGrafanaAvailableReporter();
   alertService.startAlerting();
 
   dataPuller = new DataPuller(analyticsService);
@@ -104,6 +106,7 @@ async function runTask(task: AnalyticsTask): Promise<TaskResult> {
 async function query(analyticUnit: AnalyticUnit.AnalyticUnit, detector: AnalyticUnit.DetectorType) {
   let range;
   if(detector === AnalyticUnit.DetectorType.PATTERN) {
+    // TODO: find labeled OR deleted segments to generate timerange
     const segments = await Segment.findMany(analyticUnit.id, { labeled: true });
     if(segments.length === 0) {
       throw new Error('Need at least 1 labeled segment');
@@ -126,14 +129,27 @@ async function query(analyticUnit: AnalyticUnit.AnalyticUnit, detector: Analytic
     panelUrl = analyticUnit.panelUrl;
   }
 
-  const queryResult = await queryByMetric(
-    analyticUnit.metric,
-    panelUrl,
-    range.from,
-    range.to,
-    HASTIC_API_KEY
-  );
-  const data = queryResult.values;
+  let data;
+
+  try {
+    const queryResult = await queryByMetric(
+      analyticUnit.metric,
+      panelUrl,
+      range.from,
+      range.to,
+      HASTIC_API_KEY
+    );
+    data = queryResult.values;
+    grafanaAvailableWebhok(true);
+  } catch(e) {
+    if(e instanceof ConnectionRefused) {
+      const msg = `Can't connect Grafana: ${e.message}, check GRAFANA_URL`;
+      grafanaAvailableWebhok(false);
+      throw new Error(msg);
+    }
+    throw e;
+  }
+
   if(data.length === 0) {
     throw new Error('Empty data to detect on');
   }
@@ -372,14 +388,10 @@ export async function updateSegments(
   segmentsToInsert: Segment.Segment[],
   removedIds: Segment.SegmentId[]
 ) {
-  let [addedIds, removed] = await Promise.all([
-    Segment.insertSegments(segmentsToInsert),
-    Segment.setSegmentsDeleted(removedIds)
-  ]);
-  removed = removed.map(s => s._id);
+  await Segment.removeSegments(removedIds);
+  const addedIds = await Segment.insertSegments(segmentsToInsert);
 
-  runFirstLearning(id);
-  return { addedIds, removed };
+  return { addedIds };
 }
 
 export async function updateThreshold(
@@ -388,11 +400,9 @@ export async function updateThreshold(
   condition: Threshold.Condition
 ) {
   await Threshold.updateThreshold(id, value, condition);
-
-  runFirstLearning(id);
 }
 
-async function runFirstLearning(id: AnalyticUnit.AnalyticUnitId) {
+export async function runFirstLearning(id: AnalyticUnit.AnalyticUnitId) {
   // TODO: move setting status somehow "inside" learning
   await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.PENDING);
   runLearning(id)

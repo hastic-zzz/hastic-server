@@ -8,6 +8,7 @@ from scipy.stats.stats import pearsonr
 import math
 from typing import Union
 import utils
+import logging
 
 SHIFT_FACTOR = 0.05
 CONFIDENCE_FACTOR = 0.2
@@ -64,10 +65,12 @@ def find_drop(data, height, length):
 
 def timestamp_to_index(dataframe, timestamp):
     data = dataframe['timestamp']
-
-    for i in range(len(data)):
-        if data[i] >= timestamp:
-            return i
+    idx, = np.where(data >= timestamp)
+    if len(idx) > 0:
+        time_ind = int(idx[0])
+    else:
+        raise ValueError('Dataframe has no appropriate timestamp {}'.format(timestamp))
+    return time_ind
 
 def peak_finder(data, size):
     all_max = []
@@ -186,6 +189,9 @@ def find_extremum_index(segment: np.ndarray, selector: bool) -> int:
         return segment.argmin()
 
 def get_interval(data: pd.Series, center: int, window_size: int) -> pd.Series:
+    if center >= len(data):
+        logging.warning('Pattern center {} is out of data with len {}'.format(center, len(data)))
+        return []
     left_bound = center - window_size
     right_bound = center + window_size + 1
     if left_bound < 0:
@@ -227,9 +233,12 @@ def get_correlation(segments: list, av_model: list, data: pd.Series, window_size
         labeled_segment = utils.get_interval(data, segment, window_size)
         labeled_segment = utils.subtract_min_without_nan(labeled_segment)
         labeled_segment = utils.check_nan_values(labeled_segment)
+        if len(labeled_segment) == 0 or len(labeled_segment) != len(av_model):
+            continue
         correlation = pearsonr(labeled_segment, av_model)
-        correlation_list.append(correlation[0])
-        p_value_list.append(correlation[1])
+        if len(correlation) > 1:
+            correlation_list.append(correlation[0])
+            p_value_list.append(correlation[1])
     return correlation_list
 
 def get_distribution_density(segment: pd.Series) -> float:

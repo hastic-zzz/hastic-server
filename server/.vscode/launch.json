@@ -18,13 +18,6 @@
         "webpack:///./*": "${workspaceRoot}/*",
         "webpack:///*": "*"
       },
-      "linux": {
-        "sourceMapPathOverrides": {
-          "webpack:///./~/*": "${workspaceRoot}/node_modules/*",
-          "webpack:///./*": "${workspaceRoot}/*",
-          "webpack:///*": "*"
-        }
-      },
       "port": 9229,
       "restart": true,
       "trace": true,
