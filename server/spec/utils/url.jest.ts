@@ -2,6 +2,8 @@ import { normalizeUrl } from '../../src/utils/url';
 
 describe('Normalize URL', function() {
   const cases = [
+    { value: '127.0.0.1:8000', expected: 'http://127.0.0.1:8000' },
+    { value: '127.0.0.1:8000/', expected: 'http://127.0.0.1:8000' },
     { value: 'localhost:8000', expected: 'http://localhost:8000' },
     { value: 'localhost:8000/', expected: 'http://localhost:8000' },
     { value: 'http://localhost:3000', expected: 'http://localhost:3000' },
