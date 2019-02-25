@@ -40,21 +40,21 @@ async function getSegments(ctx: Router.IRouterContext) {
 async function updateSegments(ctx: Router.IRouterContext) {
   try {
 
-    let {
+    const {
       addedSegments, id, removedSegments: removedIds
     } = ctx.request.body as {
       addedSegments: any[], id: AnalyticUnitId, removedSegments: Segment.SegmentId[]
     };
 
-    let segmentsToInsert: Segment.Segment[] = addedSegments.map(
-      s => Segment.Segment.fromObject({ analyticUnitId: id, labeled: true, ...s })
+    const segmentsToInsert: Segment.Segment[] = addedSegments.map(
+      s => Segment.Segment.fromObject({ analyticUnitId: id, ...s })
     );
 
-    let { addedIds, removed } = await AnalyticsController.updateSegments(
+    const { addedIds } = await AnalyticsController.updateSegments(
       id, segmentsToInsert, removedIds
     );
 
-    ctx.response.body = { addedIds, removed };
+    ctx.response.body = { addedIds };
     
   } catch(e) {
     console.error(e);
