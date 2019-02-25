@@ -236,8 +236,9 @@ def get_correlation(segments: list, av_model: list, data: pd.Series, window_size
         if len(labeled_segment) == 0 or len(labeled_segment) != len(av_model):
             continue
         correlation = pearsonr(labeled_segment, av_model)
-        correlation_list.append(correlation[0])
-        p_value_list.append(correlation[1])
+        if len(correlation) > 1:
+            correlation_list.append(correlation[0])
+            p_value_list.append(correlation[1])
     return correlation_list
 
 def get_distribution_density(segment: pd.Series) -> float:
