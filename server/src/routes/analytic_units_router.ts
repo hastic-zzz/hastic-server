@@ -206,6 +206,26 @@ async function deleteUnit(ctx: Router.IRouterContext) {
   }
 }
 
+async function runDetect(ctx: Router.IRouterContext) {
+  try {
+    const { id: analyticUnitId } = ctx.request.body as { id: AnalyticUnit.AnalyticUnitId };
+
+    AnalyticsController.runFirstLearning(analyticUnitId);
+
+    ctx.response.body = {
+      code: 200,
+      message: 'Success'
+    };
+  } catch (e) {
+    ctx.response.status = 500;
+    ctx.response.body = {
+      code: 500,
+      message: `POST /analyticUnits/detect error: ${e.message}`
+    };
+  }
+}
+
+
 
 export var router = new Router();
 
@@ -219,3 +239,5 @@ router.patch('/alert', updateAlert);
 router.post('/', createUnit);
 router.delete('/', deleteUnit);
 router.patch('/', updateUnit);
+
+router.post('/detect', runDetect);

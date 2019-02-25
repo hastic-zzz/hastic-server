@@ -174,7 +174,8 @@ export class AnalyticsService {
   private async _onAnalyticsDown() {
     const msg = 'Analytics is down';
     console.log(msg);
-    this._alertService.sendMsg(msg, WebhookType.FAILURE);
+    // TODO: enable analytics down webhooks when it stops bouncing
+    // this._alertService.sendMsg(msg);
     if(this._productionMode && !this._inDocker) {
       await AnalyticsService._runAnalyticsProcess(this._zmqConnectionString);
     }

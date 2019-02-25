@@ -1,8 +1,8 @@
 export function availableReporter(
   positiveArgs: any|null,
   negativeArgs: any|null,
-  positiveAction=console.log,
-  negativeAction=console.error,
+  positiveAction = console.log,
+  negativeAction = console.error,
 ) {
   let reported = false;
   return available => {
