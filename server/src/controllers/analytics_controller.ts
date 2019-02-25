@@ -400,8 +400,6 @@ export async function updateThreshold(
   condition: Threshold.Condition
 ) {
   await Threshold.updateThreshold(id, value, condition);
-
-  runFirstLearning(id);
 }
 
 export async function runFirstLearning(id: AnalyticUnit.AnalyticUnitId) {
