@@ -68,6 +68,8 @@ def timestamp_to_index(dataframe, timestamp):
     idx, = np.where(data > timestamp)
     if len(idx) > 0:
         time_ind = int(idx[0])
+    else:
+        raise ValueError('Dataframe has no appropriate timestame {}'.format(timestamp))
     return time_ind
 
 def peak_finder(data, size):
