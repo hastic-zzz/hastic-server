@@ -22,8 +22,8 @@ class GeneralModel(Model):
             'convolve_max': 240,
             'convolve_min': 200,
             'WINDOW_SIZE': 0,
-            'conv_del_min': 100,
-            'conv_del_max': 120,
+            'conv_del_min': 0,
+            'conv_del_max': 0,
         }
         self.all_conv = []
         self.all_corr = []
