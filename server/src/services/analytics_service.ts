@@ -168,7 +168,7 @@ export class AnalyticsService {
   private _onAnalyticsUp() {
     const msg = 'Analytics is up';
     console.log(msg);
-    this._alertService.sendMsg(msg, WebhookType.RECOVERY);
+    //this._alertService.sendMsg(msg, WebhookType.RECOVERY);
   }
 
   private async _onAnalyticsDown() {

@@ -121,6 +121,15 @@ export class AlertService {
     return this._grafanaAvailableReporter;
   }
 
+  public getAvailableWebhook(recoveryMsg: string, failureMsg: string) {
+    return availableReporter(
+      [recoveryMsg, WebhookType.RECOVERY],
+      [failureMsg, WebhookType.FAILURE],
+      this.sendMsg,
+      this.sendMsg
+    );
+  }
+
   public addAnalyticUnit(analyticUnit: AnalyticUnit.AnalyticUnit) {
     let detector = AnalyticUnit.getDetectorByType(analyticUnit.type);
     let alertsType = {};
