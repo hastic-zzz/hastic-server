@@ -18,8 +18,6 @@ Implementation of basic pattern recognition for anomaly detection.
 
 Implementation of analytics unit for Hastic.
 
-**Please note that we are still in alpha, so features are subject to change**
-
 See also:
 * [Getting started](https://github.com/hastic/hastic-server/wiki#getting-started)
 * [FAQ](https://github.com/hastic/hastic-server/wiki/FAQ)
