@@ -20,6 +20,6 @@ rpm_node6:
 			-e "NODE_VERSION=v6.14.0" \
 			-e "RPM_NODE_VERSION=6" \
 			-e "HASTIC_RELEASE_VERSION=`cat server/package.json| jq -r .version | sed 's/-/_/g'`" \
-			amper43/hastic-rpmbuilder rpmbuild -ba rpm/hastic-server.spec
+			amper43/hastic-rpmbuilder rpmbuild -bb rpm/hastic-server.spec
 
 rpm: rpm_node8 rpm_node6
