@@ -31,7 +31,7 @@ export class AnalyticsService {
 
   public async sendTask(task: AnalyticsTask): Promise<void> {
     if(!this._ready) {
-      return Promise.reject("Analytics is not ready");
+      throw new Error('Analytics is not ready');
     }
     let method = task.type === AnalyticsTaskType.PUSH ?
       AnalyticsMessageMethod.DATA : AnalyticsMessageMethod.TASK

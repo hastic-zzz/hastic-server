@@ -151,7 +151,10 @@ export class DataPuller {
       }
 
       try {
-        const time = this._unitTimes[analyticUnit.id]
+        const time = this._unitTimes[analyticUnit.id];
+        if(time === undefined) {
+          throw new Error(`Analytic unit ${analyticUnit.id} is deleted from puller`);
+        }
         const now = Date.now();
         const res = await this.pullData(analyticUnit, time, now);
         this._grafanaAvailableConsoleReporter(true);

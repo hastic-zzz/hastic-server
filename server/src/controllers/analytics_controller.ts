@@ -98,6 +98,9 @@ export function terminate() {
 
 async function runTask(task: AnalyticsTask): Promise<TaskResult> {
   return new Promise<TaskResult>((resolver: TaskResolver) => {
+    if(!analyticsService.ready) {
+      throw new Error(`Can't send task, analytics is not ready`);
+    }
     taskResolvers.set(task.id, resolver); // it will be resolved in onTaskResult()
     analyticsService.sendTask(task);      // we dont wait for result here
   });
@@ -286,15 +289,23 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId) {
   }
 }
 
-export async function remove(id: AnalyticUnit.AnalyticUnitId) {
-  let task = new AnalyticsTask(id, AnalyticsTaskType.CANCEL);
-  await runTask(task);
+export async function remove(analyticUnitId: AnalyticUnit.AnalyticUnitId) {
+  await cancelAnalyticsTask(analyticUnitId);
 
   if(dataPuller !== undefined) {
-    dataPuller.deleteUnit(id);
+    dataPuller.deleteUnit(analyticUnitId);
   }
 
-  await AnalyticUnit.remove(id);
+  await AnalyticUnit.remove(analyticUnitId);
+}
+
+async function cancelAnalyticsTask(analyticUnitId: AnalyticUnit.AnalyticUnitId) {
+  try {
+    let task = new AnalyticsTask(analyticUnitId, AnalyticsTaskType.CANCEL);
+    await runTask(task);
+  } catch(e) {
+    console.log(`Can't cancel analytics task for "${analyticUnitId}": ${e.message}`);
+  }
 }
 
 export async function deleteNonDetectedSegments(id, payload) {
