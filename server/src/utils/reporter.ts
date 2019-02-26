@@ -1,3 +1,5 @@
+import * as _ from 'lodash';
+
 export function availableReporter(
   positiveArgs: any|null,
   negativeArgs: any|null,
@@ -9,7 +11,7 @@ export function availableReporter(
     if(available && reported) {
       reported = false;
       if(positiveArgs) {
-        if(!(positiveArgs instanceof Array)) {
+        if(!_.isArray(positiveAction)) {
           positiveArgs = [ positiveArgs ];
         }
         positiveAction.apply(null, positiveArgs);
@@ -19,7 +21,7 @@ export function availableReporter(
     if(!available && !reported) {
       reported = true;
       if(negativeArgs) {
-        if(!(negativeArgs instanceof Array)) {
+        if(!_.isArray(negativeArgs)) {
           negativeArgs = [ negativeArgs ];
         }
         negativeAction.apply(null, negativeArgs);
