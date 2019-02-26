@@ -23,6 +23,8 @@ REST server for managing data for analytics
 %prep
 rm -rf %{builddir}/*
 mkdir -p %{builddir}
+mkdir -p %{builddir}/.git
+cp -r %{builddir}/../.git/HEAD %{builddir}/.git
 cp -r %{builddir}/../server %{builddir}/
 cp -r %{builddir}/../analytics %{builddir}/
 set +x
@@ -58,8 +60,10 @@ popd
 
 %install
 mkdir -p %{buildroot}/usr/lib/hastic-server/server/dist
+mkdir -p %{buildroot}/usr/lib/hastic-server/.git
 mkdir -p %{buildroot}/usr/lib/hastic-server/analytics/dist/server
 cp -r server/dist %{buildroot}/usr/lib/hastic-server/server/
+cp -r .git/HEAD %{buildroot}/usr/lib/hastic-server/.git
 cp -r analytics/dist/server %{buildroot}/usr/lib/hastic-server/analytics/dist/
 
 %post
