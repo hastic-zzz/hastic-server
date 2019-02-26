@@ -6,10 +6,12 @@ import pandas as pd
 import scipy.signal
 from scipy.fftpack import fft
 from scipy.signal import argrelextrema
+from scipy.stats.stats import pearsonr
 import math
 from scipy.stats import gaussian_kde
 from scipy.stats import norm
 
+PEARSON_COEFF = 0.7
 
 class GeneralModel(Model):
 
@@ -21,10 +23,11 @@ class GeneralModel(Model):
             'convolve_max': 240,
             'convolve_min': 200,
             'WINDOW_SIZE': 0,
-            'conv_del_min': 100,
-            'conv_del_max': 120,
+            'conv_del_min': 0,
+            'conv_del_max': 0,
         }
         self.all_conv = []
+        self.all_corr = []
     
     def get_model_type(self) -> (str, bool):
         model = 'general'
@@ -67,14 +70,17 @@ class GeneralModel(Model):
             raise ValueError('Labeled patterns must not be empty')
 
         self.all_conv = []
-        for i in range(self.state['WINDOW_SIZE'] * 2, len(data)):
-            watch_data = data[i - self.state['WINDOW_SIZE'] * 2: i]
+        self.all_corr = []
+        for i in range(self.state['WINDOW_SIZE'], len(data) - self.state['WINDOW_SIZE']):
+            watch_data = data[i - self.state['WINDOW_SIZE']: i + self.state['WINDOW_SIZE'] + 1]
             watch_data = utils.subtract_min_without_nan(watch_data)
             conv = scipy.signal.fftconvolve(watch_data, pat_data)
+            correlation = pearsonr(watch_data, pat_data)
+            self.all_corr.append(correlation[0])
             self.all_conv.append(max(conv))
         all_conv_peaks = utils.peak_finder(self.all_conv, self.state['WINDOW_SIZE'] * 2)
-
-        filtered = self.__filter_detection(all_conv_peaks, data)
+        all_corr_peaks = utils.peak_finder(self.all_corr, self.state['WINDOW_SIZE'] * 2)
+        filtered = self.__filter_detection(all_corr_peaks, data)
         return set(item + self.state['WINDOW_SIZE'] for item in filtered)
 
     def __filter_detection(self, segments: list, data: list):
@@ -84,7 +90,11 @@ class GeneralModel(Model):
         for val in segments:
             if self.all_conv[val] < self.state['convolve_min'] * 0.8:
                 delete_list.append(val)
-            elif (self.all_conv[val] < self.state['conv_del_max'] * 1.02 and self.all_conv[val] > self.state['conv_del_min'] * 0.98):
+                continue
+            if self.all_corr[val] < PEARSON_COEFF:
+                delete_list.append(val)
+                continue
+            if (self.all_conv[val] < self.state['conv_del_max'] * 1.02 and self.all_conv[val] > self.state['conv_del_min'] * 0.98):
 	            delete_list.append(val)
 
         for item in delete_list:
