@@ -1,3 +1,7 @@
+services:
+  - docker
+
+
 matrix:
   include:
     - language: node_js
@@ -20,5 +24,9 @@ matrix:
           apt-utils gnupg curl make g++ git
       script:
         - python -m unittest discover
+
+script:
+  - make
+
 notifications:
   email: false
