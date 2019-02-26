@@ -101,12 +101,12 @@ export async function insertSegments(segments: Segment[]) {
     return [];
   }
   const analyticUnitId: AnalyticUnitId = segments[0].analyticUnitId;
-
   const learningSegments: Segment[] = await db.findMany({
     analyticUnitId,
     labeled: true,
     deleted: false
   });
+
   let segmentIdsToRemove: SegmentId[] = [];
   let segmentsToInsert: Segment[] = [];
 
