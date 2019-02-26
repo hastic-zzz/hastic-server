@@ -11,6 +11,7 @@ import math
 from scipy.stats import gaussian_kde
 from scipy.stats import norm
 
+PEARSON_COEFF = 0.7
 
 class GeneralModel(Model):
 
@@ -90,7 +91,7 @@ class GeneralModel(Model):
             if self.all_conv[val] < self.state['convolve_min'] * 0.8:
                 delete_list.append(val)
                 continue
-            if self.all_corr[val] < 0.7:
+            if self.all_corr[val] < PEARSON_COEFF:
                 delete_list.append(val)
                 continue
             if (self.all_conv[val] < self.state['conv_del_max'] * 1.02 and self.all_conv[val] > self.state['conv_del_min'] * 0.98):
