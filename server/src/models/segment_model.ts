@@ -16,7 +16,8 @@ export class Segment {
     public to: number,
     public labeled: boolean = false,
     public deleted: boolean = false,
-    public id?: SegmentId
+    public id?: SegmentId,
+    public params?: any
   ) {
     if(analyticUnitId === undefined) {
       throw new Error('AnalyticUnitId is undefined');

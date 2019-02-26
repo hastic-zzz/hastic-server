@@ -1,4 +1,5 @@
 import { Segment } from '../models/segment_model';
+import * as AnalyticUnit from '../models/analytic_unit_model';
 import { HASTIC_WEBHOOK_URL, HASTIC_WEBHOOK_TYPE, HASTIC_WEBHOOK_SECRET } from '../config';
 
 import axios from 'axios';
@@ -9,14 +10,35 @@ enum ContentType {
   URLENCODED ='application/x-www-form-urlencoded'
 }
 
-// TODO: send webhook with payload without dep to AnalyticUnit
-export async function sendAnalyticWebhook(analyticUnitName: string, segment: Segment) {
-  const alert = {
-    analyticUnitName,
-    from: segment.from,
-    to: segment.to 
-  };
+export enum WebhookType {
+  DETECT = 'DETECT',
+  FAILURE = 'FAILURE',
+  RECOVERY = 'RECOVERY',
+  MESSAGE = 'MESSAGE'
+}
 
+export declare type AnalyticAlert = {
+  type: WebhookType,
+  analyticUnitType: string,
+  analyticUnitName: string,
+  analyticUnitId: AnalyticUnit.AnalyticUnitId,
+  panelUrl: string,
+  from: number,
+  to: number
+  params?: any,
+  regionImage?: any
+}
+
+export declare type InfoAlert = {
+  type: WebhookType,
+  message: string,
+  from: number,
+  to: number,
+  params?: any
+}
+
+// TODO: send webhook with payload without dep to AnalyticUnit
+export async function sendAnalyticWebhook(alert: AnalyticAlert) {
   const fromTime = new Date(alert.from).toLocaleTimeString();
   const toTime = new Date(alert.to).toLocaleTimeString();
   console.log(`Sending alert unit:${alert.analyticUnitName} from: ${fromTime} to: ${toTime}`);
@@ -32,11 +54,12 @@ export async function sendAnalyticWebhook(analyticUnitName: string, segment: Seg
   sendWebhook(payload);
 }
 
-export async function sendInfoWebhook(message: any) {
-  if(message && typeof message === 'object') {
-    sendWebhook(message, ContentType.JSON);
+export async function sendInfoWebhook(alert: InfoAlert) {
+  if(alert && typeof alert === 'object') {
+    console.log(`Sending info webhook ${JSON.stringify(alert.message)}`);
+    sendWebhook(alert, ContentType.JSON);
   } else {
-    console.error(`skip sending Info webhook, got corrupted message ${message}`);
+    console.error(`skip sending Info webhook, got corrupted message ${alert}`);
   }
 }
 

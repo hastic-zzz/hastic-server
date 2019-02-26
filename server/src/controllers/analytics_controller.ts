@@ -9,10 +9,11 @@ import { AlertService } from '../services/alert_service';
 import { HASTIC_API_KEY, GRAFANA_URL } from '../config';
 import { DataPuller } from '../services/data_puller';
 
-import { queryByMetric, ConnectionRefused } from 'grafana-datasource-kit';
+import { queryByMetric, GrafanaUnavailable, DatasourceUnavailable } from 'grafana-datasource-kit';
 
 
 import * as _ from 'lodash';
+import { WebhookType } from '../services/notification_service';
 
 const SECONDS_IN_MINUTE = 60;
 
@@ -98,6 +99,9 @@ export function terminate() {
 
 async function runTask(task: AnalyticsTask): Promise<TaskResult> {
   return new Promise<TaskResult>((resolver: TaskResolver) => {
+    if(!analyticsService.ready) {
+      throw new Error(`Can't send task, analytics is not ready`);
+    }
     taskResolvers.set(task.id, resolver); // it will be resolved in onTaskResult()
     analyticsService.sendTask(task);      // we dont wait for result here
   });
@@ -142,10 +146,14 @@ async function query(analyticUnit: AnalyticUnit.AnalyticUnit, detector: Analytic
     data = queryResult.values;
     grafanaAvailableWebhok(true);
   } catch(e) {
-    if(e instanceof ConnectionRefused) {
+    if(e instanceof GrafanaUnavailable) {
       const msg = `Can't connect Grafana: ${e.message}, check GRAFANA_URL`;
       grafanaAvailableWebhok(false);
       throw new Error(msg);
+    }
+    if(e instanceof DatasourceUnavailable) {
+      alertService.sendMsg(e.message, WebhookType.FAILURE);
+      throw new Error(e.message);
     }
     throw e;
   }
@@ -286,15 +294,23 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId) {
   }
 }
 
-export async function remove(id: AnalyticUnit.AnalyticUnitId) {
-  let task = new AnalyticsTask(id, AnalyticsTaskType.CANCEL);
-  await runTask(task);
+export async function remove(analyticUnitId: AnalyticUnit.AnalyticUnitId) {
+  await cancelAnalyticsTask(analyticUnitId);
 
   if(dataPuller !== undefined) {
-    dataPuller.deleteUnit(id);
+    dataPuller.deleteUnit(analyticUnitId);
   }
 
-  await AnalyticUnit.remove(id);
+  await AnalyticUnit.remove(analyticUnitId);
+}
+
+async function cancelAnalyticsTask(analyticUnitId: AnalyticUnit.AnalyticUnitId) {
+  try {
+    let task = new AnalyticsTask(analyticUnitId, AnalyticsTaskType.CANCEL);
+    await runTask(task);
+  } catch(e) {
+    console.log(`Can't cancel analytics task for "${analyticUnitId}": ${e.message}`);
+  }
 }
 
 export async function deleteNonDetectedSegments(id, payload) {
