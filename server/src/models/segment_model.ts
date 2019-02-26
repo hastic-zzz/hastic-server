@@ -52,7 +52,7 @@ export class Segment {
       throw new Error('obj is undefined');
     }
     return new Segment(
-      obj.analyticUnitId, 
+      obj.analyticUnitId,
       +obj.from, +obj.to,
       obj.labeled, obj.deleted, obj._id
     );
@@ -100,23 +100,39 @@ export async function insertSegments(segments: Segment[]) {
   if(_.isEmpty(segments)) {
     return [];
   }
-  let analyticUnitId: AnalyticUnitId = segments[0].analyticUnitId;
-  let segmentIdsToRemove: SegmentId[] = [];
-  let segmentsToInsert: Segment[] = [];
-  let learningSegments: Segment[] = await db.findMany({
+  const analyticUnitId: AnalyticUnitId = segments[0].analyticUnitId;
+  const learningSegments: Segment[] = await db.findMany({
     analyticUnitId,
     labeled: true,
     deleted: false
   });
+
+  let segmentIdsToRemove: SegmentId[] = [];
+  let segmentsToInsert: Segment[] = [];
+
   for(let segment of segments) {
-    let intersectedLearning = learningSegments.filter(s => {
+    const intersectedLearning = learningSegments.filter(s => {
       return segment.from <= s.to && segment.to >= s.from;
     });
     if(intersectedLearning.length > 0) {
       continue;
     }
 
-    let intersectedSegments = await db.findMany({
+    if(!segment.deleted && !segment.labeled) {
+      const intersectedWithDeletedSegments = await db.findMany({
+        analyticUnitId,
+        to: { $gte: segment.from },
+        from: { $lte: segment.to },
+        labeled: false,
+        deleted: true
+      });
+
+      if(intersectedWithDeletedSegments.length > 0) {
+        continue;
+      }
+    }
+
+    const intersectedSegments = await db.findMany({
       analyticUnitId,
       to: { $gte: segment.from },
       from: { $lte: segment.to },
