@@ -10,7 +10,7 @@ rpm_node8:
 			-e "NODE_VERSION=v8.0.0" \
 			-e "RPM_NODE_VERSION=8" \
 			-e "HASTIC_RELEASE_VERSION=`cat server/package.json| jq -r .version | sed 's/-/_/g'`" \
-			amper43/hastic-rpmbuilder bash #rpmbuild -ba rpm/hastic-server.spec
+			amper43/hastic-rpmbuilder rpmbuild -bb rpm/hastic-server.spec
 
 rpm_node6:
 	docker run --rm -v `pwd`/server:/root/rpmbuild/server \
