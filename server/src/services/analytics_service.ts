@@ -1,5 +1,6 @@
 import { AnalyticsTask, AnalyticsTaskType } from '../models/analytics_task_model';
 import { AnalyticsMessageMethod, AnalyticsMessage } from '../models/analytics_message_model';
+import { WebhookType } from '../services/notification_service';
 import * as config from '../config';
 import { AlertService } from './alert_service';
 
@@ -31,7 +32,7 @@ export class AnalyticsService {
 
   public async sendTask(task: AnalyticsTask): Promise<void> {
     if(!this._ready) {
-      return Promise.reject("Analytics is not ready");
+      throw new Error('Analytics is not ready');
     }
     let method = task.type === AnalyticsTaskType.PUSH ?
       AnalyticsMessageMethod.DATA : AnalyticsMessageMethod.TASK
@@ -165,11 +166,13 @@ export class AnalyticsService {
   }
 
   private _onAnalyticsUp() {
-    console.log('Analytics is up');
+    const msg = 'Analytics is up';
+    console.log(msg);
+    //this._alertService.sendMsg(msg, WebhookType.RECOVERY);
   }
 
   private async _onAnalyticsDown() {
-    let msg = 'Analytics is down';
+    const msg = 'Analytics is down';
     console.log(msg);
     // TODO: enable analytics down webhooks when it stops bouncing
     // this._alertService.sendMsg(msg);

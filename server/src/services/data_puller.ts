@@ -6,9 +6,10 @@ import { HASTIC_API_KEY, GRAFANA_URL } from '../config';
 import { availableReporter } from '../utils/reporter';
 import { AlertService } from './alert_service';
 
-import { queryByMetric, ConnectionRefused } from 'grafana-datasource-kit';
+import { queryByMetric, GrafanaUnavailable, DatasourceUnavailable } from 'grafana-datasource-kit';
 
 import * as _ from 'lodash';
+import { WebhookType } from './notification_service';
 
 
 type MetricDataChunk = { values: [number, number][], columns: string[] };
@@ -28,21 +29,33 @@ export class DataPuller {
   );
 
   private _unitTimes: { [analyticUnitId: string]: number } = {};
+  private _alertService: AlertService;
   private _grafanaAvailableWebhook: Function;
+  private _datasourceAvailableWebhook: { [analyticUnitId: string]: Function } = {};
 
   constructor(private analyticsService: AnalyticsService) {
-    const _alertService = new AlertService();
-    this._grafanaAvailableWebhook = _alertService.getGrafanaAvailableReporter();
+    this._alertService = new AlertService();
+    this._grafanaAvailableWebhook = this._alertService.getGrafanaAvailableReporter();
   };
+
+  private _makeDatasourceAvailableWebhook(analyticUnit: AnalyticUnit.AnalyticUnit) {
+    const datasourceInfo = `${analyticUnit.metric.datasource.url} (${analyticUnit.metric.datasource.type})`;
+    return this._alertService.getAvailableWebhook(
+      `datasource ${datasourceInfo} available`,
+      `datasource ${datasourceInfo} unavailable`
+    );
+  }
 
   public addUnit(analyticUnit: AnalyticUnit.AnalyticUnit) {
     console.log(`start pulling analytic unit ${analyticUnit.id}`);
+    this._datasourceAvailableWebhook[analyticUnit.id] = this._makeDatasourceAvailableWebhook(analyticUnit);
     this._runAnalyticUnitPuller(analyticUnit);
   }
 
   public deleteUnit(analyticUnitId: AnalyticUnit.AnalyticUnitId) {
     if(_.has(this._unitTimes, analyticUnitId)) {
       delete this._unitTimes[analyticUnitId];
+      delete this._datasourceAvailableWebhook[analyticUnitId];
       console.log(`analytic unit ${analyticUnitId} deleted from data puller`);
     }
   }
@@ -87,6 +100,7 @@ export class DataPuller {
     console.log(`starting data puller with ${JSON.stringify(analyticUnits.map(u => u.id))} analytic units`);
 
     _.each(analyticUnits, analyticUnit => {
+      this._datasourceAvailableWebhook[analyticUnit.id] = this._makeDatasourceAvailableWebhook(analyticUnit);
       this._runAnalyticUnitPuller(analyticUnit);
     });
 
@@ -151,18 +165,34 @@ export class DataPuller {
       }
 
       try {
-        const time = this._unitTimes[analyticUnit.id]
+        const time = this._unitTimes[analyticUnit.id];
+        if(time === undefined) {
+          throw new Error(`Analytic unit ${analyticUnit.id} is deleted from puller`);
+        }
         const now = Date.now();
         const res = await this.pullData(analyticUnit, time, now);
         this._grafanaAvailableConsoleReporter(true);
         this._grafanaAvailableWebhook(true);
+        this._datasourceAvailableWebhook[analyticUnit.id](true);
         return res;
       } catch(err) {
-
-        if(err instanceof ConnectionRefused) {
+        let errorResolved = false;
+        if(err instanceof GrafanaUnavailable) {
+          errorResolved = true;
           this._grafanaAvailableConsoleReporter(false);
           this._grafanaAvailableWebhook(false);
         } else {
+          this._grafanaAvailableWebhook(true);
+        }
+
+        if(err instanceof DatasourceUnavailable) {
+          errorResolved = true;
+          if(_.has(this._datasourceAvailableWebhook, analyticUnit.id)) {
+            this._datasourceAvailableWebhook[analyticUnit.id](false);
+          }
+        }
+
+        if(!errorResolved) {
           console.error(`error while pulling data: ${err.message}`);
         }
 
