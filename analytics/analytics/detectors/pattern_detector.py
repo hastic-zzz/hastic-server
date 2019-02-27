@@ -37,8 +37,7 @@ class PatternDetector(Detector):
         self.analytic_unit_id = analytic_unit_id
         self.pattern_type = pattern_type
         self.model = resolve_model_by_pattern(self.pattern_type)
-        self.max_window_size = 150
-        self.window_size = 0
+        self.min_bucket_size = 150
         self.bucket = DataBucket()
 
     def train(self, dataframe: pd.DataFrame, segments: list, cache: Optional[models.ModelCache]) -> models.ModelCache:
@@ -71,12 +70,12 @@ class PatternDetector(Detector):
             return None
 
         self.bucket.receive_data(data_without_nan)
-        if cache and self.window_size == 0:
-            self.window_size = cache['WINDOW_SIZE']
+        bucket_size = max(cache.get('WINDOW_SIZE', None), self.min_bucket_size)
 
         res = self.detect(self.bucket.data, cache)
-        if len(self.bucket.data) >= self.window_size and cache != None:
-            excess_data = len(self.bucket.data) - self.max_window_size
+
+        if len(self.bucket.data) > bucket_size:
+            excess_data = len(self.bucket.data) - bucket_size
             self.bucket.drop_data(excess_data)
         
         if res:
