@@ -63,7 +63,7 @@ class PatternDetector(Detector):
             'lastDetectionTime': last_detection_time
         }
 
-    def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
+    def recieve_data(self, data: pd.DataFrame, cache: ModelCache = {}) -> Optional[dict]:
         data_without_nan = data.dropna()
 
         if len(data_without_nan) == 0:
