@@ -70,7 +70,8 @@ class PatternDetector(Detector):
             return None
 
         self.bucket.receive_data(data_without_nan)
-        bucket_size = max((cache or {}).get('WINDOW_SIZE', 0), self.min_bucket_size)
+        if not cache: cache = {}
+        bucket_size = max(cache.get('WINDOW_SIZE', 0) * 3, self.min_bucket_size)
 
         res = self.detect(self.bucket.data, cache)
 
