@@ -11,4 +11,5 @@ class DataBucket(object):
         self.data = self.data.append(data, ignore_index=True)
 
     def drop_data(self, count: int):
-        self.data = self.data.iloc[count:]
+        if count > 0:
+            self.data = self.data.iloc[count:]

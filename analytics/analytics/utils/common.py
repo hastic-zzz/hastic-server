@@ -133,12 +133,10 @@ def best_pattern(pattern_list: list, data: pd.Series, dir: str) -> list:
     return new_pattern_list
 
 def find_nan_indexes(segment: pd.Series) -> list:
-    nan_list = np.isnan(segment)
-    nan_indexes = []
-    for i, val in enumerate(nan_list):
-        if val:
-            nan_indexes.append(i)
-    return nan_indexes
+    nan_list = pd.isnull(segment)
+    nan_list = np.array(nan_list)
+    nan_indexes = np.where(nan_list == True)[0]
+    return list(nan_indexes)
 
 def check_nan_values(segment: Union[pd.Series, list]) -> Union[pd.Series, list]:
     nan_list = utils.find_nan_indexes(segment)
