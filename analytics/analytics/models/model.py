@@ -86,7 +86,7 @@ class Model(ABC):
         self.do_fit(dataframe, labeled, deleted, learning_info)
         return self.state
 
-    def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache] = {}) -> dict:
+    def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
         if type(cache) is ModelCache:
             self.state = cache
 
