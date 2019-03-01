@@ -219,6 +219,23 @@ class TestUtils(unittest.TestCase):
             utils.get_av_model(patterns_list)
         except ValueError:
             self.fail('Method get_convolve raised unexpectedly')
+    
+    def test_find_nan_indexes(self):
+        data = [1, 1, 1, 0, 0, np.NaN, None, []]
+        data = pd.Series(data)
+        result = [5, 6]
+        self.assertEqual(utils.find_nan_indexes(data), result)
+    
+    def test_find_nan_indexes_normal_values(self):
+        data = [1, 1, 1, 0, 0, 0, 1, 1]
+        data = pd.Series(data)
+        result = []
+        self.assertEqual(utils.find_nan_indexes(data), result)
+    
+    def test_find_nan_indexes_empty_values(self):
+        data = []
+        result = []
+        self.assertEqual(utils.find_nan_indexes(data), result)
 
 if __name__ == '__main__':
     unittest.main()
