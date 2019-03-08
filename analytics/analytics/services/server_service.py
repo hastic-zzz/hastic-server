@@ -86,7 +86,8 @@ class ServerService:
             if message.request_id is not None:
                 self.responses[message_object['requestId']] = message.payload
                 return
-
+            
+            logger.debug(message.toJSON())
             asyncio.ensure_future(self.on_message_handler(message))
         except Exception as e:
             error_text = traceback.format_exc()
