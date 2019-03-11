@@ -5,19 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Corpglory Analytics",
-            "type": "python",
-            "request": "attach",
-            "port": 5679,
-            "host": "0.0.0.0",
-            "pathMappings": [
-                {
-                    "localRoot": "${workspaceFolder}",
-                    "remoteRoot": "/var/www/analytics"
-                }
-            ]
-        },
-        {
             "name": "Python: Current File",
             "type": "python",
             "request": "launch",
