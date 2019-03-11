@@ -175,8 +175,8 @@ function getQueryRangeForLearningBySegments(segments: Segment.Segment[]) {
 
   let from = _.minBy(segments, s => s.from).from;
   let to = _.maxBy(segments, s => s.to).to;
-  let now = Date.now();
-  let leftOffset = now - to;
+  let now = _.max([to, Date.now()]);
+  let leftOffset = Math.abs(now - to);
   from -= Math.round(leftOffset);
   to = now;
 
