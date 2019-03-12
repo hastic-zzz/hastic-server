@@ -23,6 +23,10 @@ async function getAnalyticUnits(ctx: Router.IRouterContext) {
   }
 }
 
+async function registerPanel(ctx: Router.IRouterContext) {
+  // TODO: create new id for panel
+}
+
 async function addAnalyticUnit(ctx: Router.IRouterContext) {
   try {
     let { panelUrl, analyticUnitView } = ctx.request.body as {
