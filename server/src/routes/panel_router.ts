@@ -11,9 +11,9 @@ async function getAnalyticUnits(ctx: Router.IRouterContext) {
       throw new Error('panelUrl is missing');
     }
 
-    const analyticUnits = await Panel.findOne({ panelUrl });
+    let panel = await Panel.findOne({ panelUrl });
 
-    ctx.response.body = { analyticUnits };
+    ctx.response.body = { analyticUnitViews: panel.analyticUnitViews };
   } catch(e) {
     ctx.response.status = 500;
     ctx.response.body = {
