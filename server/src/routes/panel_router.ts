@@ -1,4 +1,4 @@
-import { AnalyticUnitId } from '../models/analytic_unit_model';
+import { AnalyticUnitId, AnalyticUnitView } from '../models/analytic_unit_model';
 import * as Panel from '../models/panel_model';
 
 import * as Router from 'koa-router';
@@ -25,11 +25,12 @@ async function getAnalyticUnits(ctx: Router.IRouterContext) {
 
 async function addAnalyticUnit(ctx: Router.IRouterContext) {
   try {
-    let { panelUrl, analyticUnitId } = ctx.request.body as {
-      panelUrl: string, analyticUnitId: AnalyticUnitId
+    let { panelUrl, analyticUnitView } = ctx.request.body as {
+      panelUrl: string,
+      analyticUnitView: AnalyticUnitView
     };
 
-    await Panel.insertAnalyticUnit(panelUrl, analyticUnitId);
+    await Panel.insertAnalyticUnit(panelUrl, analyticUnitView);
 
     ctx.response.body = {
       code: 200,
