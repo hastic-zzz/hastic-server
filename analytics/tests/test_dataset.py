@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np 
 from analytic_unit_manager import prepare_data
 import models
+import random
+import scipy.signal
 
 class TestDataset(unittest.TestCase):
 
@@ -254,6 +256,76 @@ class TestDataset(unittest.TestCase):
             model.fit(dataframe, segments, cache)
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
+    
+    def test_problem_data_for_random_model(self):
+        problem_data = [2.0, 3.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0,
+                        3.0, 3.0, 3.0, 5.0, 5.0, 5.0, 5.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 2.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0,
+                        3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 2.0, 2.0, 2.0, 6.0, 7.0, 8.0, 8.0, 4.0, 2.0, 2.0, 3.0, 3.0, 3.0, 4.0,
+                        4.0, 4.0, 4.0, 3.0, 3.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 3.0,
+                        4.0, 4.0, 4.0, 4.0, 4.0, 6.0, 5.0, 4.0, 4.0, 3.0, 3.0, 3.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                        2.0, 8.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
+        data = create_dataframe(problem_data)
+        cache = {
+            'pattern_center': [5, 50],
+            'pattern_model': [],
+            'WINDOW_SIZE': 2,
+            'convolve_min': 0,
+            'convolve_max': 0,
+        }
+        max_ws = 20
+        iteration = 1
+        for ws in range(1, max_ws):
+            for _ in range(iteration):
+                pattern_model = create_random_model(ws)
+                convolve = scipy.signal.fftconvolve(pattern_model, pattern_model)
+                cache['WINDOW_SIZE'] = ws
+                cache['pattern_model'] = pattern_model
+                cache['convolve_min'] = max(convolve)
+                cache['convolve_max'] = max(convolve)
+                try:
+                    model = models.GeneralModel()
+                    model_name = model.__class__.__name__
+                    model.detect(data, cache)
+                except ValueError:
+                    self.fail('Model {} raised unexpectedly with av_model {} and window size {}'.format(model_name, pattern_model, ws))
+    
+    def test_random_dataset_for_random_model(self):
+        data = create_random_model(random.randint(1, 100))
+        data = create_dataframe(data)
+        model_instances = [
+            models.GeneralModel(),
+            models.PeakModel(),
+            models.TroughModel()
+        ]
+        cache = {
+            'pattern_center': [5, 50],
+            'pattern_model': [],
+            'WINDOW_SIZE': 2,
+            'convolve_min': 0,
+            'convolve_max': 0,
+            'confidence': 0,
+            'height_max': 0,
+            'height_min': 0,
+            'conv_del_min': 0,
+            'conv_del_max': 0,
+        }
+        ws = random.randint(0, int(len(data['value']/2)))
+        pattern_model = create_random_model(ws)
+        convolve = scipy.signal.fftconvolve(pattern_model, pattern_model)
+        confidence = 0.2 * (data['value'].max() - data['value'].min())
+        cache['WINDOW_SIZE'] = ws
+        cache['pattern_model'] = pattern_model
+        cache['convolve_min'] = max(convolve)
+        cache['convolve_max'] = max(convolve)
+        cache['confidence'] = confidence
+        cache['height_max'] = data['value'].max()
+        cache['height_min'] = confidence
+        try:
+            for model in model_instances:
+                model_name = model.__class__.__name__
+                model.detect(data, cache)
+        except ValueError:
+            self.fail('Model {} raised unexpectedly with dataset {} and cache {}'.format(model_name, data['value'], cache))
 
 if __name__ == '__main__':
     unittest.main()
@@ -264,3 +336,6 @@ def create_dataframe(data_val: list) -> pd.DataFrame:
     dataframe = pd.DataFrame(data)
     dataframe['timestamp'] = pd.to_datetime(dataframe['timestamp'], unit='ms')
     return dataframe
+
+def create_random_model(window_size: int) -> list:
+    return [random.randint(0, 100) for _ in range(window_size * 2 + 1)]
