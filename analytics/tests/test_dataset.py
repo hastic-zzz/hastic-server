@@ -288,6 +288,44 @@ class TestDataset(unittest.TestCase):
                     model.detect(data, cache)
                 except ValueError:
                     self.fail('Model {} raised unexpectedly with av_model {} and window size {}'.format(model_name, pattern_model, ws))
+    
+    def test_random_dataset_for_random_model(self):
+        data = create_random_model(random.randint(1, 100))
+        data = create_dataframe(data)
+        model_instances = [
+            models.GeneralModel(),
+            models.PeakModel(),
+            models.TroughModel()
+        ]
+        cache = {
+            'pattern_center': [5, 50],
+            'pattern_model': [],
+            'WINDOW_SIZE': 2,
+            'convolve_min': 0,
+            'convolve_max': 0,
+            'confidence': 0,
+            'height_max': 0,
+            'height_min': 0,
+            'conv_del_min': 0,
+            'conv_del_max': 0,
+        }
+        ws = random.randint(0, int(len(data['value']/2)))
+        pattern_model = create_random_model(ws)
+        convolve = scipy.signal.fftconvolve(pattern_model, pattern_model)
+        confidence = 0.2 * (data['value'].max() - data['value'].min())
+        cache['WINDOW_SIZE'] = ws
+        cache['pattern_model'] = pattern_model
+        cache['convolve_min'] = max(convolve)
+        cache['convolve_max'] = max(convolve)
+        cache['confidence'] = confidence
+        cache['height_max'] = data['value'].max()
+        cache['height_min'] = confidence
+        try:
+            for model in model_instances:
+                model_name = model.__class__.__name__
+                model.detect(data, cache)
+        except ValueError:
+            self.fail('Model {} raised unexpectedly with av_model {} and window size {}'.format(model_name, pattern_model, ws))
 
 if __name__ == '__main__':
     unittest.main()
