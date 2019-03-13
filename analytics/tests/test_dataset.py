@@ -325,7 +325,7 @@ class TestDataset(unittest.TestCase):
                 model_name = model.__class__.__name__
                 model.detect(data, cache)
         except ValueError:
-            self.fail('Model {} raised unexpectedly with av_model {} and window size {}'.format(model_name, pattern_model, ws))
+            self.fail('Model {} raised unexpectedly with dataset {} and cache {}'.format(model_name, data['value'], cache))
 
 if __name__ == '__main__':
     unittest.main()
