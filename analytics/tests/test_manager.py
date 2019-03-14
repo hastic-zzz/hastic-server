@@ -10,6 +10,13 @@ TestData = namedtuple('TestData', ['uid', 'type', 'values', 'segments'])
 def get_random_id() -> str:
     return str(id(list()))
 
+def create_data_for_task(data_val):
+        data_ind = [1523889000000 + i for i in range(len(data_val))]
+        res_data = []
+        for i in range(len(data_val)):
+            res_data.append([data_ind[i], data_val[i]])
+        return res_data
+
 class TestDataset(aiounittest.AsyncTestCase):
 
     timestep = 50 #ms
