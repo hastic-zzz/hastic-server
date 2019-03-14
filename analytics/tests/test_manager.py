@@ -3,6 +3,7 @@ from models import PeakModel, DropModel, TroughModel, JumpModel, GeneralModel
 import aiounittest
 from analytic_unit_manager import AnalyticUnitManager
 from collections import namedtuple
+import asyncio
 
 TestData = namedtuple('TestData', ['uid', 'type', 'values', 'segments'])
 
@@ -113,3 +114,35 @@ class TestDataset(aiounittest.AsyncTestCase):
 
             for a in attrs:
                 self.assertTrue(a in cache.keys(), msg='{} not in cache keys: {}'.format(a, cache.keys()))
+    
+    async def test_analytics_unit(self):
+        data_val = [0, 1, 2, 3, 2, 1, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1, 0]
+        data = create_data_for_task(data_val)
+        task_list = []
+        manager = AnalyticUnitManager()
+        for N in range(10):
+            uid = get_random_id()
+            auid = get_random_id()
+            segments = [{'_id': uid, 'analyticUnitId': auid, 'from': 1523889000001,
+                         'to': 1523889000005, 'labeled': True, 'deleted': False}]
+            type_u = 'DETECT'
+            au_type = 'PEAK'
+            cache = {
+                'pattern_center': [3],
+                'pattern_model': [1, 2, 3, 2, 1],
+                'WINDOW_SIZE': 2,
+                'convolve_min': 19,
+                'convolve_max': 19,
+                'confidence': 1,
+                'height_max': 3,
+                'height_min': 1,
+                'conv_del_min': 0,
+                'conv_del_max': 0,
+            }
+            task = self._fill_task(uid, data, type_u, au_type, segments, cache)
+            task_list.append(manager.handle_analytic_task(task))
+        try:
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(asyncio.gather(*task_list))
+        except ValueError:
+            self.fail('task {} raised unexpectedly with N {}'.format(task, N))
