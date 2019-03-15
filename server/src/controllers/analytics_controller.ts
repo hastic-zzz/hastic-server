@@ -369,6 +369,10 @@ export function isAnalyticReady(): boolean {
   return analyticsService.ready;
 }
 
+export async function getActiveWebhooks() {
+  const analyticUnits = await AnalyticUnit.findMany({ alert: true });
+  return analyticUnits.map(analyticUnit => analyticUnit.id);
+}
 
 export async function createAnalyticUnitFromObject(obj: any): Promise<AnalyticUnit.AnalyticUnitId> {
   if(obj.datasource !== undefined) {

@@ -42,6 +42,9 @@ rootRouter.use('/panel', panelRouter.routes(), panelRouter.allowedMethods());
 rootRouter.use('/threshold', thresholdRouter.routes(), thresholdRouter.allowedMethods());
 
 rootRouter.get('/', async (ctx) => {
+  const activeWebhooks = await AnalyticsController.getActiveWebhooks();
+  const activeWebhooksAmount = activeWebhooks.length;
+
   ctx.response.body = {
     server: 'OK',
     analyticsReady: AnalyticsController.isAnalyticReady(),
@@ -51,7 +54,8 @@ rootRouter.get('/', async (ctx) => {
     docker: process.env.INSIDE_DOCKER !== undefined,
     zmqConectionString: ZMQ_CONNECTION_STRING,
     serverPort: HASTIC_PORT,
-    git: GIT_INFO
+    git: GIT_INFO,
+    activeWebhooksAmount
   };
 });
 
