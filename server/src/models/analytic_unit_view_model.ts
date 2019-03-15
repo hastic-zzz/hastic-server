@@ -2,7 +2,7 @@ import { Collection, makeDBQ } from '../services/data_service';
 
 import { AnalyticUnitId, DetectorType } from './analytic_unit_model';
 
-let db = makeDBQ(Collection.ANALYTIC_UNITS);
+let db = makeDBQ(Collection.ANALYTIC_UNIT_VIEWS);
 
 export class AnalyticUnitView {
   constructor(
