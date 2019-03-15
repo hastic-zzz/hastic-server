@@ -95,11 +95,12 @@ function getTypes(ctx: Router.IRouterContext) {
 
 async function createUnit(ctx: Router.IRouterContext) {
   try {
-    const { panelUrl, analyticUnit, analyticUnitView } = ctx.request.body as {
-      panelUrl: string, analyticUnit: AnalyticUnit.AnalyticUnit, analyticUnitView: AnalyticUnitView.AnalyticUnitView
+    const { analyticUnit, view } = ctx.request.body as {
+      analyticUnit: any, view: any
     };
-    const id = await createAnalyticUnitFromObject(analyticUnit);
-    ctx.response.body = { id };
+    const analyticUnitId = await createAnalyticUnitFromObject(analyticUnit);
+    const analyticUnitView = AnalyticUnitView.AnalyticUnitView.fromObject(view);
+    ctx.response.body = { id: analyticUnitId };
   } catch (e) {
     ctx.response.status = 500;
     ctx.response.body = {
