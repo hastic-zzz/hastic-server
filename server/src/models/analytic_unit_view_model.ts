@@ -34,13 +34,11 @@ export class AnalyticUnitView {
   }
 }
 
-export async function create(analyticUnitView: AnalyticUnitView): Promise<AnalyticUnitId> {
-  let obj = analyticUnitView.toObject();
+export async function create(analyticUnitView: any): Promise<AnalyticUnitId> {
+  const obj = AnalyticUnitView.fromObject(analyticUnitView);
   return db.insertOne(obj);
 }
 
 export async function remove(id: AnalyticUnitId): Promise<void> {
-  // TODO: remove it`s segments
-  // TODO: remove it`s cache
   await db.removeOne(id);
 }
