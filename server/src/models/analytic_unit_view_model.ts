@@ -1,4 +1,8 @@
+import { Collection, makeDBQ } from '../services/data_service';
+
 import { AnalyticUnitId, DetectorType } from './analytic_unit_model';
+
+let db = makeDBQ(Collection.ANALYTIC_UNITS);
 
 export class AnalyticUnitView {
   constructor(
@@ -28,5 +32,15 @@ export class AnalyticUnitView {
       obj.visible
     );
   }
+}
 
+export async function create(analyticUnitView: AnalyticUnitView): Promise<AnalyticUnitId> {
+  let obj = analyticUnitView.toObject();
+  return db.insertOne(obj);
+}
+
+export async function remove(id: AnalyticUnitId): Promise<void> {
+  // TODO: remove it`s segments
+  // TODO: remove it`s cache
+  await db.removeOne(id);
 }
