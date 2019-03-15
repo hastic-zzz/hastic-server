@@ -13,7 +13,7 @@ async function getAnalyticUnits(ctx: Router.IRouterContext) {
 
     let panel = await Panel.findOne({ panelUrl });
 
-    ctx.response.body = { analyticUnitViews: panel.analyticUnitViews };
+    ctx.response.body = { analyticUnitViews: panel.analyticUnits };
   } catch(e) {
     ctx.response.status = 500;
     ctx.response.body = {
@@ -24,7 +24,22 @@ async function getAnalyticUnits(ctx: Router.IRouterContext) {
 }
 
 async function registerPanel(ctx: Router.IRouterContext) {
-  // TODO: create new id for panel
+  try {
+    let panelUrl: string = ctx.request.query.panelUrl;
+    if(panelUrl === undefined || panelUrl === '') {
+      throw new Error('panelUrl is missing');
+    }
+
+    const id = await Panel.createPanel(panelUrl);
+
+    ctx.response.body = { id };
+  } catch(e) {
+    ctx.response.status = 500;
+    ctx.response.body = {
+      code: 500,
+      message: `POST /panel/register error: ${e.message}`
+    };
+  }
 }
 
 async function addAnalyticUnit(ctx: Router.IRouterContext) {
@@ -75,3 +90,5 @@ export const router = new Router();
 router.get('/', getAnalyticUnits);
 router.post('/', addAnalyticUnit);
 router.delete('/', deleteAnalyticUnit);
+
+router.post('/register', registerPanel);

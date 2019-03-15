@@ -65,3 +65,9 @@ export async function removeAnalyticUnit(panelUrl: string, analyticUnitId: Analy
     analyticUnits: panel.analyticUnits.filter(analyticUnit => analyticUnit !== analyticUnitId)
   });
 }
+
+export async function createPanel(panelUrl: string) {
+  let panel = new Panel(panelUrl, []);
+
+  return db.insertOne(panel.toObject());
+}

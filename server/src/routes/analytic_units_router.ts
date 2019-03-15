@@ -3,6 +3,8 @@ import * as AnalyticUnit from '../models/analytic_unit_model';
 
 import { createAnalyticUnitFromObject } from '../controllers/analytics_controller';
 
+import * as Panel from '../models/panel_model';
+
 import * as Router from 'koa-router';
 
 
@@ -94,8 +96,19 @@ function getTypes(ctx: Router.IRouterContext) {
 
 async function createUnit(ctx: Router.IRouterContext) {
   try {
-    let id = await createAnalyticUnitFromObject(ctx.request.body);
-    ctx.response.body = { id };
+    let { panelUrl, analyticUnit } = ctx.request.body as {
+      panelUrl: string,
+      analyticUnit: any
+    };
+
+    let id = await createAnalyticUnitFromObject(analyticUnit);
+    await Panel.insertAnalyticUnit(panelUrl, id);
+
+    ctx.response.body = {
+      id,
+      code: 200,
+      message: 'Success'
+    };
   } catch(e) {
     ctx.response.status = 500;
     ctx.response.body = {
