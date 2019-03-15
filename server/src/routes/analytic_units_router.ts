@@ -109,6 +109,29 @@ async function updateUnit(ctx: Router.IRouterContext) {
   }
 }
 
+async function updateView(ctx: Router.IRouterContext) {
+  try {
+    const analyticUnitView = ctx.request.body as AnalyticUnitView.AnalyticUnitView;
+    if(analyticUnitView.id === undefined) {
+      throw new Error('Cannot update undefined id');
+    }
+
+    // TODO: we can't allow to update everything
+    AnalyticUnitView.update(analyticUnitView.id, analyticUnitView);
+
+    ctx.response.body = {
+      code: 200,
+      message: 'Success'
+    };
+  } catch (e) {
+    ctx.response.status = 500;
+    ctx.response.body = {
+      code: 500,
+      message: `PATCH /analyticUnits/view error: ${e.message}`
+    };
+  }
+}
+
 async function updateMetric(ctx: Router.IRouterContext) {
   try {
     const { analyticUnitId, metric, datasource } = ctx.request.body as {
@@ -219,5 +242,7 @@ router.patch('/alert', updateAlert);
 router.post('/', createUnit);
 router.delete('/', deleteUnit);
 router.patch('/', updateUnit);
+
+router.patch('/view', updateView);
 
 router.post('/detect', runDetect);
