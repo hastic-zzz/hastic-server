@@ -52,17 +52,6 @@ export enum AnalyticUnitStatus {
   FAILED = 'FAILED'
 }
 
-export type AnalyticUnitView = {
-  name: string,
-  labeledColor: string,
-  deletedColor: string,
-  detectorType: DetectorType,
-  type: string,
-  alert: boolean,
-  id: AnalyticUnitId,
-  visible: boolean
-}
-
 
 export type FindManyQuery = {
   name?: string,
