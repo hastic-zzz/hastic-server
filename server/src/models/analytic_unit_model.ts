@@ -132,7 +132,6 @@ export class AnalyticUnit {
 
 }
 
-
 export async function findById(id: AnalyticUnitId): Promise<AnalyticUnit> {
   let obj = await db.findOne(id);
   if(obj === null) {
