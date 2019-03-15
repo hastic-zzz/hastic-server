@@ -36,34 +36,6 @@ async function getStatus(ctx: Router.IRouterContext) {
   }
 }
 
-async function getUnit(ctx: Router.IRouterContext) {
-  try {
-    let analyticUnitId = ctx.request.query.id;
-    if(analyticUnitId === undefined) {
-      throw new Error('No id param in query');
-    }
-
-    let analyticUnit = await AnalyticUnit.findById(analyticUnitId);
-    if(analyticUnit === null) {
-      throw new Error(`Cannot find analytic unit with id ${analyticUnitId}`);
-    }
-
-    ctx.response.body = {
-      name: analyticUnit.name,
-      metric: analyticUnit.metric,
-      status: analyticUnit.status
-    };
-
-  } catch(e) {
-    console.error(e);
-    ctx.response.status = 404;
-    ctx.response.body = {
-      code: 404,
-      message: `GET /analyticUnits error: ${e.message}`
-    };
-  }
-}
-
 async function getUnits(ctx: Router.IRouterContext) {
   try {
     const panelUrl = ctx.request.query.panelUrl;
@@ -76,8 +48,11 @@ async function getUnits(ctx: Router.IRouterContext) {
       analyticUnits = [];
     }
 
+    const analyticUnitViews = await Promise.all(analyticUnits.map(analyticUnit => AnalyticUnitView.findById(analyticUnit.id)));
+
     ctx.response.body = {
-      analyticUnits
+      analyticUnits,
+      analyticUnitViews
     };
   } catch(e) {
     console.error(e);
@@ -95,11 +70,11 @@ function getTypes(ctx: Router.IRouterContext) {
 
 async function createUnit(ctx: Router.IRouterContext) {
   try {
-    const { analyticUnit, view } = ctx.request.body as {
-      analyticUnit: any, view: any
+    const { analyticUnit, analyticUnitView } = ctx.request.body as {
+      analyticUnit: any, analyticUnitView: any
     };
     const analyticUnitId = await createAnalyticUnitFromObject(analyticUnit);
-    AnalyticUnitView.create({ _id: analyticUnitId, ...view });
+    AnalyticUnitView.create({ _id: analyticUnitId, ...analyticUnitView });
 
     ctx.response.body = { id: analyticUnitId };
   } catch (e) {
@@ -235,7 +210,6 @@ async function runDetect(ctx: Router.IRouterContext) {
 
 export var router = new Router();
 
-router.get('/', getUnit);
 router.get('/units', getUnits);
 router.get('/status', getStatus);
 router.get('/types', getTypes);

@@ -34,9 +34,21 @@ export class AnalyticUnitView {
   }
 }
 
+export async function findById(id: AnalyticUnitId): Promise<AnalyticUnitView> {
+  const obj = await db.findOne(id);
+  if(obj === null) {
+    return null;
+  }
+  return AnalyticUnitView.fromObject(obj);
+}
+
 export async function create(analyticUnitView: any): Promise<AnalyticUnitId> {
   const obj = AnalyticUnitView.fromObject(analyticUnitView);
   return db.insertOne(obj);
+}
+
+export async function update(id: AnalyticUnitId, analyticUnitView: AnalyticUnitView) {
+  return db.updateOne(id, analyticUnitView);
 }
 
 export async function remove(id: AnalyticUnitId): Promise<void> {
