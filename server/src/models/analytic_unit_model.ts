@@ -52,7 +52,6 @@ export enum AnalyticUnitStatus {
   FAILED = 'FAILED'
 }
 
-
 export type FindManyQuery = {
   name?: string,
   panelUrl?: string,
