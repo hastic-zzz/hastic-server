@@ -74,7 +74,7 @@ async function createUnit(ctx: Router.IRouterContext) {
       analyticUnit: any, analyticUnitView: any
     };
     const analyticUnitId = await createAnalyticUnitFromObject(analyticUnit);
-    AnalyticUnitView.create({ _id: analyticUnitId, ...analyticUnitView });
+    await AnalyticUnitView.create({ _id: analyticUnitId, ...analyticUnitView });
 
     ctx.response.body = { id: analyticUnitId };
   } catch (e) {
