@@ -9,6 +9,7 @@ import * as zmq from 'zeromq';
 import * as childProcess from 'child_process'
 import * as fs from 'fs';
 import * as path from 'path';
+import * as _ from 'lodash';
 
 
 export class AnalyticsService {
@@ -23,6 +24,7 @@ export class AnalyticsService {
   private _isClosed = false;
   private _productionMode = false;
   private _inDocker = false;
+  private _queue: AnalyticsTask[] = [];
 
   constructor(private _onMessage: (message: AnalyticsMessage) => void) {
     this._productionMode =  config.PRODUCTION_MODE;
@@ -30,9 +32,15 @@ export class AnalyticsService {
     this._init();
   }
 
-  public async sendTask(task: AnalyticsTask): Promise<void> {
+  public async sendTask(task: AnalyticsTask, fromQueue = false): Promise<void> {
     if(!this._ready) {
-      throw new Error('Analytics is not ready');
+      console.log('Analytics is not ready');
+      if(!fromQueue) {
+        // TODO: add to db?
+        this._queue.push(task);
+        console.log('Adding task to queue');
+      }
+      return;
     }
     let method = task.type === AnalyticsTaskType.PUSH ?
       AnalyticsMessageMethod.DATA : AnalyticsMessageMethod.TASK
@@ -167,6 +175,9 @@ export class AnalyticsService {
 
   private _onAnalyticsUp() {
     const msg = 'Analytics is up';
+    for(let i in _.range(this._queue.length)) {
+      this.sendTask(this._queue.shift(), true);
+    }
     console.log(msg);
     //this._alertService.sendMsg(msg, WebhookType.RECOVERY);
   }
@@ -223,6 +234,10 @@ export class AnalyticsService {
     let filename = zmqConnectionString.substring(6); //without 'ipc://'
     fs.writeFileSync(filename, '');
     return filename;
+  }
+
+  public get queueLength() {
+    return this._queue.length;
   }
 
 }

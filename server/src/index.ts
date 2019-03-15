@@ -43,7 +43,6 @@ rootRouter.use('/threshold', thresholdRouter.routes(), thresholdRouter.allowedMe
 
 rootRouter.get('/', async (ctx) => {
   const activeWebhooks = await AnalyticsController.getActiveWebhooks();
-  const activeWebhooksAmount = activeWebhooks.length;
 
   ctx.response.body = {
     server: 'OK',
@@ -55,7 +54,8 @@ rootRouter.get('/', async (ctx) => {
     zmqConectionString: ZMQ_CONNECTION_STRING,
     serverPort: HASTIC_PORT,
     git: GIT_INFO,
-    activeWebhooksAmount
+    activeWebhooks: activeWebhooks.length,
+    queueLength: AnalyticsController.getQueueLength()
   };
 });
 
