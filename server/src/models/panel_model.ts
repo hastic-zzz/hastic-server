@@ -1,4 +1,4 @@
-import { AnalyticUnitId } from './analytic_unit_model';
+import { AnalyticUnitId, AnalyticUnitView, AnalyticUnit } from './analytic_unit_model';
 
 import { Collection, makeDBQ } from '../services/data_service';
 
@@ -10,7 +10,7 @@ export type PanelId = string;
 export class Panel {
   constructor(
     public panelUrl: string,
-    public analyticUnits: AnalyticUnitId[],
+    public analyticUnitViews: AnalyticUnitView[],
     public id?: PanelId
   ) {
     if(this.panelUrl === undefined) {
@@ -22,7 +22,7 @@ export class Panel {
     return {
       _id: this.id,
       panelUrl: this.panelUrl,
-      analyticUnits: this.analyticUnits
+      analyticUnitViews: this.analyticUnitViews
     };
   }
 
@@ -32,7 +32,7 @@ export class Panel {
     }
     return new Panel(
       obj.panelUrl,
-      obj.analyticUnits,
+      obj.analyticUnitViews,
       obj._id
     );
   }
@@ -50,19 +50,19 @@ export async function findOne(query: FindOneQuery): Promise<Panel> {
   return Panel.fromObject(panel);
 }
 
-export async function insertAnalyticUnit(panelUrl: string, analyticUnitId: AnalyticUnitId) {
-  const panel = await db.findOne({ panelUrl });
+export async function insertAnalyticUnit(panelUrl: string, analyticUnitView: AnalyticUnitView) {
+  const panel: Panel = await db.findOne({ panelUrl });
 
   return db.updateOne({ panelUrl }, {
-    analyticUnits: panel.analyticUnits.concat(analyticUnitId)
+    analyticUnitViews: panel.analyticUnitViews.concat(analyticUnitView)
   });
 }
 
 export async function removeAnalyticUnit(panelUrl: string, analyticUnitId: AnalyticUnitId) {
-  const panel = await db.findOne({ panelUrl });
+  const panel: Panel = await db.findOne({ panelUrl });
   
   return db.updateOne({ panelUrl }, {
-    analyticUnits: panel.analyticUnits.filter(analyticUnit => analyticUnit !== analyticUnitId)
+    analyticUnitViews: panel.analyticUnitViews.filter(analyticUnitView => analyticUnitView.id !== analyticUnitId)
   });
 }
 
