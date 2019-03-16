@@ -11,12 +11,14 @@ from models import ModelCache
 
 
 logger = log.getLogger('AnalyticUnitManager')
-WORKERS_EXECUTORS = 20
+WORKERS_EXECUTORS = 2
 
 AnalyticUnitId = str
 
 
-def get_detector_by_type(detector_type: str, analytic_unit_type: str, analytic_unit_id: AnalyticUnitId) -> detectors.Detector:
+def get_detector_by_type(
+    detector_type: str, analytic_unit_type: str, analytic_unit_id: AnalyticUnitId
+) -> detectors.Detector:
     if detector_type == 'pattern':
         return detectors.PatternDetector(analytic_unit_type, analytic_unit_id)
     elif detector_type == 'threshold':
@@ -24,12 +26,12 @@ def get_detector_by_type(detector_type: str, analytic_unit_type: str, analytic_u
 
     raise ValueError('Unknown detector type "%s"' % detector_type)
 
-def prepare_data(data: list):
+def prepare_data(data: list) -> pd.DataFrame:
     """
         Takes list
         - converts it into pd.DataFrame,
         - converts 'timestamp' column to pd.Datetime,
-        - subtracts min value from dataset
+        - subtracts min value from the dataset
     """
     data = pd.DataFrame(data, columns=['timestamp', 'value'])
     data['timestamp'] = pd.to_datetime(data['timestamp'], unit='ms')
