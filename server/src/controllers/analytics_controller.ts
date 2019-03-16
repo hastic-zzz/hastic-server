@@ -362,6 +362,10 @@ export function isAnalyticReady(): boolean {
   return analyticsService.ready;
 }
 
+export function analyticsLastAlive(): Date {
+  return analyticsService.lastAlive;
+}
+
 export async function getActiveWebhooks() {
   const analyticUnits = await AnalyticUnit.findMany({ alert: true });
   return analyticUnits.map(analyticUnit => analyticUnit.id);

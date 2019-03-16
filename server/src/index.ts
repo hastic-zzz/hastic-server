@@ -46,7 +46,11 @@ rootRouter.get('/', async (ctx) => {
 
   ctx.response.body = {
     server: 'OK',
-    analyticsReady: AnalyticsController.isAnalyticReady(),
+    analytics: {
+      ready: AnalyticsController.isAnalyticReady(),
+      lastAlive: AnalyticsController.analyticsLastAlive(),
+      tasksQueueLength: AnalyticsController.getQueueLength()
+    },
     nodeVersion: process.version,
     packageVersion: PACKAGE_VERSION,
     npmUserAgent: process.env.npm_config_user_agent,
@@ -55,7 +59,7 @@ rootRouter.get('/', async (ctx) => {
     serverPort: HASTIC_PORT,
     git: GIT_INFO,
     activeWebhooks: activeWebhooks.length,
-    queueLength: AnalyticsController.getQueueLength()
+    timestamp: new Date(Date.now())
   };
 });
 
