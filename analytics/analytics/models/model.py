@@ -5,6 +5,7 @@ from attrdict import AttrDict
 from typing import Optional
 import pandas as pd
 import math
+import logging
 
 ModelCache = dict
 
@@ -89,7 +90,12 @@ class Model(ABC):
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
         if type(cache) is ModelCache:
             self.state = cache
-
+        if not self.state:
+            logging.warning('self.state is empty - skip do_detect')
+            return {
+                'segments': [],
+                'cache': {},
+            }
         result = self.do_detect(dataframe)
         segments = [(
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][x - 1]),
@@ -98,7 +104,7 @@ class Model(ABC):
 
         return {
             'segments': segments,
-            'cache': self.state
+            'cache': self.state,
         }
 
     def _update_fiting_result(self, state: dict, confidences: list, convolve_list: list, del_conv_list: list, height_list: list) -> None:
