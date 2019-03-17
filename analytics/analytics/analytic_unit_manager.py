@@ -11,7 +11,7 @@ from models import ModelCache
 
 
 logger = log.getLogger('AnalyticUnitManager')
-WORKERS_EXECUTORS = 2
+WORKERS_EXECUTORS = 20
 
 AnalyticUnitId = str
 
