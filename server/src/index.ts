@@ -33,6 +33,18 @@ app.use(async function(ctx, next) {
   ctx.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   await next();
 });
+app.use(async function(ctx, next) {
+  try {
+    await next();
+  } catch (e) {
+    console.error(e);
+    ctx.response.status = 500;
+    ctx.response.body = {
+      code: 500,
+      message: `${ctx.method} ${ctx.url} error: ${e.message}`
+    };
+  }
+});
 
 
 var rootRouter = new Router();
