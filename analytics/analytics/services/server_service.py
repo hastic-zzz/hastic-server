@@ -27,6 +27,7 @@ class ServerMessage:
             result['requestId'] = self.request_id
         return result
 
+    @staticmethod
     def fromJSON(json: dict):
         method = json['method']
         payload = None
@@ -86,7 +87,7 @@ class ServerService:
             if message.request_id is not None:
                 self.responses[message_object['requestId']] = message.payload
                 return
-            
+
             logger.debug(message.toJSON())
             asyncio.ensure_future(self.on_message_handler(message))
         except Exception as e:

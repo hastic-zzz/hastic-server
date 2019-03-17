@@ -17,6 +17,7 @@ export class AnalyticsService {
   private _alertService = new AlertService();
   private _requester: any;
   private _ready: boolean = false;
+  private _lastAlive: Date = null;
   private _pingResponded = false;
   private _zmqConnectionString: string = null;
   private _ipcPath: string = null;
@@ -82,6 +83,7 @@ export class AnalyticsService {
   }
 
   public get ready(): boolean { return this._ready; }
+  public get lastAlive(): Date { return this._lastAlive; }
 
   private async _init() {
     this._requester = zmq.socket('pair');
@@ -197,6 +199,7 @@ export class AnalyticsService {
     let text = data.toString();
     if(text === 'PONG') {
       this._pingResponded = true;
+      this._lastAlive = new Date(Date.now());
       if(!this._ready) {
         this._ready = true;
         this._onAnalyticsUp();
