@@ -32,6 +32,18 @@ app.use(async function(ctx, next) {
   ctx.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   await next();
 });
+app.use(async function(ctx, next) {
+  try {
+    await next();
+  } catch (e) {
+    console.error(e);
+    ctx.response.status = 500;
+    ctx.response.body = {
+      code: 500,
+      message: `${ctx.method} ${ctx.url} error: ${e.message}`
+    };
+  }
+});
 
 
 var rootRouter = new Router();
@@ -40,16 +52,24 @@ rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMetho
 rootRouter.use('/threshold', thresholdRouter.routes(), thresholdRouter.allowedMethods());
 
 rootRouter.get('/', async (ctx) => {
+  const activeWebhooks = await AnalyticsController.getActiveWebhooks();
+
   ctx.response.body = {
     server: 'OK',
-    analyticsReady: AnalyticsController.isAnalyticReady(),
+    analytics: {
+      ready: AnalyticsController.isAnalyticReady(),
+      lastAlive: AnalyticsController.analyticsLastAlive(),
+      tasksQueueLength: AnalyticsController.getQueueLength()
+    },
     nodeVersion: process.version,
     packageVersion: PACKAGE_VERSION,
     npmUserAgent: process.env.npm_config_user_agent,
     docker: process.env.INSIDE_DOCKER !== undefined,
     zmqConectionString: ZMQ_CONNECTION_STRING,
     serverPort: HASTIC_PORT,
-    git: GIT_INFO
+    git: GIT_INFO,
+    activeWebhooks: activeWebhooks.length,
+    timestamp: new Date(Date.now())
   };
 });
 
