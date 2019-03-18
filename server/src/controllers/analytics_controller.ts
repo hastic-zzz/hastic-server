@@ -125,7 +125,7 @@ async function query(analyticUnit: AnalyticUnit.AnalyticUnit, detector: Analytic
 
   let panelUrl;
   if(GRAFANA_URL !== null) {
-    panelUrl = GRAFANA_URL; 
+    panelUrl = GRAFANA_URL;
   } else {
     panelUrl = analyticUnit.panelUrl;
   }
@@ -284,7 +284,10 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId) {
 }
 
 export async function remove(analyticUnitId: AnalyticUnit.AnalyticUnitId) {
-  await cancelAnalyticsTask(analyticUnitId);
+  // We don't await for analytics task cancellation here
+  // If we add await, the rest function would be executed only when analytics becomes up
+
+  cancelAnalyticsTask(analyticUnitId);
 
   if(dataPuller !== undefined) {
     dataPuller.deleteUnit(analyticUnitId);
