@@ -49,14 +49,13 @@ function getTypes(ctx: Router.IRouterContext) {
 }
 
 async function createUnit(ctx: Router.IRouterContext) {
-  const { analyticUnit } = ctx.request.body as { analyticUnit: any };
-  const id = await createAnalyticUnitFromObject(analyticUnit);
+  const id = await createAnalyticUnitFromObject(ctx.request.body);
 
   ctx.response.body = { id };
 }
 
 async function updateUnit(ctx: Router.IRouterContext) {
-  const unit = ctx.request.body as any;
+  const unit = ctx.request.body as AnalyticUnit.AnalyticUnit;
   if(unit.id === undefined) {
     throw new Error('Cannot update undefined id');
   }
