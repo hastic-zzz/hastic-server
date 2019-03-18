@@ -85,6 +85,7 @@ class Model(ABC):
         model, model_type = self.get_model_type()
         learning_info = self.get_parameters_from_segments(dataframe, labeled, deleted, model, model_type)
         self.do_fit(dataframe, labeled, deleted, learning_info)
+        logging.debug('fit complete successful with self.state: {}'.format(self.state))
         return self.state
 
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
