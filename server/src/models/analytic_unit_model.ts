@@ -61,7 +61,11 @@ export type FindManyQuery = {
   id?: AnalyticUnitId,
   lastDetectionTime?: number,
   status?: AnalyticUnitStatus,
-  error?: string
+  error?: string,
+  labeledColor?: string,
+  deletedColor?: string,
+  detectorType?: DetectorType,
+  visible?: boolean
 };
 
 
@@ -75,7 +79,11 @@ export class AnalyticUnit {
     public id?: AnalyticUnitId,
     public lastDetectionTime?: number,
     public status?: AnalyticUnitStatus,
-    public error?: string
+    public error?: string,
+    public labeledColor?: string,
+    public deletedColor?: string,
+    public detectorType?: DetectorType,
+    public visible?: boolean
   ) {
 
     if(name === undefined) {
@@ -108,6 +116,19 @@ export class AnalyticUnit {
     };
   }
 
+  public toPanelObject() {
+    return {
+      id: this.id,
+      name: this.name,
+      type: this.type,
+      alert: this.alert,
+      detectorType: this.detectorType,
+      labeledColor: this.labeledColor,
+      deletedColor: this.deletedColor,
+      visible: this.visible
+    };
+  }
+
   static fromObject(obj: any): AnalyticUnit {
     if(obj === undefined) {
       throw new Error('obj is undefined');
@@ -126,6 +147,10 @@ export class AnalyticUnit {
       obj.lastDetectionTime,
       obj.status as AnalyticUnitStatus,
       obj.error,
+      obj.detectorType,
+      obj.labeledColor,
+      obj.deletedColor,
+      obj.visible
     );
   }
 
@@ -163,7 +188,6 @@ export async function create(unit: AnalyticUnit): Promise<AnalyticUnitId> {
 export async function remove(id: AnalyticUnitId): Promise<void> {
   // TODO: remove it`s segments
   // TODO: remove it`s cache
-  // TODO: remove it`s views
   await db.removeOne(id);
 }
 

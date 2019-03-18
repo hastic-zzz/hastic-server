@@ -1,6 +1,5 @@
 import * as AnalyticsController from '../controllers/analytics_controller';
 import * as AnalyticUnit from '../models/analytic_unit_model';
-import * as AnalyticUnitView from '../models/analytic_unit_view_model';
 
 import { createAnalyticUnitFromObject } from '../controllers/analytics_controller';
 
@@ -29,20 +28,19 @@ async function getStatus(ctx: Router.IRouterContext) {
 
 async function getUnits(ctx: Router.IRouterContext) {
   const panelUrl = ctx.request.query.panelUrl;
-  if (panelUrl === undefined) {
-    throw new Error('Cannot get alerts of undefined panelUrl');
+  if(panelUrl === undefined) {
+    throw new Error('Cannot get units of undefined panelUrl');
   }
 
   let analyticUnits = await AnalyticUnit.findMany({ panelUrl });
-  if (analyticUnits === null) {
+  if(analyticUnits === null) {
     analyticUnits = [];
   }
 
-  const analyticUnitViews = await Promise.all(analyticUnits.map(analyticUnit => AnalyticUnitView.findById(analyticUnit.id)));
+  const analyticUnitObjects = analyticUnits.map(analyticUnit => analyticUnit.toPanelObject());
 
   ctx.response.body = {
-    analyticUnits,
-    analyticUnitViews
+    analyticUnits: analyticUnitObjects
   };
 }
 
@@ -51,17 +49,14 @@ function getTypes(ctx: Router.IRouterContext) {
 }
 
 async function createUnit(ctx: Router.IRouterContext) {
-  const { analyticUnit, analyticUnitView } = ctx.request.body as {
-    analyticUnit: any, analyticUnitView: any
-  };
-  const analyticUnitId = await createAnalyticUnitFromObject(analyticUnit);
-  await AnalyticUnitView.create({ _id: analyticUnitId, ...analyticUnitView });
+  const { analyticUnit } = ctx.request.body as { analyticUnit: any };
+  const id = await createAnalyticUnitFromObject(analyticUnit);
 
-  ctx.response.body = { id: analyticUnitId };
+  ctx.response.body = { id };
 }
 
 async function updateUnit(ctx: Router.IRouterContext) {
-  const unit = ctx.request.body as AnalyticUnit.AnalyticUnit;
+  const unit = ctx.request.body as any;
   if(unit.id === undefined) {
     throw new Error('Cannot update undefined id');
   }
@@ -72,29 +67,6 @@ async function updateUnit(ctx: Router.IRouterContext) {
     code: 200,
     message: 'Success'
   };
-}
-
-async function updateView(ctx: Router.IRouterContext) {
-  try {
-    const analyticUnitView = ctx.request.body as AnalyticUnitView.AnalyticUnitView;
-    if(analyticUnitView.id === undefined) {
-      throw new Error('Cannot update undefined id');
-    }
-
-    // TODO: we can't allow to update everything
-    AnalyticUnitView.update(analyticUnitView.id, analyticUnitView);
-
-    ctx.response.body = {
-      code: 200,
-      message: 'Success'
-    };
-  } catch (e) {
-    ctx.response.status = 500;
-    ctx.response.body = {
-      code: 500,
-      message: `PATCH /analyticUnits/view error: ${e.message}`
-    };
-  }
 }
 
 async function updateMetric(ctx: Router.IRouterContext) {
@@ -172,7 +144,5 @@ router.patch('/alert', updateAlert);
 router.post('/', createUnit);
 router.delete('/', deleteUnit);
 router.patch('/', updateUnit);
-
-router.patch('/view', updateView);
 
 router.post('/detect', runDetect);
