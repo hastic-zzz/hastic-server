@@ -88,7 +88,7 @@ class Model(ABC):
         return self.state
 
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
-        if type(cache) is ModelCache:
+        if type(cache) is ModelCache and cache:
             self.state = cache
         if not self.state:
             logging.warning('self.state is empty - skip do_detect')
@@ -101,7 +101,8 @@ class Model(ABC):
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][x - 1]),
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][x + 1])
         ) for x in result]
-
+        if not self.state:
+            logging.warning('return empty self.state after detect')
         return {
             'segments': segments,
             'cache': self.state,
