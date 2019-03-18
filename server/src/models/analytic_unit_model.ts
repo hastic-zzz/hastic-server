@@ -122,9 +122,9 @@ export class AnalyticUnit {
       name: this.name,
       type: this.type,
       alert: this.alert,
-      detectorType: this.detectorType,
       labeledColor: this.labeledColor,
       deletedColor: this.deletedColor,
+      detectorType: this.detectorType,
       visible: this.visible
     };
   }
@@ -147,9 +147,9 @@ export class AnalyticUnit {
       obj.lastDetectionTime,
       obj.status as AnalyticUnitStatus,
       obj.error,
-      obj.detectorType,
       obj.labeledColor,
       obj.deletedColor,
+      obj.detectorType,
       obj.visible
     );
   }
@@ -192,7 +192,14 @@ export async function remove(id: AnalyticUnitId): Promise<void> {
 }
 
 export async function update(id: AnalyticUnitId, unit: AnalyticUnit) {
-  return db.updateOne(id, unit);
+  const updateObj = {
+    name: unit.name,
+    labeledColor: unit.labeledColor,
+    deletedColor: unit.deletedColor,
+    visible: unit.visible
+  };
+
+  return db.updateOne(id, updateObj);
 }
 
 export async function setStatus(id: AnalyticUnitId, status: string, error?: string) {

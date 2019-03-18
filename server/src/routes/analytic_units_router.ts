@@ -55,13 +55,12 @@ async function createUnit(ctx: Router.IRouterContext) {
 }
 
 async function updateUnit(ctx: Router.IRouterContext) {
-  const unit = ctx.request.body as AnalyticUnit.AnalyticUnit;
-  if(unit.id === undefined) {
+  const analyticUnit = ctx.request.body as AnalyticUnit.AnalyticUnit;
+  if(analyticUnit.id === undefined) {
     throw new Error('Cannot update undefined id');
   }
 
-  // TODO: we can't allow to update everything
-  AnalyticUnit.update(unit.id, unit);
+  AnalyticUnit.update(analyticUnit.id, analyticUnit);
   ctx.response.body = {
     code: 200,
     message: 'Success'
