@@ -7,7 +7,6 @@
     "dev": "NODE_ENV=development node build/dev-server.js",
     "build-prod": "npm rebuild zeromq && webpack --config build/webpack.prod.conf.js",
     "build": "npm run build-prod && webpack --config build/webpack.614.prod.conf.js",
-    "build-tools": "webpack --config build/webpack.tools.conf.js",
     "test": "jest --config jest.config.js"
   },
   "repository": {
