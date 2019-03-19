@@ -11,7 +11,7 @@ export async function convertPanelUrlToPanelId() {
   }
 
   const panelUrlRegex = /^(.+)\/d\/(\w+)\/.+panelId=(\d+)/;
-  const newPanelUrlRegex = /^(.+)\/dashboard\/(\w+).+panelId=(\d+)/
+  const newPanelUrlRegex = /^(.+)\/dashboard\/(\w+).+panelId=(\d+)/;
   const updatedAnalyticUnits = analyticUnits.map(analyticUnit => {
     const parsedPanelUrl = analyticUnit.panelUrl.match(panelUrlRegex) || analyticUnit.panelUrl.match(newPanelUrlRegex);
     const grafanaUrl = parsedPanelUrl[1];
