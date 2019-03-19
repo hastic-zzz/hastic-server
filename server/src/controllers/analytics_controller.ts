@@ -285,7 +285,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId) {
 
 export async function remove(analyticUnitId: AnalyticUnit.AnalyticUnitId) {
   // We don't await for analytics task cancellation here
-  // If we add await, the rest function would be executed only when analytics becomes up
+  // If we add await, the rest function will be executed only when analytics becomes up
 
   cancelAnalyticsTask(analyticUnitId);
 
