@@ -2,6 +2,7 @@ data
 dist/**/*.rpm
 config.json
 .env
+dist-tools
 
 node_modules/
 
