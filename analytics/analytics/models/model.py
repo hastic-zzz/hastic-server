@@ -5,6 +5,7 @@ from attrdict import AttrDict
 from typing import Optional
 import pandas as pd
 import math
+import logging
 
 ModelCache = dict
 
@@ -64,7 +65,7 @@ class Model(ABC):
 
     def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[ModelCache]) -> ModelCache:
         data = dataframe['value']
-        if type(cache) is ModelCache and cache:
+        if cache != None and len(cache) > 0:
             self.state = cache
         max_length = 0
         labeled = []
@@ -84,21 +85,31 @@ class Model(ABC):
         model, model_type = self.get_model_type()
         learning_info = self.get_parameters_from_segments(dataframe, labeled, deleted, model, model_type)
         self.do_fit(dataframe, labeled, deleted, learning_info)
+        logging.debug('fit complete successful with self.state: {}'.format(self.state))
         return self.state
 
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
-        if type(cache) is ModelCache:
+        #If cache is None or empty dict - default parameters will be used instead
+        if cache != None and len(cache) > 0:
             self.state = cache
-
+        else:
+            logging.debug('get empty cache in detect')
+        if not self.state:
+            logging.warning('self.state is empty - skip do_detect')
+            return {
+                'segments': [],
+                'cache': {},
+            }
         result = self.do_detect(dataframe)
         segments = [(
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][x - 1]),
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][x + 1])
         ) for x in result]
-
+        if not self.state:
+            logging.warning('return empty self.state after detect')
         return {
             'segments': segments,
-            'cache': self.state
+            'cache': self.state,
         }
 
     def _update_fiting_result(self, state: dict, confidences: list, convolve_list: list, del_conv_list: list, height_list: list) -> None:

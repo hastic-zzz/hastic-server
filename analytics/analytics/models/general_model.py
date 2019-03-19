@@ -65,23 +65,24 @@ class GeneralModel(Model):
     def do_detect(self, dataframe: pd.DataFrame) -> list:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
-        pat_data = self.state['pattern_model']
+        pat_data = self.state.get('pattern_model', [])
         if pat_data.count(0) == len(pat_data):
             raise ValueError('Labeled patterns must not be empty')
 
         self.all_conv = []
         self.all_corr = []
-        for i in range(self.state['WINDOW_SIZE'], len(data) - self.state['WINDOW_SIZE']):
-            watch_data = data[i - self.state['WINDOW_SIZE']: i + self.state['WINDOW_SIZE'] + 1]
+        window_size = self.state.get('WINDOW_SIZE', 0)
+        for i in range(window_size, len(data) - window_size):
+            watch_data = data[i - window_size: i + window_size + 1]
             watch_data = utils.subtract_min_without_nan(watch_data)
             conv = scipy.signal.fftconvolve(watch_data, pat_data)
             correlation = pearsonr(watch_data, pat_data)
             self.all_corr.append(correlation[0])
             self.all_conv.append(max(conv))
-        all_conv_peaks = utils.peak_finder(self.all_conv, self.state['WINDOW_SIZE'] * 2)
-        all_corr_peaks = utils.peak_finder(self.all_corr, self.state['WINDOW_SIZE'] * 2)
+        all_conv_peaks = utils.peak_finder(self.all_conv, window_size * 2)
+        all_corr_peaks = utils.peak_finder(self.all_corr, window_size * 2)
         filtered = self.__filter_detection(all_corr_peaks, data)
-        return set(item + self.state['WINDOW_SIZE'] for item in filtered)
+        return set(item + window_size for item in filtered)
 
     def __filter_detection(self, segments: list, data: list):
         if len(segments) == 0 or len(self.state.get('pattern_center', [])) == 0:

@@ -309,7 +309,7 @@ class TestDataset(unittest.TestCase):
             'conv_del_min': 0,
             'conv_del_max': 0,
         }
-        ws = random.randint(0, int(len(data['value']/2)))
+        ws = random.randint(1, int(len(data['value']/2)))
         pattern_model = create_random_model(ws)
         convolve = scipy.signal.fftconvolve(pattern_model, pattern_model)
         confidence = 0.2 * (data['value'].max() - data['value'].min())
