@@ -65,7 +65,7 @@ class Model(ABC):
 
     def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[ModelCache]) -> ModelCache:
         data = dataframe['value']
-        if type(cache) is ModelCache and cache:
+        if cache != None and len(cache) > 0:
             self.state = cache
         max_length = 0
         labeled = []
@@ -89,7 +89,7 @@ class Model(ABC):
         return self.state
 
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
-        if type(cache) is ModelCache and len(cache) > 0:
+        if cache != None and len(cache) > 0:
             self.state = cache
         if not self.state:
             logging.warning('self.state is empty - skip do_detect')
