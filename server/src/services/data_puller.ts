@@ -82,7 +82,7 @@ export class DataPuller {
       throw Error(`data puller can't push unit: ${unit} data: ${data}`);
     }
     let task = new AnalyticsTask(unit.id, AnalyticsTaskType.PUSH, data);
-    if (data.cache.length == 0) {
+    if(_.isEmpty(data.cache) || data.cache === null) {
       console.log('push empty cache to analytics')
     }
     try {
