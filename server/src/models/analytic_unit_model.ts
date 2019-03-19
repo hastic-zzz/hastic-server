@@ -54,7 +54,8 @@ export enum AnalyticUnitStatus {
 
 export type FindManyQuery = {
   name?: string,
-  panelUrl?: string,
+  grafanaUrl?: string,
+  panelId?: string,
   type?: string,
   metric?: Metric,
   alert?: boolean,
@@ -72,7 +73,8 @@ export type FindManyQuery = {
 export class AnalyticUnit {
   constructor(
     public name: string,
-    public panelUrl: string,
+    public grafanaUrl: string,
+    public panelId: string,
     public type: string,
     public metric?: Metric,
     public alert?: boolean,
@@ -89,8 +91,8 @@ export class AnalyticUnit {
     if(name === undefined) {
       throw new Error(`Missing field "name"`);
     }
-    if(panelUrl === undefined) {
-      throw new Error(`Missing field "panelUrl"`);
+    if(grafanaUrl === undefined) {
+      throw new Error(`Missing field "grafanaUrl"`);
     }
     if(type === undefined) {
       throw new Error(`Missing field "type"`);
@@ -106,7 +108,8 @@ export class AnalyticUnit {
     return {
       _id: this.id,
       name: this.name,
-      panelUrl: this.panelUrl,
+      grafanaUrl: this.grafanaUrl,
+      panelId: this.panelId,
       type: this.type,
       metric,
       alert: this.alert,
@@ -139,7 +142,8 @@ export class AnalyticUnit {
     }
     return new AnalyticUnit(
       obj.name,
-      obj.panelUrl,
+      obj.grafanaUrl,
+      obj.panelId,
       obj.type,
       metric,
       obj.alert,

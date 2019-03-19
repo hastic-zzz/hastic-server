@@ -123,11 +123,11 @@ async function query(analyticUnit: AnalyticUnit.AnalyticUnit, detector: Analytic
   }
   console.log(`query time range: from ${new Date(range.from)} to ${new Date(range.to)}`);
 
-  let panelUrl;
+  let grafanaUrl;
   if(GRAFANA_URL !== null) {
-    panelUrl = GRAFANA_URL;
+    grafanaUrl = GRAFANA_URL;
   } else {
-    panelUrl = analyticUnit.panelUrl;
+    grafanaUrl = analyticUnit.grafanaUrl;
   }
 
   let data;
@@ -135,7 +135,7 @@ async function query(analyticUnit: AnalyticUnit.AnalyticUnit, detector: Analytic
   try {
     const queryResult = await queryByMetric(
       analyticUnit.metric,
-      panelUrl,
+      grafanaUrl,
       range.from,
       range.to,
       HASTIC_API_KEY

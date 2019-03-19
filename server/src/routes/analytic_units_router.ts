@@ -27,12 +27,12 @@ async function getStatus(ctx: Router.IRouterContext) {
 }
 
 async function getUnits(ctx: Router.IRouterContext) {
-  const panelUrl = ctx.request.query.panelUrl;
-  if(panelUrl === undefined) {
-    throw new Error('Cannot get units of undefined panelUrl');
+  const panelId = ctx.request.query.panelId;
+  if(panelId === undefined) {
+    throw new Error('Cannot get units of undefined panelId');
   }
 
-  let analyticUnits = await AnalyticUnit.findMany({ panelUrl });
+  let analyticUnits = await AnalyticUnit.findMany({ panelId });
   if(analyticUnits === null) {
     analyticUnits = [];
   }
