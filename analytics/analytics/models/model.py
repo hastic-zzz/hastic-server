@@ -89,7 +89,7 @@ class Model(ABC):
         return self.state
 
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
-        if type(cache) is ModelCache and cache:
+        if type(cache) is ModelCache and len(cache) > 0:
             self.state = cache
         if not self.state:
             logging.warning('self.state is empty - skip do_detect')
