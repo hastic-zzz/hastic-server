@@ -1,8 +1,8 @@
-import { Collection, makeDBQ } from '../src/services/data_service';
+import { Collection, makeDBQ } from '../services/data_service';
 
 const db = makeDBQ(Collection.ANALYTIC_UNITS);
 
-async function convertPanelUrlToPanelId() {
+export async function convertPanelUrlToPanelId() {
   const analyticUnits = await db.findMany({ panelUrl: { $exists: true } });
   console.log(`Found ${analyticUnits.length} analytic units with panelUrl field`);
   if(analyticUnits.length === 0) {
@@ -33,4 +33,3 @@ async function convertPanelUrlToPanelId() {
   }));
 }
 
-convertPanelUrlToPanelId();

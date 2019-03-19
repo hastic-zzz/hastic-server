@@ -8,11 +8,14 @@ import * as ProcessService from './services/process_service';
 
 import { HASTIC_PORT, PACKAGE_VERSION, GIT_INFO, ZMQ_CONNECTION_STRING } from './config';
 
+import { convertPanelUrlToPanelId } from './migrations/0.3.2-beta';
+
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
 import * as bodyParser from 'koa-bodyparser';
 
 
+convertPanelUrlToPanelId();
 AnalyticsController.init();
 ProcessService.registerExitHandler(AnalyticsController.terminate);
 
