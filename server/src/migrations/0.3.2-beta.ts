@@ -3,7 +3,6 @@ import { Collection, makeDBQ } from '../services/data_service';
 const db = makeDBQ(Collection.ANALYTIC_UNITS);
 
 export async function convertPanelUrlToPanelId() {
-  console.log('Running 0.3.2-beta migration');
   const analyticUnits = await db.findMany({ panelUrl: { $exists: true } });
   console.log(`Found ${analyticUnits.length} analytic units with panelUrl field`);
   if(analyticUnits.length === 0) {

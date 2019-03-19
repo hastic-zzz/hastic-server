@@ -15,9 +15,9 @@ import * as Router from 'koa-router';
 import * as bodyParser from 'koa-bodyparser';
 
 
-convertPanelUrlToPanelId();
 AnalyticsController.init();
 ProcessService.registerExitHandler(AnalyticsController.terminate);
+convertPanelUrlToPanelId();
 
 var app = new Koa();
 
