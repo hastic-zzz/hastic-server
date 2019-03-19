@@ -89,8 +89,11 @@ class Model(ABC):
         return self.state
 
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
+        #If cache is None or empty dict - default parameters will be used instead
         if cache != None and len(cache) > 0:
             self.state = cache
+        else:
+            logging.debug('get empty cache in detect')
         if not self.state:
             logging.warning('self.state is empty - skip do_detect')
             return {
