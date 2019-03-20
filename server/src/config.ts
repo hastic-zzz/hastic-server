@@ -14,9 +14,8 @@ export const ANALYTICS_PATH = path.join(__dirname, '../../analytics');
 export const DATA_PATH = path.join(__dirname, '../../data');
 
 export const ANALYTIC_UNITS_DATABASE_PATH = path.join(DATA_PATH, 'analytic_units.db');
-export const SEGMENTS_DATABASE_PATH = path.join(DATA_PATH, 'segments.db');
 export const ANALYTIC_UNIT_CACHES_DATABASE_PATH = path.join(DATA_PATH, 'analytic_unit_caches.db');
-export const PANELS_DATABASE_PATH = path.join(DATA_PATH, 'panels.db');
+export const SEGMENTS_DATABASE_PATH = path.join(DATA_PATH, 'segments.db');
 export const THRESHOLD_DATABASE_PATH = path.join(DATA_PATH, 'treshold.db');
 
 

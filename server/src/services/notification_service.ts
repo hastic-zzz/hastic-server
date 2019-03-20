@@ -22,7 +22,7 @@ export declare type AnalyticAlert = {
   analyticUnitType: string,
   analyticUnitName: string,
   analyticUnitId: AnalyticUnit.AnalyticUnitId,
-  panelUrl: string,
+  grafanaUrl: string,
   from: number,
   to: number
   params?: any,

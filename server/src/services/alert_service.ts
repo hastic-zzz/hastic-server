@@ -22,7 +22,7 @@ export class Alert {
       analyticUnitType: this.analyticUnit.type,
       analyticUnitName: this.analyticUnit.name,
       analyticUnitId: this.analyticUnit.id,
-      panelUrl: this.analyticUnit.panelUrl,
+      grafanaUrl: this.analyticUnit.grafanaUrl,
       from: segment.from,
       to: segment.to 
     };

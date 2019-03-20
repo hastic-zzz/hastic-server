@@ -1,6 +1,5 @@
 import { router as analyticUnitsRouter } from './routes/analytic_units_router';
 import { router as segmentsRouter } from './routes/segments_router';
-import { router as panelRouter } from './routes/panel_router';
 import { router as thresholdRouter } from './routes/threshold_router';
 
 import * as AnalyticsController from './controllers/analytics_controller';
@@ -9,6 +8,8 @@ import * as ProcessService from './services/process_service';
 
 import { HASTIC_PORT, PACKAGE_VERSION, GIT_INFO, ZMQ_CONNECTION_STRING } from './config';
 
+import { convertPanelUrlToPanelId } from './migrations/0.3.2-beta';
+
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
 import * as bodyParser from 'koa-bodyparser';
@@ -16,6 +17,7 @@ import * as bodyParser from 'koa-bodyparser';
 
 AnalyticsController.init();
 ProcessService.registerExitHandler(AnalyticsController.terminate);
+convertPanelUrlToPanelId();
 
 var app = new Koa();
 
@@ -50,7 +52,6 @@ app.use(async function(ctx, next) {
 var rootRouter = new Router();
 rootRouter.use('/analyticUnits', analyticUnitsRouter.routes(), analyticUnitsRouter.allowedMethods());
 rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
-rootRouter.use('/panel', panelRouter.routes(), panelRouter.allowedMethods());
 rootRouter.use('/threshold', thresholdRouter.routes(), thresholdRouter.allowedMethods());
 
 rootRouter.get('/', async (ctx) => {
