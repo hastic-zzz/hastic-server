@@ -54,35 +54,45 @@ export enum AnalyticUnitStatus {
 
 export type FindManyQuery = {
   name?: string,
-  panelUrl?: string,
+  grafanaUrl?: string,
+  panelId?: string,
   type?: string,
   metric?: Metric,
   alert?: boolean,
   id?: AnalyticUnitId,
   lastDetectionTime?: number,
   status?: AnalyticUnitStatus,
-  error?: string
+  error?: string,
+  labeledColor?: string,
+  deletedColor?: string,
+  detectorType?: DetectorType,
+  visible?: boolean
 };
 
 
 export class AnalyticUnit {
   constructor(
     public name: string,
-    public panelUrl: string,
+    public grafanaUrl: string,
+    public panelId: string,
     public type: string,
     public metric?: Metric,
     public alert?: boolean,
     public id?: AnalyticUnitId,
     public lastDetectionTime?: number,
     public status?: AnalyticUnitStatus,
-    public error?: string
+    public error?: string,
+    public labeledColor?: string,
+    public deletedColor?: string,
+    public detectorType?: DetectorType,
+    public visible?: boolean
   ) {
 
     if(name === undefined) {
       throw new Error(`Missing field "name"`);
     }
-    if(panelUrl === undefined) {
-      throw new Error(`Missing field "panelUrl"`);
+    if(grafanaUrl === undefined) {
+      throw new Error(`Missing field "grafanaUrl"`);
     }
     if(type === undefined) {
       throw new Error(`Missing field "type"`);
@@ -98,13 +108,27 @@ export class AnalyticUnit {
     return {
       _id: this.id,
       name: this.name,
-      panelUrl: this.panelUrl,
+      grafanaUrl: this.grafanaUrl,
+      panelId: this.panelId,
       type: this.type,
       metric,
       alert: this.alert,
       lastDetectionTime: this.lastDetectionTime,
       status: this.status,
       error: this.error
+    };
+  }
+
+  public toPanelObject() {
+    return {
+      id: this.id,
+      name: this.name,
+      type: this.type,
+      alert: this.alert,
+      labeledColor: this.labeledColor,
+      deletedColor: this.deletedColor,
+      detectorType: this.detectorType,
+      visible: this.visible
     };
   }
 
@@ -118,7 +142,8 @@ export class AnalyticUnit {
     }
     return new AnalyticUnit(
       obj.name,
-      obj.panelUrl,
+      obj.grafanaUrl,
+      obj.panelId,
       obj.type,
       metric,
       obj.alert,
@@ -126,6 +151,10 @@ export class AnalyticUnit {
       obj.lastDetectionTime,
       obj.status as AnalyticUnitStatus,
       obj.error,
+      obj.labeledColor,
+      obj.deletedColor,
+      obj.detectorType,
+      obj.visible
     );
   }
 
@@ -167,7 +196,14 @@ export async function remove(id: AnalyticUnitId): Promise<void> {
 }
 
 export async function update(id: AnalyticUnitId, unit: AnalyticUnit) {
-  return db.updateOne(id, unit);
+  const updateObj = {
+    name: unit.name,
+    labeledColor: unit.labeledColor,
+    deletedColor: unit.deletedColor,
+    visible: unit.visible
+  };
+
+  return db.updateOne(id, updateObj);
 }
 
 export async function setStatus(id: AnalyticUnitId, status: string, error?: string) {

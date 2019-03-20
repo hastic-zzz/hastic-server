@@ -43,6 +43,8 @@ class PatternDetector(Detector):
     def train(self, dataframe: pd.DataFrame, segments: list, cache: Optional[models.ModelCache]) -> models.ModelCache:
         # TODO: pass only part of dataframe that has segments
         new_cache = self.model.fit(dataframe, segments, cache)
+        if new_cache == None or len(new_cache) == 0:
+            logging.warning('new_cache is empty with data: {}, segments: {}, cache: {}'.format(dataframe, segments, cache))
         return {
             'cache': new_cache
         }

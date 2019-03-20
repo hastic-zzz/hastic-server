@@ -178,6 +178,7 @@ export class AnalyticsService {
   private _onAnalyticsUp() {
     const msg = 'Analytics is up';
     for(let i in _.range(this._queue.length)) {
+      // TODO: check if task is done before removing it from the queue
       this.sendTask(this._queue.shift(), true);
     }
     console.log(msg);

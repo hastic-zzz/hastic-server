@@ -1,6 +1,5 @@
 import { router as analyticUnitsRouter } from './routes/analytic_units_router';
 import { router as segmentsRouter } from './routes/segments_router';
-import { router as panelRouter } from './routes/panel_router';
 import { router as thresholdRouter } from './routes/threshold_router';
 
 import * as AnalyticsController from './controllers/analytics_controller';
@@ -9,77 +8,81 @@ import * as ProcessService from './services/process_service';
 
 import { HASTIC_PORT, PACKAGE_VERSION, GIT_INFO, ZMQ_CONNECTION_STRING } from './config';
 
+import { convertPanelUrlToPanelId } from './migrations/0.3.2-beta';
+
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
 import * as bodyParser from 'koa-bodyparser';
 
+init();
 
-AnalyticsController.init();
-ProcessService.registerExitHandler(AnalyticsController.terminate);
+async function init() {
+  await convertPanelUrlToPanelId();
+  AnalyticsController.init();
+  ProcessService.registerExitHandler(AnalyticsController.terminate);
 
-var app = new Koa();
+  const app = new Koa();
 
-app.on('error', (err, ctx) => {
-  console.log('got server error:');
-  console.log(err);
-});
+  app.on('error', (err, ctx) => {
+    console.log('got server error:');
+    console.log(err);
+  });
 
 
-app.use(bodyParser())
+  app.use(bodyParser())
 
-app.use(async function(ctx, next) {
-  ctx.set('Access-Control-Allow-Origin', '*');
-  ctx.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  ctx.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  await next();
-});
-app.use(async function(ctx, next) {
-  try {
+  app.use(async function(ctx, next) {
+    ctx.set('Access-Control-Allow-Origin', '*');
+    ctx.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    ctx.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     await next();
-  } catch (e) {
-    console.error(e);
-    ctx.response.status = 500;
+  });
+  app.use(async function(ctx, next) {
+    try {
+      await next();
+    } catch (e) {
+      console.error(e);
+      ctx.response.status = 500;
+      ctx.response.body = {
+        code: 500,
+        message: `${ctx.method} ${ctx.url} error: ${e.message}`
+      };
+    }
+  });
+
+
+  const rootRouter = new Router();
+  rootRouter.use('/analyticUnits', analyticUnitsRouter.routes(), analyticUnitsRouter.allowedMethods());
+  rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
+  rootRouter.use('/threshold', thresholdRouter.routes(), thresholdRouter.allowedMethods());
+
+  rootRouter.get('/', async (ctx) => {
+    const activeWebhooks = await AnalyticsController.getActiveWebhooks();
+
     ctx.response.body = {
-      code: 500,
-      message: `${ctx.method} ${ctx.url} error: ${e.message}`
+      server: 'OK',
+      analytics: {
+        ready: AnalyticsController.isAnalyticReady(),
+        lastAlive: AnalyticsController.analyticsLastAlive(),
+        tasksQueueLength: AnalyticsController.getQueueLength()
+      },
+      nodeVersion: process.version,
+      packageVersion: PACKAGE_VERSION,
+      npmUserAgent: process.env.npm_config_user_agent,
+      docker: process.env.INSIDE_DOCKER !== undefined,
+      zmqConectionString: ZMQ_CONNECTION_STRING,
+      serverPort: HASTIC_PORT,
+      git: GIT_INFO,
+      activeWebhooks: activeWebhooks.length,
+      timestamp: new Date(Date.now())
     };
-  }
-});
+  });
 
+  app
+    .use(rootRouter.routes())
+    .use(rootRouter.allowedMethods());
 
-var rootRouter = new Router();
-rootRouter.use('/analyticUnits', analyticUnitsRouter.routes(), analyticUnitsRouter.allowedMethods());
-rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
-rootRouter.use('/panel', panelRouter.routes(), panelRouter.allowedMethods());
-rootRouter.use('/threshold', thresholdRouter.routes(), thresholdRouter.allowedMethods());
-
-rootRouter.get('/', async (ctx) => {
-  const activeWebhooks = await AnalyticsController.getActiveWebhooks();
-
-  ctx.response.body = {
-    server: 'OK',
-    analytics: {
-      ready: AnalyticsController.isAnalyticReady(),
-      lastAlive: AnalyticsController.analyticsLastAlive(),
-      tasksQueueLength: AnalyticsController.getQueueLength()
-    },
-    nodeVersion: process.version,
-    packageVersion: PACKAGE_VERSION,
-    npmUserAgent: process.env.npm_config_user_agent,
-    docker: process.env.INSIDE_DOCKER !== undefined,
-    zmqConectionString: ZMQ_CONNECTION_STRING,
-    serverPort: HASTIC_PORT,
-    git: GIT_INFO,
-    activeWebhooks: activeWebhooks.length,
-    timestamp: new Date(Date.now())
-  };
-});
-
-app
-  .use(rootRouter.routes())
-  .use(rootRouter.allowedMethods());
-
-app.listen(HASTIC_PORT, () => {
-  console.log(`Server is running on :${HASTIC_PORT}`);
-});
-
+  app.listen(HASTIC_PORT, () => {
+    console.log(`Server is running on :${HASTIC_PORT}`);
+  });
+}

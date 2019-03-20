@@ -65,14 +65,14 @@ export class DataPuller {
       throw Error(`data puller: can't pull undefined unit`);
     }
 
-    let panelUrl;
+    let grafanaUrl;
     if(GRAFANA_URL !== null) {
-      panelUrl = GRAFANA_URL;
+      grafanaUrl = GRAFANA_URL;
     } else {
-      panelUrl = unit.panelUrl;
+      grafanaUrl = unit.grafanaUrl;
     }
 
-    let data = queryByMetric(unit.metric, panelUrl, from, to, HASTIC_API_KEY);
+    let data = queryByMetric(unit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
     return data;
     
   }
@@ -82,7 +82,9 @@ export class DataPuller {
       throw Error(`data puller can't push unit: ${unit} data: ${data}`);
     }
     let task = new AnalyticsTask(unit.id, AnalyticsTaskType.PUSH, data);
-
+    if(_.isEmpty(data.cache)) {
+      console.log('push empty cache to analytics')
+    }
     try {
       this.analyticsService.sendTask(task);
       let fromTime = new Date(data.from).toLocaleTimeString();

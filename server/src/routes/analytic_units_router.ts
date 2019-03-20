@@ -26,36 +26,22 @@ async function getStatus(ctx: Router.IRouterContext) {
   }
 }
 
-async function getUnit(ctx: Router.IRouterContext) {
-  let analyticUnitId = ctx.request.query.id;
-  if(analyticUnitId === undefined) {
-    throw new Error('No id param in query');
-  }
-
-  let analyticUnit = await AnalyticUnit.findById(analyticUnitId);
-  if(analyticUnit === null) {
-    throw new Error(`Cannot find analytic unit with id ${analyticUnitId}`);
-  }
-
-  ctx.response.body = {
-    name: analyticUnit.name,
-    metric: analyticUnit.metric,
-    status: analyticUnit.status
-  };  
-}
-
 async function getUnits(ctx: Router.IRouterContext) {
-  const panelUrl = ctx.request.query.panelUrl;
-  if(panelUrl === undefined) {
-    throw new Error('Cannot get alerts of undefined panelUrl');
+  const panelId = ctx.request.query.panelId;
+  if(panelId === undefined) {
+    throw new Error('Cannot get units of undefined panelId');
   }
 
-  let analyticUnits = await AnalyticUnit.findMany({ panelUrl });
+  let analyticUnits = await AnalyticUnit.findMany({ panelId });
   if(analyticUnits === null) {
     analyticUnits = [];
   }
 
-  ctx.response.body = { analyticUnits };
+  const analyticUnitObjects = analyticUnits.map(analyticUnit => analyticUnit.toPanelObject());
+
+  ctx.response.body = {
+    analyticUnits: analyticUnitObjects
+  };
 }
 
 function getTypes(ctx: Router.IRouterContext) {
@@ -63,18 +49,18 @@ function getTypes(ctx: Router.IRouterContext) {
 }
 
 async function createUnit(ctx: Router.IRouterContext) {
-  let id = await createAnalyticUnitFromObject(ctx.request.body);
+  const id = await createAnalyticUnitFromObject(ctx.request.body);
+
   ctx.response.body = { id };
 }
 
 async function updateUnit(ctx: Router.IRouterContext) {
-  const unit = ctx.request.body as AnalyticUnit.AnalyticUnit;
-  if(unit.id === undefined) {
+  const analyticUnit = ctx.request.body as AnalyticUnit.AnalyticUnit;
+  if(analyticUnit.id === undefined) {
     throw new Error('Cannot update undefined id');
   }
 
-  // TODO: we can't allow to update everything
-  AnalyticUnit.update(unit.id, unit);
+  AnalyticUnit.update(analyticUnit.id, analyticUnit);
   ctx.response.body = {
     code: 200,
     message: 'Success'
@@ -147,7 +133,6 @@ async function runDetect(ctx: Router.IRouterContext) {
 
 export var router = new Router();
 
-router.get('/', getUnit);
 router.get('/units', getUnits);
 router.get('/status', getStatus);
 router.get('/types', getTypes);

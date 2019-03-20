@@ -100,6 +100,7 @@ async def app_loop():
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
+    loop.set_debug(True)
     logger.info("Ok")
     server_service, data_service, analytic_unit_manager = init_services()
     print('Analytics process is running') # we need to print to stdout and flush
