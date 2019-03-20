@@ -10,7 +10,7 @@ export async function convertPanelUrlToPanelId() {
     return;
   }
 
-  const panelUrlRegex = /^(.+)\/d\/(\w+)\/.+panelId=(\d+)/;
+  const panelUrlRegex = /^(.+)\/d\/([^\/]+)\/.+panelId=(\d+)/;
   const newPanelUrlRegex = /^(.+)\/dashboard\/(\w+).+panelId=(\d+)/;
   const updatedAnalyticUnits = analyticUnits
     .map(analyticUnit => {
