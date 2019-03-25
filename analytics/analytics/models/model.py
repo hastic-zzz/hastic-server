@@ -64,6 +64,7 @@ class Model(ABC):
         pass
 
     def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[ModelCache]) -> ModelCache:
+        logging.debug('Start method fit')
         data = dataframe['value']
         if cache != None and len(cache) > 0:
             self.state = cache
@@ -93,7 +94,7 @@ class Model(ABC):
         if cache != None and len(cache) > 0:
             self.state = cache
         else:
-            logging.debug('get empty cache in detect')
+            logging.debug('Get empty cache in detect')
         if not self.state:
             logging.warning('self.state is empty - skip do_detect')
             return {
@@ -106,7 +107,7 @@ class Model(ABC):
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][x + 1])
         ) for x in result]
         if not self.state:
-            logging.warning('return empty self.state after detect')
+            logging.warning('Return empty self.state after detect')
         return {
             'segments': segments,
             'cache': self.state,
@@ -122,6 +123,7 @@ class Model(ABC):
             raise ValueError('got non-dict as state for update fiting result: {}'.format(state))
     
     def get_parameters_from_segments(self, dataframe: pd.DataFrame, labeled: list, deleted: list, model: str, model_type: bool) -> dict:
+        logging.debug('Start parsing segments')
         learning_info = {
             'confidence': [],
             'patterns_list': [],
@@ -150,5 +152,6 @@ class Model(ABC):
                 learning_info['pattern_height'].append(pattern_height)
                 learning_info['pattern_width'].append(pattern_length)
                 learning_info['patterns_value'].append(aligned_segment.values[self.state['WINDOW_SIZE']])
+        logging.debug('Parsing segments ended correctly with learning_info: {}'.format(learning_info))
         return learning_info
         

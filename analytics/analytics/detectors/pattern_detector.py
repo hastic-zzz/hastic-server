@@ -66,13 +66,16 @@ class PatternDetector(Detector):
         }
 
     def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
+        logging.debug('Start recieve_data')
         data_without_nan = data.dropna()
 
         if len(data_without_nan) == 0:
             return None
 
         self.bucket.receive_data(data_without_nan)
-        if not cache: cache = {}
+        if not cache:
+            logging.warning('Cache in receive with some problem: {}'.format(cache))
+            cache = {}
         bucket_size = max(cache.get('WINDOW_SIZE', 0) * 3, self.min_bucket_size)
 
         res = self.detect(self.bucket.data, cache)
@@ -80,7 +83,7 @@ class PatternDetector(Detector):
         if len(self.bucket.data) > bucket_size:
             excess_data = len(self.bucket.data) - bucket_size
             self.bucket.drop_data(excess_data)
-        
+        logging.debug('End recieve_data with res: {}'.format(res))
         if res:
             return res
         else:

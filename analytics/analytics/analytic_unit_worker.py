@@ -27,7 +27,7 @@ class AnalyticUnitWorker:
         try:
             new_cache: ModelCache = await self._training_feature
             return new_cache
-        except CancelledError as e:
+        except CancelledError:
             return cache
 
     async def do_detect(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> dict:

@@ -36,7 +36,6 @@ class ServerMessage:
             payload = json['payload']
         if 'requestId' in json:
             request_id = json['requestId']
-
         return ServerMessage(method, payload, request_id)
 
 class ServerService:

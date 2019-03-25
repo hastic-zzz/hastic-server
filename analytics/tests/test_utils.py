@@ -3,6 +3,7 @@ import unittest
 import numpy as np
 import pandas as pd
 import math
+import random
 
 RELATIVE_TOLERANCE = 1e-1
 
@@ -236,6 +237,16 @@ class TestUtils(unittest.TestCase):
         data = []
         result = []
         self.assertEqual(utils.find_nan_indexes(data), result)
+    
+    def test_create_correlation_data(self):
+        data = [random.randint(10, 999) for _ in range(100000)]
+        data = pd.Series(data)
+        pattern_model = [100, 200, 500, 300, 100]
+        ws = 2
+        result = 60000
+        corr_data = utils.create_correlation_data(data, ws, pattern_model)
+        self.assertGreaterEqual(len(corr_data), result)
+
 
 if __name__ == '__main__':
     unittest.main()

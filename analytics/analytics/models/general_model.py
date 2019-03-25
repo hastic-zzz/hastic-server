@@ -10,6 +10,7 @@ from scipy.stats.stats import pearsonr
 import math
 from scipy.stats import gaussian_kde
 from scipy.stats import norm
+import logging
 
 PEARSON_COEFF = 0.7
 
@@ -26,7 +27,6 @@ class GeneralModel(Model):
             'conv_del_min': 0,
             'conv_del_max': 0,
         }
-        self.all_conv = []
         self.all_corr = []
     
     def get_model_type(self) -> (str, bool):
@@ -43,6 +43,7 @@ class GeneralModel(Model):
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
+        logging.debug('Start method do_fit')
         last_pattern_center = self.state.get('pattern_center', [])
         self.state['pattern_center'] = list(set(last_pattern_center + learning_info['segment_center_list']))
         self.state['pattern_model'] = utils.get_av_model(learning_info['patterns_list'])
@@ -61,6 +62,7 @@ class GeneralModel(Model):
 
         self.state['convolve_min'], self.state['convolve_max'] = utils.get_min_max(convolve_list, self.state['WINDOW_SIZE'] / 3)
         self.state['conv_del_min'], self.state['conv_del_max'] = utils.get_min_max(del_conv_list, self.state['WINDOW_SIZE'])
+        logging.debug('Method do_fit completed correctly')
 
     def do_detect(self, dataframe: pd.DataFrame) -> list:
         data = utils.cut_dataframe(dataframe)
@@ -69,36 +71,40 @@ class GeneralModel(Model):
         if pat_data.count(0) == len(pat_data):
             raise ValueError('Labeled patterns must not be empty')
 
-        self.all_conv = []
-        self.all_corr = []
         window_size = self.state.get('WINDOW_SIZE', 0)
-        for i in range(window_size, len(data) - window_size):
-            watch_data = data[i - window_size: i + window_size + 1]
-            watch_data = utils.subtract_min_without_nan(watch_data)
-            conv = scipy.signal.fftconvolve(watch_data, pat_data)
-            correlation = pearsonr(watch_data, pat_data)
-            self.all_corr.append(correlation[0])
-            self.all_conv.append(max(conv))
-        all_conv_peaks = utils.peak_finder(self.all_conv, window_size * 2)
+        logging.debug('Start creating correlation data in do_detect')
+        self.all_corr = utils.create_correlation_data(data, window_size, pat_data)
+        logging.debug('Correlation data created')
         all_corr_peaks = utils.peak_finder(self.all_corr, window_size * 2)
         filtered = self.__filter_detection(all_corr_peaks, data)
+        logging.debug('Method do_detect completed correctly')
         return set(item + window_size for item in filtered)
 
-    def __filter_detection(self, segments: list, data: list):
+    def __filter_detection(self, segments: list, data: pd.Series):
+        logging.debug('Start filtering possible patterns with indexes: {}'.format(segments))
         if len(segments) == 0 or len(self.state.get('pattern_center', [])) == 0:
             return []
         delete_list = []
+        window_size = self.state.get('WINDOW_SIZE', 0)
+        pattern_model = self.state.get('pattern_model', [])
         for val in segments:
-            if self.all_conv[val] < self.state['convolve_min'] * 0.8:
+            watch_data = data[val - window_size: val + window_size + 1]
+            watch_data = utils.subtract_min_without_nan(watch_data)
+            convolve_segment = scipy.signal.fftconvolve(watch_data, pattern_model)
+            if len(convolve_segment) > 0:
+                watch_conv = max(convolve_segment)
+            else:
+                continue
+            if watch_conv < self.state['convolve_min'] * 0.8:
                 delete_list.append(val)
                 continue
             if self.all_corr[val] < PEARSON_COEFF:
                 delete_list.append(val)
                 continue
-            if (self.all_conv[val] < self.state['conv_del_max'] * 1.02 and self.all_conv[val] > self.state['conv_del_min'] * 0.98):
+            if (watch_conv < self.state['conv_del_max'] * 1.02 and watch_conv > self.state['conv_del_min'] * 0.98):
 	            delete_list.append(val)
 
         for item in delete_list:
             segments.remove(item)
-
+        logging.debug('Filtering ended with pattern indexes {}'.format(set(segments)))
         return set(segments)

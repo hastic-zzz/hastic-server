@@ -9,6 +9,7 @@ import math
 from typing import Union
 import utils
 import logging
+import time
 
 SHIFT_FACTOR = 0.05
 CONFIDENCE_FACTOR = 0.2
@@ -222,6 +223,21 @@ def get_convolve(segments: list, av_model: list, data: pd.Series, window_size: i
         if len(convolve_segment) > 0:
             convolve_list.append(max(convolve_segment))
     return convolve_list
+
+def create_correlation_data(data: pd.Series, window_size: int, pattern_model: list) -> list:
+    all_corr = []
+    stop_time = 120
+    point_1 = time.time()
+    for i in range(window_size, len(data) - window_size):
+        watch_data = data[i - window_size: i + window_size + 1]
+        correlation = pearsonr(watch_data, pattern_model)
+        if len(correlation) > 0:
+            all_corr.append(correlation[0])
+        point_2 = time.time()
+        if point_2 - point_1 > stop_time:
+            logging.warning('Method stoped before the ending with len corr model: {} and len data: {}'.format(len(all_corr),len(data)))
+            break
+    return all_corr
 
 def get_correlation(segments: list, av_model: list, data: pd.Series, window_size: int) -> list:
     labeled_segment = []

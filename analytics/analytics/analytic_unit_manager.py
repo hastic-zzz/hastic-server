@@ -64,7 +64,7 @@ class AnalyticUnitManager:
             returns payload or None
         """
         analytic_unit_id: AnalyticUnitId = task['analyticUnitId']
-
+        log.debug('Analytics get task with type: {}'.format(task['type']))
         if task['type'] == 'CANCEL':
             if analytic_unit_id in self.analytic_workers:
                 self.analytic_workers[analytic_unit_id].cancel()
@@ -93,11 +93,13 @@ class AnalyticUnitManager:
 
     async def handle_analytic_task(self, task):
         try:
+            log.debug('Start handle_analytic_task')
             result_payload = await self.__handle_analytic_task(task)
             result_message =  {
                 'status': 'SUCCESS',
                 'payload': result_payload
             }
+            log.debug('End correctly handle_analytic_task')
             return result_message
         except Exception as e:
             error_text = traceback.format_exc()
