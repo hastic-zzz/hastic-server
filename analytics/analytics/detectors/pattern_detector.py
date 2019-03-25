@@ -74,6 +74,7 @@ class PatternDetector(Detector):
 
         self.bucket.receive_data(data_without_nan)
         if not cache:
+            logging.debug('Recieve empty cache for task {}'.format(self.analytic_unit_id))
             cache = {}
         bucket_size = max(cache.get('WINDOW_SIZE', 0) * 3, self.min_bucket_size)
 

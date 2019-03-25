@@ -93,13 +93,13 @@ class AnalyticUnitManager:
 
     async def handle_analytic_task(self, task):
         try:
-            log.debug('Start handle_analytic_task')
+            log.debug('Start handle_analytic_task with analytic unit: {}'.format(task['analyticUnitId']))
             result_payload = await self.__handle_analytic_task(task)
             result_message =  {
                 'status': 'SUCCESS',
                 'payload': result_payload
             }
-            log.debug('End correctly handle_analytic_task')
+            log.debug('End correctly handle_analytic_task with anatytic unit: {}'.format(task['analyticUnitId']))
             return result_message
         except Exception as e:
             error_text = traceback.format_exc()
