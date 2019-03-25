@@ -38,7 +38,7 @@ class DropModel(Model):
         segment_center_index = utils.find_pattern_center(segment, start, 'drop')
         return segment_center_index
 
-    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: str) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         window_size = self.state['WINDOW_SIZE']
@@ -63,7 +63,7 @@ class DropModel(Model):
         self.state['DROP_HEIGHT'] = int(min(learning_info['pattern_height'], default = 1))
         self.state['DROP_LENGTH'] = int(max(learning_info['pattern_width'], default = 1))
 
-    def do_detect(self, dataframe: pd.DataFrame) -> list:
+    def do_detect(self, dataframe: pd.DataFrame, id: str) -> list:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         possible_drops = utils.find_drop(data, self.state['DROP_HEIGHT'], self.state['DROP_LENGTH'] + 1)

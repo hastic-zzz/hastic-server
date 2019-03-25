@@ -226,15 +226,15 @@ def get_convolve(segments: list, av_model: list, data: pd.Series, window_size: i
 
 def create_correlation_data(data: pd.Series, window_size: int, pattern_model: list) -> list:
     all_corr = []
-    stop_time = 120
-    point_1 = time.time()
+    timeout = 120
+    start_time = time.time()
     for i in range(window_size, len(data) - window_size):
         watch_data = data[i - window_size: i + window_size + 1]
         correlation = pearsonr(watch_data, pattern_model)
         if len(correlation) > 0:
             all_corr.append(correlation[0])
-        point_2 = time.time()
-        if point_2 - point_1 > stop_time:
+        current_time = time.time()
+        if current_time - start_time > timeout:
             logging.warning('Method stoped before the ending with len corr model: {} and len data: {}'.format(len(all_corr),len(data)))
             break
     return all_corr

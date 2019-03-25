@@ -63,8 +63,8 @@ class Model(ABC):
     def get_model_type(self) -> (str, bool):
         pass
 
-    def fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[ModelCache]) -> ModelCache:
-        logging.debug('Start method fit')
+    def fit(self, dataframe: pd.DataFrame, segments: list, id: str, cache: Optional[ModelCache]) -> ModelCache:
+        logging.debug('Start method fit for analytic unit {}'.format(id))
         data = dataframe['value']
         if cache != None and len(cache) > 0:
             self.state = cache
@@ -85,11 +85,11 @@ class Model(ABC):
             self.state['WINDOW_SIZE'] = math.ceil(max_length / 2) if max_length else 0
         model, model_type = self.get_model_type()
         learning_info = self.get_parameters_from_segments(dataframe, labeled, deleted, model, model_type)
-        self.do_fit(dataframe, labeled, deleted, learning_info)
-        logging.debug('fit complete successful with self.state: {}'.format(self.state))
+        self.do_fit(dataframe, labeled, deleted, learning_info, id)
+        logging.debug('fit complete successful with self.state: {} for analytic unit: {}'.format(self.state, id))
         return self.state
 
-    def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
+    def detect(self, dataframe: pd.DataFrame, id: str, cache: Optional[ModelCache]) -> dict:
         #If cache is None or empty dict - default parameters will be used instead
         if cache != None and len(cache) > 0:
             self.state = cache
@@ -101,7 +101,7 @@ class Model(ABC):
                 'segments': [],
                 'cache': {},
             }
-        result = self.do_detect(dataframe)
+        result = self.do_detect(dataframe, id)
         segments = [(
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][x - 1]),
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][x + 1])

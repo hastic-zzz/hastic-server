@@ -40,10 +40,10 @@ class GeneralModel(Model):
         center_ind = start + math.ceil((end - start) / 2)
         return center_ind
 
-    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: str) -> None:
+        logging.debug('Start method do_fit for analytic unit: {}'.format(id))
         data = utils.cut_dataframe(dataframe)
         data = data['value']
-        logging.debug('Start method do_fit')
         last_pattern_center = self.state.get('pattern_center', [])
         self.state['pattern_center'] = list(set(last_pattern_center + learning_info['segment_center_list']))
         self.state['pattern_model'] = utils.get_av_model(learning_info['patterns_list'])
@@ -62,9 +62,10 @@ class GeneralModel(Model):
 
         self.state['convolve_min'], self.state['convolve_max'] = utils.get_min_max(convolve_list, self.state['WINDOW_SIZE'] / 3)
         self.state['conv_del_min'], self.state['conv_del_max'] = utils.get_min_max(del_conv_list, self.state['WINDOW_SIZE'])
-        logging.debug('Method do_fit completed correctly')
+        logging.debug('Method do_fit completed correctly for analytic unit: {}'.format(id))
 
-    def do_detect(self, dataframe: pd.DataFrame) -> list:
+    def do_detect(self, dataframe: pd.DataFrame, id: str) -> list:
+        logging.debug('Start method do_detect for analytic unit: {}'.format(id))
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         pat_data = self.state.get('pattern_model', [])
@@ -77,7 +78,7 @@ class GeneralModel(Model):
         logging.debug('Correlation data created')
         all_corr_peaks = utils.peak_finder(self.all_corr, window_size * 2)
         filtered = self.__filter_detection(all_corr_peaks, data)
-        logging.debug('Method do_detect completed correctly')
+        logging.debug('Method do_detect completed correctly for analytic unit: {}'.format(id))
         return set(item + window_size for item in filtered)
 
     def __filter_detection(self, segments: list, data: pd.Series):

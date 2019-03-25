@@ -64,7 +64,7 @@ class AnalyticUnitManager:
             returns payload or None
         """
         analytic_unit_id: AnalyticUnitId = task['analyticUnitId']
-        log.debug('Analytics get task with type: {}'.format(task['type']))
+        log.debug('Analytics get task with type: {} for unit: {}'.format(task['type'], analytic_unit_id))
         if task['type'] == 'CANCEL':
             if analytic_unit_id in self.analytic_workers:
                 self.analytic_workers[analytic_unit_id].cancel()
