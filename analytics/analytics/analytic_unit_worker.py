@@ -9,7 +9,6 @@ import asyncio
 
 logger = logging.getLogger('AnalyticUnitWorker')
 
-TRAIN_TIMEOUT = 120 # seconds
 
 class AnalyticUnitWorker:
 
@@ -26,13 +25,12 @@ class AnalyticUnitWorker:
             self._detector.train, data, payload, cache
         )
         try:
-            # TODO: configurable timeout
-            new_cache: ModelCache = self._training_future.result(timeout = TRAIN_TIMEOUT)
+            new_cache: ModelCache = self._training_future.result(timeout = config.LEARNING_TIMEOUT)
             return new_cache
         except CancelledError as e:
             return cache
         except TimeoutError:
-            raise Exception('Timeout ({}s) exceeded while learning'.format(TRAIN_TIMEOUT))
+            raise Exception('Timeout ({}s) exceeded while learning'.format(config.LEARNING_TIMEOUT))
 
     async def do_detect(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
         return self._detector.detect(data, cache)
