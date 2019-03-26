@@ -9,7 +9,7 @@ import asyncio
 
 logger = logging.getLogger('AnalyticUnitWorker')
 
-TRAIN_TIMEOUT = 120
+TRAIN_TIMEOUT = 120 # seconds
 
 class AnalyticUnitWorker:
 
