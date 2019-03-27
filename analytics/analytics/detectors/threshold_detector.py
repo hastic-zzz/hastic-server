@@ -43,7 +43,7 @@ class ThresholdDetector(Detector):
         else:
             last_entry = dataframe_without_nans.iloc[-1]
             last_time = convert_pd_timestamp_to_ms(last_entry['timestamp'])
-            last_value = last_entry['value']
+            last_value = float(last_entry['value'])
             segment = { 'from': last_time, 'to': last_time, 'params': { value: last_value } }
 
             if condition == '>':
