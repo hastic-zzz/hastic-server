@@ -9,7 +9,6 @@ import math
 from typing import Union, List, Generator
 import utils
 import logging
-import time
 from itertools import islice
 from collections import deque
 
@@ -76,7 +75,7 @@ def timestamp_to_index(dataframe, timestamp):
     return time_ind
 
 def find_peaks(data: Generator[float, None, None], size: int) -> Generator[float, None, None]:
-    window = deque(islice(data, size*2 + 1))
+    window = deque(islice(data, size * 2 + 1))
     for i, v in enumerate(data, size):
         current = window[size]
         if current == max(window) and current != window[size + 1]:
@@ -228,7 +227,8 @@ def get_convolve(segments: list, av_model: list, data: pd.Series, window_size: i
             convolve_list.append(max(convolve_segment))
     return convolve_list
 
-def create_correlation_data(data: pd.Series, window_size: int, pattern_model: List[float]) -> Generator[float, None, None]:
+def get_correlation_gen(data: pd.Series, window_size: int, pattern_model: List[float]) -> Generator[float, None, None]:
+    #Get a new dataset by correlating between a sliding window in data and pattern_model
     for i in range(window_size, len(data) - window_size):
         watch_data = data[i - window_size: i + window_size + 1]
         correlation = pearsonr(watch_data, pattern_model)

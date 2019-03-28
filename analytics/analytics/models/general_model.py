@@ -39,8 +39,8 @@ class GeneralModel(Model):
         center_ind = start + math.ceil((end - start) / 2)
         return center_ind
 
-    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: str) -> None:
-        logging.debug('Start method do_fit for analytic unit: {}'.format(id))
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, AnalyticUnitId: str) -> None:
+        logging.debug('Start method do_fit for analytic unit: {}'.format(AnalyticUnitId))
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         last_pattern_center = self.state.get('pattern_center', [])
@@ -61,10 +61,10 @@ class GeneralModel(Model):
 
         self.state['convolve_min'], self.state['convolve_max'] = utils.get_min_max(convolve_list, self.state['WINDOW_SIZE'] / 3)
         self.state['conv_del_min'], self.state['conv_del_max'] = utils.get_min_max(del_conv_list, self.state['WINDOW_SIZE'])
-        logging.debug('Method do_fit completed correctly for analytic unit: {}'.format(id))
+        logging.debug('Method do_fit completed correctly for analytic unit: {}'.format(AnalyticUnitId))
 
-    def do_detect(self, dataframe: pd.DataFrame, id: str) -> list:
-        logging.debug('Start method do_detect for analytic unit: {}'.format(id))
+    def do_detect(self, dataframe: pd.DataFrame, AnalyticUnitId: str) -> List[int]:
+        logging.debug('Start method do_detect for analytic unit: {}'.format(AnalyticUnitId))
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         pat_data = self.state.get('pattern_model', [])
@@ -72,15 +72,15 @@ class GeneralModel(Model):
             raise ValueError('Labeled patterns must not be empty')
 
         window_size = self.state.get('WINDOW_SIZE', 0)
-        all_corr = utils.create_correlation_data(data, window_size, pat_data)
+        all_corr = utils.get_correlation_gen(data, window_size, pat_data)
         all_corr_peaks = utils.find_peaks(all_corr, window_size * 2)
         filtered = self.__filter_detection(all_corr_peaks, data)
         filtered = list(filtered)
-        logging.debug('Method do_detect completed correctly for analytic unit: {}'.format(id))
+        logging.debug('Method do_detect completed correctly for analytic unit: {}'.format(AnalyticUnitId))
         return set(item + window_size for item in filtered)
 
-    def __filter_detection(self, segments:  Generator[int, None, None], data: pd.Series) -> Generator[int, None, list]:
-        if len(self.state.get('pattern_center', [])) == 0:
+    def __filter_detection(self, segments:  Generator[int, None, None], data: pd.Series) -> Generator[int, None, None]:
+        if not self.state.get('pattern_center'):
             return []
         window_size = self.state.get('WINDOW_SIZE', 0)
         pattern_model = self.state.get('pattern_model', [])
@@ -92,10 +92,8 @@ class GeneralModel(Model):
                 watch_conv = max(convolve_segment)
             else:
                 continue
-            if watch_conv < self.state['convolve_min'] * 0.8:
+            if watch_conv < self.state['convolve_min'] * 0.8 or val < PEARSON_COEFF:
                 continue
-            if val < PEARSON_COEFF:
-                continue
-            if (watch_conv < self.state['conv_del_max'] * 1.02 and watch_conv > self.state['conv_del_min'] * 0.98):
+            if watch_conv < self.state['conv_del_max'] * 1.02 and watch_conv > self.state['conv_del_min'] * 0.98:
                 continue
             yield ind
