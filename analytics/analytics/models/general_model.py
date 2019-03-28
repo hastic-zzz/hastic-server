@@ -1,5 +1,5 @@
 from models import Model
-
+from typing import Union, List, Generator
 import utils
 import numpy as np
 import pandas as pd
@@ -27,7 +27,6 @@ class GeneralModel(Model):
             'conv_del_min': 0,
             'conv_del_max': 0,
         }
-        self.all_corr = []
     
     def get_model_type(self) -> (str, bool):
         model = 'general'
@@ -73,23 +72,20 @@ class GeneralModel(Model):
             raise ValueError('Labeled patterns must not be empty')
 
         window_size = self.state.get('WINDOW_SIZE', 0)
-        logging.debug('Start creating correlation data in do_detect')
-        self.all_corr = utils.create_correlation_data(data, window_size, pat_data)
-        logging.debug('Correlation data created')
-        all_corr_peaks = utils.peak_finder(self.all_corr, window_size * 2)
+        all_corr = utils.create_correlation_data(data, window_size, pat_data)
+        all_corr_peaks = utils.find_peaks(all_corr, window_size * 2)
         filtered = self.__filter_detection(all_corr_peaks, data)
+        filtered = list(filtered)
         logging.debug('Method do_detect completed correctly for analytic unit: {}'.format(id))
         return set(item + window_size for item in filtered)
 
-    def __filter_detection(self, segments: list, data: pd.Series):
-        logging.debug('Start filtering possible patterns with indexes: {}'.format(segments))
-        if len(segments) == 0 or len(self.state.get('pattern_center', [])) == 0:
+    def __filter_detection(self, segments:  Generator[int, None, None], data: pd.Series) -> Generator[int, None, list]:
+        if len(self.state.get('pattern_center', [])) == 0:
             return []
-        delete_list = []
         window_size = self.state.get('WINDOW_SIZE', 0)
         pattern_model = self.state.get('pattern_model', [])
-        for val in segments:
-            watch_data = data[val - window_size: val + window_size + 1]
+        for ind, val in segments:
+            watch_data = data[ind - window_size: ind + window_size + 1]
             watch_data = utils.subtract_min_without_nan(watch_data)
             convolve_segment = scipy.signal.fftconvolve(watch_data, pattern_model)
             if len(convolve_segment) > 0:
@@ -97,15 +93,9 @@ class GeneralModel(Model):
             else:
                 continue
             if watch_conv < self.state['convolve_min'] * 0.8:
-                delete_list.append(val)
                 continue
-            if self.all_corr[val] < PEARSON_COEFF:
-                delete_list.append(val)
+            if val < PEARSON_COEFF:
                 continue
             if (watch_conv < self.state['conv_del_max'] * 1.02 and watch_conv > self.state['conv_del_min'] * 0.98):
-	            delete_list.append(val)
-
-        for item in delete_list:
-            segments.remove(item)
-        logging.debug('Filtering ended with pattern indexes {}'.format(set(segments)))
-        return set(segments)
+                continue
+            yield ind
