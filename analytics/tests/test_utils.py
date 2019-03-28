@@ -239,12 +239,13 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(utils.find_nan_indexes(data), result)
     
     def test_create_correlation_data(self):
-        data = [random.randint(10, 999) for _ in range(100000)]
+        data = [random.randint(10, 999) for _ in range(10000)]
         data = pd.Series(data)
         pattern_model = [100, 200, 500, 300, 100]
         ws = 2
-        result = 60000
-        corr_data = utils.create_correlation_data(data, ws, pattern_model)
+        result = 6000
+        corr_data = utils.get_correlation_gen(data, ws, pattern_model)
+        corr_data = list(corr_data)
         self.assertGreaterEqual(len(corr_data), result)
 
 
