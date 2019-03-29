@@ -62,7 +62,8 @@ class Model(ABC):
     @abstractmethod
     def get_model_type(self) -> (str, bool):
         pass
-
+        
+    # TODO: id: str -> id: AnalyticUnitId in all models
     def fit(self, dataframe: pd.DataFrame, segments: list, id: str, cache: Optional[ModelCache]) -> ModelCache:
         logging.debug('Start method fit for analytic unit {}'.format(id))
         data = dataframe['value']
