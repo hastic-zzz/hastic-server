@@ -12,7 +12,7 @@ from scipy.stats import gaussian_kde
 from scipy.stats import norm
 import logging
 
-PEARSON_COEFF = 0.7
+PEARSON_FACTOR = 0.7
 
 class GeneralModel(Model):
 
@@ -92,7 +92,7 @@ class GeneralModel(Model):
                 watch_conv = max(convolve_segment)
             else:
                 continue
-            if watch_conv < self.state['convolve_min'] * 0.8 or val < PEARSON_COEFF:
+            if watch_conv < self.state['convolve_min'] * 0.8 or val < PEARSON_FACTOR:
                 continue
             if watch_conv < self.state['conv_del_max'] * 1.02 and watch_conv > self.state['conv_del_min'] * 0.98:
                 continue
