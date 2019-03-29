@@ -1,10 +1,11 @@
 import models
 
+import asyncio
 import logging
 import config
 
 import pandas as pd
-from typing import Optional
+from typing import Optional, Generator
 
 from detectors import Detector
 from buckets import DataBucket
@@ -33,11 +34,13 @@ def resolve_model_by_pattern(pattern: str) -> models.Model:
 AnalyticUnitId = str
 class PatternDetector(Detector):
 
+    MIN_BUCKET_SIZE = 150
+    CHUNK_SIZE = 1500
+
     def __init__(self, pattern_type: str, analytic_unit_id: AnalyticUnitId):
         self.analytic_unit_id = analytic_unit_id
         self.pattern_type = pattern_type
         self.model = resolve_model_by_pattern(self.pattern_type)
-        self.min_bucket_size = 150
         self.bucket = DataBucket()
 
     def train(self, dataframe: pd.DataFrame, segments: list, cache: Optional[models.ModelCache]) -> models.ModelCache:
@@ -52,9 +55,16 @@ class PatternDetector(Detector):
     def detect(self, dataframe: pd.DataFrame, cache: Optional[models.ModelCache]) -> dict:
         logger.debug('Unit {} got {} data points for detection'.format(self.analytic_unit_id, len(dataframe)))
         # TODO: split and sleep (https://github.com/hastic/hastic-server/pull/124#discussion_r214085643)
-        detected = self.model.detect(dataframe, self.analytic_unit_id, cache)
 
-        segments = [{ 'from': segment[0], 'to': segment[1] } for segment in detected['segments']]
+        chunks = self.__get_data_chunks(dataframe)
+
+        segments = []
+        segment_parser = lambda segment: { 'from': segment[0], 'to': segment[1] }
+        for chunk in chunks:
+            detected = self.model.detect(chunk, cache)
+            segments.extend(map(segment_parser, detected['segments']))
+            asyncio.sleep(0)
+
         newCache = detected['cache']
 
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
@@ -88,3 +98,11 @@ class PatternDetector(Detector):
             return res
         else:
             return None
+
+    def __get_data_chunks(self, dataframe: pd.DataFrame) -> Generator[pd.DataFrame, None, None]:
+        data_len = len(dataframe)
+        end_of_slice = lambda offset: offset + min(self.CHUNK_SIZE, data_len - offset)
+        chunk_slicer = lambda offset: slice(offset, end_of_slice(offset))
+        return (dataframe[chunk_slicer(offset)]
+                    for offset in range(0, data_len, self.CHUNK_SIZE)
+                        if offset < data_len)
