@@ -78,6 +78,7 @@ def find_peaks(data: Generator[float, None, None], size: int) -> Generator[float
     window = deque(islice(data, size * 2 + 1))
     for i, v in enumerate(data, size):
         current = window[size]
+        #TODO: remove max() from cycle
         if current == max(window) and current != window[size + 1]:
             yield i, current
         window.append(v)
