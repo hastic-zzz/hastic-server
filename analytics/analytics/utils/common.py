@@ -6,9 +6,11 @@ from scipy.signal import argrelextrema
 from scipy.stats import gaussian_kde
 from scipy.stats.stats import pearsonr
 import math
-from typing import Union
+from typing import Union, List, Generator
 import utils
 import logging
+from itertools import islice
+from collections import deque
 
 SHIFT_FACTOR = 0.05
 CONFIDENCE_FACTOR = 0.2
@@ -72,12 +74,15 @@ def timestamp_to_index(dataframe, timestamp):
         raise ValueError('Dataframe has no appropriate timestamp {}'.format(timestamp))
     return time_ind
 
-def peak_finder(data, size):
-    all_max = []
-    for i in range(size, len(data) - size):
-        if data[i] == max(data[i - size: i + size]) and data[i] > data[i + 1]:
-            all_max.append(i)
-    return all_max
+def find_peaks(data: Generator[float, None, None], size: int) -> Generator[float, None, None]:
+    window = deque(islice(data, size * 2 + 1))
+    for i, v in enumerate(data, size):
+        current = window[size]
+        #TODO: remove max() from loop
+        if current == max(window) and current != window[size + 1]:
+            yield i, current
+        window.append(v)
+        window.popleft()
 
 def ar_mean(numbers):
     return float(sum(numbers)) / max(len(numbers), 1)
@@ -222,6 +227,14 @@ def get_convolve(segments: list, av_model: list, data: pd.Series, window_size: i
         if len(convolve_segment) > 0:
             convolve_list.append(max(convolve_segment))
     return convolve_list
+
+def get_correlation_gen(data: pd.Series, window_size: int, pattern_model: List[float]) -> Generator[float, None, None]:
+    #Get a new dataset by correlating between a sliding window in data and pattern_model
+    for i in range(window_size, len(data) - window_size):
+        watch_data = data[i - window_size: i + window_size + 1]
+        correlation = pearsonr(watch_data, pattern_model)
+        if len(correlation) > 0:
+            yield(correlation[0])
 
 def get_correlation(segments: list, av_model: list, data: pd.Series, window_size: int) -> list:
     labeled_segment = []

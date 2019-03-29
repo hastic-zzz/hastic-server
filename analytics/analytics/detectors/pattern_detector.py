@@ -42,9 +42,9 @@ class PatternDetector(Detector):
 
     def train(self, dataframe: pd.DataFrame, segments: list, cache: Optional[models.ModelCache]) -> models.ModelCache:
         # TODO: pass only part of dataframe that has segments
-        new_cache = self.model.fit(dataframe, segments, cache)
+        new_cache = self.model.fit(dataframe, segments, self.analytic_unit_id, cache)
         if new_cache == None or len(new_cache) == 0:
-            logging.warning('new_cache is empty with data: {}, segments: {}, cache: {}'.format(dataframe, segments, cache))
+            logging.warning('new_cache is empty with data: {}, segments: {}, cache: {}, analytic unit: {}'.format(dataframe, segments, cache, self.analytic_unit_id))
         return {
             'cache': new_cache
         }
@@ -52,7 +52,7 @@ class PatternDetector(Detector):
     def detect(self, dataframe: pd.DataFrame, cache: Optional[models.ModelCache]) -> dict:
         logger.debug('Unit {} got {} data points for detection'.format(self.analytic_unit_id, len(dataframe)))
         # TODO: split and sleep (https://github.com/hastic/hastic-server/pull/124#discussion_r214085643)
-        detected = self.model.detect(dataframe, cache)
+        detected = self.model.detect(dataframe, self.analytic_unit_id, cache)
 
         segments = [{ 'from': segment[0], 'to': segment[1] } for segment in detected['segments']]
         newCache = detected['cache']
@@ -66,13 +66,16 @@ class PatternDetector(Detector):
         }
 
     def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
+        logging.debug('Start recieve_data for analytic unit {}'.format(self.analytic_unit_id))
         data_without_nan = data.dropna()
 
         if len(data_without_nan) == 0:
             return None
 
         self.bucket.receive_data(data_without_nan)
-        if not cache: cache = {}
+        if cache == None:
+            logging.debug('Recieve_data cache is None for task {}'.format(self.analytic_unit_id))
+            cache = {}
         bucket_size = max(cache.get('WINDOW_SIZE', 0) * 3, self.min_bucket_size)
 
         res = self.detect(self.bucket.data, cache)
@@ -80,7 +83,7 @@ class PatternDetector(Detector):
         if len(self.bucket.data) > bucket_size:
             excess_data = len(self.bucket.data) - bucket_size
             self.bucket.drop_data(excess_data)
-        
+        logging.debug('End recieve_data for analytic unit: {} with res: {}'.format(self.analytic_unit_id, res))
         if res:
             return res
         else:

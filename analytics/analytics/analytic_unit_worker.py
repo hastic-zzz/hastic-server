@@ -27,7 +27,7 @@ class AnalyticUnitWorker:
         try:
             new_cache: ModelCache = self._training_future.result(timeout = config.LEARNING_TIMEOUT)
             return new_cache
-        except CancelledError as e:
+        except CancelledError:
             return cache
         except TimeoutError:
             raise Exception('Timeout ({}s) exceeded while learning'.format(config.LEARNING_TIMEOUT))

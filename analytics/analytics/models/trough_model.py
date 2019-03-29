@@ -39,7 +39,7 @@ class TroughModel(Model):
         segment = data[start: end]
         return segment.idxmin()
 
-    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: str) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         window_size = self.state['WINDOW_SIZE']
@@ -66,7 +66,7 @@ class TroughModel(Model):
 
         self._update_fiting_result(self.state, learning_info['confidence'], convolve_list, del_conv_list, height_list)
 
-    def do_detect(self, dataframe: pd.DataFrame):
+    def do_detect(self, dataframe: pd.DataFrame, id: str):
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         window_size = int(len(data)/SMOOTHING_COEFF) #test ws on flat data
