@@ -21,7 +21,7 @@ class AnalyticUnitWorker:
 
     async def do_train(
         self, payload: Union[list, dict], data: pd.DataFrame, cache: Optional[ModelCache]
-    ) -> ModelCache:
+    ) -> Optional[ModelCache]:
         cfuture: concurrent.futures.Future = self._executor.submit(
             self._detector.train, data, payload, cache
         )
