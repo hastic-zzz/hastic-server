@@ -4,32 +4,34 @@ import logging
 import pandas as pd
 from typing import Optional, Union
 from models import ModelCache
-from concurrent.futures import Executor, CancelledError, TimeoutError
+import concurrent.futures
 import asyncio
+
 
 logger = logging.getLogger('AnalyticUnitWorker')
 
 
 class AnalyticUnitWorker:
 
-    def __init__(self, analytic_unit_id: str, detector: detectors.Detector, executor: Executor):
+    def __init__(self, analytic_unit_id: str, detector: detectors.Detector, executor: concurrent.futures.Executor):
         self.analytic_unit_id = analytic_unit_id
         self._detector = detector
-        self._executor: Executor = executor
+        self._executor: concurrent.futures.Executor = executor
         self._training_future: asyncio.Future = None
 
     async def do_train(
         self, payload: Union[list, dict], data: pd.DataFrame, cache: Optional[ModelCache]
     ) -> ModelCache:
-        self._training_future = self._executor.submit(
+        cfuture: concurrent.futures.Future = self._executor.submit(
             self._detector.train, data, payload, cache
         )
+        self._training_future = asyncio.wrap_future(cfuture)
         try:
-            new_cache: ModelCache = self._training_future.result(timeout = config.LEARNING_TIMEOUT)
+            new_cache: ModelCache = await asyncio.wait_for(self._training_future, timeout = config.LEARNING_TIMEOUT)
             return new_cache
-        except CancelledError:
-            return cache
-        except TimeoutError:
+        except asyncio.CancelledError:
+            return None
+        except asyncio.TimeoutError:
             raise Exception('Timeout ({}s) exceeded while learning'.format(config.LEARNING_TIMEOUT))
 
     async def do_detect(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
