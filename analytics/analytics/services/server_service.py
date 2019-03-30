@@ -7,6 +7,7 @@ import logging
 import json
 import asyncio
 import traceback
+from typing import Optional
 
 logger = logging.getLogger('SERVER_SERVICE')
 
@@ -40,17 +41,22 @@ class ServerMessage:
 
 class ServerService:
 
-    def __init__(self, on_message_handler):
-        self.on_message_handler = on_message_handler
-
+    def __init__(self):
         logger.info("Binding to %s ..." % config.ZMQ_CONNECTION_STRING)
         self.context = zmq.asyncio.Context()
         self.socket = self.context.socket(zmq.PAIR)
         self.socket.bind(config.ZMQ_CONNECTION_STRING)
         self.request_next_id = 1
         self.responses = dict()
+        self._aiter_inited = False
 
-    async def handle_loop(self):
+    def __aiter__(self):
+        if self._aiter_inited:
+            raise RuntimeError('Can`t iterate twice')
+        _aiter_inited = True
+        return self
+
+    async def __anext__(self) -> ServerMessage:
         while True:
             received_bytes = await self.socket.recv()
             text = received_bytes.decode('utf-8')
@@ -58,7 +64,11 @@ class ServerService:
             if text == 'PING':
                 asyncio.ensure_future(self.__handle_ping())
             else:
-                asyncio.ensure_future(self.__handle_message(text))
+                message = self.__parse_message_or_save(text)
+                if message is None:
+                    continue
+                else:
+                    return message
 
     async def send_message(self, message: ServerMessage):
         await self.socket.send_string(json.dumps(message.toJSON()))
@@ -78,16 +88,14 @@ class ServerService:
     async def __handle_ping(self):
         await self.socket.send(b'PONG')
 
-    async def __handle_message(self, text: str):
+    def __parse_message_or_save(self, text: str) -> Optional[ServerMessage]:
         try:
             message_object = json.loads(text)
             message = ServerMessage.fromJSON(message_object)
-
             if message.request_id is not None:
                 self.responses[message_object['requestId']] = message.payload
-                return
-
-            asyncio.ensure_future(self.on_message_handler(message))
-        except Exception as e:
+                return None
+            return message
+        except Exception:
             error_text = traceback.format_exc()
             logger.error("__handle_message Exception: '%s'" % error_text)
