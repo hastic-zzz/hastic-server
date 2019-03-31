@@ -74,7 +74,6 @@ async def handle_data(task: object):
         await server_service.send_message(message)
 
 async def handle_message(message: services.ServerMessage):
-    payload = None
     if message.method == 'TASK':
         await handle_task(message.payload)
     if message.method == 'DATA':
@@ -83,7 +82,7 @@ async def handle_message(message: services.ServerMessage):
 def init_services():
     logger.info("Starting services...")
     logger.info("Server...")
-    server_service = services.ServerService(handle_message)
+    server_service = services.ServerService()
     logger.info("Ok")
     logger.info("Data service...")
     data_service = services.DataService(server_service)
@@ -95,7 +94,8 @@ def init_services():
     return server_service, data_service, analytic_unit_manager
 
 async def app_loop():
-    await server_service.handle_loop()
+    async for message in server_service:
+        asyncio.ensure_future(handle_message(message))
 
 
 if __name__ == "__main__":
