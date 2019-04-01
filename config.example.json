@@ -4,5 +4,6 @@
   "HASTIC_WEBHOOK_URL": "http://localhost:8080",
   "HASTIC_WEBHOOK_TYPE": "application/x-www-form-urlencoded",
   "HASTIC_WEBHOOK_SECRET": "mysecret",
-  "GRAFANA_URL": "http://localhost:3000"
+  "GRAFANA_URL": "http://localhost:3000",
+  "LEARNING_TIMEOUT": 120
 }

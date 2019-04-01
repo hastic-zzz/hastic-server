@@ -28,3 +28,4 @@ def get_config_field(field, default_val = None):
 
 ZMQ_DEV_PORT = get_config_field('ZMQ_DEV_PORT', '8002')
 ZMQ_CONNECTION_STRING = get_config_field('ZMQ_CONNECTION_STRING', 'tcp://0.0.0.0:%s' % ZMQ_DEV_PORT)
+LEARNING_TIMEOUT = get_config_field('LEARNING_TIMEOUT', 120)

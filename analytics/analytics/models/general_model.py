@@ -1,5 +1,5 @@
 from models import Model
-
+from typing import Union, List, Generator
 import utils
 import numpy as np
 import pandas as pd
@@ -10,8 +10,9 @@ from scipy.stats.stats import pearsonr
 import math
 from scipy.stats import gaussian_kde
 from scipy.stats import norm
+import logging
 
-PEARSON_COEFF = 0.7
+PEARSON_FACTOR = 0.7
 
 class GeneralModel(Model):
 
@@ -26,8 +27,6 @@ class GeneralModel(Model):
             'conv_del_min': 0,
             'conv_del_max': 0,
         }
-        self.all_conv = []
-        self.all_corr = []
     
     def get_model_type(self) -> (str, bool):
         model = 'general'
@@ -40,7 +39,8 @@ class GeneralModel(Model):
         center_ind = start + math.ceil((end - start) / 2)
         return center_ind
 
-    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, AnalyticUnitId: str) -> None:
+        logging.debug('Start method do_fit for analytic unit: {}'.format(AnalyticUnitId))
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         last_pattern_center = self.state.get('pattern_center', [])
@@ -61,44 +61,39 @@ class GeneralModel(Model):
 
         self.state['convolve_min'], self.state['convolve_max'] = utils.get_min_max(convolve_list, self.state['WINDOW_SIZE'] / 3)
         self.state['conv_del_min'], self.state['conv_del_max'] = utils.get_min_max(del_conv_list, self.state['WINDOW_SIZE'])
+        logging.debug('Method do_fit completed correctly for analytic unit: {}'.format(AnalyticUnitId))
 
-    def do_detect(self, dataframe: pd.DataFrame) -> list:
+    def do_detect(self, dataframe: pd.DataFrame, AnalyticUnitId: str) -> List[int]:
+        logging.debug('Start method do_detect for analytic unit: {}'.format(AnalyticUnitId))
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         pat_data = self.state.get('pattern_model', [])
         if pat_data.count(0) == len(pat_data):
             raise ValueError('Labeled patterns must not be empty')
 
-        self.all_conv = []
-        self.all_corr = []
         window_size = self.state.get('WINDOW_SIZE', 0)
-        for i in range(window_size, len(data) - window_size):
-            watch_data = data[i - window_size: i + window_size + 1]
-            watch_data = utils.subtract_min_without_nan(watch_data)
-            conv = scipy.signal.fftconvolve(watch_data, pat_data)
-            correlation = pearsonr(watch_data, pat_data)
-            self.all_corr.append(correlation[0])
-            self.all_conv.append(max(conv))
-        all_conv_peaks = utils.peak_finder(self.all_conv, window_size * 2)
-        all_corr_peaks = utils.peak_finder(self.all_corr, window_size * 2)
+        all_corr = utils.get_correlation_gen(data, window_size, pat_data)
+        all_corr_peaks = utils.find_peaks(all_corr, window_size * 2)
         filtered = self.__filter_detection(all_corr_peaks, data)
+        filtered = list(filtered)
+        logging.debug('Method do_detect completed correctly for analytic unit: {}'.format(AnalyticUnitId))
         return set(item + window_size for item in filtered)
 
-    def __filter_detection(self, segments: list, data: list):
-        if len(segments) == 0 or len(self.state.get('pattern_center', [])) == 0:
+    def __filter_detection(self, segments:  Generator[int, None, None], data: pd.Series) -> Generator[int, None, None]:
+        if not self.state.get('pattern_center'):
             return []
-        delete_list = []
-        for val in segments:
-            if self.all_conv[val] < self.state['convolve_min'] * 0.8:
-                delete_list.append(val)
+        window_size = self.state.get('WINDOW_SIZE', 0)
+        pattern_model = self.state.get('pattern_model', [])
+        for ind, val in segments:
+            watch_data = data[ind - window_size: ind + window_size + 1]
+            watch_data = utils.subtract_min_without_nan(watch_data)
+            convolve_segment = scipy.signal.fftconvolve(watch_data, pattern_model)
+            if len(convolve_segment) > 0:
+                watch_conv = max(convolve_segment)
+            else:
                 continue
-            if self.all_corr[val] < PEARSON_COEFF:
-                delete_list.append(val)
+            if watch_conv < self.state['convolve_min'] * 0.8 or val < PEARSON_FACTOR:
                 continue
-            if (self.all_conv[val] < self.state['conv_del_max'] * 1.02 and self.all_conv[val] > self.state['conv_del_min'] * 0.98):
-	            delete_list.append(val)
-
-        for item in delete_list:
-            segments.remove(item)
-
-        return set(segments)
+            if watch_conv < self.state['conv_del_max'] * 1.02 and watch_conv > self.state['conv_del_min'] * 0.98:
+                continue
+            yield ind

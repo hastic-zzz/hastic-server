@@ -14,19 +14,19 @@ export const ANALYTIC_UNIT_TYPES = {
       value: 'GENERAL'
     },
     {
-      name: 'Peaks',
+      name: 'Peak',
       value: 'PEAK'
     },
     {
-      name: 'Troughs',
+      name: 'Trough',
       value: 'TROUGH'
     },
     {
-      name: 'Jumps',
+      name: 'Jump',
       value: 'JUMP'
     },
     {
-      name: 'Drops',
+      name: 'Drop',
       value: 'DROP'
     }
   ],

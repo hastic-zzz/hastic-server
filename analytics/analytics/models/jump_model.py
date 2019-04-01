@@ -39,7 +39,7 @@ class JumpModel(Model):
         segment_center_index = utils.find_pattern_center(segment, start, 'jump')
         return segment_center_index
 
-    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: str) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         window_size = self.state['WINDOW_SIZE']
@@ -64,7 +64,7 @@ class JumpModel(Model):
         self.state['JUMP_HEIGHT'] = float(min(learning_info['pattern_height'], default = 1))
         self.state['JUMP_LENGTH'] = int(max(learning_info['pattern_width'], default = 1))
 
-    def do_detect(self, dataframe: pd.DataFrame) -> list:
+    def do_detect(self, dataframe: pd.DataFrame, id: str) -> list:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         possible_jumps = utils.find_jump(data, self.state['JUMP_HEIGHT'], self.state['JUMP_LENGTH'] + 1)

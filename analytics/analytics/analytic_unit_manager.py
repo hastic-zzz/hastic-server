@@ -11,7 +11,6 @@ from models import ModelCache
 
 
 logger = log.getLogger('AnalyticUnitManager')
-WORKERS_EXECUTORS = 20
 
 AnalyticUnitId = str
 
@@ -43,7 +42,7 @@ class AnalyticUnitManager:
 
     def __init__(self):
         self.analytic_workers: Dict[AnalyticUnitId, AnalyticUnitWorker] = dict()
-        self.workers_executor = ThreadPoolExecutor(max_workers=WORKERS_EXECUTORS)
+        self.workers_executor = ThreadPoolExecutor()
 
     def __ensure_worker(
         self,
@@ -64,7 +63,7 @@ class AnalyticUnitManager:
             returns payload or None
         """
         analytic_unit_id: AnalyticUnitId = task['analyticUnitId']
-
+        log.debug('Analytics get task with type: {} for unit: {}'.format(task['type'], analytic_unit_id))
         if task['type'] == 'CANCEL':
             if analytic_unit_id in self.analytic_workers:
                 self.analytic_workers[analytic_unit_id].cancel()
@@ -93,11 +92,13 @@ class AnalyticUnitManager:
 
     async def handle_analytic_task(self, task):
         try:
+            log.debug('Start handle_analytic_task with analytic unit: {}'.format(task['analyticUnitId']))
             result_payload = await self.__handle_analytic_task(task)
             result_message =  {
                 'status': 'SUCCESS',
                 'payload': result_payload
             }
+            log.debug('End correctly handle_analytic_task with anatytic unit: {}'.format(task['analyticUnitId']))
             return result_message
         except Exception as e:
             error_text = traceback.format_exc()
