@@ -80,8 +80,9 @@ class TroughModel(Model):
         for i in all_mins:
             if data[i] < extrema_list[i]:
                 segments.append(i)
-
-        return self.__filter_detection(segments, data)
+        result = self.__filter_detection(segments, data)
+        result = utils.get_borders_of_pattern(result, data, self.state.get('WINDOW_SIZE'), self.state.get('confidence'), True)
+        return result
 
     def __filter_detection(self, segments: list, data: list) -> list:
         delete_list = []

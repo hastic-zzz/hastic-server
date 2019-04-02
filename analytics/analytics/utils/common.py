@@ -13,7 +13,7 @@ from itertools import islice
 from collections import deque
 
 SHIFT_FACTOR = 0.05
-CONFIDENCE_FACTOR = 0.2
+CONFIDENCE_FACTOR = 0.5
 SMOOTHING_FACTOR = 5
 
 def exponential_smoothing(series, alpha):
@@ -168,6 +168,37 @@ def find_confidence(segment: pd.Series) -> (float, float):
     else:
         return (0, 0)
 
+def get_borders_of_pattern(pattern_center: List[int], data: pd.Series, window_size: int, confidence: float, reverse = False) -> List[int]:
+    #Find start and end of patterns for peak and troughs
+    border_list = []
+    for center in pattern_center:
+        current_pattern = get_interval(data, center, window_size, True)
+        if reverse:
+            current_pattern = reverse_segment(current_pattern)
+        current_pattern = current_pattern - confidence
+        left_segment = current_pattern[:window_size]
+        right_segment = current_pattern[window_size:]
+        left_border = get_end_of_pattern(left_segment.iloc[::-1])
+        right_border = get_end_of_pattern(right_segment)
+        border_list.append((left_border, right_border))
+    return border_list
+
+def get_end_of_pattern(segment):
+    if len(segment) < 1:
+        return 1
+    for ind in range(1, len(segment) - 1):
+        if segment.values[ind] > 0:
+            continue
+        if segment.values[ind] >= segment.values[ind - 1]:
+            return segment.index[ind - 1]
+    return segment.index[-1]
+
+def reverse_segment(segment):
+    rev_val = max(segment)
+    for ind in range(len(segment)):
+        segment[ind] = math.fabs(segment[ind] - rev_val)
+    return segment    
+
 def find_width(pattern: pd.Series, selector) -> int:
     pattern = pattern.values
     center = utils.find_extremum_index(pattern, selector)
@@ -191,7 +222,7 @@ def find_extremum_index(segment: np.ndarray, selector: bool) -> int:
     else:
         return segment.argmin()
 
-def get_interval(data: pd.Series, center: int, window_size: int) -> pd.Series:
+def get_interval(data: pd.Series, center: int, window_size: int, normalized = False) -> pd.Series:
     if center >= len(data):
         logging.warning('Pattern center {} is out of data with len {}'.format(center, len(data)))
         return []
@@ -201,7 +232,10 @@ def get_interval(data: pd.Series, center: int, window_size: int) -> pd.Series:
         left_bound = 0
     if right_bound > len(data):
         right_bound = len(data)
-    return data[left_bound: right_bound]
+    result_interval = data[left_bound: right_bound]
+    if normalized:
+        result_interval = subtract_min_without_nan(result_interval)
+    return result_interval
 
 def subtract_min_without_nan(segment: pd.Series) -> pd.Series:
     if len(segment) == 0:

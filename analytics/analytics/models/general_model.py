@@ -76,8 +76,9 @@ class GeneralModel(Model):
         all_corr_peaks = utils.find_peaks(all_corr, window_size * 2)
         filtered = self.__filter_detection(all_corr_peaks, data)
         filtered = list(filtered)
+        result = set((item, item + 2 * window_size + 1) for item in filtered)
         logging.debug('Method do_detect completed correctly for analytic unit: {}'.format(AnalyticUnitId))
-        return set(item + window_size for item in filtered)
+        return result
 
     def __filter_detection(self, segments:  Generator[int, None, None], data: pd.Series) -> Generator[int, None, None]:
         if not self.state.get('pattern_center'):

@@ -104,8 +104,8 @@ class Model(ABC):
             }
         result = self.do_detect(dataframe, id)
         segments = [(
-            utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][x - 1]),
-            utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][x + 1])
+            utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][x[0]]),
+            utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][x[1]])
         ) for x in result]
         if not self.state:
             logging.warning('Return empty self.state after detect')
