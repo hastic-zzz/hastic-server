@@ -183,7 +183,8 @@ def get_borders_of_pattern(pattern_center: List[int], data: pd.Series, window_si
         border_list.append((left_border, right_border))
     return border_list
 
-def get_end_of_pattern(segment):
+def get_end_of_pattern(segment: pd.Series) -> int:
+    #Find end of half pattern
     if len(segment) < 1:
         return 1
     for ind in range(1, len(segment) - 1):
@@ -193,7 +194,8 @@ def get_end_of_pattern(segment):
             return segment.index[ind - 1]
     return segment.index[-1]
 
-def reverse_segment(segment):
+def reverse_segment(segment: pd.Series) -> pd.Series:
+    #Сonvert trough to peak and vice versa
     rev_val = max(segment)
     for ind in range(len(segment)):
         segment[ind] = math.fabs(segment[ind] - rev_val)
