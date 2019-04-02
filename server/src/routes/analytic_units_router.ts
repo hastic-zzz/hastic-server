@@ -4,6 +4,7 @@ import * as AnalyticUnit from '../models/analytic_unit_model';
 import { createAnalyticUnitFromObject } from '../controllers/analytics_controller';
 
 import * as Router from 'koa-router';
+import * as _ from 'lodash';
 
 
 async function getStatus(ctx: Router.IRouterContext) {
@@ -122,8 +123,9 @@ async function deleteUnit(ctx: Router.IRouterContext) {
 }
 
 async function runDetect(ctx: Router.IRouterContext) {
-  const { id: analyticUnitId } = ctx.request.body as { id: AnalyticUnit.AnalyticUnitId };
-  AnalyticsController.runFirstLearning(analyticUnitId);
+  const { ids } = ctx.request.body as { ids: AnalyticUnit.AnalyticUnitId[] };
+
+  _.each(ids, async id => await AnalyticsController.runFirstLearning(id));
   ctx.response.body = {
     code: 200,
     message: 'Success'
