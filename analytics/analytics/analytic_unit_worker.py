@@ -33,7 +33,7 @@ class AnalyticUnitWorker:
             raise Exception('Timeout ({}s) exceeded while learning'.format(config.LEARNING_TIMEOUT))
 
     async def do_detect(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
-        return self._detector.detect(data, cache)
+        return await self._detector.detect(data, cache)
 
     def cancel(self):
         if self._training_future is not None:

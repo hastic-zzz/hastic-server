@@ -52,18 +52,19 @@ class PatternDetector(Detector):
             'cache': new_cache
         }
 
-    def detect(self, dataframe: pd.DataFrame, cache: Optional[models.ModelCache]) -> dict:
+    async def detect(self, dataframe: pd.DataFrame, cache: Optional[models.ModelCache]) -> dict:
         logger.debug('Unit {} got {} data points for detection'.format(self.analytic_unit_id, len(dataframe)))
         # TODO: split and sleep (https://github.com/hastic/hastic-server/pull/124#discussion_r214085643)
 
-        chunks = self.__get_data_chunks(dataframe)
+        window_size = cache.get('WINDOW_SIZE', 0)
+        chunks = self.__get_data_chunks(dataframe, window_size)
 
-        segments = []
+        segments = set()
         segment_parser = lambda segment: { 'from': segment[0], 'to': segment[1] }
         for chunk in chunks:
+            await asyncio.sleep(1)
             detected = self.model.detect(chunk, cache)
             segments.extend(map(segment_parser, detected['segments']))
-            asyncio.sleep(0)
 
         newCache = detected['cache']
 
@@ -86,7 +87,7 @@ class PatternDetector(Detector):
         if cache == None:
             logging.debug('Recieve_data cache is None for task {}'.format(self.analytic_unit_id))
             cache = {}
-        bucket_size = max(cache.get('WINDOW_SIZE', 0) * 3, self.min_bucket_size)
+        bucket_size = max(cache.get('WINDOW_SIZE', 0) * 3, self.MIN_BUCKET_SIZE)
 
         res = self.detect(self.bucket.data, cache)
 
@@ -99,10 +100,20 @@ class PatternDetector(Detector):
         else:
             return None
 
-    def __get_data_chunks(self, dataframe: pd.DataFrame) -> Generator[pd.DataFrame, None, None]:
+    def __get_data_chunks(self, dataframe: pd.DataFrame, window_size: int) -> Generator[pd.DataFrame, None, None]:
+        """
+        Return generator, that yields dataframe's chunks. Chunks have 3 WINDOW_SIZE length and 2 WINDOW_SIZE step.
+        Example: recieved dataframe: [0, 1, 2, 3, 4, 5], returned chunks [0, 1, 2], [2, 3, 4], [4, 5].
+        """
+        chunk_size = window_size * 3
+        step_size = window_size * 2
         data_len = len(dataframe)
-        end_of_slice = lambda offset: offset + min(self.CHUNK_SIZE, data_len - offset)
+
+        if data_len < chunk_size:
+            return (chunk for chunk in [dataframe])
+
+        end_of_slice = lambda offset: offset + min(chunk_size, data_len - offset)
         chunk_slicer = lambda offset: slice(offset, end_of_slice(offset))
+
         return (dataframe[chunk_slicer(offset)]
-                    for offset in range(0, data_len, self.CHUNK_SIZE)
-                        if offset < data_len)
+                    for offset in range(0, data_len - step_size, step_size))
