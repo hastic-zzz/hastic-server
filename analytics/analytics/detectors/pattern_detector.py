@@ -35,7 +35,6 @@ AnalyticUnitId = str
 class PatternDetector(Detector):
 
     MIN_BUCKET_SIZE = 150
-    CHUNK_SIZE = 1500
 
     def __init__(self, pattern_type: str, analytic_unit_id: AnalyticUnitId):
         self.analytic_unit_id = analytic_unit_id
@@ -56,7 +55,16 @@ class PatternDetector(Detector):
         logger.debug('Unit {} got {} data points for detection'.format(self.analytic_unit_id, len(dataframe)))
         # TODO: split and sleep (https://github.com/hastic/hastic-server/pull/124#discussion_r214085643)
 
-        window_size = cache.get('WINDOW_SIZE', 0)
+        if not cache:
+            msg = f'{self.analytic_unit_id} detection got invalid cache {cache}, skip detection'
+            logger.error(msg)
+            raise ValueError(msg)
+
+        window_size = cache.get('WINDOW_SIZE')
+
+        if not window_size:
+            msg = f'{self.analytic_unit_id} detection got invalid window size {window_size}'
+
         chunks = self.__get_data_chunks(dataframe, window_size)
 
         segments = set()
@@ -110,7 +118,7 @@ class PatternDetector(Detector):
         data_len = len(dataframe)
 
         if data_len < chunk_size:
-            return (chunk for chunk in [dataframe])
+            return (chunk for chunk in (dataframe,))
 
         end_of_slice = lambda offset: offset + min(chunk_size, data_len - offset)
         chunk_slicer = lambda offset: slice(offset, end_of_slice(offset))
