@@ -14,7 +14,7 @@ class Detector(ABC):
         pass
 
     @abstractmethod
-    async def detect(self, dataframe: DataFrame, cache: Optional[ModelCache]) -> dict:
+    def detect(self, dataframe: DataFrame, cache: Optional[ModelCache]) -> dict:
         pass
 
     @abstractmethod
