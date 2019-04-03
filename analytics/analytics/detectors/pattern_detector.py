@@ -33,11 +33,14 @@ def resolve_model_by_pattern(pattern: str) -> models.Model:
 AnalyticUnitId = str
 class PatternDetector(Detector):
 
+    MIN_BUCKET_SIZE = 150
+    WINDOW_SIZE_IN_BUCKET = 5
+    DEFAULT_WINDOW_SIZE = 1
+
     def __init__(self, pattern_type: str, analytic_unit_id: AnalyticUnitId):
         self.analytic_unit_id = analytic_unit_id
         self.pattern_type = pattern_type
         self.model = resolve_model_by_pattern(self.pattern_type)
-        self.min_bucket_size = 150
         self.bucket = DataBucket()
 
     def train(self, dataframe: pd.DataFrame, segments: list, cache: Optional[models.ModelCache]) -> models.ModelCache:
@@ -77,7 +80,7 @@ class PatternDetector(Detector):
         if cache == None:
             logging.debug('Recieve_data cache is None for task {}'.format(self.analytic_unit_id))
             cache = {}
-        bucket_size = max(cache.get('WINDOW_SIZE', 0) * 5, self.MIN_BUCKET_SIZE)
+        bucket_size = max(cache.get('WINDOW_SIZE', 0) * self.WINDOW_SIZE_IN_BUCKET, self.MIN_BUCKET_SIZE)
 
         res = self.detect(self.bucket.data, cache)
 
@@ -89,3 +92,6 @@ class PatternDetector(Detector):
             return res
         else:
             return None
+
+    def get_window_size(self, cache: Optional[ModelCache]) -> int:
+        return cache.get('WINDOW_SIZE', self.DEFAULT_WINDOW_SIZE)

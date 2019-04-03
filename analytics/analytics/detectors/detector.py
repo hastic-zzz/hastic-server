@@ -18,5 +18,9 @@ class Detector(ABC):
         pass
 
     @abstractmethod
-    async def recieve_data(self, data: DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
+    def recieve_data(self, data: DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
+        pass
+
+    @abstractmethod
+    def get_window_size(self, cache: Optional[ModelCache]) -> int:
         pass
