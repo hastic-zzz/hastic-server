@@ -42,4 +42,4 @@ class AnalyticUnitWorker:
             self._training_future.cancel()
 
     async def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]):
-        return self._detector.recieve_data(data, cache)
+        return await self._detector.recieve_data(data, cache)

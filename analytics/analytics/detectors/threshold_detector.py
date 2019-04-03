@@ -68,6 +68,6 @@ class ThresholdDetector(Detector):
             'lastDetectionTime': now
         }
 
-    def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
-        result = self.detect(data, cache)
+    async def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
+        result = await self.detect(data, cache)
         return result if result else None
