@@ -131,7 +131,7 @@ class PatternDetector(Detector):
 
             offset = 0
             for i in range(chunks_number):
-                yield slice(offset, offset + nonintersected)
+                yield slice(offset, offset + nonintersected + 1)
                 offset += nonintersected
 
             yield slice(offset, offset + mod)

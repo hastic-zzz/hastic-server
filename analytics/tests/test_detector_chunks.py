@@ -1,18 +1,16 @@
 import unittest
 from detectors.pattern_detector import PatternDetector
 
+def rlist(start, stop):
+        return [x for x in range(start, stop + 1)]
 class TestUtils(unittest.TestCase):
 
     def test_chunks_generator(self):
         window_size = 1
 
         cases = [
-            ([x for x in range(7)], [[0,1,2], [2,3,4], [4,5,6]]),
             ([], [[]]),
-            ([x for x in range(1)], [[0]]),
-            ([x for x in range(3)], [[0,1,2]]),
-            ([x for x in range(8)], [[0,1,2], [2,3,4], [4,5,6], [6,7]]),
-            ([x for x in range(6)], [[0,1,2], [2,3,4], [4,5]])
+            (rlist(0, 300), [rlist(0,99),rlist(99,198),rlist(198,297),rlist(297,300)])
         ]
 
         for data, expected_chunks in cases:
