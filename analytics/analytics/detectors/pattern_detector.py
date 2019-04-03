@@ -66,7 +66,7 @@ class PatternDetector(Detector):
             'lastDetectionTime': last_detection_time
         }
 
-    async def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
+    def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
         logging.debug('Start recieve_data for analytic unit {}'.format(self.analytic_unit_id))
         data_without_nan = data.dropna()
 
