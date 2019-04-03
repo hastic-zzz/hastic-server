@@ -52,6 +52,10 @@ class PatternDetector(Detector):
     def detect(self, dataframe: pd.DataFrame, cache: Optional[models.ModelCache]) -> dict:
         logger.debug('Unit {} got {} data points for detection'.format(self.analytic_unit_id, len(dataframe)))
         # TODO: split and sleep (https://github.com/hastic/hastic-server/pull/124#discussion_r214085643)
+<<<<<<< HEAD
+=======
+              
+>>>>>>> c0a0ee5... fix
         detected = self.model.detect(dataframe, self.analytic_unit_id, cache)
 
         segments = [{ 'from': segment[0], 'to': segment[1] } for segment in detected['segments']]
@@ -76,7 +80,11 @@ class PatternDetector(Detector):
         if cache == None:
             logging.debug('Recieve_data cache is None for task {}'.format(self.analytic_unit_id))
             cache = {}
+<<<<<<< HEAD
         bucket_size = max(cache.get('WINDOW_SIZE', 0) * 3, self.min_bucket_size)
+=======
+        bucket_size = max(cache.get('WINDOW_SIZE', 0) * 5, self.MIN_BUCKET_SIZE)
+>>>>>>> c0a0ee5... fix
 
         res = await self.detect(self.bucket.data, cache)
 
@@ -88,3 +96,7 @@ class PatternDetector(Detector):
             return res
         else:
             return None
+<<<<<<< HEAD
+=======
+
+>>>>>>> c0a0ee5... fix
