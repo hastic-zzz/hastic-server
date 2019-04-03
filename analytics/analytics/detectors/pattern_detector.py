@@ -67,12 +67,15 @@ class PatternDetector(Detector):
 
         chunks = self.__get_data_chunks(dataframe, window_size)
 
-        segments = set()
+        segments = []
         segment_parser = lambda segment: { 'from': segment[0], 'to': segment[1] }
         for chunk in chunks:
-            await asyncio.sleep(1)
-            detected = self.model.detect(chunk, cache)
-            segments.extend(map(segment_parser, detected['segments']))
+            await asyncio.sleep(0)
+            detected = self.model.detect(dataframe, self.analytic_unit_id, cache)
+            for detected_segment in detected['segments']:
+                detected_segment = segment_parser(detected_segment)
+                if detected_segment not in segments:
+                    segments.append(detected_segment)
 
         newCache = detected['cache']
 
