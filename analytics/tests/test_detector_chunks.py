@@ -19,8 +19,6 @@ class TestUtils(unittest.TestCase):
             chunks = tuple(PatternDetector._PatternDetector__get_data_chunks(None, data, window_size))
             self.assertSequenceEqual(chunks, expected_chunks)
 
-    def test_detector(self):
-        pass
 
 if __name__ == '__main__':
     unittest.main()
