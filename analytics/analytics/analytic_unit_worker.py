@@ -39,8 +39,9 @@ class AnalyticUnitWorker:
             msg = f'{self.analytic_unit_id} detection got invalid cache, skip detection'
             logger.error(msg)
             raise ValueError(msg)
-
-        window_size = cache['WINDOW_SIZE']
+        
+        #TODO choose chunk size for thresholds without window size
+        window_size = cache.get('WINDOW_SIZE', 1)
         chunks = self.__get_data_chunks(data, window_size)
 
         detection_result = {
@@ -69,7 +70,8 @@ class AnalyticUnitWorker:
             logger.error(msg)
             raise ValueError(msg)
 
-        window_size = cache['WINDOW_SIZE']
+        #TODO choose chunk size for thresholds without window size
+        window_size = cache.get('WINDOW_SIZE', 1)
         chunks = self.__get_data_chunks(data, window_size)
 
         detection_result = {
