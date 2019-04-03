@@ -169,7 +169,8 @@ def find_confidence(segment: pd.Series) -> (float, float):
         return (0, 0)
 
 def get_borders_of_pattern(pattern_center: List[int], data: pd.Series, window_size: int, confidence: float, reverse = False) -> List[int]:
-    #Find start and end of patterns for peak and troughs
+    #Find start and end of patterns for peak and trough
+    #trough will be convert in peak
     border_list = []
     for center in pattern_center:
         current_pattern = get_interval(data, center, window_size, True)
@@ -182,6 +183,24 @@ def get_borders_of_pattern(pattern_center: List[int], data: pd.Series, window_si
         right_border = get_end_of_pattern(right_segment)
         border_list.append((left_border, right_border))
     return border_list
+
+def find_borders_of_jump(segment, conf):
+    #find start and end of patterns for jump and drop
+    #drop will be convert in jump
+    rising_part = segment.iloc[segment.index <= segment.idxmax()]
+    if len(rising_part) < 2:
+        #TODO: add logic for first element == max
+        return 0, len(segment) - 1
+    left_part, right_part = pd.Series([]), pd.Series([])
+    for ind, val in enumerate(rising_part):
+        if val < conf:
+            left_part = left_part.append(rising_part[ind:ind+1])
+        else:
+            right_part = right_part.append(rising_part[ind:ind+1])
+    left_border = get_end_of_pattern(left_part.iloc[::-1])
+    right_part = right_part.loc[right_part.index > left_border]
+    right_border = get_end_of_pattern(reverse_segment(right_part))
+    return left_border, right_border
 
 def get_end_of_pattern(segment: pd.Series) -> int:
     #Find end of half pattern
@@ -199,7 +218,7 @@ def reverse_segment(segment: pd.Series) -> pd.Series:
     rev_val = max(segment)
     for ind in range(len(segment)):
         segment[ind] = math.fabs(segment[ind] - rev_val)
-    return segment    
+    return segment
 
 def find_width(pattern: pd.Series, selector) -> int:
     pattern = pattern.values
