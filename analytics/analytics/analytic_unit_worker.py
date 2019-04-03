@@ -92,8 +92,7 @@ class AnalyticUnitWorker:
     def __get_data_chunks(self, dataframe: pd.DataFrame, window_size: int) -> Generator[pd.DataFrame, None, pd.DataFrame]:
         """
         TODO: fix description
-        Return generator, that yields dataframe's chunks. Chunks have 3 WINDOW_SIZE length and 2 WINDOW_SIZE step.
-        Example: recieved dataframe: [0, 1, 2, 3, 4, 5], returned chunks [0, 1, 2], [2, 3, 4], [4, 5].
+        Return generator, that yields dataframe's chunks. Chunks have 100 WINDOW_SIZE length and 99 WINDOW_SIZE step.
         """
         chunk_size = window_size * self.WINDOW_SIZES_IN_CHUNK
         intersection = window_size
