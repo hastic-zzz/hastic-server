@@ -125,7 +125,8 @@ async function deleteUnit(ctx: Router.IRouterContext) {
 async function runDetect(ctx: Router.IRouterContext) {
   const { ids } = ctx.request.body as { ids: AnalyticUnit.AnalyticUnitId[] };
 
-  _.each(ids, async id => await AnalyticsController.runFirstLearning(id));
+  await Promise.all(ids.map(AnalyticsController.runFirstLearning));
+
   ctx.response.body = {
     code: 200,
     message: 'Success'
