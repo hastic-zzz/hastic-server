@@ -35,9 +35,6 @@ class AnalyticUnitWorker:
             raise Exception('Timeout ({}s) exceeded while learning'.format(config.LEARNING_TIMEOUT))
 
     async def do_detect(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
-<<<<<<< HEAD
-        return self._detector.detect(data, cache)
-=======
         if cache is None:
             msg = f'{self.analytic_unit_id} detection got invalid cache, skip detection'
             logger.error(msg)
@@ -61,16 +58,12 @@ class AnalyticUnitWorker:
                 detection_result['segments'].extend(detected['segments'])
 
         return detection_result
->>>>>>> c0a0ee5... fix
 
     def cancel(self):
         if self._training_future is not None:
             self._training_future.cancel()
 
     async def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]):
-<<<<<<< HEAD
-        return await self._detector.recieve_data(data, cache)
-=======
         if cache is None:
             msg = f'{self.analytic_unit_id} detection got invalid cache, skip detection'
             logger.error(msg)
@@ -122,4 +115,3 @@ class AnalyticUnitWorker:
             yield slice(offset, offset + mod)
 
         return (dataframe[chunk_slice] for chunk_slice in slices())
->>>>>>> c0a0ee5... fix
