@@ -184,30 +184,37 @@ def get_borders_of_pattern(pattern_center: List[int], data: pd.Series, window_si
         border_list.append((left_border, right_border))
     return border_list
 
-def find_borders_of_jump(segment, conf):
+def find_borders_of_jump(pattern_center: List[int], data: pd.Series, window_size: int, confidence: float, reverse = False) -> List[int]:
     #find start and end of patterns for jump and drop
     #drop will be convert in jump
-    rising_part = segment.iloc[segment.index <= segment.idxmax()]
-    if len(rising_part) < 2:
-        #TODO: add logic for first element == max
-        return 0, len(segment) - 1
-    left_part, right_part = pd.Series([]), pd.Series([])
-    for ind, val in enumerate(rising_part):
-        if val < conf:
-            left_part = left_part.append(rising_part[ind:ind+1])
-        else:
-            right_part = right_part.append(rising_part[ind:ind+1])
-    left_border = get_end_of_pattern(left_part.iloc[::-1])
-    right_part = right_part.loc[right_part.index > left_border]
-    right_border = get_end_of_pattern(reverse_segment(right_part))
-    return left_border, right_border
+    border_list = []
+    for center in pattern_center:
+        current_pattern = get_interval(data, center, window_size, True)
+        if reverse:
+            current_pattern = reverse_segment(current_pattern)
+        rising_part = current_pattern.iloc[current_pattern.index <= current_pattern.idxmax()]
+        if len(rising_part) < 2:
+            #TODO: add logic for first element == max
+            border_list.append((center - window_size, center + window_size + 1))
+            continue
+        left_part, right_part = pd.Series([]), pd.Series([])
+        for ind, val in enumerate(rising_part):
+            if val < confidence:
+                left_part = left_part.append(rising_part[ind:ind+1])
+            else:
+                right_part = right_part.append(rising_part[ind:ind+1])
+        left_border = get_end_of_pattern(left_part.iloc[::-1], False)
+        right_part = right_part.loc[right_part.index > left_border]
+        right_border = get_end_of_pattern(reverse_segment(right_part), False)
+        border_list.append((left_border, right_border))
+    return border_list
 
-def get_end_of_pattern(segment: pd.Series) -> int:
-    #Find end of half pattern
+def get_end_of_pattern(segment: pd.Series, positive = True) -> int:
+    #Find end of descending part of pattern
     if len(segment) < 1:
         return 1
     for ind in range(1, len(segment) - 1):
-        if segment.values[ind] > 0:
+        if positive and segment.values[ind] > 0:
             continue
         if segment.values[ind] >= segment.values[ind - 1]:
             return segment.index[ind - 1]

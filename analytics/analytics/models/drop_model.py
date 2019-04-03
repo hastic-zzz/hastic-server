@@ -67,8 +67,9 @@ class DropModel(Model):
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         possible_drops = utils.find_drop(data, self.state['DROP_HEIGHT'], self.state['DROP_LENGTH'] + 1)
-
-        return self.__filter_detection(possible_drops, data)
+        result = self.__filter_detection(possible_drops, data)
+        result = utils.get_borders_of_jump(result, data, self.state.get('WINDOW_SIZE'), self.state.get('confidence'), True)
+        return result
 
     def __filter_detection(self, segments: list, data: list):
         delete_list = []
