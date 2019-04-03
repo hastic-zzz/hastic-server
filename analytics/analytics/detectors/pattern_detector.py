@@ -79,7 +79,7 @@ class PatternDetector(Detector):
             cache = {}
         bucket_size = max(cache.get('WINDOW_SIZE', 0) * 5, self.MIN_BUCKET_SIZE)
 
-        res = await self.detect(self.bucket.data, cache)
+        res = self.detect(self.bucket.data, cache)
 
         if len(self.bucket.data) > bucket_size:
             excess_data = len(self.bucket.data) - bucket_size
