@@ -1,8 +1,7 @@
 import unittest
 from utils import get_data_chunks
 
-def rlist(start, stop):
-        return [x for x in range(start, stop + 1)]
+
 class TestUtils(unittest.TestCase):
 
     def test_chunks_generator(self):
