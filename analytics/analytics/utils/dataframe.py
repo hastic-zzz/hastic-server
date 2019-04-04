@@ -3,8 +3,10 @@ import pandas as pd
 
 def get_data_chunks(dataframe: pd.DataFrame, window_size: int, chunk_size: int) -> Generator[pd.DataFrame, None, None]:
         """
-        Returns generator, that yields dataframe's chunks. Chunks intersects, length of intersection is window_size.
-        Example: recieved: [0,1,2,3,4,5,6,7] returned: [[0,1,2], [2,3,4], [4,5,6], [6,7]].
+        Returns generator that splits dataframe on intersected segments.
+        Intersection makes it able to detect pattern that present in dataframe on the border between chunks.
+        window_size - length of intersection. 
+        chunk_size - length of chunk
         """
 
         data_len = len(dataframe)

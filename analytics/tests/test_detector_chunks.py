@@ -10,12 +10,12 @@ class TestUtils(unittest.TestCase):
         chunk_window_size_factor = 3
 
         cases = [
-            ([x for x in range(7)], [[0,1,2], [2,3,4], [4,5,6]]),
+            (list(range(7)), [[0,1,2], [2,3,4], [4,5,6]]),
             ([], [[]]),
-            ([x for x in range(1)], [[0]]),
-            ([x for x in range(3)], [[0,1,2]]),
-            ([x for x in range(8)], [[0,1,2], [2,3,4], [4,5,6], [6,7]]),
-            ([x for x in range(6)], [[0,1,2], [2,3,4], [4,5]])
+            (list(range(1)), [[0]]),
+            (list(range(3)), [[0,1,2]]),
+            (list(range(8)), [[0,1,2], [2,3,4], [4,5,6], [6,7]]),
+            (list(range(6)), [[0,1,2], [2,3,4], [4,5]])
         ]
 
         for data, expected_chunks in cases:
