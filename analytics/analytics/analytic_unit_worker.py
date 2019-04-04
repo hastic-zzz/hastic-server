@@ -77,6 +77,7 @@ class AnalyticUnitWorker:
           'lastDetectionTime': None
         }
 
+        #TODO: remove code duplication with do_detect
         for chunk in get_data_chunks(data, window_size, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
             await asyncio.sleep(0)
             detected = self._detector.consume_data(chunk, cache)

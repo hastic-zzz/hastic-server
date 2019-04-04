@@ -1,5 +1,6 @@
 import unittest
 from utils import get_data_chunks
+import pandas as pd
 
 
 class TestUtils(unittest.TestCase):
@@ -18,8 +19,20 @@ class TestUtils(unittest.TestCase):
         ]
 
         for data, expected_chunks in cases:
+            data = [(x,x) for x in data]
+            data = pd.DataFrame(data, columns=['timestamp', 'value'])
+
+            df_expectd_chunks = []
+            for chunk in expected_chunks:
+                chunk = [(x,x) for x in chunk]
+                df_expectd_chunks.append(chunk)
+            df_expectd_chunks = [pd.DataFrame(chunk, columns=['timestamp', 'value']) for chunk in df_expectd_chunks]
             chunks = tuple(get_data_chunks(data, window_size, window_size * chunk_window_size_factor))
-            self.assertSequenceEqual(chunks, expected_chunks)
+            df_expectd_chunks = [df.reset_index() for df in df_expectd_chunks]
+
+            zipped = zip(chunks, df_expectd_chunks)
+            map(lambda a,b: self.assertTrue(a.equals(b)), zipped)
+
 
 
 if __name__ == '__main__':
