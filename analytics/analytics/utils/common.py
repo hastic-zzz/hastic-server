@@ -191,7 +191,8 @@ def find_extremum_index(segment: np.ndarray, selector: bool) -> int:
     else:
         return segment.argmin()
 
-def get_interval(data: pd.Series, center: int, window_size: int) -> pd.Series:
+
+def get_interval(data: pd.Series, center: int, window_size: int, normalization = False) -> pd.Series:
     if center >= len(data):
         logging.warning('Pattern center {} is out of data with len {}'.format(center, len(data)))
         return []
@@ -201,7 +202,48 @@ def get_interval(data: pd.Series, center: int, window_size: int) -> pd.Series:
         left_bound = 0
     if right_bound > len(data):
         right_bound = len(data)
-    return data[left_bound: right_bound]
+    result_interval = data[left_bound: right_bound]
+    if normalization:
+        result_interval = subtract_min_without_nan(result_interval)
+    return 
+
+def get_borders_of_peak(pattern_center: List[int], data: pd.Series, window_size: int, confidence: float, reverse=False) -> List[int]:
+    #Find start and end of patterns for peak
+    #trough will be convert in peak
+    if len(pattern_center) == 0:
+        return []
+    border_list = []
+    for center in pattern_center:
+        current_pattern = get_interval(data, center, window_size, True)
+        if reverse:
+            current_pattern = reverse_segment(current_pattern)
+        current_pattern = current_pattern - confidence
+        left_segment = current_pattern[:window_size]
+        right_segment = current_pattern[window_size:]
+        left_border = get_end_of_segment(left_segment.iloc[::-1])
+        right_border = get_end_of_segment(right_segment)
+        border_list.append((left_border, right_border))
+    return border_list
+
+def get_end_of_segment(segment: pd.Series, positive = True) -> int:
+    #Find end of descending part of pattern
+    #zone of admissibility: allowable error - 1 index
+    if len(segment) == 0:
+        return 1
+    for ind in range(1, len(segment) - 1):
+        if positive and segment.values[ind] > 0:
+            continue
+        if segment.values[ind] >= segment.values[ind - 1]:
+            return segment.index[ind - 1]
+    return segment.index[-1]
+
+def reverse_segment(segment: pd.Series) -> pd.Series:
+    #Сonvert trough to peak
+    if len(segment) > 0:
+        rev_val = max(segment.values)
+        for ind in range(len(segment)):
+            segment.values[ind] = math.fabs(segment.values[ind] - rev_val)
+    return segment
 
 def subtract_min_without_nan(segment: pd.Series) -> pd.Series:
     if len(segment) == 0:

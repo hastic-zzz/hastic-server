@@ -248,6 +248,36 @@ class TestUtils(unittest.TestCase):
         corr_data = list(corr_data)
         self.assertGreaterEqual(len(corr_data), result)
 
-
+    def test_reverse_segment(self):
+        data = pd.Series([1,2,3,4,3,2,1])
+        result = pd.Series([3,2,1,0,1,2,3])
+        self.assertEqual(utils.reverse_segment(data), result)
+    
+    def test_get_end_of_segment_equal(self):
+        data = pd.Series([5,4,3,2,1,0,0,0])
+        result_list = [4, 5, 6]
+        self.assertIn(utils.test_get_end_of_segment(data), result_list)
+    
+    def test_get_end_of_segment_greater(self):
+        data = pd.Series([5,4,3,2,1,0,1,2,3])
+        result_list = [4, 5, 6]
+        self.assertIn(utils.test_get_end_of_segment(data), result_list)
+    
+    def test_get_borders_of_peak(self):
+        data = pd.Series([1,0,1,2,3,2,1,0,0,1,2,3,4,3,2,2,1,0,1,2,3,4,5,3,2,1,0])
+        pattern_center = [4, 12, 22]
+        ws = 3
+        confidence = 1.5
+        result = [(1, 7), (9, 15), (19, 25)]
+        self.assertEqual(utils.get_borders_of_peak(pattern_center, data, ws, confidence), result)
+    
+    def test_get_borders_of_peak_for_trough(self):
+        data = pd.Series([4,4,5,5,3,1,3,5,5,6,3,2])
+        pattern_center = [5]
+        ws = 5
+        confidence = 3
+        result = [(3, 7)]
+        self.assertEqual(utils.get_borders_of_peak(pattern_center, data, ws, confidence), result)
+        
 if __name__ == '__main__':
     unittest.main()
