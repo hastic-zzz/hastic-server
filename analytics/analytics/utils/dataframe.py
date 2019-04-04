@@ -3,8 +3,8 @@ import pandas as pd
 
 def get_data_chunks(dataframe: pd.DataFrame, window_size: int, chunk_window_size_factor: int) -> Generator[pd.DataFrame, None, pd.DataFrame]:
         """
-        TODO: fix description
-        Return generator, that yields dataframe's chunks. Chunks have 100 WINDOW_SIZE length and 99 WINDOW_SIZE step.
+        Return generator, that yields dataframe's chunks.
+        Chunks have chunk_window_size_factor * WINDOW_SIZE length and chunk_window_size_factor - 1 WINDOW_SIZE step.
         """
         chunk_size = window_size * chunk_window_size_factor
         intersection = window_size
