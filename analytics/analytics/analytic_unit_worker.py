@@ -54,7 +54,7 @@ class AnalyticUnitWorker:
 
         for chunk in get_data_chunks(data, window_size, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
             await asyncio.sleep(0)
-            detected = self._detector.detect(data, cache)
+            detected = self._detector.detect(chunk, cache)
             self.__append_detection_result(detection_result, detected)
 
         return detection_result
@@ -79,7 +79,7 @@ class AnalyticUnitWorker:
 
         for chunk in get_data_chunks(data, window_size, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
             await asyncio.sleep(0)
-            detected = self._detector.consume_data(data, cache)
+            detected = self._detector.consume_data(chunk, cache)
             self.__append_detection_result(detection_result, detected)
 
         return detection_result
