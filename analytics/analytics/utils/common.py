@@ -184,7 +184,7 @@ def get_borders_of_pattern(pattern_center: List[int], data: pd.Series, window_si
         border_list.append((left_border, right_border))
     return border_list
 
-def find_borders_of_jump(pattern_center: List[int], data: pd.Series, window_size: int, confidence: float, reverse = False) -> List[int]:
+def get_borders_of_jump(pattern_center: List[int], data: pd.Series, window_size: int, confidence: float, reverse = False) -> List[int]:
     #find start and end of patterns for jump and drop
     #drop will be convert in jump
     border_list = []
@@ -192,17 +192,21 @@ def find_borders_of_jump(pattern_center: List[int], data: pd.Series, window_size
         current_pattern = get_interval(data, center, window_size, True)
         if reverse:
             current_pattern = reverse_segment(current_pattern)
-        rising_part = current_pattern.iloc[current_pattern.index <= current_pattern.idxmax()]
-        if len(rising_part) < 2:
+        current_pattern = current_pattern[np.argmin(current_pattern.values):]
+        if len(current_pattern) > 0:
+            current_pattern = current_pattern[:np.argmax(current_pattern.values) + 1]
+        #rising_part = current_pattern.iloc[current_pattern.index <= current_pattern.idxmax()]
+        if len(current_pattern) == 0:
             #TODO: add logic for first element == max
+            #for example: seg = seg[seg.idxmin():] -> seg = seg[:seg.idxmax()]
             border_list.append((center - window_size, center + window_size + 1))
             continue
         left_part, right_part = pd.Series([]), pd.Series([])
-        for ind, val in enumerate(rising_part):
+        for ind, val in enumerate(current_pattern):
             if val < confidence:
-                left_part = left_part.append(rising_part[ind:ind+1])
+                left_part = left_part.append(current_pattern[ind:ind+1])
             else:
-                right_part = right_part.append(rising_part[ind:ind+1])
+                right_part = right_part.append(current_pattern[ind:ind+1])
         left_border = get_end_of_pattern(left_part.iloc[::-1], False)
         right_part = right_part.loc[right_part.index > left_border]
         right_border = get_end_of_pattern(reverse_segment(right_part), False)
@@ -222,9 +226,10 @@ def get_end_of_pattern(segment: pd.Series, positive = True) -> int:
 
 def reverse_segment(segment: pd.Series) -> pd.Series:
     #Сonvert trough to peak and vice versa
-    rev_val = max(segment)
-    for ind in range(len(segment)):
-        segment[ind] = math.fabs(segment[ind] - rev_val)
+    if len(segment) > 0:
+        rev_val = max(segment.values)
+        for ind in range(len(segment)):
+            segment.values[ind] = math.fabs(segment.values[ind] - rev_val)
     return segment
 
 def find_width(pattern: pd.Series, selector) -> int:

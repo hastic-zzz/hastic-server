@@ -67,9 +67,9 @@ class JumpModel(Model):
     def do_detect(self, dataframe: pd.DataFrame, id: str) -> list:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
-        possible_jumps = utils.find_jump(data, self.state['JUMP_HEIGHT'], self.state['JUMP_LENGTH'] + 1)
+        possible_jumps = utils.find_jump(data, 0.8 * self.state['JUMP_HEIGHT'], self.state['JUMP_LENGTH'] + 1)
         result = self.__filter_detection(possible_jumps, data)
-        result = utils.get_borders_of_jump(result, data, self.state.get('WINDOW_SIZE'), self.state.get('confidence'))
+        result = utils.get_borders_of_jump(possible_jumps, data, self.state.get('WINDOW_SIZE'), self.state.get('confidence'))
         return result
 
     def __filter_detection(self, segments, data):
@@ -82,8 +82,8 @@ class JumpModel(Model):
             segments = []
             return segments
         pattern_data = self.state['pattern_model']
-        upper_bound = self.state['convolve_max'] * 1.2
-        lower_bound = self.state['convolve_min'] * 0.8
+        upper_bound = self.state['convolve_max'] * 1.5
+        lower_bound = self.state['convolve_min'] * 0.75
         delete_up_bound = self.state['conv_del_max'] * 1.02
         delete_low_bound = self.state['conv_del_min'] * 0.98
         for segment in segments:
