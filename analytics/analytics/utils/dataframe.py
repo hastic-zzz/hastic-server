@@ -1,7 +1,7 @@
 from typing import Generator
 import pandas as pd
 
-def get_data_chunks(dataframe: pd.DataFrame, window_size: int, chunk_window_size_factor: int) -> Generator[pd.DataFrame, None, pd.DataFrame]:
+def get_data_chunks(dataframe: pd.DataFrame, window_size: int, chunk_window_size_factor: int) -> Generator[pd.DataFrame, None, None]:
         """
         Return generator, that yields dataframe's chunks.
         Chunks have chunk_window_size_factor * WINDOW_SIZE length and chunk_window_size_factor - 1 WINDOW_SIZE step.
