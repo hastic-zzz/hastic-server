@@ -65,7 +65,7 @@ class AnalyticUnitWorker:
 
     async def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]):
         if cache is None:
-            msg = f'{self.analytic_unit_id} detection got invalid cache, skip detection'
+            msg = f'{self.analytic_unit_id} consume_data got invalid cache, skip detection'
             logger.error(msg)
             raise ValueError(msg)
 
