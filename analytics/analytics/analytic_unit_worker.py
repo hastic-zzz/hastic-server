@@ -13,7 +13,7 @@ logger = logging.getLogger('AnalyticUnitWorker')
 
 class AnalyticUnitWorker:
 
-    WINDOW_SIZES_IN_CHUNK = 100
+    CHUNK_WINDOW_SIZE_FACTOR = 100
 
     def __init__(self, analytic_unit_id: str, detector: detectors.Detector, executor: concurrent.futures.Executor):
         self.analytic_unit_id = analytic_unit_id
@@ -53,7 +53,7 @@ class AnalyticUnitWorker:
 
         for chunk in chunks:
             await asyncio.sleep(0)
-            detected = self._detector.recieve_data(data, cache)
+            detected = self._detector.consume_data(data, cache)
             self.__append_detection_result(detection_result, detected)
 
         return detection_result
@@ -62,7 +62,7 @@ class AnalyticUnitWorker:
         if self._training_future is not None:
             self._training_future.cancel()
 
-    async def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]):
+    async def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]):
         if cache is None:
             msg = f'{self.analytic_unit_id} detection got invalid cache, skip detection'
             logger.error(msg)
@@ -78,7 +78,7 @@ class AnalyticUnitWorker:
 
         for chunk in self.__get_data_chunks(data, window_size):
             await asyncio.sleep(0)
-            detected = self._detector.recieve_data(data, cache)
+            detected = self._detector.consume_data(data, cache)
             self.__append_detection_result(detection_result, detected)
 
         return detection_result
@@ -94,13 +94,14 @@ class AnalyticUnitWorker:
         TODO: fix description
         Return generator, that yields dataframe's chunks. Chunks have 100 WINDOW_SIZE length and 99 WINDOW_SIZE step.
         """
-        chunk_size = window_size * self.WINDOW_SIZES_IN_CHUNK
+        chunk_size = window_size * self.CHUNK_WINDOW_SIZE_FACTOR
         intersection = window_size
 
         data_len = len(dataframe)
 
         if data_len < chunk_size:
-            return dataframe
+            yield dataframe
+            return
 
         nonintersected = chunk_size - intersection
         mod = data_len % nonintersected
@@ -108,7 +109,8 @@ class AnalyticUnitWorker:
 
         offset = 0
         for i in range(chunks_number):
-            yield dataframe[offset, offset + nonintersected + 1]
+            yield dataframe[offset, offset + nonintersected]
             offset += nonintersected
 
-        return datafrme[offset, offset + mod]
+        if mod != 0:
+            yield datafrme[offset, offset + mod]

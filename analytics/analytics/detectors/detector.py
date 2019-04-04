@@ -18,7 +18,7 @@ class Detector(ABC):
         pass
 
     @abstractmethod
-    def recieve_data(self, data: DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
+    def consume_data(self, data: DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
         pass
 
     @abstractmethod

@@ -69,8 +69,8 @@ class PatternDetector(Detector):
             'lastDetectionTime': last_detection_time
         }
 
-    def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
-        logging.debug('Start recieve_data for analytic unit {}'.format(self.analytic_unit_id))
+    def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
+        logging.debug('Start consume_data for analytic unit {}'.format(self.analytic_unit_id))
         data_without_nan = data.dropna()
 
         if len(data_without_nan) == 0:
@@ -78,7 +78,7 @@ class PatternDetector(Detector):
 
         self.bucket.receive_data(data_without_nan)
         if cache == None:
-            logging.debug('Recieve_data cache is None for task {}'.format(self.analytic_unit_id))
+            logging.debug('consume_data cache is None for task {}'.format(self.analytic_unit_id))
             cache = {}
         bucket_size = max(cache.get('WINDOW_SIZE', 0) * self.WINDOW_SIZE_IN_BUCKET, self.MIN_BUCKET_SIZE)
 
@@ -87,7 +87,7 @@ class PatternDetector(Detector):
         if len(self.bucket.data) > bucket_size:
             excess_data = len(self.bucket.data) - bucket_size
             self.bucket.drop_data(excess_data)
-        logging.debug('End recieve_data for analytic unit: {} with res: {}'.format(self.analytic_unit_id, res))
+        logging.debug('End consume_data for analytic unit: {} with res: {}'.format(self.analytic_unit_id, res))
         if res:
             return res
         else:
