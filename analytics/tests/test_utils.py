@@ -251,17 +251,19 @@ class TestUtils(unittest.TestCase):
     def test_reverse_segment(self):
         data = pd.Series([1,2,3,4,3,2,1])
         result = pd.Series([3,2,1,0,1,2,3])
-        self.assertEqual(utils.reverse_segment(data), result)
+        utils_result = utils.reverse_segment(data)
+        for ind, val in enumerate(utils_result):
+            self.assertEqual(val, result[ind])
     
     def test_get_end_of_segment_equal(self):
         data = pd.Series([5,4,3,2,1,0,0,0])
         result_list = [4, 5, 6]
-        self.assertIn(utils.test_get_end_of_segment(data), result_list)
+        self.assertIn(utils.get_end_of_segment(data, False), result_list)
     
     def test_get_end_of_segment_greater(self):
         data = pd.Series([5,4,3,2,1,0,1,2,3])
         result_list = [4, 5, 6]
-        self.assertIn(utils.test_get_end_of_segment(data), result_list)
+        self.assertIn(utils.get_end_of_segment(data, False), result_list)
     
     def test_get_borders_of_peak(self):
         data = pd.Series([1,0,1,2,3,2,1,0,0,1,2,3,4,3,2,2,1,0,1,2,3,4,5,3,2,1,0])
@@ -277,7 +279,7 @@ class TestUtils(unittest.TestCase):
         ws = 5
         confidence = 3
         result = [(3, 7)]
-        self.assertEqual(utils.get_borders_of_peak(pattern_center, data, ws, confidence), result)
-        
+        self.assertEqual(utils.get_borders_of_peak(pattern_center, data, ws, confidence, True), result)
+
 if __name__ == '__main__':
     unittest.main()

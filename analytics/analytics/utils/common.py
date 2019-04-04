@@ -205,7 +205,7 @@ def get_interval(data: pd.Series, center: int, window_size: int, normalization =
     result_interval = data[left_bound: right_bound]
     if normalization:
         result_interval = subtract_min_without_nan(result_interval)
-    return 
+    return result_interval
 
 def get_borders_of_peak(pattern_center: List[int], data: pd.Series, window_size: int, confidence: float, reverse=False) -> List[int]:
     #Find start and end of patterns for peak
