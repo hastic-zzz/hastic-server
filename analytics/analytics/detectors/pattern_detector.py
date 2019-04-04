@@ -34,7 +34,7 @@ AnalyticUnitId = str
 class PatternDetector(Detector):
 
     MIN_BUCKET_SIZE = 150
-    WINDOW_SIZE_IN_BUCKET = 5
+    BUCKET_WINDOW_SIZE_FACTOR = 5
     DEFAULT_WINDOW_SIZE = 1
 
     def __init__(self, pattern_type: str, analytic_unit_id: AnalyticUnitId):
@@ -80,7 +80,7 @@ class PatternDetector(Detector):
         if cache == None:
             logging.debug('consume_data cache is None for task {}'.format(self.analytic_unit_id))
             cache = {}
-        bucket_size = max(cache.get('WINDOW_SIZE', 0) * self.WINDOW_SIZE_IN_BUCKET, self.MIN_BUCKET_SIZE)
+        bucket_size = max(cache.get('WINDOW_SIZE', 0) * self.BUCKET_WINDOW_SIZE_FACTOR, self.MIN_BUCKET_SIZE)
 
         res = self.detect(self.bucket.data, cache)
 
