@@ -13,7 +13,7 @@ from itertools import islice
 from collections import deque
 
 SHIFT_FACTOR = 0.05
-CONFIDENCE_FACTOR = 0.2
+CONFIDENCE_FACTOR = 0.5
 SMOOTHING_FACTOR = 5
 
 def exponential_smoothing(series, alpha):
