@@ -71,6 +71,7 @@ class AnalyticUnitWorker:
 
         window_size = self._detector.get_window_size(cache)
 
+        #TODO: make class DetectionResult
         detection_result = {
           'cache': None,
           'segments': [],
