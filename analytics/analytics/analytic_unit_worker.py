@@ -52,7 +52,7 @@ class AnalyticUnitWorker:
           'lastDetectionTime': None
         }
 
-        for chunk in get_data_chunks(data, window_size, self.CHUNK_WINDOW_SIZE_FACTOR):
+        for chunk in get_data_chunks(data, window_size, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
             await asyncio.sleep(0)
             detected = self._detector.consume_data(data, cache)
             self.__append_detection_result(detection_result, detected)
@@ -77,7 +77,7 @@ class AnalyticUnitWorker:
           'lastDetectionTime': None
         }
 
-        for chunk in get_data_chunks(data, window_size, self.CHUNK_WINDOW_SIZE_FACTOR):
+        for chunk in get_data_chunks(data, window_size, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
             await asyncio.sleep(0)
             detected = self._detector.consume_data(data, cache)
             self.__append_detection_result(detection_result, detected)
