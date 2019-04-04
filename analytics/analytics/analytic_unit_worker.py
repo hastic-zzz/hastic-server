@@ -7,6 +7,8 @@ from models import ModelCache
 import concurrent.futures
 import asyncio
 
+from utils import get_data_chunks
+
 
 logger = logging.getLogger('AnalyticUnitWorker')
 
@@ -43,7 +45,6 @@ class AnalyticUnitWorker:
             raise ValueError(msg)
         
         window_size = self._detector.get_window_size(cache)
-        chunks = self.__get_data_chunks(data, window_size)
 
         detection_result = {
           'cache': None,
@@ -51,7 +52,7 @@ class AnalyticUnitWorker:
           'lastDetectionTime': None
         }
 
-        for chunk in chunks:
+        for chunk in get_data_chunks(data, window_size, self.CHUNK_WINDOW_SIZE_FACTOR):
             await asyncio.sleep(0)
             detected = self._detector.consume_data(data, cache)
             self.__append_detection_result(detection_result, detected)
@@ -76,41 +77,15 @@ class AnalyticUnitWorker:
           'lastDetectionTime': None
         }
 
-        for chunk in self.__get_data_chunks(data, window_size):
+        for chunk in get_data_chunks(data, window_size, self.CHUNK_WINDOW_SIZE_FACTOR):
             await asyncio.sleep(0)
             detected = self._detector.consume_data(data, cache)
             self.__append_detection_result(detection_result, detected)
 
         return detection_result
 
-    def __append_detection_result(detection_result: dict, new_chunk: dict):
+    def __append_detection_result(self, detection_result: dict, new_chunk: dict):
         if new_chunk is not None:
             detection_result['cache'] = new_chunk['cache']
             detection_result['lastDetectionTime'] = new_chunk['lastDetectionTime']
             detection_result['segments'].extend(new_chunk['segments'])
-
-    def __get_data_chunks(self, dataframe: pd.DataFrame, window_size: int) -> Generator[pd.DataFrame, None, pd.DataFrame]:
-        """
-        TODO: fix description
-        Return generator, that yields dataframe's chunks. Chunks have 100 WINDOW_SIZE length and 99 WINDOW_SIZE step.
-        """
-        chunk_size = window_size * self.CHUNK_WINDOW_SIZE_FACTOR
-        intersection = window_size
-
-        data_len = len(dataframe)
-
-        if data_len < chunk_size:
-            yield dataframe
-            return
-
-        nonintersected = chunk_size - intersection
-        mod = data_len % nonintersected
-        chunks_number = data_len // nonintersected
-
-        offset = 0
-        for i in range(chunks_number):
-            yield dataframe[offset, offset + nonintersected]
-            offset += nonintersected
-
-        if mod != 0:
-            yield datafrme[offset, offset + mod]
