@@ -18,7 +18,7 @@ class TestUtils(unittest.TestCase):
         ]
 
         for data, expected_chunks in cases:
-            chunks = tuple(get_data_chunks(data, window_size, chunk_window_size_factor))
+            chunks = tuple(get_data_chunks(data, window_size, window_size * chunk_window_size_factor))
             self.assertSequenceEqual(chunks, expected_chunks)
 
 
