@@ -22,15 +22,15 @@ class TestUtils(unittest.TestCase):
             data = [(x,x) for x in data]
             data = pd.DataFrame(data, columns=['timestamp', 'value'])
 
-            df_expectd_chunks = []
+            df_expected_chunks = []
             for chunk in expected_chunks:
                 chunk = [(x,x) for x in chunk]
-                df_expectd_chunks.append(chunk)
-            df_expectd_chunks = [pd.DataFrame(chunk, columns=['timestamp', 'value']) for chunk in df_expectd_chunks]
+                df_expected_chunks.append(chunk)
+            df_expected_chunks = [pd.DataFrame(chunk, columns=['timestamp', 'value']) for chunk in df_expected_chunks]
             chunks = tuple(get_data_chunks(data, window_size, window_size * chunk_window_size_factor))
-            df_expectd_chunks = [df.reset_index() for df in df_expectd_chunks]
+            df_expected_chunks = [df.reset_index() for df in df_expected_chunks]
 
-            zipped = zip(chunks, df_expectd_chunks)
+            zipped = zip(chunks, df_expected_chunks)
             map(lambda a,b: self.assertTrue(a.equals(b)), zipped)
 
 
