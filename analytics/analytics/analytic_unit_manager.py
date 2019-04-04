@@ -74,7 +74,7 @@ class AnalyticUnitManager:
         data = prepare_data(payload['data'])
         if task['type'] == 'PUSH':
             # TODO: do it a better way
-            res = await worker.recieve_data(data, payload['cache'])
+            res = await worker.consume_data(data, payload['cache'])
             if res:
                 res.update({ 'analyticUnitId': analytic_unit_id })
             return res

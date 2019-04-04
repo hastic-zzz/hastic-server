@@ -1,21 +1,38 @@
 import unittest
-from detectors.pattern_detector import PatternDetector
+from utils import get_data_chunks
+import pandas as pd
 
-def rlist(start, stop):
-        return [x for x in range(start, stop + 1)]
+
 class TestUtils(unittest.TestCase):
 
     def test_chunks_generator(self):
         window_size = 1
+        chunk_window_size_factor = 3
 
         cases = [
+            (list(range(7)), [[0,1,2], [2,3,4], [4,5,6]]),
             ([], [[]]),
-            (rlist(0, 300), [rlist(0,99),rlist(99,198),rlist(198,297),rlist(297,300)])
+            (list(range(1)), [[0]]),
+            (list(range(3)), [[0,1,2]]),
+            (list(range(8)), [[0,1,2], [2,3,4], [4,5,6], [6,7]]),
+            (list(range(6)), [[0,1,2], [2,3,4], [4,5]])
         ]
 
         for data, expected_chunks in cases:
-            chunks = tuple(PatternDetector._PatternDetector__get_data_chunks(None, data, window_size))
-            self.assertSequenceEqual(chunks, expected_chunks)
+            data = [(x,x) for x in data]
+            data = pd.DataFrame(data, columns=['timestamp', 'value'])
+
+            df_expected_chunks = []
+            for chunk in expected_chunks:
+                chunk = [(x,x) for x in chunk]
+                df_expected_chunks.append(chunk)
+            df_expected_chunks = [pd.DataFrame(chunk, columns=['timestamp', 'value']) for chunk in df_expected_chunks]
+            chunks = tuple(get_data_chunks(data, window_size, window_size * chunk_window_size_factor))
+            df_expected_chunks = [df.reset_index() for df in df_expected_chunks]
+
+            zipped = zip(chunks, df_expected_chunks)
+            map(lambda a,b: self.assertTrue(a.equals(b)), zipped)
+
 
 
 if __name__ == '__main__':

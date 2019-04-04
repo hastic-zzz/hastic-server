@@ -35,6 +35,8 @@ AnalyticUnitId = str
 class PatternDetector(Detector):
 
     MIN_BUCKET_SIZE = 150
+    BUCKET_WINDOW_SIZE_FACTOR = 5
+    DEFAULT_WINDOW_SIZE = 1
 
     def __init__(self, pattern_type: str, analytic_unit_id: AnalyticUnitId):
         self.analytic_unit_id = analytic_unit_id
@@ -51,34 +53,14 @@ class PatternDetector(Detector):
             'cache': new_cache
         }
 
-    async def detect(self, dataframe: pd.DataFrame, cache: Optional[models.ModelCache]) -> dict:
+    def detect(self, dataframe: pd.DataFrame, cache: Optional[models.ModelCache]) -> dict:
         logger.debug('Unit {} got {} data points for detection'.format(self.analytic_unit_id, len(dataframe)))
         # TODO: split and sleep (https://github.com/hastic/hastic-server/pull/124#discussion_r214085643)
 
-        if not cache:
-            msg = f'{self.analytic_unit_id} detection got invalid cache {cache}, skip detection'
-            logger.error(msg)
-            raise ValueError(msg)
+        detected = self.model.detect(dataframe, self.analytic_unit_id, cache)
 
-        window_size = cache.get('WINDOW_SIZE')
-
-        if not window_size:
-            msg = f'{self.analytic_unit_id} detection got invalid window size {window_size}'
-
-        chunks = self.__get_data_chunks(dataframe, window_size)
-
-        segments = []
-        segment_parser = lambda segment: { 'from': segment[0], 'to': segment[1] }
-        for chunk in chunks:
-            await asyncio.sleep(0)
-            detected = self.model.detect(dataframe, self.analytic_unit_id, cache)
-            for detected_segment in detected['segments']:
-                detected_segment = segment_parser(detected_segment)
-                if detected_segment not in segments:
-                    segments.append(detected_segment)
-
+        segments = [{ 'from': segment[0], 'to': segment[1] } for segment in detected['segments']]
         newCache = detected['cache']
-
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_detection_time = convert_pd_timestamp_to_ms(last_dataframe_time)
         return {
@@ -87,8 +69,8 @@ class PatternDetector(Detector):
             'lastDetectionTime': last_detection_time
         }
 
-    def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
-        logging.debug('Start recieve_data for analytic unit {}'.format(self.analytic_unit_id))
+    def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
+        logging.debug('Start consume_data for analytic unit {}'.format(self.analytic_unit_id))
         data_without_nan = data.dropna()
 
         if len(data_without_nan) == 0:
@@ -96,45 +78,21 @@ class PatternDetector(Detector):
 
         self.bucket.receive_data(data_without_nan)
         if cache == None:
-            logging.debug('Recieve_data cache is None for task {}'.format(self.analytic_unit_id))
+            logging.debug('consume_data cache is None for task {}'.format(self.analytic_unit_id))
             cache = {}
-        bucket_size = max(cache.get('WINDOW_SIZE', 0) * 3, self.MIN_BUCKET_SIZE)
+        bucket_size = max(cache.get('WINDOW_SIZE', 0) * self.BUCKET_WINDOW_SIZE_FACTOR, self.MIN_BUCKET_SIZE)
 
         res = self.detect(self.bucket.data, cache)
 
         if len(self.bucket.data) > bucket_size:
             excess_data = len(self.bucket.data) - bucket_size
             self.bucket.drop_data(excess_data)
-        logging.debug('End recieve_data for analytic unit: {} with res: {}'.format(self.analytic_unit_id, res))
+        logging.debug('End consume_data for analytic unit: {} with res: {}'.format(self.analytic_unit_id, res))
         if res:
             return res
         else:
             return None
 
-    def __get_data_chunks(self, dataframe: pd.DataFrame, window_size: int) -> Generator[pd.DataFrame, None, None]:
-        """
-        TODO: fix description
-        Return generator, that yields dataframe's chunks. Chunks have 3 WINDOW_SIZE length and 2 WINDOW_SIZE step.
-        Example: recieved dataframe: [0, 1, 2, 3, 4, 5], returned chunks [0, 1, 2], [2, 3, 4], [4, 5].
-        """
-        chunk_size = window_size * 100
-        intersection = window_size
-
-        data_len = len(dataframe)
-
-        if data_len < chunk_size:
-            return (chunk for chunk in (dataframe,))
-
-        def slices():
-            nonintersected = chunk_size - intersection
-            mod = data_len % nonintersected
-            chunks_number = data_len // nonintersected
-
-            offset = 0
-            for i in range(chunks_number):
-                yield slice(offset, offset + nonintersected + 1)
-                offset += nonintersected
-
-            yield slice(offset, offset + mod)
-
-        return (dataframe[chunk_slice] for chunk_slice in slices())
+    def get_window_size(self, cache: Optional[ModelCache]) -> int:
+        if cache is None: return self.DEFAULT_WINDOW_SIZE
+        return cache.get('WINDOW_SIZE', self.DEFAULT_WINDOW_SIZE)
