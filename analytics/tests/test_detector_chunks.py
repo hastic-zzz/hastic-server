@@ -1,5 +1,9 @@
 import unittest
+<<<<<<< HEAD
 from utils import get_data_chunks
+=======
+from detectors.pattern_detector import PatternDetector
+>>>>>>> a1957005dfd8368818992c1af069f0a143b8f19c
 
 def rlist(start, stop):
         return [x for x in range(start, stop + 1)]

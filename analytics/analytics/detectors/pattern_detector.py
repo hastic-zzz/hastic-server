@@ -1,10 +1,11 @@
 import models
 
+import asyncio
 import logging
 import config
 
 import pandas as pd
-from typing import Optional
+from typing import Optional, Generator
 
 from detectors import Detector
 from buckets import DataBucket
@@ -55,12 +56,11 @@ class PatternDetector(Detector):
     def detect(self, dataframe: pd.DataFrame, cache: Optional[models.ModelCache]) -> dict:
         logger.debug('Unit {} got {} data points for detection'.format(self.analytic_unit_id, len(dataframe)))
         # TODO: split and sleep (https://github.com/hastic/hastic-server/pull/124#discussion_r214085643)
-              
+
         detected = self.model.detect(dataframe, self.analytic_unit_id, cache)
 
         segments = [{ 'from': segment[0], 'to': segment[1] } for segment in detected['segments']]
         newCache = detected['cache']
-
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_detection_time = convert_pd_timestamp_to_ms(last_dataframe_time)
         return {
