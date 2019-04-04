@@ -191,7 +191,6 @@ def find_extremum_index(segment: np.ndarray, selector: bool) -> int:
     else:
         return segment.argmin()
 
-
 def get_interval(data: pd.Series, center: int, window_size: int, normalization = False) -> pd.Series:
     if center >= len(data):
         logging.warning('Pattern center {} is out of data with len {}'.format(center, len(data)))
