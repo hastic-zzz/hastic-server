@@ -20,8 +20,8 @@ def get_data_chunks(dataframe: pd.DataFrame, window_size: int, chunk_size: int) 
             if left_values == 0:
                 break
             if left_values <= chunk_size:
-                yield dataframe[offset:]
+                yield dataframe[offset : data_len].reset_index()
                 break
             else:
-                yield dataframe[offset: offset + chunk_size]
+                yield dataframe[offset: offset + chunk_size].reset_index()
                 offset += min(nonintersected, left_values)
