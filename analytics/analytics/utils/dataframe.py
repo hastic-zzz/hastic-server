@@ -9,7 +9,7 @@ def get_data_chunks(dataframe: pd.DataFrame, window_size: int, chunk_size: int) 
 
         data_len = len(dataframe)
 
-        if data_len < chunk_size:
+        if data_len <= chunk_size:
             yield dataframe
             return
 
