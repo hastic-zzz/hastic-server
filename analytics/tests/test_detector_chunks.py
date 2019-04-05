@@ -7,15 +7,14 @@ class TestUtils(unittest.TestCase):
 
     def test_chunks_generator(self):
         window_size = 1
-        chunk_window_size_factor = 3
+        chunk_window_size_factor = 4
 
         cases = [
-            (list(range(7)), [[0,1,2], [2,3,4], [4,5,6]]),
+            (list(range(8)), [[0,1,2,3], [2,3,4,5], [4,5,6,7]]),
             ([], [[]]),
             (list(range(1)), [[0]]),
-            (list(range(3)), [[0,1,2]]),
-            (list(range(8)), [[0,1,2], [2,3,4], [4,5,6], [6,7]]),
-            (list(range(6)), [[0,1,2], [2,3,4], [4,5]])
+            (list(range(4)), [[0,1,2,3]]),
+            (list(range(9)), [[0,1,2,3], [2,3,4,5], [4,5,6,7], [6,7,8]])
         ]
 
         for data, expected_chunks in cases:

@@ -15,7 +15,7 @@ def get_data_chunks(dataframe: pd.DataFrame, window_size: int, chunk_size: int) 
             yield dataframe
             return
 
-        nonintersected = chunk_size - window_size
+        nonintersected = chunk_size - 2 * window_size
 
         offset = 0
         while True:
