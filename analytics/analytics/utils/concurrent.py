@@ -106,6 +106,3 @@ class AsyncZmqActor(AsyncZmqThread):
         return await self.__actor_socket.recv_string()
     
     # TODO: implement graceful stopping
-
-
-a = AsyncZmqActor()
