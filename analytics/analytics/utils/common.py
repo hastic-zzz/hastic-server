@@ -239,7 +239,7 @@ def get_end_of_segment(segment: pd.Series, positive = True, descending = True) -
     If positive == True - skip positive values 
     """
     if not descending:
-        segment.iloc[::-1]
+        segment = segment.iloc[::-1]
     if len(segment) == 0:
         return 1
     for idx in range(1, len(segment) - 1):

@@ -270,7 +270,7 @@ class TestUtils(unittest.TestCase):
         pattern_center = [4, 12, 22]
         ws = 3
         confidence = 1.5
-        result = [(1, 7), (9, 15), (21, 25)]
+        result = [(1, 7), (9, 15), (19, 25)]
         self.assertEqual(utils.get_borders_of_peaks(pattern_center, data, ws, confidence), result)
     
     def test_get_borders_of_peaks_for_trough(self):
@@ -278,7 +278,7 @@ class TestUtils(unittest.TestCase):
         pattern_center = [5]
         ws = 5
         confidence = 3
-        result = [(0, 7)]
+        result = [(3, 7)]
         self.assertEqual(utils.get_borders_of_peaks(pattern_center, data, ws, confidence, inverse = True), result)
 
 if __name__ == '__main__':
