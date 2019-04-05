@@ -66,7 +66,7 @@ async function init() {
         lastAlive: AnalyticsController.analyticsLastAlive(),
         tasksQueueLength: AnalyticsController.getQueueLength()
       },
-      awaitedTasksLength: AnalyticsController.getTaskResolversLength(),
+      awaitedTasksNumber: AnalyticsController.getTaskResolversLength(),
       nodeVersion: process.version,
       packageVersion: PACKAGE_VERSION,
       npmUserAgent: process.env.npm_config_user_agent,
