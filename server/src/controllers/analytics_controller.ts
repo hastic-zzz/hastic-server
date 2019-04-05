@@ -361,6 +361,10 @@ export function getQueueLength() {
   return analyticsService.queueLength;
 }
 
+export function getTaskResolversLength(): number {
+  return taskResolvers.size;
+}
+
 export function isAnalyticReady(): boolean {
   return analyticsService.ready;
 }
