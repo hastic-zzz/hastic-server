@@ -62,7 +62,7 @@ class AsyncZmqActor(AsyncZmqThread):
     """Threaded and Async Actor model based on ZMQ inproc communication
 
     override following
-    * async _run(self) -- required
+    * async def _run(self) -- required
     * async def _on_message(self, message: str) -- not required
 
     then run asyncZmqActor.start()
