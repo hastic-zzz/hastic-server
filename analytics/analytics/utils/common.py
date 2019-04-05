@@ -238,7 +238,6 @@ def get_end_of_segment(segment: pd.Series, positive = True, descending = True) -
     Find end of descending or ascending part of pattern
     Allowable error is 1 index
     If positive == True - skip positive values 
-    If descending == True - check if values are descending, else - ascending
     """
     if not descending:
         segment = segment.iloc[::-1]
