@@ -2,10 +2,11 @@ import asyncio
 import threading
 import zmq
 import zmq.asyncio
+from abc import ABC, abstractmethod
 
 
-class AsyncZmqThread(threading.Thread):
-    """ Class for wrapping zmq socket into a thread with it's own asyncio event loop
+class AsyncZmqThread(threading.Thread, ABC):
+    """Class for wrapping zmq socket into a thread with it's own asyncio event loop
 
     """
 
@@ -26,25 +27,28 @@ class AsyncZmqThread(threading.Thread):
     async def _send_message(self, message: str):
         await self.__zmq_socket.send_string(message)
 
+    @abstractmethod
     async def _on_message(self, message: str):
         """Override this method to receive messages"""
         pass
 
+    @abstractmethod
     async def _run(self):
         """Override this method to do some async work.
         This method uses a separate thread.
+
         You can block yourself here if you don't do any await.
 
         Example:
 
-        >>>
+        ```
         async def _run(self):
             i = 0
             while True:
                 await asyncio.sleep(1)
                 i += 1
                 await self._send_message(f'{self.name}: ping {i}')
-
+        ```
         """
 
     def run(self):
@@ -61,24 +65,28 @@ class AsyncZmqThread(threading.Thread):
 class AsyncZmqActor(AsyncZmqThread):
     """Threaded and Async Actor model based on ZMQ inproc communication
 
-    override following
-    * async def _run(self) -- required
-    * async def _on_message(self, message: str) -- not required
-
-    then run asyncZmqActor.start()
-
+    override following:
+    ```
+    async def _run(self)
+    async def _on_message(self, message: str)
+    ``` 
+    
     Example:
 
-    >>>
+    ```
     class MyActor(AsyncZmqActor):
         async def _run(self):
             self.counter = 0
-            # runs in Thread-actor
+            # runs in a different thread
             await self._send_message('some_txt_message_to_outer_world')
 
         def async _on_message(self, message):
             # runs in Thread-actor
             self.counter++
+    
+    asyncZmqActor = MyActor()
+    asyncZmqActor.start()
+    ```
     """
 
     def __init__(self):
@@ -98,3 +106,6 @@ class AsyncZmqActor(AsyncZmqThread):
         return await self.__actor_socket.recv_string()
     
     # TODO: implement graceful stopping
+
+
+a = AsyncZmqActor()
