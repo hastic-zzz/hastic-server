@@ -71,7 +71,7 @@ class AsyncZmqActor(AsyncZmqThread):
 
     >>>
     class MyActor(AsyncZmqActor):
-        def async _run(self):
+        async def _run(self):
             self.counter = 0
             # runs in Thread-actor
             await self._send_message('some_txt_message_to_outer_world')
