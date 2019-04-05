@@ -81,7 +81,7 @@ class TroughModel(Model):
             if data[i] < extrema_list[i]:
                 segments.append(i)
         result = self.__filter_detection(segments, data)
-        #result = utils.get_borders_of_peak(result, data, self.state.get('WINDOW_SIZE'), self.state.get('confidence'), True)
+        result = utils.get_borders_of_peaks(result, data, self.state.get('WINDOW_SIZE'), self.state.get('confidence'), inverse = True)
         return result
 
     def __filter_detection(self, segments: list, data: list) -> list:
