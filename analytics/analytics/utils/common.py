@@ -233,18 +233,17 @@ def get_borders_of_peaks(pattern_centers: List[int], data: pd.Series, window_siz
         border_list.append((left_border, right_border))
     return border_list
 
-def get_end_of_segment(segment: pd.Series, positive = True, descending = True) -> int:
+def get_end_of_segment(segment: pd.Series, skip_positive_values = True, descending = True) -> int:
     """
     Find end of descending or ascending part of pattern
-    Allowable error is 1 index
-    If positive == True - skip positive values 
+    Allowable error is 1 index 
     """
     if not descending:
         segment = segment.iloc[::-1]
     if len(segment) == 0:
         return 1
     for idx in range(1, len(segment) - 1):
-        if positive and segment.values[idx] > 0:
+        if skip_positive_values and segment.values[idx] > 0:
             continue
         if segment.values[idx] >= segment.values[idx - 1]:
             return segment.index[idx - 1]
