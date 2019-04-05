@@ -28,6 +28,8 @@ let alertService: AlertService = undefined;
 let grafanaAvailableWebhok: Function = undefined;
 let dataPuller: DataPuller;
 
+let detectionsCount: number = 0;
+
 
 function onTaskResult(taskResult: TaskResult) {
   let id = taskResult._id;
@@ -47,6 +49,7 @@ function onTaskResult(taskResult: TaskResult) {
 }
 
 async function onDetect(detectionResult: DetectionResult) {
+  detectionsCount++;
   let id = detectionResult.analyticUnitId;
   let payload = await processDetectionResult(id, detectionResult);
   await Promise.all([
@@ -363,6 +366,10 @@ export function getQueueLength() {
 
 export function getTaskResolversLength(): number {
   return taskResolvers.size;
+}
+
+export function getDetectionsCount(): number {
+  return detectionsCount;
 }
 
 export function isAnalyticReady(): boolean {
