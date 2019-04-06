@@ -49,11 +49,11 @@ class ServerService(utils.concurrent.AsyncZmqActor):
         # We do it cuz we created self.__server_socket in self._run() method,
         # which runs in the actor's thread, not the thread we created ServerService
 
-        # in theory, we can try to use zmq.proxy: 
+        # in theory, we can try to use zmq.proxy:
         # zmq.proxy(self.__actor_socket, self.__server_socket)
         # and do here something like:
         # self.__actor_socket.send_string(json.dumps(message.toJSON()))
-        await self.put_message(json.dumps(message.toJSON()))
+        await self._put_message_to_thread(json.dumps(message.toJSON()))
 
     async def send_request_to_server(self, message: ServerMessage) -> object:
         if message.request_id is not None:
@@ -67,16 +67,7 @@ class ServerService(utils.concurrent.AsyncZmqActor):
         del self.__responses[request_id]
         return response
 
-    async def _run(self):
-        logger.info("Binding to %s ..." % config.ZMQ_CONNECTION_STRING)
-        self.__server_socket = self._zmq_context.socket(zmq.PAIR)
-        self.__server_socket.bind(config.ZMQ_CONNECTION_STRING)
-        self.__request_next_id = 1
-        self.__responses = dict()
-        self.__aiter_inited = False
-        self.__server_socket_recv_loop()
-    
-    async def _on_message(self, message: str):
+    async def _on_message_to_thread(self, message: str):
         await self.__server_socket.send_string(message)
 
     def __aiter__(self):
@@ -87,30 +78,20 @@ class ServerService(utils.concurrent.AsyncZmqActor):
 
     async def __anext__(self) -> ServerMessage:
         while True:
-            text = await self.socket.recv_string()
-
-            if text == 'PING':
+            received_string = await self.__server_socket.recv_string()
+            if received_string == 'PING':
                 asyncio.ensure_future(self.__handle_ping())
             else:
-                message = self.__parse_message_or_save(text)
-                if message is None:
-                    continue
-                else:
-                    return message
+                return await self._recv_message_from_thread()
 
-    async def __anext__(self) -> ServerMessage:
-        while True:
-            received_bytes = await self.socket.recv()
-            text = received_bytes.decode('utf-8')
-
-            if text == 'PING':
-                asyncio.ensure_future(self.__handle_ping())
-            else:
-                message = self.__parse_message_or_save(text)
-                if message is None:
-                    continue
-                else:
-                    self.send_message()
+    async def _run_thread(self):
+        logger.info("Binding to %s ..." % config.ZMQ_CONNECTION_STRING)
+        self.__server_socket = self._zmq_context.socket(zmq.PAIR)
+        self.__server_socket.bind(config.ZMQ_CONNECTION_STRING)
+        self.__request_next_id = 1
+        self.__responses = dict()
+        self.__aiter_inited = False
+        self.__server_socket_recv_loop()
 
     async def __handle_ping(self):
         await self.__server_socket.send(b'PONG')
