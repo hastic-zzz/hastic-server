@@ -7,6 +7,9 @@ import logging
 import json
 import asyncio
 import traceback
+
+import utils.concurrent
+
 from typing import Optional
 
 logger = logging.getLogger('SERVER_SERVICE')
@@ -39,21 +42,47 @@ class ServerMessage:
             request_id = json['requestId']
         return ServerMessage(method, payload, request_id)
 
-class ServerService:
+class ServerService(utils.concurrent.AsyncZmqActor):
 
-    def __init__(self):
+    async def send_message_to_server(self, message: ServerMessage):
+        # Following message will be sent to actor's self._on_message()
+        # We do it cuz we created self.__server_socket in self._run() method,
+        # which runs in the actor's thread, not the thread we created ServerService
+
+        # in theory, we can try to use zmq.proxy: 
+        # zmq.proxy(self.__actor_socket, self.__server_socket)
+        # and do here something like:
+        # self.__actor_socket.send_string(json.dumps(message.toJSON()))
+        await self.put_message(json.dumps(message.toJSON()))
+
+    async def send_request_to_server(self, message: ServerMessage) -> object:
+        if message.request_id is not None:
+            raise ValueError('Message can`t have request_id before it is scheduled')
+        request_id = message.request_id = self.__request_next_id
+        self.request_next_id = self.__request_next_id + 1
+        asyncio.ensure_future(self.send_message_to_server(message))
+        while request_id not in self.__responses:
+            await asyncio.sleep(1)
+        response = self.__responses[request_id]
+        del self.__responses[request_id]
+        return response
+
+    async def _run(self):
         logger.info("Binding to %s ..." % config.ZMQ_CONNECTION_STRING)
-        self.context = zmq.asyncio.Context()
-        self.socket = self.context.socket(zmq.PAIR)
-        self.socket.bind(config.ZMQ_CONNECTION_STRING)
-        self.request_next_id = 1
-        self.responses = dict()
-        self._aiter_inited = False
+        self.__server_socket = self._zmq_context.socket(zmq.PAIR)
+        self.__server_socket.bind(config.ZMQ_CONNECTION_STRING)
+        self.__request_next_id = 1
+        self.__responses = dict()
+        self.__aiter_inited = False
+        self.__server_socket_recv_loop()
+    
+    async def _on_message(self, message: str):
+        await self.__server_socket.send_string(message)
 
     def __aiter__(self):
-        if self._aiter_inited:
+        if self.__aiter_inited:
             raise RuntimeError('Can`t iterate twice')
-        _aiter_inited = True
+        __aiter_inited = True
         return self
 
     async def __anext__(self) -> ServerMessage:
@@ -69,30 +98,29 @@ class ServerService:
                 else:
                     return message
 
-    async def send_message(self, message: ServerMessage):
-        await self.socket.send_string(json.dumps(message.toJSON()))
+    async def __anext__(self) -> ServerMessage:
+        while True:
+            received_bytes = await self.socket.recv()
+            text = received_bytes.decode('utf-8')
 
-    async def send_request(self, message: ServerMessage) -> object:
-        if message.request_id is not None:
-            raise ValueError('Message can`t have request_id before it is scheduled')
-        request_id = message.request_id = self.request_next_id
-        self.request_next_id = self.request_next_id + 1
-        asyncio.ensure_future(self.send_message(message))
-        while request_id not in self.responses:
-            await asyncio.sleep(1)
-        response = self.responses[request_id]
-        del self.responses[request_id]
-        return response
+            if text == 'PING':
+                asyncio.ensure_future(self.__handle_ping())
+            else:
+                message = self.__parse_message_or_save(text)
+                if message is None:
+                    continue
+                else:
+                    self.send_message()
 
     async def __handle_ping(self):
-        await self.socket.send(b'PONG')
+        await self.__server_socket.send(b'PONG')
 
     def __parse_message_or_save(self, text: str) -> Optional[ServerMessage]:
         try:
             message_object = json.loads(text)
             message = ServerMessage.fromJSON(message_object)
             if message.request_id is not None:
-                self.responses[message_object['requestId']] = message.payload
+                self.__responses[message_object['requestId']] = message.payload
                 return None
             return message
         except Exception:
