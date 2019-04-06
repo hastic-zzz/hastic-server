@@ -199,6 +199,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
       await AnalyticUnitCache.create(id);
     }
 
+    // TODO: create analytics serialization method in AnalyticUnit
     let analyticUnitType = analyticUnit.type;
     let detector = AnalyticUnit.getDetectorByType(analyticUnitType);
     let taskPayload: any = { detector, analyticUnitType, cache: oldCache };
@@ -389,8 +390,8 @@ export async function createAnalyticUnitFromObject(obj: any): Promise<AnalyticUn
   if(obj.datasource !== undefined) {
     obj.metric.datasource = obj.datasource;
   }
-  let unit: AnalyticUnit.AnalyticUnit = AnalyticUnit.AnalyticUnit.fromObject(obj);
-  let id = await AnalyticUnit.create(unit);
+  const unit: AnalyticUnit.AnalyticUnit = AnalyticUnit.AnalyticUnit.fromObject(obj);
+  const id = await AnalyticUnit.create(unit);
 
   return id;
 }
