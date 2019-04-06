@@ -62,7 +62,7 @@ class AsyncZmqThread(threading.Thread, ABC):
     def run(self):
         self.__asyncio_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.__asyncio_loop)
-        self.__zmq_socket = self._zmq_context.socket(self.__zmq_socket_addr)
+        self.__zmq_socket = self._zmq_context.socket(self.__zmq_socket_type)
         self.__zmq_socket.connect(self.__zmq_socket_addr)
         asyncio.ensure_future(self.__message_recv_loop())
         self.__asyncio_loop.run_until_complete(self._run_thread())
