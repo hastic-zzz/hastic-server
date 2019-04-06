@@ -5,7 +5,9 @@ import zmq.asyncio
 from abc import ABC, abstractmethod
 
 
+# This const defines Thread <-> Actor zmq one-to-one connection
 # We create a seperate zmq context, so zqm address 'inproc://xxx' doesn't matter
+# It is default address and you may want to use AsyncZmqThread another way
 ZMQ_THREAD_ACTOR_ADDR = 'inproc://xxx'
 
 
