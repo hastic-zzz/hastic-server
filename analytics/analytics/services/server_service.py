@@ -58,7 +58,8 @@ class ServerService:
 
     async def __anext__(self) -> ServerMessage:
         while True:
-            text = await self.socket.recv_string()
+            received_bytes = await self.socket.recv(copy=True)
+            text = received_bytes.decode('utf-8')
 
             if text == 'PING':
                 asyncio.ensure_future(self.__handle_ping())
