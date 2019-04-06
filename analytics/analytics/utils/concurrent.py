@@ -11,6 +11,7 @@ from abc import ABC, abstractmethod
 ZMQ_THREAD_ACTOR_ADDR = 'inproc://xxx'
 
 
+# Inherience order (threading.Thread, ABC) is essential. Otherwise it's a MRO error.
 class AsyncZmqThread(threading.Thread, ABC):
     """Class for wrapping zmq socket into a thread with it's own asyncio event loop
 
