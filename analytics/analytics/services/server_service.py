@@ -78,11 +78,12 @@ class ServerService(utils.concurrent.AsyncZmqActor):
 
     async def __anext__(self) -> ServerMessage:
         while True:
-            received_string = await self.__server_socket.recv_string()
-            if received_string == 'PING':
-                asyncio.ensure_future(self.__handle_ping())
+            zmq_message = await self._recv_message_from_thread()
+            server_message = self.__parse_message_or_save(zmq_message)
+            if server_message is None:
+                continue
             else:
-                return await self._recv_message_from_thread()
+                return server_message
 
     async def _run_thread(self):
         logger.info("Binding to %s ..." % config.ZMQ_CONNECTION_STRING)
@@ -92,6 +93,14 @@ class ServerService(utils.concurrent.AsyncZmqActor):
         self.__responses = dict()
         self.__aiter_inited = False
         self.__server_socket_recv_loop()
+
+    async def __server_socket_recv_loop(self):
+        while True:
+            received_string = await self.__server_socket.recv_string()
+            if received_string == 'PING':
+                asyncio.ensure_future(self.__handle_ping())
+            else:
+                self._send_message_from_thread(received_string)
 
     async def __handle_ping(self):
         await self.__server_socket.send(b'PONG')
