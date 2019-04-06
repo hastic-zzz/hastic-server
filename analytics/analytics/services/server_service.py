@@ -67,9 +67,6 @@ class ServerService(utils.concurrent.AsyncZmqActor):
         del self.__responses[request_id]
         return response
 
-    async def _on_message_to_thread(self, message: str):
-        await self.__server_socket.send_string(message)
-
     def __aiter__(self):
         if self.__aiter_inited:
             raise RuntimeError('Can`t iterate twice')
@@ -78,8 +75,8 @@ class ServerService(utils.concurrent.AsyncZmqActor):
 
     async def __anext__(self) -> ServerMessage:
         while True:
-            zmq_message = await self._recv_message_from_thread()
-            server_message = self.__parse_message_or_save(zmq_message)
+            thread_message = await self._recv_message_from_thread()
+            server_message = self.__parse_message_or_save(thread_message)
             if server_message is None:
                 continue
             else:
@@ -93,6 +90,9 @@ class ServerService(utils.concurrent.AsyncZmqActor):
         self.__responses = dict()
         self.__aiter_inited = False
         self.__server_socket_recv_loop()
+
+    async def _on_message_to_thread(self, message: str):
+        await self.__server_socket.send_string(message)
 
     async def __server_socket_recv_loop(self):
         while True:
