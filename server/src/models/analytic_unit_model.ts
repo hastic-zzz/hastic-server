@@ -115,7 +115,11 @@ export class AnalyticUnit {
       alert: this.alert,
       lastDetectionTime: this.lastDetectionTime,
       status: this.status,
-      error: this.error
+      error: this.error,
+      labeledColor: this.labeledColor,
+      deletedColor: this.deletedColor,
+      detectorType: this.detectorType,
+      visible: this.visible
     };
   }
 
