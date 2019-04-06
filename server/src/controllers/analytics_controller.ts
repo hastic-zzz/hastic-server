@@ -199,7 +199,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
       await AnalyticUnitCache.create(id);
     }
 
-    // TODO: create analytics serialization method in AnalyticUnit
+    // TODO: create an analytics serialization method in AnalyticUnit
     let analyticUnitType = analyticUnit.type;
     let detector = AnalyticUnit.getDetectorByType(analyticUnitType);
     let taskPayload: any = { detector, analyticUnitType, cache: oldCache };
