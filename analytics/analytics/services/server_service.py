@@ -19,7 +19,6 @@ PARSE_MESSAGE_OR_SAVE_LOOP_INTERRUPTED = False
 SERVER_SOCKET_RECV_LOOP_INTERRUPTED = False
 
 
-
 class ServerMessage:
     def __init__(self, method: str, payload: object = None, request_id: int = None):
         self.method = method
