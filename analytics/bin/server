@@ -52,14 +52,14 @@ async def handle_task(task: object):
 
         if not task_type == 'PUSH':
             message = services.server_service.ServerMessage('TASK_RESULT', task_result_payload)
-            await server_service.send_message(message)
+            await server_service.send_message_to_server(message)
 
         res = await analytic_unit_manager.handle_analytic_task(task)
         res['_id'] = task['_id']
 
         if not task_type == 'PUSH':
             message = services.server_service.ServerMessage('TASK_RESULT', res)
-            await server_service.send_message(message)
+            await server_service.send_message_to_server(message)
 
     except Exception as e:
         error_text = traceback.format_exc()
@@ -71,7 +71,7 @@ async def handle_data(task: object):
     if res['status'] == 'SUCCESS' and res['payload'] is not None:
         res['_id'] = task['_id']
         message = services.server_service.ServerMessage('DETECT', res)
-        await server_service.send_message(message)
+        await server_service.send_message_to_server(message)
 
 async def handle_message(message: services.ServerMessage):
     if message.method == 'TASK':

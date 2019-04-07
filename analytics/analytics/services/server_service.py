@@ -15,6 +15,11 @@ from typing import Optional
 logger = logging.getLogger('SERVER_SERVICE')
 
 
+PARSE_MESSAGE_OR_SAVE_LOOP_INTERRUPTED = False
+SERVER_SOCKET_RECV_LOOP_INTERRUPTED = False
+
+
+
 class ServerMessage:
     def __init__(self, method: str, payload: object = None, request_id: int = None):
         self.method = method
@@ -79,7 +84,7 @@ class ServerService(utils.concurrent.AsyncZmqActor):
         return self
 
     async def __anext__(self) -> ServerMessage:
-        while True:
+        while not PARSE_MESSAGE_OR_SAVE_LOOP_INTERRUPTED:
             thread_message = await self._recv_message_from_thread()
             server_message = self.__parse_message_or_save(thread_message)
             if server_message is None:
@@ -100,7 +105,7 @@ class ServerService(utils.concurrent.AsyncZmqActor):
         await self.__server_socket.send_string(message)
 
     async def __server_socket_recv_loop(self):
-        while True:
+        while not SERVER_SOCKET_RECV_LOOP_INTERRUPTED:
             received_string = await self.__server_socket.recv_string()
             if received_string == 'PING':
                 asyncio.ensure_future(self.__handle_ping())
