@@ -51,6 +51,8 @@ class ServerService(utils.concurrent.AsyncZmqActor):
     def __init__(self):
         super(ServerService, self).__init__()
         self.__aiter_inited = False
+        self.__request_next_id = 1
+        self.__responses = dict()
         self.start()
 
     async def send_message_to_server(self, message: ServerMessage):
@@ -95,9 +97,6 @@ class ServerService(utils.concurrent.AsyncZmqActor):
         logger.info("Binding to %s ..." % config.ZMQ_CONNECTION_STRING)
         self.__server_socket = self._zmq_context.socket(zmq.PAIR)
         self.__server_socket.bind(config.ZMQ_CONNECTION_STRING)
-        self.__request_next_id = 1
-        self.__responses = dict()
-        self.__aiter_inited = False
         await self.__server_socket_recv_loop()
 
     async def _on_message_to_thread(self, message: str):
