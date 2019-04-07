@@ -72,6 +72,8 @@ class ServerService(utils.concurrent.AsyncZmqActor):
         request_id = message.request_id = self.__request_next_id
         self.request_next_id = self.__request_next_id + 1
         asyncio.ensure_future(self.send_message_to_server(message))
+        # you should await self.__responses[request_id] which should be a task, 
+        # which you resolve somewhere else
         while request_id not in self.__responses:
             await asyncio.sleep(1)
         response = self.__responses[request_id]
