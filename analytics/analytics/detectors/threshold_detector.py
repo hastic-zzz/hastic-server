@@ -14,6 +14,8 @@ logger = log.getLogger('THRESHOLD_DETECTOR')
 
 class ThresholdDetector(Detector):
 
+    WINDOW_SIZE = 3
+
     def __init__(self):
         pass
 
@@ -68,6 +70,9 @@ class ThresholdDetector(Detector):
             'lastDetectionTime': now
         }
 
-    def recieve_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
+    def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
         result = self.detect(data, cache)
         return result if result else None
+
+    def get_window_size(self, cache: Optional[ModelCache]) -> int:
+        return self.WINDOW_SIZE

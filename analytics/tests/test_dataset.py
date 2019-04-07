@@ -180,7 +180,8 @@ class TestDataset(unittest.TestCase):
         for _ in range(2):
             model.do_detect(dataframe,'test')
             max_pattern_index = max(model.do_detect(dataframe, 'test'))
-            self.assertLessEqual(max_pattern_index, result)
+            self.assertLessEqual(max_pattern_index[0], result)
+
     
     def test_peak_model_for_cache(self):
         cache = {

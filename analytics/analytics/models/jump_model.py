@@ -68,8 +68,8 @@ class JumpModel(Model):
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         possible_jumps = utils.find_jump(data, self.state['JUMP_HEIGHT'], self.state['JUMP_LENGTH'] + 1)
-
-        return self.__filter_detection(possible_jumps, data)
+        result = self.__filter_detection(possible_jumps, data)
+        return [(val - 1, val + 1) for val in result]
 
     def __filter_detection(self, segments, data):
         delete_list = []

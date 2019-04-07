@@ -28,6 +28,8 @@ let alertService: AlertService = undefined;
 let grafanaAvailableWebhok: Function = undefined;
 let dataPuller: DataPuller;
 
+let detectionsCount: number = 0;
+
 
 function onTaskResult(taskResult: TaskResult) {
   let id = taskResult._id;
@@ -47,6 +49,7 @@ function onTaskResult(taskResult: TaskResult) {
 }
 
 async function onDetect(detectionResult: DetectionResult) {
+  detectionsCount++;
   let id = detectionResult.analyticUnitId;
   let payload = await processDetectionResult(id, detectionResult);
   await Promise.all([
@@ -196,6 +199,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
       await AnalyticUnitCache.create(id);
     }
 
+    // TODO: create an analytics serialization method in AnalyticUnit
     let analyticUnitType = analyticUnit.type;
     let detector = AnalyticUnit.getDetectorByType(analyticUnitType);
     let taskPayload: any = { detector, analyticUnitType, cache: oldCache };
@@ -361,6 +365,14 @@ export function getQueueLength() {
   return analyticsService.queueLength;
 }
 
+export function getTaskResolversLength(): number {
+  return taskResolvers.size;
+}
+
+export function getDetectionsCount(): number {
+  return detectionsCount;
+}
+
 export function isAnalyticReady(): boolean {
   return analyticsService.ready;
 }
@@ -378,8 +390,8 @@ export async function createAnalyticUnitFromObject(obj: any): Promise<AnalyticUn
   if(obj.datasource !== undefined) {
     obj.metric.datasource = obj.datasource;
   }
-  let unit: AnalyticUnit.AnalyticUnit = AnalyticUnit.AnalyticUnit.fromObject(obj);
-  let id = await AnalyticUnit.create(unit);
+  const unit: AnalyticUnit.AnalyticUnit = AnalyticUnit.AnalyticUnit.fromObject(obj);
+  const id = await AnalyticUnit.create(unit);
 
   return id;
 }

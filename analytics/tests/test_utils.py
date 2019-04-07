@@ -16,7 +16,7 @@ class TestUtils(unittest.TestCase):
     def test_confidence_all_normal_value(self):
         segment = [1, 2, 0, 6, 8, 5, 3]
         utils_result = utils.find_confidence(segment)[0]
-        result = 1.6
+        result = 4.0
         self.assertTrue(math.isclose(utils_result, result, rel_tol = RELATIVE_TOLERANCE))
     
     def test_confidence_all_nan_value(self):
@@ -26,7 +26,7 @@ class TestUtils(unittest.TestCase):
     def test_confidence_with_nan_value(self):
         data = [np.NaN, np.NaN, 0, 8]
         utils_result = utils.find_confidence(data)[0]
-        result = 1.6
+        result = 4.0
         self.assertTrue(math.isclose(utils_result, result, rel_tol = RELATIVE_TOLERANCE))
     
     def test_interval_all_normal_value(self):
@@ -248,6 +248,38 @@ class TestUtils(unittest.TestCase):
         corr_data = list(corr_data)
         self.assertGreaterEqual(len(corr_data), result)
 
+    def test_inverse_segment(self):
+        data = pd.Series([1,2,3,4,3,2,1])
+        result = pd.Series([3,2,1,0,1,2,3])
+        utils_result = utils.inverse_segment(data)
+        for ind, val in enumerate(utils_result):
+            self.assertEqual(val, result[ind])
+    
+    def test_get_end_of_segment_equal(self):
+        data = pd.Series([5,4,3,2,1,0,0,0])
+        result_list = [4, 5, 6]
+        self.assertIn(utils.get_end_of_segment(data, False), result_list)
+    
+    def test_get_end_of_segment_greater(self):
+        data = pd.Series([5,4,3,2,1,0,1,2,3])
+        result_list = [4, 5, 6]
+        self.assertIn(utils.get_end_of_segment(data, False), result_list)
+    
+    def test_get_borders_of_peaks(self):
+        data = pd.Series([1,0,1,2,3,2,1,0,0,1,2,3,4,3,2,2,1,0,1,2,3,4,5,3,2,1,0])
+        pattern_center = [4, 12, 22]
+        ws = 3
+        confidence = 1.5
+        result = [(1, 7), (9, 15), (19, 25)]
+        self.assertEqual(utils.get_borders_of_peaks(pattern_center, data, ws, confidence), result)
+    
+    def test_get_borders_of_peaks_for_trough(self):
+        data = pd.Series([4,4,5,5,3,1,3,5,5,6,3,2])
+        pattern_center = [5]
+        ws = 5
+        confidence = 3
+        result = [(3, 7)]
+        self.assertEqual(utils.get_borders_of_peaks(pattern_center, data, ws, confidence, inverse = True), result)
 
 if __name__ == '__main__':
     unittest.main()
