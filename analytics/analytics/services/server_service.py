@@ -44,6 +44,11 @@ class ServerMessage:
 
 class ServerService(utils.concurrent.AsyncZmqActor):
 
+    def __init__(self):
+        super(ServerService, self).__init__()
+        self.__aiter_inited = False
+        self.start()
+
     async def send_message_to_server(self, message: ServerMessage):
         # Following message will be sent to actor's self._on_message()
         # We do it cuz we created self.__server_socket in self._run() method,
@@ -89,7 +94,7 @@ class ServerService(utils.concurrent.AsyncZmqActor):
         self.__request_next_id = 1
         self.__responses = dict()
         self.__aiter_inited = False
-        self.__server_socket_recv_loop()
+        await self.__server_socket_recv_loop()
 
     async def _on_message_to_thread(self, message: str):
         await self.__server_socket.send_string(message)
@@ -100,10 +105,10 @@ class ServerService(utils.concurrent.AsyncZmqActor):
             if received_string == 'PING':
                 asyncio.ensure_future(self.__handle_ping())
             else:
-                self._send_message_from_thread(received_string)
+                asyncio.ensure_future(self._send_message_from_thread(received_string))
 
     async def __handle_ping(self):
-        await self.__server_socket.send(b'PONG')
+        await self.__server_socket.send_string('PONG')
 
     def __parse_message_or_save(self, text: str) -> Optional[ServerMessage]:
         try:
