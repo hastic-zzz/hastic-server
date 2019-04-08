@@ -20,12 +20,12 @@ class TestDataset(unittest.TestCase):
             models.PeakModel(),
             models.TroughModel()
         ]
-        try:
-            for model in model_instances:
-                model_name = model.__class__.__name__
+
+        for model in model_instances:
+            model_name = model.__class__.__name__
+
+            with self.assertRaises(AssertionError):
                 model.fit(dataframe, segments, 'test', dict())
-        except ValueError:
-            self.fail('Model {} raised unexpectedly'.format(model_name))
     
     def test_peak_antisegments(self):
         data_val = [1.0, 1.0, 1.0, 2.0, 3.0, 2.0, 1.0, 1.0, 1.0, 1.0, 5.0, 7.0, 5.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
