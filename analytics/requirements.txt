@@ -16,3 +16,4 @@ scipy==1.1.0
 seglearn==0.1.6
 six==1.11.0
 tsfresh==0.11.0
+ptvsd==4.2.6
