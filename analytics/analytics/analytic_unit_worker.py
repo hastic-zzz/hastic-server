@@ -7,7 +7,7 @@ from models import ModelCache
 import concurrent.futures
 import asyncio
 
-from utils import intersected_chunks, chunks, prepare_data
+from utils import get_intersected_chunks, get_chunks, prepare_data
 
 
 logger = logging.getLogger('AnalyticUnitWorker')
@@ -61,7 +61,7 @@ class AnalyticUnitWorker:
           'lastDetectionTime': None
         }
 
-        for chunk in intersected_chunks(data, chunk_intersection, chunk_size):
+        for chunk in get_intersected_chunks(data, chunk_intersection, chunk_size):
             await asyncio.sleep(0)
             chunk_dataframe = prepare_data(chunk)
             detected = self._detector.detect(chunk_dataframe, cache)
@@ -88,7 +88,7 @@ class AnalyticUnitWorker:
           'lastDetectionTime': None
         }
 
-        for chunk in chunks(data, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
+        for chunk in get_chunks(data, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
             await asyncio.sleep(0)
             chunk_dataframe = prepare_data(chunk)
             detected = self._detector.consume_data(chunk_dataframe, cache)

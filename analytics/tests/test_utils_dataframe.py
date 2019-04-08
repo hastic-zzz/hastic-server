@@ -1,5 +1,5 @@
 import unittest
-from utils import intersected_chunks, chunks
+from utils import get_intersected_chunks, get_chunks
 import pandas as pd
 
 
@@ -18,7 +18,7 @@ class TestUtils(unittest.TestCase):
         ]
 
         for tested, expected in cases:
-            tested_chunks = intersected_chunks(tested, intersection, chunk_size)
+            tested_chunks = get_intersected_chunks(tested, intersection, chunk_size)
             self.assertSequenceEqual(tuple(tested_chunks), expected)
 
 
@@ -36,7 +36,7 @@ class TestUtils(unittest.TestCase):
         ]
 
         for tested, expected in cases:
-            tested_chunks = list(chunks(tested, chunk_size))
+            tested_chunks = list(get_chunks(tested, chunk_size))
             self.assertSequenceEqual(tested_chunks, expected)
 
 if __name__ == '__main__':
