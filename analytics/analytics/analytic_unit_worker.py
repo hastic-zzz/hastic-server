@@ -60,11 +60,6 @@ class AnalyticUnitWorker:
             self._training_future.cancel()
 
     async def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
-        if cache is None:
-            msg = f'{self.analytic_unit_id} consume_data got invalid cache, skip detection'
-            logger.error(msg)
-            raise ValueError(msg)
-
         window_size = self._detector.get_window_size(cache)
 
         #TODO: make class DetectionResult
