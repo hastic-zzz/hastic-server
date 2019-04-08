@@ -46,7 +46,6 @@ def get_intersected_chunks(data: list, intersection: int, chunk_size: int) -> Ge
 def get_chunks(data: list, chunk_size: int) -> Generator[list, None, None]:
     """
     Returns generator that splits dataframe on non-intersected segments.
-    Intersection makes it able to detect pattern that present in dataframe on the border between chunks.
     chunk_size - length of chunk
     """
 
