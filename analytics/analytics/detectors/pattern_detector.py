@@ -101,15 +101,17 @@ class PatternDetector(Detector):
 
         window_size = cache['WINDOW_SIZE']
 
-        if len(self.bucket.data) < window_size * 2:
-            logger.debug(f'{self.analytic_unit_id} bucket data less than two window size, skip run detection from consume_data')
+        bucket_len = len(self.bucket.data)
+        if bucket_len < window_size * 2:
+            msg = f'{self.analytic_unit_id} bucket data {bucket_len} less than two window size {window_size * 2}, skip run detection from consume_data'
+            logger.debug(msg)
             return None
 
         res = self.detect(self.bucket.data, cache)
 
         bucket_size = max(window_size * self.BUCKET_WINDOW_SIZE_FACTOR, self.MIN_BUCKET_SIZE)
-        if len(self.bucket.data) > bucket_size:
-            excess_data = len(self.bucket.data) - bucket_size
+        if bucket_len > bucket_size:
+            excess_data = bucket_len - bucket_size
             self.bucket.drop_data(excess_data)
 
         logging.debug('End consume_data for analytic unit: {} with res: {}'.format(self.analytic_unit_id, res))
