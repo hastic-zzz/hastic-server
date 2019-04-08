@@ -18,7 +18,7 @@ class TestUtils(unittest.TestCase):
         ]
 
         for tested, expected in cases:
-            tested_chunks = intersected_chunks(tested, window_size, chunk_size)
+            tested_chunks = intersected_chunks(tested, intersection, chunk_size)
             self.assertSequenceEqual(tuple(tested_chunks), expected)
 
 
