@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 import numpy as np 
-from analytic_unit_manager import prepare_data
+from utils import prepare_data
 import models
 import random
 import scipy.signal
