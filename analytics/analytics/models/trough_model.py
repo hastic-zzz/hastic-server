@@ -62,7 +62,6 @@ class TroughModel(Model):
             del_conv = scipy.signal.fftconvolve(deleted, self.state['pattern_model'])
             if len(del_conv): del_conv_list.append(max(del_conv))
             delete_pattern_height.append(utils.find_confidence(deleted)[1])
-            delete_pattern_width.append(utils.find_width(deleted, False))
 
         self._update_fiting_result(self.state, learning_info['confidence'], convolve_list, del_conv_list, height_list)
 

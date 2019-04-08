@@ -143,10 +143,13 @@ class Model(ABC):
             learning_info['pattern_timestamp'].append(segment.pattern_timestamp)
             aligned_segment = utils.get_interval(data, segment_center, self.state['WINDOW_SIZE'])
             aligned_segment = utils.subtract_min_without_nan(aligned_segment)
+            if len(aligned_segment) == 0:
+                logging.warning('cant add segment to learning because segment is empty with center: {}, window_size: {}, and len_data: {}'.format(
+                    segment_center, self.state['WINDOW_SIZE'], len(data)))
+                continue
             learning_info['patterns_list'].append(aligned_segment)
             if model == 'peak' or model == 'trough':
                 learning_info['pattern_height'].append(utils.find_confidence(aligned_segment)[1])
-                learning_info['pattern_width'].append(utils.find_width(aligned_segment, model_type))
                 learning_info['patterns_value'].append(aligned_segment.values.max())
             if model == 'jump' or model == 'drop':
                 pattern_height, pattern_length = utils.find_parameters(segment.data, segment.start, model)
