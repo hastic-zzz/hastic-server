@@ -44,6 +44,12 @@ def get_intersected_chunks(data: list, intersection: int, chunk_size: int) -> Ge
                 offset += min(nonintersected, left_values)
 
 def get_chunks(data: list, chunk_size: int) -> Generator[list, None, None]:
+    """
+    Returns generator that splits dataframe on non-intersected segments.
+    Intersection makes it able to detect pattern that present in dataframe on the border between chunks.
+    chunk_size - length of chunk
+    """
+
     chunks_iterables = [iter(data)] * chunk_size
     result_chunks = zip(*chunks_iterables)
     partial_chunk_len = len(data) % chunk_size
