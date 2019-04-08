@@ -53,7 +53,7 @@ class AnalyticUnitWorker:
 
         window_size = self._detector.get_window_size(cache)
         chunk_size = window_size * self.CHUNK_WINDOW_SIZE_FACTOR
-        chunk_intersection = window_size * 2
+        chunk_intersection = window_size * self.CHUNK_INTERSECTION_FACTOR
 
         detection_result = {
           'cache': None,
