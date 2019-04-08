@@ -26,18 +26,18 @@ class TestUtils(unittest.TestCase):
         chunk_size = 4
 
         cases = [
-            (tuple(range(12)), ((0,1,2,3), (4,5,6,7), (8,9,10,11))),
-            (tuple(range(9)), ((0,1,2,3), (4,5,6,7), (8,))),
-            (tuple(range(10)), ((0,1,2,3), (4,5,6,7), (8,9))),
-            (tuple(range(11)), ((0,1,2,3), (4,5,6,7), (8,9,10))),
-            ((), tuple()),
-            (tuple(range(1)), ((0,),)),
-            (tuple(range(4)), ((0,1,2,3),))
+            (tuple(range(12)), [[0,1,2,3], [4,5,6,7], [8,9,10,11]]),
+            (tuple(range(9)), [[0,1,2,3], [4,5,6,7], [8]]),
+            (tuple(range(10)), [[0,1,2,3], [4,5,6,7], [8,9]]),
+            (tuple(range(11)), [[0,1,2,3], [4,5,6,7], [8,9,10]]),
+            ([], []),
+            (tuple(range(1)), [[0]]),
+            (tuple(range(4)), [[0,1,2,3]])
         ]
 
         for tested, expected in cases:
-            tested_chunks = chunks(tested, chunk_size)
-            self.assertSequenceEqual(tuple(tested_chunks), expected)
+            tested_chunks = list(chunks(tested, chunk_size))
+            self.assertSequenceEqual(tested_chunks, expected)
 
 if __name__ == '__main__':
     unittest.main()
