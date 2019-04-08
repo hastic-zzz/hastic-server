@@ -144,7 +144,7 @@ class Model(ABC):
             aligned_segment = utils.get_interval(data, segment_center, self.state['WINDOW_SIZE'])
             aligned_segment = utils.subtract_min_without_nan(aligned_segment)
             if len(aligned_segment) == 0:
-                logging.warning('cant add segment to learning because segment is empty with center: {}, window_size: {}, and len_data: {}'.format(
+                logging.warning('cant add segment to learning because segment is empty where segments center is: {}, window_size: {}, and len_data: {}'.format(
                     segment_center, self.state['WINDOW_SIZE'], len(data)))
                 continue
             learning_info['patterns_list'].append(aligned_segment)
