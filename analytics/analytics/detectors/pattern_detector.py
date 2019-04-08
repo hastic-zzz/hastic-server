@@ -57,6 +57,11 @@ class PatternDetector(Detector):
         logger.debug('Unit {} got {} data points for detection'.format(self.analytic_unit_id, len(dataframe)))
         # TODO: split and sleep (https://github.com/hastic/hastic-server/pull/124#discussion_r214085643)
 
+        if cache is None or cache == {}:
+            msg = f'{self.analytic_unit_id} detection got invalid cache, skip detection'
+            logger.error(msg)
+            raise ValueError(msg)
+
         window_size = cache.get('WINDOW_SIZE')
         if window_size is None:
             message = '{} got cache without WINDOW_SIZE for detection'.format(self.analytic_unit_id)
@@ -84,7 +89,7 @@ class PatternDetector(Detector):
         logging.debug('Start consume_data for analytic unit {}'.format(self.analytic_unit_id))
 
         if cache is None or cache == {}:
-            logging.debug(f'consume_data get invalid cache {cache} for task {self.analytic_unit_id}')
+            logging.debug(f'consume_data get invalid cache {cache} for task {self.analytic_unit_id}, skip')
             return None
 
         data_without_nan = data.dropna()
