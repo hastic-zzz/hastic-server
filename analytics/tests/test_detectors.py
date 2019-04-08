@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 
-from detectors import pattern_detector
+from detectors import pattern_detector, threshold_detector
 
 class TestPatternDetector(unittest.TestCase):
 
@@ -15,3 +15,16 @@ class TestPatternDetector(unittest.TestCase):
         
         with self.assertRaises(ValueError):
             detector.detect(dataframe, cache)
+
+
+class TestThresholdDetector(unittest.TestCase):
+
+    def test_invalid_cache(self):
+
+        detector = threshold_detector.ThresholdDetector()
+        
+        with self.assertRaises(ValueError):
+            detector.detect([], None)
+
+        with self.assertRaises(ValueError):
+            detector.detect([], {})
