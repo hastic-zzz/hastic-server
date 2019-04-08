@@ -6,7 +6,7 @@ import pandas as pd
 class TestUtils(unittest.TestCase):
 
     def test_chunks_generator(self):
-        window_size = 1
+        intersection = 2
         chunk_size = 4
 
         cases = [
