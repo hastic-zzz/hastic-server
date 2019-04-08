@@ -1,12 +1,10 @@
 from typing import Dict
-import pandas as pd
-import numpy as np
 import logging as log
 import traceback
 from concurrent.futures import Executor, ThreadPoolExecutor
 
-import detectors
 from analytic_unit_worker import AnalyticUnitWorker
+import detectors
 from models import ModelCache
 
 
@@ -24,18 +22,6 @@ def get_detector_by_type(
         return detectors.ThresholdDetector()
 
     raise ValueError('Unknown detector type "%s"' % detector_type)
-
-def prepare_data(data: list) -> pd.DataFrame:
-    """
-        Takes list
-        - converts it into pd.DataFrame,
-        - converts 'timestamp' column to pd.Datetime,
-        - subtracts min value from the dataset
-    """
-    data = pd.DataFrame(data, columns=['timestamp', 'value'])
-    data['timestamp'] = pd.to_datetime(data['timestamp'], unit='ms')
-    data.fillna(value = np.nan, inplace = True)
-    return data
 
 
 class AnalyticUnitManager:
@@ -71,7 +57,7 @@ class AnalyticUnitManager:
 
         payload = task['payload']
         worker = self.__ensure_worker(analytic_unit_id, payload['detector'], payload['analyticUnitType'])
-        data = prepare_data(payload['data'])
+        data = payload['data']
         if task['type'] == 'PUSH':
             # TODO: do it a better way
             res = await worker.consume_data(data, payload['cache'])
