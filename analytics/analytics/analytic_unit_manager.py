@@ -1,12 +1,10 @@
 from typing import Dict
-import pandas as pd
-import numpy as np
 import logging as log
 import traceback
 from concurrent.futures import Executor, ThreadPoolExecutor
 
-import detectors
 from analytic_unit_worker import AnalyticUnitWorker
+import detectors
 from models import ModelCache
 
 
@@ -59,7 +57,7 @@ class AnalyticUnitManager:
 
         payload = task['payload']
         worker = self.__ensure_worker(analytic_unit_id, payload['detector'], payload['analyticUnitType'])
-        data = prepare_data(payload['data'])
+        data = payload['data']
         if task['type'] == 'PUSH':
             # TODO: do it a better way
             res = await worker.consume_data(data, payload['cache'])

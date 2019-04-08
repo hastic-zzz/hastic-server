@@ -1,5 +1,6 @@
 from itertools import chain
 import pandas as pd
+import numpy as np
 from typing import Generator
 
 def prepare_data(data: list) -> pd.DataFrame:
@@ -14,7 +15,7 @@ def prepare_data(data: list) -> pd.DataFrame:
     data.fillna(value = np.nan, inplace = True)
     return data
 
-def intersected_chunks(dataframe: list, window_size: int, chunk_size: int) -> Generator[pd.DataFrame, None, None]:
+def intersected_chunks(data: list, window_size: int, chunk_size: int) -> Generator[list, None, None]:
         """
         Returns generator that splits dataframe on intersected segments.
         Intersection makes it able to detect pattern that present in dataframe on the border between chunks.
@@ -22,10 +23,10 @@ def intersected_chunks(dataframe: list, window_size: int, chunk_size: int) -> Ge
         chunk_size - length of chunk
         """
 
-        data_len = len(dataframe)
+        data_len = len(data)
 
         if data_len <= chunk_size:
-            yield dataframe
+            yield data
             return
 
         nonintersected = chunk_size - 2 * window_size
@@ -36,16 +37,19 @@ def intersected_chunks(dataframe: list, window_size: int, chunk_size: int) -> Ge
             if left_values == 0:
                 break
             if left_values <= chunk_size:
-                yield dataframe[offset : data_len]
+                yield data[offset : data_len]
                 break
             else:
-                yield dataframe[offset: offset + chunk_size]
+                yield data[offset: offset + chunk_size]
                 offset += min(nonintersected, left_values)
 
-def chunks(dataframe: pd.DataFrame, chunk_size: int) -> Generator[pd.DataFrame, None, None]:
-    chunks_iterables = [iter(dataframe)] * chunk_size
-    full_chunks = zip(*chunks_iterables)
-    partial_chunk_len = len(dataframe) % chunk_size
+def chunks(data: list, chunk_size: int) -> Generator[list, None, None]:
+    chunks_iterables = [iter(data)] * chunk_size
+    result_chunks = zip(*chunks_iterables)
+    partial_chunk_len = len(data) % chunk_size
+
     if partial_chunk_len != 0:
-        return chain(full_chunks, (tuple(dataframe[-partial_chunk_len:]),))
-    return full_chunks
+        result_chunks = chain(result_chunks, [data[-partial_chunk_len:]])
+
+    for chunk in result_chunks:
+        yield list(chunk)
