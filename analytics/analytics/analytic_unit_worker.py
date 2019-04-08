@@ -7,7 +7,7 @@ from models import ModelCache
 import concurrent.futures
 import asyncio
 
-from utils import intersected_chunks, chunks
+from utils import intersected_chunks, chunks, prepare_data
 
 
 logger = logging.getLogger('AnalyticUnitWorker')
@@ -24,10 +24,13 @@ class AnalyticUnitWorker:
         self._training_future: asyncio.Future = None
 
     async def do_train(
-        self, payload: Union[list, dict], data: pd.DataFrame, cache: Optional[ModelCache]
+        self, payload: Union[list, dict], data: list, cache: Optional[ModelCache]
     ) -> Optional[ModelCache]:
+
+        dataframe = prepare_data(data)
+
         cfuture: concurrent.futures.Future = self._executor.submit(
-            self._detector.train, data, payload, cache
+            self._detector.train, dataframe, payload, cache
         )
         self._training_future = asyncio.wrap_future(cfuture)
         try:
@@ -38,12 +41,12 @@ class AnalyticUnitWorker:
         except asyncio.TimeoutError:
             raise Exception('Timeout ({}s) exceeded while learning'.format(config.LEARNING_TIMEOUT))
 
-    async def do_detect(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
+    async def do_detect(self, data: list, cache: Optional[ModelCache]) -> dict:
         if cache is None:
             msg = f'{self.analytic_unit_id} detection got invalid cache, skip detection'
             logger.error(msg)
             raise ValueError(msg)
-        
+
         window_size = self._detector.get_window_size(cache)
 
         detection_result = {
@@ -54,7 +57,8 @@ class AnalyticUnitWorker:
 
         for chunk in intersected_chunks(data, window_size, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
             await asyncio.sleep(0)
-            detected = self._detector.detect(chunk, cache)
+            chunk_dataframe = prepare_data(chunk)
+            detected = self._detector.detect(chunk_dataframe, cache)
             self.__append_detection_result(detection_result, detected)
 
         return detection_result
@@ -63,7 +67,7 @@ class AnalyticUnitWorker:
         if self._training_future is not None:
             self._training_future.cancel()
 
-    async def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]):
+    async def consume_data(self, data: list, cache: Optional[ModelCache]):
         if cache is None:
             msg = f'{self.analytic_unit_id} consume_data got invalid cache, skip detection'
             logger.error(msg)
@@ -80,7 +84,8 @@ class AnalyticUnitWorker:
 
         for chunk in chunks(data, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
             await asyncio.sleep(0)
-            detected = self._detector.consume_data(chunk, cache)
+            chunk_dataframe = prepare_data(chunk)
+            detected = self._detector.consume_data(chunk_dataframe, cache)
             self.__append_detection_result(detection_result, detected)
 
         return detection_result

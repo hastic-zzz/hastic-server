@@ -25,18 +25,6 @@ def get_detector_by_type(
 
     raise ValueError('Unknown detector type "%s"' % detector_type)
 
-def prepare_data(data: list) -> pd.DataFrame:
-    """
-        Takes list
-        - converts it into pd.DataFrame,
-        - converts 'timestamp' column to pd.Datetime,
-        - subtracts min value from the dataset
-    """
-    data = pd.DataFrame(data, columns=['timestamp', 'value'])
-    data['timestamp'] = pd.to_datetime(data['timestamp'], unit='ms')
-    data.fillna(value = np.nan, inplace = True)
-    return data
-
 
 class AnalyticUnitManager:
 
