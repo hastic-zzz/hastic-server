@@ -7,7 +7,7 @@ from models import ModelCache
 import concurrent.futures
 import asyncio
 
-from utils import get_data_chunks
+from utils import intersected_chunks, chunks
 
 
 logger = logging.getLogger('AnalyticUnitWorker')
@@ -52,7 +52,7 @@ class AnalyticUnitWorker:
           'lastDetectionTime': None
         }
 
-        for chunk in get_data_chunks(data, window_size, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
+        for chunk in intersected_chunks(data, window_size, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
             await asyncio.sleep(0)
             detected = self._detector.detect(chunk, cache)
             self.__append_detection_result(detection_result, detected)
@@ -78,8 +78,7 @@ class AnalyticUnitWorker:
           'lastDetectionTime': None
         }
 
-        #TODO: remove code duplication with do_detect
-        for chunk in get_data_chunks(data, window_size, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
+        for chunk in chunks(data, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
             await asyncio.sleep(0)
             detected = self._detector.consume_data(chunk, cache)
             self.__append_detection_result(detection_result, detected)
