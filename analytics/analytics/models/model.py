@@ -76,12 +76,16 @@ class Model(ABC):
             if segment_map['labeled'] or segment_map['deleted']:
                 segment = Segment(dataframe, segment_map, self.find_segment_center)
                 if segment.percent_of_nans > 0.1 or len(segment.data) == 0:
+                    logging.debug(f'segment {segment_map.start}-{segment_map.end} skip because of invalid data')
                     continue
                 if segment.percent_of_nans > 0:
                     segment.convert_nan_to_zero()
                 max_length = max(segment.length, max_length)
                 if segment.labeled: labeled.append(segment)
                 if segment.deleted: deleted.append(segment)
+
+        assert len(labeled) > 0, f'labeled list empty, skip fitting for {id}'
+
         if self.state.get('WINDOW_SIZE') == 0:            
             self.state['WINDOW_SIZE'] = math.ceil(max_length / 2) if max_length else 0
         model, model_type = self.get_model_type()

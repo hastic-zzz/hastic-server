@@ -22,6 +22,8 @@ def get_intersected_chunks(data: list, intersection: int, chunk_size: int) -> Ge
         intersection - length of intersection.
         chunk_size - length of chunk
         """
+        assert chunk_size > 0, 'chunk size must be great than zero'
+        assert intersection > 0, 'intersection length must be great than zero'
 
         data_len = len(data)
 
@@ -48,6 +50,7 @@ def get_chunks(data: list, chunk_size: int) -> Generator[list, None, None]:
     Returns generator that splits dataframe on non-intersected segments.
     chunk_size - length of chunk
     """
+    assert chunk_size > 0, 'chunk size must be great than zero'
 
     chunks_iterables = [iter(data)] * chunk_size
     result_chunks = zip(*chunks_iterables)
