@@ -57,6 +57,18 @@ class PatternDetector(Detector):
         logger.debug('Unit {} got {} data points for detection'.format(self.analytic_unit_id, len(dataframe)))
         # TODO: split and sleep (https://github.com/hastic/hastic-server/pull/124#discussion_r214085643)
 
+        window_size = cache.get('WINDOW_SIZE')
+        if window_size is None:
+            message = '{} got cache without WINDOW_SIZE for detection'.format(self.analytic_unit_id)
+            logger.error(message)
+            raise ValueError(message)
+
+        if len(dataframe) < window_size * 2:
+            message = f'{self.analytic_unit_id} skip detection: data length: {len(dataframe)} \
+                less than WINDOW_SIZE: {window_size}'
+            logger.error(message)
+            raise ValueError(message)
+
         detected = self.model.detect(dataframe, self.analytic_unit_id, cache)
 
         segments = [{ 'from': segment[0], 'to': segment[1] } for segment in detected['segments']]
