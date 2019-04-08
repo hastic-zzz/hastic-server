@@ -15,11 +15,11 @@ def prepare_data(data: list) -> pd.DataFrame:
     data.fillna(value = np.nan, inplace = True)
     return data
 
-def intersected_chunks(data: list, window_size: int, chunk_size: int) -> Generator[list, None, None]:
+def intersected_chunks(data: list, intersection: int, chunk_size: int) -> Generator[list, None, None]:
         """
         Returns generator that splits dataframe on intersected segments.
         Intersection makes it able to detect pattern that present in dataframe on the border between chunks.
-        window_size - length of intersection. 
+        intersection - length of intersection.
         chunk_size - length of chunk
         """
 
@@ -29,7 +29,7 @@ def intersected_chunks(data: list, window_size: int, chunk_size: int) -> Generat
             yield data
             return
 
-        nonintersected = chunk_size - 2 * window_size
+        nonintersected = chunk_size - intersection
 
         offset = 0
         while True:
