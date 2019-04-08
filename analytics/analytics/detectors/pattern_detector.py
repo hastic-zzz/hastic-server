@@ -64,8 +64,7 @@ class PatternDetector(Detector):
             raise ValueError(message)
 
         if len(dataframe) < window_size * 2:
-            message = f'{self.analytic_unit_id} skip detection: data length: {len(dataframe)} \
-                less than WINDOW_SIZE: {window_size}'
+            message = f'{self.analytic_unit_id} skip detection: data length: {len(dataframe)} less than WINDOW_SIZE: {window_size}'
             logger.error(message)
             raise ValueError(message)
 
