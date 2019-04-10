@@ -57,6 +57,22 @@ class PatternDetector(Detector):
         logger.debug('Unit {} got {} data points for detection'.format(self.analytic_unit_id, len(dataframe)))
         # TODO: split and sleep (https://github.com/hastic/hastic-server/pull/124#discussion_r214085643)
 
+        if cache is None or cache == {}:
+            msg = f'{self.analytic_unit_id} detection got invalid cache, skip detection'
+            logger.error(msg)
+            raise ValueError(msg)
+
+        window_size = cache.get('WINDOW_SIZE')
+        if window_size is None:
+            message = '{} got cache without WINDOW_SIZE for detection'.format(self.analytic_unit_id)
+            logger.error(message)
+            raise ValueError(message)
+
+        if len(dataframe) < window_size * 2:
+            message = f'{self.analytic_unit_id} skip detection: data length: {len(dataframe)} less than WINDOW_SIZE: {window_size}'
+            logger.error(message)
+            raise ValueError(message)
+
         detected = self.model.detect(dataframe, self.analytic_unit_id, cache)
 
         segments = [{ 'from': segment[0], 'to': segment[1] } for segment in detected['segments']]
@@ -71,23 +87,35 @@ class PatternDetector(Detector):
 
     def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
         logging.debug('Start consume_data for analytic unit {}'.format(self.analytic_unit_id))
+
+        if cache is None or cache == {}:
+            logging.debug(f'consume_data get invalid cache {cache} for task {self.analytic_unit_id}, skip')
+            return None
+
         data_without_nan = data.dropna()
 
         if len(data_without_nan) == 0:
             return None
 
         self.bucket.receive_data(data_without_nan)
-        if cache == None:
-            logging.debug('consume_data cache is None for task {}'.format(self.analytic_unit_id))
-            cache = {}
-        bucket_size = max(cache.get('WINDOW_SIZE', 0) * self.BUCKET_WINDOW_SIZE_FACTOR, self.MIN_BUCKET_SIZE)
+
+        window_size = cache['WINDOW_SIZE']
+
+        bucket_len = len(self.bucket.data)
+        if bucket_len < window_size * 2:
+            msg = f'{self.analytic_unit_id} bucket data {bucket_len} less than two window size {window_size * 2}, skip run detection from consume_data'
+            logger.debug(msg)
+            return None
 
         res = self.detect(self.bucket.data, cache)
 
-        if len(self.bucket.data) > bucket_size:
-            excess_data = len(self.bucket.data) - bucket_size
+        bucket_size = max(window_size * self.BUCKET_WINDOW_SIZE_FACTOR, self.MIN_BUCKET_SIZE)
+        if bucket_len > bucket_size:
+            excess_data = bucket_len - bucket_size
             self.bucket.drop_data(excess_data)
+
         logging.debug('End consume_data for analytic unit: {} with res: {}'.format(self.analytic_unit_id, res))
+
         if res:
             return res
         else:

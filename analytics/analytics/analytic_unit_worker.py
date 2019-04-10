@@ -45,11 +45,7 @@ class AnalyticUnitWorker:
         except asyncio.TimeoutError:
             raise Exception('Timeout ({}s) exceeded while learning'.format(config.LEARNING_TIMEOUT))
 
-    async def do_detect(self, data: list, cache: Optional[ModelCache]) -> dict:
-        if cache is None:
-            msg = f'{self.analytic_unit_id} detection got invalid cache, skip detection'
-            logger.error(msg)
-            raise ValueError(msg)
+    async def do_detect(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
 
         window_size = self._detector.get_window_size(cache)
         chunk_size = window_size * self.CHUNK_WINDOW_SIZE_FACTOR
@@ -73,12 +69,7 @@ class AnalyticUnitWorker:
         if self._training_future is not None:
             self._training_future.cancel()
 
-    async def consume_data(self, data: list, cache: Optional[ModelCache]):
-        if cache is None:
-            msg = f'{self.analytic_unit_id} consume_data got invalid cache, skip detection'
-            logger.error(msg)
-            raise ValueError(msg)
-
+    async def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
         window_size = self._detector.get_window_size(cache)
 
         #TODO: make class DetectionResult
@@ -94,7 +85,10 @@ class AnalyticUnitWorker:
             detected = self._detector.consume_data(chunk_dataframe, cache)
             self.__append_detection_result(detection_result, detected)
 
-        return detection_result
+        if detection_result['lastDetectionTime'] is None:
+            return None
+        else:
+            return detection_result
 
     def __append_detection_result(self, detection_result: dict, new_chunk: dict):
         if new_chunk is not None:
