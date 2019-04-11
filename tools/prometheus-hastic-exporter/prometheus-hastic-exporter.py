@@ -23,7 +23,12 @@ class JsonCollector(object):
     
     commitHash = response.get('git', {}).get('commitHash')
     packageVersion = response.get('packageVersion')
-    labels={'commitHash': commitHash, 'packageVersion': packageVersion}
+    instanceName = response.get('instanceName')
+    labels = {
+      'commitHash': commitHash,
+      'packageVersion': packageVersion,
+      'instanceName': instanceName
+    }
 
     metrics = {
         'activeWebhooks': response.get('activeWebhooks'),
