@@ -71,13 +71,13 @@ class DataService:
             'content': content
         }
         message = ServerMessage('FILE_SAVE', message_payload)
-        await self.server_service.send_request(message)
+        await self.server_service.send_request_to_server(message)
 
     async def load_file_content(self, file_descriptor: FileDescriptor) -> str:
         self.__check_lock(file_descriptor)
         message_payload = { 'filename': file_descriptor.filename }
         message = ServerMessage('FILE_LOAD', message_payload)
-        return await self.server_service.send_request(message)
+        return await self.server_service.send_request_to_server(message)
 
     def __check_lock(self, file_descriptor: FileDescriptor):
         filename = file_descriptor.filename

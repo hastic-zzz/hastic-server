@@ -28,8 +28,8 @@ class ThresholdDetector(Detector):
         }
 
     def detect(self, dataframe: pd.DataFrame, cache: ModelCache) -> dict:
-        if cache == None:
-            raise 'Threshold detector error: cannot detect before learning'
+        if cache is None or cache == {}:
+            raise ValueError('Threshold detector error: cannot detect before learning')
         value = cache['value']
         condition = cache['condition']
 

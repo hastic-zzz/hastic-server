@@ -76,12 +76,16 @@ class Model(ABC):
             if segment_map['labeled'] or segment_map['deleted']:
                 segment = Segment(dataframe, segment_map, self.find_segment_center)
                 if segment.percent_of_nans > 0.1 or len(segment.data) == 0:
+                    logging.debug(f'segment {segment.start}-{segment.end} skip because of invalid data')
                     continue
                 if segment.percent_of_nans > 0:
                     segment.convert_nan_to_zero()
                 max_length = max(segment.length, max_length)
                 if segment.labeled: labeled.append(segment)
                 if segment.deleted: deleted.append(segment)
+
+        assert len(labeled) > 0, f'labeled list empty, skip fitting for {id}'
+
         if self.state.get('WINDOW_SIZE') == 0:            
             self.state['WINDOW_SIZE'] = math.ceil(max_length / 2) if max_length else 0
         model, model_type = self.get_model_type()
@@ -143,10 +147,13 @@ class Model(ABC):
             learning_info['pattern_timestamp'].append(segment.pattern_timestamp)
             aligned_segment = utils.get_interval(data, segment_center, self.state['WINDOW_SIZE'])
             aligned_segment = utils.subtract_min_without_nan(aligned_segment)
+            if len(aligned_segment) == 0:
+                logging.warning('cant add segment to learning because segment is empty where segments center is: {}, window_size: {}, and len_data: {}'.format(
+                    segment_center, self.state['WINDOW_SIZE'], len(data)))
+                continue
             learning_info['patterns_list'].append(aligned_segment)
             if model == 'peak' or model == 'trough':
                 learning_info['pattern_height'].append(utils.find_confidence(aligned_segment)[1])
-                learning_info['pattern_width'].append(utils.find_width(aligned_segment, model_type))
                 learning_info['patterns_value'].append(aligned_segment.values.max())
             if model == 'jump' or model == 'drop':
                 pattern_height, pattern_length = utils.find_parameters(segment.data, segment.start, model)
