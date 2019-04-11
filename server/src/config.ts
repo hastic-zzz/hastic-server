@@ -35,6 +35,7 @@ export const INSIDE_DOCKER = process.env.INSIDE_DOCKER !== undefined;
 export const PRODUCTION_MODE = process.env.NODE_ENV !== 'development';
 
 export const ZMQ_CONNECTION_STRING = createZMQConnectionString();
+export const HASTIC_INSTANCE_NAME = getConfigField('HASTIC_INSTANCE_NAME', null);
 
 
 function getConfigField(field: string, defaultVal?: any) {
