@@ -76,7 +76,7 @@ class Model(ABC):
             if segment_map['labeled'] or segment_map['deleted']:
                 segment = Segment(dataframe, segment_map, self.find_segment_center)
                 if segment.percent_of_nans > 0.1 or len(segment.data) == 0:
-                    logging.debug(f'segment {segment_map.start}-{segment_map.end} skip because of invalid data')
+                    logging.debug(f'segment {segment.start}-{segment.end} skip because of invalid data')
                     continue
                 if segment.percent_of_nans > 0:
                     segment.convert_nan_to_zero()
