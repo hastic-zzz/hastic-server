@@ -4,7 +4,6 @@ import { HASTIC_WEBHOOK_URL, HASTIC_WEBHOOK_TYPE, HASTIC_WEBHOOK_SECRET, HASTIC_
 
 import axios from 'axios';
 import * as querystring from 'querystring';
-import * as _ from 'lodash';
 
 enum ContentType {
   JSON = 'application/json',
