@@ -7,15 +7,24 @@ import * as Router from 'koa-router';
 
 async function getData(ctx: Router.IRouterContext) {
 
-  const from = +ctx.request.query.from;
-  const to = +ctx.request.query.to;
+  let from = ctx.request.query.from;
+  let to = ctx.request.query.to;
   const panelId = ctx.request.query.panelId;
 
   if(panelId === undefined) {
-    const message = `data router error: request must contain panelId`;
-    console.error(message);
-    throw new Error(message);
+    throw new Error(`data router error: request must contain panelId`);
   }
+
+  if(from === undefined) {
+    throw new Error(`data router error: request must contain 'from'`)
+  }
+
+  if(to === undefined) {
+    throw new Error(`data router error: request must contain 'to'`)
+  }
+
+  from = +from;
+  to = +to;
 
   if(to <= from) {
     const message = `data router error: 'to' must be greater than 'from' (from:${from} to:${to})`;
@@ -40,7 +49,7 @@ async function getData(ctx: Router.IRouterContext) {
   }
 
   try {
-    const data = queryByMetric(unit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
+    const data = await queryByMetric(unit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
     ctx.response.body = { data };
   } catch(e) {
     console.error(`data router got exception ${e} while query data`);
