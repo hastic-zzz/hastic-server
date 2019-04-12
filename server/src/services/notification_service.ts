@@ -1,4 +1,3 @@
-import { Segment } from '../models/segment_model';
 import * as AnalyticUnit from '../models/analytic_unit_model';
 import { HASTIC_WEBHOOK_URL, HASTIC_WEBHOOK_TYPE, HASTIC_WEBHOOK_SECRET, HASTIC_INSTANCE_NAME } from '../config';
 
@@ -41,9 +40,27 @@ export declare type InfoAlert = {
 export async function sendAnalyticWebhook(alert: AnalyticAlert) {
   const fromTime = new Date(alert.from).toLocaleTimeString();
   const toTime = new Date(alert.to).toLocaleTimeString();
-  console.log(`Sending alert unit:${alert.analyticUnitName} from: ${fromTime} to: ${toTime}`);
+  console.log(`Sending alert unit: ${alert.analyticUnitName} from: ${fromTime} to: ${toTime}`);
 
-  let payload;
+  sendWebhook(alert);
+}
+
+export async function sendInfoWebhook(alert: InfoAlert) {
+  if(alert && typeof alert === 'object') {
+    console.log(`Sending info webhook ${JSON.stringify(alert.message)}`);
+    sendWebhook(alert);
+  } else {
+    console.error(`skip sending Info webhook, got corrupted message ${alert}`);
+  }
+}
+
+export async function sendWebhook(payload: any) {
+  if(HASTIC_WEBHOOK_URL === null) {
+    throw new Error(`Can't send alert, HASTIC_WEBHOOK_URL is undefined`);
+  }
+
+  payload.instanceName = HASTIC_INSTANCE_NAME;
+
   if(HASTIC_WEBHOOK_TYPE === ContentType.JSON) {
     payload = JSON.stringify(alert);
   } else if(HASTIC_WEBHOOK_TYPE === ContentType.URLENCODED) {
@@ -51,31 +68,13 @@ export async function sendAnalyticWebhook(alert: AnalyticAlert) {
   } else {
     throw new Error(`Unknown webhook type: ${HASTIC_WEBHOOK_TYPE}`);
   }
-  sendWebhook(payload);
-}
-
-export async function sendInfoWebhook(alert: InfoAlert) {
-  if(alert && typeof alert === 'object') {
-    console.log(`Sending info webhook ${JSON.stringify(alert.message)}`);
-    sendWebhook(alert, ContentType.JSON);
-  } else {
-    console.error(`skip sending Info webhook, got corrupted message ${alert}`);
-  }
-}
-
-export async function sendWebhook(payload: any, contentType = HASTIC_WEBHOOK_TYPE) {
-  if(HASTIC_WEBHOOK_URL === null) {
-    throw new Error(`Can't send alert, HASTIC_WEBHOOK_URL is undefined`);
-  }
-
-  payload.instanceName = HASTIC_INSTANCE_NAME;
 
   // TODO: use HASTIC_WEBHOOK_SECRET
   const options = {
     method: 'POST',
     url: HASTIC_WEBHOOK_URL,
     data: payload,
-    headers: { 'Content-Type': contentType }
+    headers: { 'Content-Type': HASTIC_WEBHOOK_TYPE }
   };
 
   try {
