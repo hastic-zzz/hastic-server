@@ -21,9 +21,16 @@ class JsonCollector(object):
         print('got exception, skip polling loop {}'.format(e))
         return
     
-    commitHash = response.get('git', {}).get('commitHash')
-    packageVersion = response.get('packageVersion')
-    labels={'commitHash': commitHash, 'packageVersion': packageVersion}
+    labels_values = {
+        'commitHash': response.get('git', {}).get('commitHash'),
+        'packageVersion': response.get('packageVersion'),
+        'instanceName': response.get('instanceName1')
+    }
+
+    labels = {}
+    for k, v in labels_values.items():
+        if v is not None:
+            labels[k] = v
 
     metrics = {
         'activeWebhooks': response.get('activeWebhooks'),

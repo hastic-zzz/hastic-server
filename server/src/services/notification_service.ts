@@ -1,6 +1,6 @@
 import { Segment } from '../models/segment_model';
 import * as AnalyticUnit from '../models/analytic_unit_model';
-import { HASTIC_WEBHOOK_URL, HASTIC_WEBHOOK_TYPE, HASTIC_WEBHOOK_SECRET } from '../config';
+import { HASTIC_WEBHOOK_URL, HASTIC_WEBHOOK_TYPE, HASTIC_WEBHOOK_SECRET, HASTIC_INSTANCE_NAME } from '../config';
 
 import axios from 'axios';
 import * as querystring from 'querystring';
@@ -67,6 +67,8 @@ export async function sendWebhook(payload: any, contentType = HASTIC_WEBHOOK_TYP
   if(HASTIC_WEBHOOK_URL === null) {
     throw new Error(`Can't send alert, HASTIC_WEBHOOK_URL is undefined`);
   }
+
+  payload.instanceName = HASTIC_INSTANCE_NAME;
 
   // TODO: use HASTIC_WEBHOOK_SECRET
   const options = {
