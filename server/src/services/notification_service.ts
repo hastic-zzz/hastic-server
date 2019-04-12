@@ -61,10 +61,11 @@ export async function sendWebhook(payload: any) {
 
   payload.instanceName = HASTIC_INSTANCE_NAME;
 
+  let data;
   if(HASTIC_WEBHOOK_TYPE === ContentType.JSON) {
-    payload = JSON.stringify(alert);
+    data = JSON.stringify(payload);
   } else if(HASTIC_WEBHOOK_TYPE === ContentType.URLENCODED) {
-    payload = querystring.stringify(alert);
+    data = querystring.stringify(payload);
   } else {
     throw new Error(`Unknown webhook type: ${HASTIC_WEBHOOK_TYPE}`);
   }
@@ -73,7 +74,7 @@ export async function sendWebhook(payload: any) {
   const options = {
     method: 'POST',
     url: HASTIC_WEBHOOK_URL,
-    data: payload,
+    data,
     headers: { 'Content-Type': HASTIC_WEBHOOK_TYPE }
   };
 
