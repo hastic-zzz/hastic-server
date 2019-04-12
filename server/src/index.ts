@@ -6,7 +6,7 @@ import * as AnalyticsController from './controllers/analytics_controller';
 
 import * as ProcessService from './services/process_service';
 
-import { HASTIC_PORT, PACKAGE_VERSION, GIT_INFO, ZMQ_CONNECTION_STRING } from './config';
+import { HASTIC_PORT, PACKAGE_VERSION, GIT_INFO, ZMQ_CONNECTION_STRING, HASTIC_INSTANCE_NAME } from './config';
 
 import { convertPanelUrlToPanelId } from './migrations/0.3.2-beta';
 
@@ -66,6 +66,7 @@ async function init() {
         lastAlive: AnalyticsController.analyticsLastAlive(),
         tasksQueueLength: AnalyticsController.getQueueLength()
       },
+      instanceName: HASTIC_INSTANCE_NAME,
       awaitedTasksNumber: AnalyticsController.getTaskResolversLength(),
       detectionsCount: AnalyticsController.getDetectionsCount(),
       nodeVersion: process.version,
