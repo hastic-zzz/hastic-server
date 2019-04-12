@@ -9,10 +9,10 @@ async function getData(ctx: Router.IRouterContext) {
 
   let from = ctx.request.query.from;
   let to = ctx.request.query.to;
-  const panelId = ctx.request.query.panelId;
+  const analyticUnitId = ctx.request.query.analyticUnitId;
 
-  if(panelId === undefined) {
-    throw new Error(`data router error: request must contain panelId`);
+  if(analyticUnitId === undefined) {
+    throw new Error(`data router error: request must contain analyticUnitId`);
   }
 
   if(from === undefined) {
@@ -32,24 +32,23 @@ async function getData(ctx: Router.IRouterContext) {
     throw new Error(message);
   }
 
-  const analyticUnits = await AnalyticUnit.findMany({ panelId });
+  const analyticUnit = await AnalyticUnit.findById(analyticUnitId);
 
-  if(analyticUnits.length < 1) {
-    const message = `there aren't analytic units with panelId ${panelId} in data base, add at least one`;
+  if(analyticUnit === undefined) {
+    const message = `analytic unit with id ${analyticUnitId} not present in data base`;
     console.error(message);
     throw new Error(message);
   }
 
-  const unit = analyticUnits[0];
   let grafanaUrl;
   if(GRAFANA_URL !== null) {
     grafanaUrl = GRAFANA_URL;
   } else {
-    grafanaUrl = unit.grafanaUrl;
+    grafanaUrl = analyticUnit.grafanaUrl;
   }
 
   try {
-    const data = await queryByMetric(unit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
+    const data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
     ctx.response.body = { data };
   } catch(e) {
     console.error(`data router got exception ${e} while query data`);
