@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 import utils
 import models
-import test_dataset.create_dataframe
+import test_dataset
 
 #get_frame
 #get_segment
@@ -19,19 +19,19 @@ NEGATIVE_SEGMENTS = [(1523889000009, 1523889000017)]
 
 class Segment():
 
-    def __init__(self, start: int, end: int, ltype: bool):
+    def __init__(self, start: int, end: int, labeled: bool):
         self.start = start
         #1523889000000 + start * 1000
         self.end = end
         #1523889000000 + end * 1000
-        self.ltype = ltype
+        self.labeled = labeled
 
     def get_segment(self):
         return {'_id': 'q', 'analyticUnitId': 'q',
                 'from': self.start,
                 'to': self.end,
-                'labeled': self.ltype,
-                'deleted': not self.ltype}
+                'labeled': self.labeled,
+                'deleted': not self.labeled}
 
 class Metric():
 
@@ -64,9 +64,6 @@ class ModelData():
         self.negative_segments = negative_segments
         self.model_type = model_type
 
-    def get_frame(self) -> pd.DataFrame:
-        return self.frame
-
     def get_segments_for_detection(self, positive_amount, negative_amount):
         segments = []
         for idx, bounds in enumerate(self.positive_segments):
@@ -91,7 +88,7 @@ def main(model_type: str) -> None:
     table_metric = []
     if model_type == 'peak':
         for data in PEAK_DATASETS:
-            dataset = data.get_frame()
+            dataset = data.frame
             segments = data.get_segments_for_detection(1, 0)
             model = models.PeakModel()
             cache = model.fit(dataset, segments, 'test', {})
@@ -101,6 +98,7 @@ def main(model_type: str) -> None:
     return table_metric
 
 if __name__ == "__main__":
+    #This tool applies the model to datasets and verifies that the detection result corresponds to the correct values.
     correct_name = ['peak', 'trough', 'jump', 'drop', 'general', 'gen']
     if len(sys.argv) < 2:
         print('Enter one of models name: {}'.format(correct_name))
