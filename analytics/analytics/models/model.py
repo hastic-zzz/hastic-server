@@ -43,15 +43,34 @@ class Segment(AttrDict):
 
 class ModelState():
 
-    def __init__(self):
-        self.pattern_center = []
-        self.pattern_model = []
-        self.confidence = 0
-        self.convolve_max = 0
-        self.convolve_min = 0
-        self.WINDOW_SIZE = 0
-        self.conv_del_min = 0
-        self.conv_del_max = 0
+    def __init__(self, cache = None):
+        if cache is None:
+            cache = {}
+        self.pattern_center = cache.get('pattern_center', [])
+        self.pattern_model = cache.get('pattern_model', [])
+        self.confidence = cache.get('confidence', 0)
+        self.convolve_max = cache.get('convolve_max', 0)
+        self.convolve_min = cache.get('convolve_min', 0)
+        self.WINDOW_SIZE = cache.get('WINDOW_SIZE', 0)
+        self.conv_del_min = cache.get('conv_del_min', 0)
+        self.conv_del_max = cache.get('conv_del_max', 0)
+        self.JUMP_HEIGHT = cache.get('JUMP_HEIGHT', 0)
+        self.JUMP_LENGTH = cache.get('JUMP_LENGTH', 0)
+    
+    def to_json(self):
+        return {
+            'pattern_center': self.pattern_center,
+            'pattern_model': self.pattern_model,
+            'confidence': self.confidence,
+            'convolve_max': self.convolve_max,
+            'convolve_min': self.convolve_min,
+            'WINDOW_SIZE': self.WINDOW_SIZE,
+            'conv_del_min': self.conv_del_min,
+            'conv_del_max': self.conv_del_max,
+            'JUMP_HEIGHT': self.JUMP_HEIGHT,
+            'JUMP_LENGTH': self.JUMP_LENGTH,
+        }
+        
 
 class Model(ABC):
 
@@ -79,8 +98,7 @@ class Model(ABC):
     def fit(self, dataframe: pd.DataFrame, segments: list, id: str, cache: Optional[ModelCache]) -> ModelCache:
         logging.debug('Start method fit for analytic unit {}'.format(id))
         data = dataframe['value']
-        if cache != None:
-            self.state = cache
+        self.state = ModelState(cache)
         max_length = 0
         labeled = []
         deleted = []
@@ -103,14 +121,13 @@ class Model(ABC):
         model, model_type = self.get_model_type()
         learning_info = self.get_parameters_from_segments(dataframe, labeled, deleted, model, model_type)
         self.do_fit(dataframe, labeled, deleted, learning_info, id)
-        logging.debug('fit complete successful with self.state: {} for analytic unit: {}'.format(self.state, id))
-        return self.state
+        logging.debug('fit complete successful with self.state: {} for analytic unit: {}'.format(self.state.to_json, id))
+        return self.state.to_json()
 
     def detect(self, dataframe: pd.DataFrame, id: str, cache: Optional[ModelCache]) -> dict:
         #If cache is None or empty dict - default parameters will be used instead
-        if cache != None:
-            self.state = cache
-        else:
+        self.state = ModelState(cache)
+        if cache is None:
             logging.debug('Get empty cache in detect')
         if not self.state:
             logging.warning('self.state is empty - skip do_detect')
@@ -127,7 +144,7 @@ class Model(ABC):
             logging.warning('Return empty self.state after detect')
         return {
             'segments': segments,
-            'cache': self.state,
+            'cache': self.state.to_json(),
         }
 
     def _update_fiting_result(self, state: dict, confidences: list, convolve_list: list, del_conv_list: list, height_list: list) -> None:

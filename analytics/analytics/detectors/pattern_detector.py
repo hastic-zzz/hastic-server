@@ -47,7 +47,7 @@ class PatternDetector(Detector):
     def train(self, dataframe: pd.DataFrame, segments: list, cache: Optional[models.ModelCache]) -> models.ModelCache:
         # TODO: pass only part of dataframe that has segments
         new_cache = self.model.fit(dataframe, segments, self.analytic_unit_id, cache)
-        if new_cache == None:
+        if new_cache == None or len(new_cache) == 0:
             logging.warning('new_cache is empty with data: {}, segments: {}, cache: {}, analytic unit: {}'.format(dataframe, segments, cache, self.analytic_unit_id))
         return {
             'cache': new_cache
@@ -62,7 +62,7 @@ class PatternDetector(Detector):
             logger.error(msg)
             raise ValueError(msg)
 
-        window_size = cache.WINDOW_SIZE
+        window_size = cache.get('WINDOW_SIZE')
         if window_size is None:
             message = '{} got cache without WINDOW_SIZE for detection'.format(self.analytic_unit_id)
             logger.error(message)
@@ -99,7 +99,7 @@ class PatternDetector(Detector):
 
         self.bucket.receive_data(data_without_nan)
 
-        window_size = cache.WINDOW_SIZE
+        window_size = cache.get('WINDOW_SIZE')
 
         bucket_len = len(self.bucket.data)
         if bucket_len < window_size * 2:
@@ -122,6 +122,5 @@ class PatternDetector(Detector):
             return None
 
     def get_window_size(self, cache: Optional[ModelCache]) -> int:
-        if cache is None or cache.WINDOW_SIZE is None: 
-            return self.DEFAULT_WINDOW_SIZE
-        return cache.WINDOW_SIZE
+        if cache is None: return self.DEFAULT_WINDOW_SIZE
+        return cache.get('WINDOW_SIZE', self.DEFAULT_WINDOW_SIZE)

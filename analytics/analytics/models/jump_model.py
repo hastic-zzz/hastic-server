@@ -1,5 +1,4 @@
 from models import Model
-from models.model import ModelState
 import utils
 import numpy as np
 import pandas as pd
@@ -9,33 +8,12 @@ import math
 from scipy.signal import argrelextrema
 from scipy.stats import gaussian_kde
 
-class JumpModelState(ModelState):
-
-    def __init__(self):
-        super().__init__()
-        self.JUMP_HEIGHT = 1
-        self.JUMP_LENGTH = 1
-    
-    def get_dict(self):
-        return {
-            'pattern_center': self.pattern_center,
-            'pattern_model': self.pattern_model,
-            'confidence': self.confidence,
-            'convolve_max': self.convolve_max,
-            'convolve_min': self.convolve_min,
-            'WINDOW_SIZE': self.WINDOW_SIZE,
-            'conv_del_min': self.conv_del_min,
-            'conv_del_max': self.conv_del_max,
-            'JUMP_HEIGHT': self.JUMP_HEIGHT,
-            'JUMP_LENGTH': self.JUMP_LENGTH,
-        }
 
 class JumpModel(Model):
 
     def __init__(self):
         super()
         self.segments = []
-        self.state = JumpModelState()
     
     def get_model_type(self) -> (str, bool):
         model = 'jump'
