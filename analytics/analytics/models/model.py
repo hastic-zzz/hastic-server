@@ -2,7 +2,7 @@ import utils
 
 from abc import ABC, abstractmethod
 from attrdict import AttrDict
-from typing import Optional
+from typing import Optional, List
 import pandas as pd
 import math
 import logging
@@ -44,16 +44,27 @@ class Segment(AttrDict):
 
 class ModelState():
 
-    def __init__(self, cache: Optional[dict] = None):
-        if cache is None:
-            cache = {}
-        self.pattern_center = cache.get('pattern_center', [])
-        self.pattern_model = cache.get('pattern_model', [])
-        self.convolve_max = cache.get('convolve_max', 0)
-        self.convolve_min = cache.get('convolve_min', 0)
-        self.WINDOW_SIZE = cache.get('WINDOW_SIZE', 0)
-        self.conv_del_min = cache.get('conv_del_min', 0)
-        self.conv_del_max = cache.get('conv_del_max', 0)
+    def __init__(self, pattern_center: List[int], pattern_model: List[float], convolve_max: float, convolve_min: float, window_size: int, conv_del_min: float, conv_del_max: float):
+        self.pattern_center = pattern_center
+        self.pattern_model = pattern_model
+        self.convolve_max = convolve_max
+        self.convolve_min = convolve_min
+        self.window_size = window_size
+        self.conv_del_min = conv_del_min
+        self.conv_del_max = conv_del_max
+    
+    @staticmethod
+    def from_json(json: Optional[dict] = None):
+        if json is None:
+            json = {}
+        pattern_center = json.get('pattern_center', [])
+        pattern_model = json.get('pattern_model', [])
+        convolve_max = json.get('convolve_max', 0)
+        convolve_min = json.get('convolve_min', 0)
+        window_size = json.get('window_size', 0)
+        conv_del_min = json.get('conv_del_min', 0)
+        conv_del_max = json.get('conv_del_max', 0)
+        return ModelState(pattern_center, pattern_model, convolve_max, convolve_min, window_size, conv_del_min, conv_del_max)
 
     def to_json(self) -> dict:
         return {
@@ -61,7 +72,7 @@ class ModelState():
             'pattern_model': self.pattern_model,
             'convolve_max': self.convolve_max,
             'convolve_min': self.convolve_min,
-            'WINDOW_SIZE': self.WINDOW_SIZE,
+            'WINDOW_SIZE': self.window_size,
             'conv_del_min': self.conv_del_min,
             'conv_del_max': self.conv_del_max,
         }
