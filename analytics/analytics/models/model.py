@@ -49,35 +49,21 @@ class ModelState():
             cache = {}
         self.pattern_center = cache.get('pattern_center', [])
         self.pattern_model = cache.get('pattern_model', [])
-        self.confidence = cache.get('confidence', 0)
         self.convolve_max = cache.get('convolve_max', 0)
         self.convolve_min = cache.get('convolve_min', 0)
         self.WINDOW_SIZE = cache.get('WINDOW_SIZE', 0)
         self.conv_del_min = cache.get('conv_del_min', 0)
         self.conv_del_max = cache.get('conv_del_max', 0)
-        self.JUMP_HEIGHT = cache.get('JUMP_HEIGHT', 0)
-        self.JUMP_LENGTH = cache.get('JUMP_LENGTH', 0)
-        self.height_max = cache.get('height_max', 0)
-        self.height_min = cache.get('height_min', 0)
-        self.DROP_HEIGHT = cache.get('DROP_HEIGHT', 0)
-        self.DROP_LENGTH = cache.get('DROP_LENGTH', 0)
 
     def to_json(self) -> dict:
         return {
             'pattern_center': self.pattern_center,
             'pattern_model': self.pattern_model,
-            'confidence': self.confidence,
             'convolve_max': self.convolve_max,
             'convolve_min': self.convolve_min,
             'WINDOW_SIZE': self.WINDOW_SIZE,
             'conv_del_min': self.conv_del_min,
             'conv_del_max': self.conv_del_max,
-            'JUMP_HEIGHT': self.JUMP_HEIGHT,
-            'JUMP_LENGTH': self.JUMP_LENGTH,
-            'height_max': self.height_max,
-            'height_min': self.height_min,
-            'DROP_HEIGHT': self.DROP_HEIGHT,
-            'DROP_LENGTH': self.DROP_LENGTH,
         }
 
 class Model(ABC):
