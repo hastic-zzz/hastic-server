@@ -43,7 +43,7 @@ class Segment(AttrDict):
 
 class ModelState():
 
-    def __init__(self, cache = None):
+    def __init__(self, cache: Optional[dict] = None):
         if cache is None:
             cache = {}
         self.pattern_center = cache.get('pattern_center', [])
@@ -61,7 +61,7 @@ class ModelState():
         self.DROP_HEIGHT = cache.get('DROP_HEIGHT', 0)
         self.DROP_LENGTH = cache.get('DROP_LENGTH', 0)
     
-    def to_json(self):
+    def to_json(self) -> dict:
         return {
             'pattern_center': self.pattern_center,
             'pattern_model': self.pattern_model,
@@ -100,7 +100,7 @@ class Model(ABC):
     @abstractmethod
     def get_model_type(self) -> (str, bool):
         pass
-        
+
     # TODO: id: str -> id: AnalyticUnitId in all models
     def fit(self, dataframe: pd.DataFrame, segments: list, id: str, cache: Optional[ModelCache]) -> ModelCache:
         logging.debug('Start method fit for analytic unit {}'.format(id))
