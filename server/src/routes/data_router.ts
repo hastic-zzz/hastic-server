@@ -7,7 +7,7 @@ import { queryByMetric } from 'grafana-datasource-kit';
 import * as Router from 'koa-router';
 
 
-async function getQuery(ctx: Router.IRouterContext) {
+async function query(ctx: Router.IRouterContext) {
 
   let from = ctx.request.query.from;
   let to = ctx.request.query.to;
@@ -53,4 +53,4 @@ async function getQuery(ctx: Router.IRouterContext) {
 
 export const router = new Router();
 
-router.get('/', getQuery);
+router.get('/', query);
