@@ -58,6 +58,8 @@ class ModelState():
         self.JUMP_LENGTH = cache.get('JUMP_LENGTH', 0)
         self.height_max = cache.get('height_max', 0)
         self.height_min = cache.get('height_min', 0)
+        self.DROP_HEIGHT = cache.get('DROP_HEIGHT', 0)
+        self.DROP_LENGTH = cache.get('DROP_LENGTH', 0)
     
     def to_json(self):
         return {
@@ -71,6 +73,10 @@ class ModelState():
             'conv_del_max': self.conv_del_max,
             'JUMP_HEIGHT': self.JUMP_HEIGHT,
             'JUMP_LENGTH': self.JUMP_LENGTH,
+            'height_max': self.height_max,
+            'height_min': = self.height_min,
+            'DROP_HEIGHT': = self.DROP_HEIGHT,
+            'DROP_LENGTH': = self.DROP_LENGTH,
         }
         
 
