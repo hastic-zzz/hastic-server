@@ -89,7 +89,7 @@ class ModelState():
             'pattern_model': self.pattern_model,
             'convolve_max': self.convolve_max,
             'convolve_min': self.convolve_min,
-            'WINDOW_SIZE': self.window_size,
+            'window_size': self.window_size,
             'conv_del_min': self.conv_del_min,
             'conv_del_max': self.conv_del_max,
         }
