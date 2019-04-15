@@ -44,7 +44,16 @@ class Segment(AttrDict):
 
 class ModelState():
 
-    def __init__(self, pattern_center: List[int], pattern_model: List[float], convolve_max: float, convolve_min: float, window_size: int, conv_del_min: float, conv_del_max: float):
+    def __init__(
+        self, 
+        pattern_center: List[int], 
+        pattern_model: List[float], 
+        convolve_max: float, 
+        convolve_min: float, 
+        window_size: int, 
+        conv_del_min: float, 
+        conv_del_max: float
+    ):
         self.pattern_center = pattern_center
         self.pattern_model = pattern_model
         self.convolve_max = convolve_max
@@ -64,7 +73,15 @@ class ModelState():
         window_size = json.get('window_size', 0)
         conv_del_min = json.get('conv_del_min', 0)
         conv_del_max = json.get('conv_del_max', 0)
-        return ModelState(pattern_center, pattern_model, convolve_max, convolve_min, window_size, conv_del_min, conv_del_max)
+        return ModelState(
+            pattern_center, 
+            pattern_model, 
+            convolve_max, 
+            convolve_min, 
+            window_size, 
+            conv_del_min, 
+            conv_del_max
+        )
 
     def to_json(self) -> dict:
         return {
