@@ -74,12 +74,11 @@ class ModelState():
             'JUMP_HEIGHT': self.JUMP_HEIGHT,
             'JUMP_LENGTH': self.JUMP_LENGTH,
             'height_max': self.height_max,
-            'height_min': = self.height_min,
-            'DROP_HEIGHT': = self.DROP_HEIGHT,
-            'DROP_LENGTH': = self.DROP_LENGTH,
+            'height_min': self.height_min,
+            'DROP_HEIGHT': self.DROP_HEIGHT,
+            'DROP_LENGTH': self.DROP_LENGTH,
         }
         
-
 class Model(ABC):
 
     HEIGHT_ERROR = 0.1
@@ -156,7 +155,7 @@ class Model(ABC):
         }
 
     def _update_fiting_result(self, state: dict, confidences: list, convolve_list: list, del_conv_list: list, height_list: list) -> None:
-        if state != None:
+        if state is not None:
             state.confidence = float(min(confidences, default = 1.5))
             state.convolve_min, state.convolve_max = utils.get_min_max(convolve_list, state.WINDOW_SIZE)
             state.conv_del_min, state.conv_del_max = utils.get_min_max(del_conv_list, 0)
