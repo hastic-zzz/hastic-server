@@ -138,14 +138,14 @@ class TestDataset(unittest.TestCase):
             self.fail('Model {} raised unexpectedly'.format(model_name))  
     
     def test_prepare_data_for_nan(self):
-        data = [[1523889000000, np.NaN], [1523889000001, np.NaN], [1523889000002, np.NaN]]
+        data = [[1523889000000, np.nan], [1523889000001, np.nan], [1523889000002, np.nan]]
         try:
             data = prepare_data(data)
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
     
     def test_prepare_data_output_fon_nan(self):
-        data_nan = [[1523889000000, np.NaN], [1523889000001, np.NaN], [1523889000002, np.NaN]]
+        data_nan = [[1523889000000, np.nan], [1523889000001, np.nan], [1523889000002, np.nan]]
         data_none = [[1523889000000, None], [1523889000001, None], [1523889000002, None]]
         return_data_nan = prepare_data(data_nan)
         return_data_none = prepare_data(data_none)
