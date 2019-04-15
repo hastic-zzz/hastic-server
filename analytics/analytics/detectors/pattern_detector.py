@@ -8,7 +8,7 @@ import pandas as pd
 from typing import Optional, Generator
 
 from detectors import Detector
-from buckets import DataBucket
+from analytic_types import DataBucket
 from models import ModelCache
 from utils import convert_pd_timestamp_to_ms
 
