@@ -1,19 +1,19 @@
+import sys
 ANALYTICS_PATH = '../analytics'
 sys.path.append(ANALYTICS_PATH)
 TESTS_PATH = '../tests'
 sys.path.append(TESTS_PATH)
 import pandas as pd
 import numpy as np
-import sys
 import utils
 import models
-import test_dataset
-from test_dataset import create_dataframe
+import test_dataset.create_dataframe
 
 #get_frame
 #get_segment
 PEAK_DATASETS = []
-TEST_DATA = create_dataframe([0, 3, 5, 7, 5, 3, 0, 0, 1, 0, 1, 4, 6, 8, 6, 4, 1, 0, 0, 0, 1, 0, 3, 5, 7, 5, 3, 0, 1, 1])
+#dataset with 3 peaks
+TEST_DATA = test_dataset.create_dataframe([0, 3, 5, 7, 5, 3, 0, 0, 1, 0, 1, 4, 6, 8, 6, 4, 1, 0, 0, 0, 1, 0, 3, 5, 7, 5, 3, 0, 1, 1])
 POSITIVE_SEGMENTS = [(1523889000000, 1523889000006), (1523889000021, 1523889000027)]
 NEGATIVE_SEGMENTS = [(1523889000009, 1523889000017)]
 
@@ -105,6 +105,7 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print('Enter one of models name: {}'.format(correct_name))
         sys.exit(1)
+    #as sys.argv[1] expected one of the models name -> see correct_name
     model_type = str(sys.argv[1]).lower()
     if model_type in correct_name:
         print(main(model_type))
