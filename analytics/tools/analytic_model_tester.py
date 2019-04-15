@@ -1,17 +1,17 @@
+ANALYTICS_PATH = '../analytics'
+sys.path.append(ANALYTICS_PATH)
+TESTS_PATH = '../tests'
+sys.path.append(TESTS_PATH)
 import pandas as pd
 import numpy as np
 import sys
-ANALYTICS_PATH = '../analytics'
-sys.path.append(ANALYTICS_PATH)
 import utils
 import models
-TESTS_PATH = '../tests'
-sys.path.append(TESTS_PATH)
 import test_dataset
 from test_dataset import create_dataframe
 
-#getFrame
-#getSegment
+#get_frame
+#get_segment
 PEAK_DATASETS = []
 TEST_DATA = create_dataframe([0, 3, 5, 7, 5, 3, 0, 0, 1, 0, 1, 4, 6, 8, 6, 4, 1, 0, 0, 0, 1, 0, 3, 5, 7, 5, 3, 0, 1, 1])
 POSITIVE_SEGMENTS = [(1523889000000, 1523889000006), (1523889000021, 1523889000027)]
@@ -26,7 +26,7 @@ class Segment():
         #1523889000000 + end * 1000
         self.ltype = ltype
 
-    def getSegment(self):
+    def get_segment(self):
         return {'_id': 'q', 'analyticUnitId': 'q',
                 'from': self.start,
                 'to': self.end,
@@ -39,10 +39,10 @@ class Metric():
         self.true_result = true_result
         self.model_result = model_result['segments']
 
-    def getAmount(self):
+    def get_amount(self):
         return len(self.model_result) / len(self.true_result)
 
-    def getAccuracy(self):
+    def get_accuracy(self):
         correct_segment = 0
         invalid_segment = 0
         for segment in self.model_result:
@@ -56,7 +56,7 @@ class Metric():
         non_detected = len(self.true_result) - correct_segment
         return (correct_segment, invalid_segment, non_detected)
 
-class DataForModels():
+class ModelData():
 
     def __init__(self, frame: pd.DataFrame, positive_segments, negative_segments, model_type: str):
         self.frame = frame
@@ -64,41 +64,40 @@ class DataForModels():
         self.negative_segments = negative_segments
         self.model_type = model_type
 
-    def getFrame(self) -> pd.DataFrame:
+    def get_frame(self) -> pd.DataFrame:
         return self.frame
 
-    def getSegmentsForDetection(self, positive_amount, negative_amount):
+    def get_segments_for_detection(self, positive_amount, negative_amount):
         segments = []
         for idx, bounds in enumerate(self.positive_segments):
             if idx >= positive_amount:
                 break
-            segments.append(Segment(bounds[0], bounds[1], True).getSegment())
+            segments.append(Segment(bounds[0], bounds[1], True).get_segment())
 
         for idx, bounds in enumerate(self.negative_segments):
             if idx >= negative_amount:
                 break
-            segments.append(Segment(bounds[0], bounds[1], False).getSegment())
+            segments.append(Segment(bounds[0], bounds[1], False).get_segment())
 
         return segments
     
-    def getAllCorrectSegments(self):
-
+    def get_all_correct_segments(self):
         return self.positive_segments
 
-PEAK_DATA_1 = DataForModels(TEST_DATA, POSITIVE_SEGMENTS, NEGATIVE_SEGMENTS, 'peak')
+PEAK_DATA_1 = ModelData(TEST_DATA, POSITIVE_SEGMENTS, NEGATIVE_SEGMENTS, 'peak')
 PEAK_DATASETS.append(PEAK_DATA_1)
 
 def main(model_type: str) -> None:
     table_metric = []
     if model_type == 'peak':
         for data in PEAK_DATASETS:
-            dataset = data.getFrame()
-            segments = data.getSegmentsForDetection(1, 0)
+            dataset = data.get_frame()
+            segments = data.get_segments_for_detection(1, 0)
             model = models.PeakModel()
             cache = model.fit(dataset, segments, 'test', {})
             detect_result = model.detect(dataset, 'test', cache)
-            peak_metric = Metric(data.getAllCorrectSegments(), detect_result)
-            table_metric.append((peak_metric.getAmount(), peak_metric.getAccuracy()))
+            peak_metric = Metric(data.get_all_correct_segments(), detect_result)
+            table_metric.append((peak_metric.get_amount(), peak_metric.get_accuracy()))
     return table_metric
 
 if __name__ == "__main__":
