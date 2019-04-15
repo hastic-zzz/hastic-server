@@ -98,7 +98,7 @@ def main(model_type: str) -> None:
     return table_metric
 
 if __name__ == "__main__":
-    #This tool applies the model to datasets and verifies that the detection result corresponds to the correct values.
+    #This tool applies the model on datasets and verifies that the detection result corresponds to the correct values.
     correct_name = ['peak', 'trough', 'jump', 'drop', 'general', 'gen']
     if len(sys.argv) < 2:
         print('Enter one of models name: {}'.format(correct_name))
