@@ -11,6 +11,7 @@ from detectors import Detector
 from analytic_types import DataBucket
 from models import ModelCache
 from utils import convert_pd_timestamp_to_ms
+from analytic_types import AnalyticUnitId
 
 
 logger = logging.getLogger('PATTERN_DETECTOR')
@@ -31,7 +32,7 @@ def resolve_model_by_pattern(pattern: str) -> models.Model:
         return models.CustomModel()
     raise ValueError('Unknown pattern "%s"' % pattern)
 
-AnalyticUnitId = str
+
 class PatternDetector(Detector):
 
     MIN_BUCKET_SIZE = 150

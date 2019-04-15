@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 class DataBucket(object):
 
     data: pd.DataFrame

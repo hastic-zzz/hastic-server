@@ -6,6 +6,7 @@ from typing import Optional
 import pandas as pd
 import math
 import logging
+from analytic_types import AnalyticUnitId
 
 ModelCache = dict
 
@@ -62,9 +63,8 @@ class Model(ABC):
     @abstractmethod
     def get_model_type(self) -> (str, bool):
         pass
-        
-    # TODO: id: str -> id: AnalyticUnitId in all models
-    def fit(self, dataframe: pd.DataFrame, segments: list, id: str, cache: Optional[ModelCache]) -> ModelCache:
+
+    def fit(self, dataframe: pd.DataFrame, segments: list, id: AnalyticUnitId, cache: Optional[ModelCache]) -> ModelCache:
         logging.debug('Start method fit for analytic unit {}'.format(id))
         data = dataframe['value']
         if cache != None and len(cache) > 0:
