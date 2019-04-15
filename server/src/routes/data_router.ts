@@ -47,8 +47,8 @@ async function query(ctx: Router.IRouterContext) {
   }
 
   const grafanaUrl = getGrafanaUrl(analyticUnit.grafanaUrl);
-  const data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
-  ctx.response.body = { data };
+  const results = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
+  ctx.response.body = { results };
 }
 
 export const router = new Router();
