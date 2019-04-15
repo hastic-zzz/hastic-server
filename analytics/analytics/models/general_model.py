@@ -71,7 +71,7 @@ class GeneralModel(Model):
         return [(item, item + window_size * 2) for item in filtered]
 
     def __filter_detection(self, segments:  Generator[int, None, None], data: pd.Series) -> Generator[int, None, None]:
-        if not self.state.get('pattern_center'):
+        if not self.state.pattern_center:
             return []
         window_size = self.state.WINDOW_SIZE
         pattern_model = self.state.pattern_model
