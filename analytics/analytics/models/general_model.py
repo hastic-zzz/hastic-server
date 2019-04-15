@@ -11,6 +11,8 @@ import math
 from scipy.stats import gaussian_kde
 from scipy.stats import norm
 import logging
+from analytic_types import AnalyticUnitId
+
 
 PEARSON_FACTOR = 0.7
 
@@ -39,8 +41,8 @@ class GeneralModel(Model):
         center_ind = start + math.ceil((end - start) / 2)
         return center_ind
 
-    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, AnalyticUnitId: str) -> None:
-        logging.debug('Start method do_fit for analytic unit: {}'.format(AnalyticUnitId))
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: AnalyticUnitId) -> None:
+        logging.debug('Start method do_fit for analytic unit: {}'.format(id))
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         last_pattern_center = self.state.get('pattern_center', [])
@@ -61,10 +63,10 @@ class GeneralModel(Model):
 
         self.state['convolve_min'], self.state['convolve_max'] = utils.get_min_max(convolve_list, self.state['WINDOW_SIZE'] / 3)
         self.state['conv_del_min'], self.state['conv_del_max'] = utils.get_min_max(del_conv_list, self.state['WINDOW_SIZE'])
-        logging.debug('Method do_fit completed correctly for analytic unit: {}'.format(AnalyticUnitId))
+        logging.debug('Method do_fit completed correctly for analytic unit: {}'.format(id))
 
-    def do_detect(self, dataframe: pd.DataFrame, AnalyticUnitId: str) -> List[int]:
-        logging.debug('Start method do_detect for analytic unit: {}'.format(AnalyticUnitId))
+    def do_detect(self, dataframe: pd.DataFrame, id: AnalyticUnitId) -> List[int]:
+        logging.debug('Start method do_detect for analytic unit: {}'.format(id))
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         pat_data = self.state.get('pattern_model', [])
@@ -76,7 +78,7 @@ class GeneralModel(Model):
         all_corr_peaks = utils.find_peaks(all_corr, window_size * 2)
         filtered = self.__filter_detection(all_corr_peaks, data)
         filtered = list(filtered)
-        logging.debug('Method do_detect completed correctly for analytic unit: {}'.format(AnalyticUnitId))
+        logging.debug('Method do_detect completed correctly for analytic unit: {}'.format(id))
         return [(item, item + window_size * 2) for item in filtered]
 
     def __filter_detection(self, segments:  Generator[int, None, None], data: pd.Series) -> Generator[int, None, None]:

@@ -4,13 +4,12 @@ import traceback
 from concurrent.futures import Executor, ThreadPoolExecutor
 
 from analytic_unit_worker import AnalyticUnitWorker
+from analytic_types import AnalyticUnitId
 import detectors
 from models import ModelCache
 
 
 logger = log.getLogger('AnalyticUnitManager')
-
-AnalyticUnitId = str
 
 
 def get_detector_by_type(

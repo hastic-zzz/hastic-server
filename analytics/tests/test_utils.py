@@ -20,11 +20,11 @@ class TestUtils(unittest.TestCase):
         self.assertTrue(math.isclose(utils_result, result, rel_tol = RELATIVE_TOLERANCE))
     
     def test_confidence_all_nan_value(self):
-        segment = [np.NaN, np.NaN, np.NaN, np.NaN]
+        segment = [np.nan, np.nan, np.nan, np.nan]
         self.assertEqual(utils.find_confidence(segment)[0], 0)
     
     def test_confidence_with_nan_value(self):
-        data = [np.NaN, np.NaN, 0, 8]
+        data = [np.nan, np.nan, 0, 8]
         utils_result = utils.find_confidence(data)[0]
         result = 4.0
         self.assertTrue(math.isclose(utils_result, result, rel_tol = RELATIVE_TOLERANCE))
@@ -53,7 +53,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(utils_result, result)
     
     def test_subtract_min_with_nan(self):
-        segment = [np.NaN, 2, 4, 1, 2, 4]
+        segment = [np.nan, 2, 4, 1, 2, 4]
         segment = pd.Series(segment)
         result = [2, 4, 1, 2, 4]
         utils_result = list(utils.subtract_min_without_nan(segment)[1:])
@@ -69,7 +69,7 @@ class TestUtils(unittest.TestCase):
         self.assertNotEqual(utils.get_convolve(pattern_index, av_model, data, window_size), result)
     
     def test_get_convolve_with_nan(self):
-        data = [1, 2, 3, 2, np.NaN, 0, 2, 3, 4, np.NaN, 2, 1, 1, 2, 3, 4, 3, np.NaN, 0]
+        data = [1, 2, 3, 2, np.nan, 0, 2, 3, 4, np.nan, 2, 1, 1, 2, 3, 4, 3, np.nan, 0]
         data = pd.Series(data)
         pattern_index = [2, 8, 15]
         window_size = 2
@@ -137,7 +137,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(utils.get_av_model(patterns_list), result)
 
     def test_find_jump_nan_data(self):
-        data = [np.NaN, np.NaN, np.NaN, np.NaN]
+        data = [np.nan, np.nan, np.nan, np.nan]
         data = pd.Series(data)
         length = 2
         height = 3
@@ -148,7 +148,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(utils.find_jump(data, height_zero, length_zero), result)
     
     def test_find_drop_nan_data(self):
-        data = [np.NaN, np.NaN, np.NaN, np.NaN]
+        data = [np.nan, np.nan, np.nan, np.nan]
         data = pd.Series(data)
         length = 2
         height = 3
@@ -222,7 +222,7 @@ class TestUtils(unittest.TestCase):
             self.fail('Method get_convolve raised unexpectedly')
     
     def test_find_nan_indexes(self):
-        data = [1, 1, 1, 0, 0, np.NaN, None, []]
+        data = [1, 1, 1, 0, 0, np.nan, None, []]
         data = pd.Series(data)
         result = [5, 6]
         self.assertEqual(utils.find_nan_indexes(data), result)
