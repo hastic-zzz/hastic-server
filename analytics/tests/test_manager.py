@@ -98,12 +98,65 @@ class TestDataset(aiounittest.AsyncTestCase):
         self.assertEqual(with_manager, without_manager)
 
     async def test_cache(self):
+        empty_cache = {
+            'pattern_center': [],
+            'pattern_model': [],
+            'confidence': 0,
+            'convolve_max': 0,
+            'convolve_min': 0,
+            'WINDOW_SIZE': 0,
+            'conv_del_min': 0,
+            'conv_del_max': 0,
+            'height_max': 0,
+            'height_min': 0,
+            'JUMP_HEIGHT': 0,
+            'JUMP_LENGTH': 0,
+            'DROP_HEIGHT': 0,
+            'DROP_LENGTH': 0,
+        }
+        peak_and_trough_cache = {
+            'pattern_center': [1],
+            'pattern_model': [1,2,3],
+            'confidence': 1,
+            'convolve_max': 1,
+            'convolve_min': 1,
+            'WINDOW_SIZE': 1,
+            'height_max': 1,
+            'height_min': 1,
+        }
+        jump_cache = {
+            'pattern_center': [1],
+            'pattern_model': [1, 2, 3],
+            'confidence': 1,
+            'convolve_max': 1,
+            'convolve_min': 1,
+            'WINDOW_SIZE': 1,
+            'JUMP_HEIGHT': 1,
+            'JUMP_LENGTH': 1,
+        }
+        drop_cache = {
+            'pattern_center': [1],
+            'pattern_model': [1, 2, 3],
+            'confidence': 1,
+            'convolve_max': 1,
+            'convolve_min': 1,
+            'WINDOW_SIZE': 1,
+            'DROP_HEIGHT': 1,
+            'DROP_LENGTH': 1,
+        }
+        general_cache = {
+            'pattern_center': [1],
+            'pattern_model': [1, 2, 3],
+            'convolve_max': 1,
+            'convolve_min': 1,
+            'WINDOW_SIZE': 1,
+        }
         cache_attrs = {
-            'PEAK': PeakModel().state.keys(),
-            'JUMP': JumpModel().state.keys(),
-            'DROP': DropModel().state.keys(),
-            'TROUGH': TroughModel().state.keys(),
-            'GENERAL': GeneralModel().state.keys()
+            'PEAK': peak_and_trough_cache.keys(),
+            'JUMP': jump_cache.keys(),
+            'DROP': drop_cache.keys(),
+            'TROUGH': peak_and_trough_cache.keys(),
+            'GENERAL': general_cache.keys()
         }
 
         for pattern, attrs in cache_attrs.items():
@@ -112,4 +165,4 @@ class TestDataset(aiounittest.AsyncTestCase):
             cache = await self._learn(learn_task)
 
             for a in attrs:
-                self.assertTrue(a in cache.keys(), msg='{} not in cache keys: {}'.format(a, cache.keys()))
+                self.assertTrue((a in cache.keys() and cache.get(a) != empty_cache.get(a)), msg='{} not in cache keys: {}'.format(a, cache.keys()))
