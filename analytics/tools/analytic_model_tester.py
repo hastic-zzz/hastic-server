@@ -97,7 +97,7 @@ def main(model_type: str) -> None:
             table_metric.append((peak_metric.get_amount(), peak_metric.get_accuracy()))
     return table_metric
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     #This tool applies the model on datasets and verifies that the detection result corresponds to the correct values.
     # TODO: use enum
     correct_name = ['peak', 'trough', 'jump', 'drop', 'general']
