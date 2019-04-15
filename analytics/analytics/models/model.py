@@ -61,6 +61,17 @@ class ModelState():
         self.window_size = window_size
         self.conv_del_min = conv_del_min
         self.conv_del_max = conv_del_max
+
+    def to_json(self) -> dict:
+        return {
+            'pattern_center': self.pattern_center,
+            'pattern_model': self.pattern_model,
+            'convolve_max': self.convolve_max,
+            'convolve_min': self.convolve_min,
+            'window_size': self.window_size,
+            'conv_del_min': self.conv_del_min,
+            'conv_del_max': self.conv_del_max,
+        }
     
     @staticmethod
     def from_json(json: Optional[dict] = None):
@@ -74,25 +85,14 @@ class ModelState():
         conv_del_min = json.get('conv_del_min', 0)
         conv_del_max = json.get('conv_del_max', 0)
         return ModelState(
-            pattern_center, 
-            pattern_model, 
-            convolve_max, 
-            convolve_min, 
-            window_size, 
-            conv_del_min, 
+            pattern_center,
+            pattern_model,
+            convolve_max,
+            convolve_min,
+            window_size,
+            conv_del_min,
             conv_del_max
         )
-
-    def to_json(self) -> dict:
-        return {
-            'pattern_center': self.pattern_center,
-            'pattern_model': self.pattern_model,
-            'convolve_max': self.convolve_max,
-            'convolve_min': self.convolve_min,
-            'window_size': self.window_size,
-            'conv_del_min': self.conv_del_min,
-            'conv_del_max': self.conv_del_max,
-        }
 
 class Model(ABC):
 
