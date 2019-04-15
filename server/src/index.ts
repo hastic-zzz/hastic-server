@@ -56,7 +56,7 @@ async function init() {
   rootRouter.use('/analyticUnits', analyticUnitsRouter.routes(), analyticUnitsRouter.allowedMethods());
   rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
   rootRouter.use('/threshold', thresholdRouter.routes(), thresholdRouter.allowedMethods());
-  rootRouter.use('/data', dataRouter.routes(), dataRouter.allowedMethods());
+  rootRouter.use('/query', dataRouter.routes(), dataRouter.allowedMethods());
 
   rootRouter.get('/', async (ctx) => {
     const activeWebhooks = await AnalyticsController.getActiveWebhooks();

@@ -2,9 +2,10 @@ import { AnalyticsTask, AnalyticsTaskType } from '../models/analytics_task_model
 import * as AnalyticUnit from '../models/analytic_unit_model';
 import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import { AnalyticsService } from './analytics_service';
-import { HASTIC_API_KEY, GRAFANA_URL } from '../config';
+import { HASTIC_API_KEY } from '../config';
 import { availableReporter } from '../utils/reporter';
 import { AlertService } from './alert_service';
+import { getGrafanaUrl } from '../utils/grafana';
 
 import { queryByMetric, GrafanaUnavailable, DatasourceUnavailable } from 'grafana-datasource-kit';
 
@@ -65,13 +66,7 @@ export class DataPuller {
       throw Error(`data puller: can't pull undefined unit`);
     }
 
-    let grafanaUrl;
-    if(GRAFANA_URL !== null) {
-      grafanaUrl = GRAFANA_URL;
-    } else {
-      grafanaUrl = unit.grafanaUrl;
-    }
-
+    const grafanaUrl = getGrafanaUrl(unit.grafanaUrl);
     let data = queryByMetric(unit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
     return data;
     

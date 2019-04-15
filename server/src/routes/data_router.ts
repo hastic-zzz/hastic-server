@@ -1,11 +1,13 @@
 import * as AnalyticUnit from '../models/analytic_unit_model';
-import { queryByMetric, GrafanaUnavailable, DatasourceUnavailable } from 'grafana-datasource-kit';
-import { HASTIC_API_KEY, GRAFANA_URL } from '../config';
+import { HASTIC_API_KEY } from '../config';
+import { getGrafanaUrl } from '../utils/grafana';
+
+import { queryByMetric } from 'grafana-datasource-kit';
 
 import * as Router from 'koa-router';
 
 
-async function getData(ctx: Router.IRouterContext) {
+async function getQuery(ctx: Router.IRouterContext) {
 
   let from = ctx.request.query.from;
   let to = ctx.request.query.to;
@@ -26,36 +28,29 @@ async function getData(ctx: Router.IRouterContext) {
   from = +from;
   to = +to;
 
+  if(from === NaN) {
+    throw new Error(`from must be not NaN`);
+  }
+
+  if(to === NaN) {
+    throw new Error(`to must be not NaN`);
+  }
+
   if(to <= from) {
-    const message = `data router error: 'to' must be greater than 'from' (from:${from} to:${to})`;
-    console.error(message);
-    throw new Error(message);
+    throw new Error(`data router error: 'to' must be greater than 'from' (from:${from} to:${to})`);
   }
 
   const analyticUnit = await AnalyticUnit.findById(analyticUnitId);
 
   if(analyticUnit === undefined) {
-    const message = `analytic unit with id ${analyticUnitId} not present in data base`;
-    console.error(message);
-    throw new Error(message);
+    throw new Error(`can't find analytic unit ${analyticUnitId}`);
   }
 
-  let grafanaUrl;
-  if(GRAFANA_URL !== null) {
-    grafanaUrl = GRAFANA_URL;
-  } else {
-    grafanaUrl = analyticUnit.grafanaUrl;
-  }
-
-  try {
-    const data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
-    ctx.response.body = { data };
-  } catch(e) {
-    console.error(`data router got exception ${e} while query data`);
-    throw e;
-  }  
+  const grafanaUrl = getGrafanaUrl(analyticUnit.grafanaUrl);
+  const data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
+  ctx.response.body = { data };
 }
 
 export const router = new Router();
 
-router.get('/', getData);
+router.get('/', getQuery);
