@@ -1,4 +1,4 @@
-import { Collection, makeDBQ } from '../services/data_service';
+import { Collection, makeDBQ, SortingOrder } from '../services/data_service';
 
 import { Metric } from 'grafana-datasource-kit';
 
@@ -174,7 +174,10 @@ export async function findById(id: AnalyticUnitId): Promise<AnalyticUnit> {
 }
 
 export async function findMany(query: FindManyQuery): Promise<AnalyticUnit[]> {
-  let analyticUnits = await db.findMany(query);
+  const analyticUnits = await db.findMany(query, {
+    createdAt: SortingOrder.ASCENDING,
+    name: SortingOrder.ASCENDING
+  });
   if(analyticUnits === null) {
     return [];
   }
