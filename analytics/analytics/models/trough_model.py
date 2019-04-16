@@ -25,7 +25,7 @@ class TroughModelState(ModelState):
         self.height_max = height_max
         self.height_min = height_min
 
-    def to_json(self):
+    def to_json(self) -> dict:
         json = super().to_json()
         json.update({'confidence': self.confidence,
                      'height_max': self.height_max,
@@ -66,7 +66,7 @@ class TroughModel(Model):
         segment = data[start: end]
         return segment.idxmin()
 
-    def get_cache(self, cache):
+    def get_cache(self, cache: Optional[dict] = None) -> TroughModelState:
         return TroughModelState.from_json(cache)
 
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: str) -> None:

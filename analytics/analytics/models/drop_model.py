@@ -23,7 +23,7 @@ class DropModelState(ModelState):
         self.drop_height = drop_height
         self.drop_length = drop_length
 
-    def to_json(self):
+    def to_json(self) -> dict:
         json = super().to_json()
         json.update({'confidence': self.confidence,
                     'drop_height': self.drop_height,
@@ -64,7 +64,7 @@ class DropModel(Model):
         segment_center_index = utils.find_pattern_center(segment, start, 'drop')
         return segment_center_index
 
-    def get_cache(self, cache):
+    def get_cache(self, cache: Optional[dict] = None) -> DropModelState:
         return DropModelState.from_json(cache)
 
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: str) -> None:
