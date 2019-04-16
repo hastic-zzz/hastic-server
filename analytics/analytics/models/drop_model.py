@@ -6,9 +6,12 @@ from scipy.signal import argrelextrema
 from scipy.stats import gaussian_kde
 from typing import Optional
 import utils
+import utils.meta
 import numpy as np
 import pandas as pd
 
+
+@utils.meta.JSONClass
 class DropModelState(ModelState):
 
     def __init__(
@@ -23,20 +26,6 @@ class DropModelState(ModelState):
         self.drop_height = drop_height
         self.drop_length = drop_length
 
-    def to_json(self) -> dict:
-        json = super().to_json()
-        json.update({
-            'confidence': self.confidence,
-            'drop_height': self.drop_height,
-            'drop_length': self.drop_length,
-        })
-        return json
-
-    @staticmethod
-    def from_json(json: Optional[dict] = None):
-        if json is None:
-            json = {}
-        return DropModelState(**json)
 
 class DropModel(Model):
     def __init__(self):
@@ -54,12 +43,12 @@ class DropModel(Model):
             'conv_del_min': 54000,
             'conv_del_max': 55000,
         }
-    
+
     def get_model_type(self) -> (str, bool):
         model = 'drop'
         type_model = False
         return (model, type_model)
-    
+
     def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
         data = dataframe['value']
         segment = data[start: end]

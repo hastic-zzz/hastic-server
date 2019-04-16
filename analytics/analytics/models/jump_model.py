@@ -1,6 +1,7 @@
 from models import Model, ModelState
 
 import utils
+import utils.meta
 import numpy as np
 import pandas as pd
 import scipy.signal
@@ -10,8 +11,9 @@ import math
 from scipy.signal import argrelextrema
 from scipy.stats import gaussian_kde
 
-class JumpModelState(ModelState):
 
+@utils.meta.JSONClass
+class JumpModelState(ModelState):
     def __init__(
         self,
         confidence: float = 0,
@@ -24,20 +26,6 @@ class JumpModelState(ModelState):
         self.jump_height = jump_height
         self.jump_length = jump_length
 
-    def to_json(self) -> dict:
-        json = super().to_json()
-        json.update({
-            'confidence': self.confidence,
-            'jump_height': self.jump_height,
-            'jump_length': self.jump_length,
-        })
-        return json
-
-    @staticmethod
-    def from_json(json: Optional[dict] = None):
-        if json is None:
-            json = {}
-        return JumpModelState(**json)
 
 class JumpModel(Model):
 
