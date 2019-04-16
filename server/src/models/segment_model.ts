@@ -170,7 +170,7 @@ export function removeSegments(idsToRemove: SegmentId[]) {
 }
 
 function mergeSegments(segments: Segment[]): Segment[] {
-  let segmentsEnds = [];
+  let segmentEnds = [];
   const endType = {
     from: 0,
     to: 1
@@ -181,18 +181,18 @@ function mergeSegments(segments: Segment[]): Segment[] {
   segments.map(s => {
     const labeledIntersection = labeledSegments.filter(l => s.from > l.to || s.to < l.from);
     if(!s.deleted && !s.labeled && labeledIntersection.length === 0) {
-      segmentsEnds.push({timestamp: s.from, type: endType.from});
-      segmentsEnds.push({timestamp: s.to, type: endType.to});
+      segmentEnds.push({timestamp: s.from, type: endType.from});
+      segmentEnds.push({timestamp: s.to, type: endType.to});
     }
   });
 
-  segmentsEnds = _.sortBy(segmentsEnds, ['timestamp', 'type'])
+  segmentEnds = _.sortBy(segmentEnds, ['timestamp', 'type'])
 
   let intersectionCounter = 0;
   let segmentFrom = 0;
   let merged: Segment[] = [];
 
-  segmentsEnds.map(s => {
+  segmentEnds.map(s => {
     if(s.type === endType.from) {
       intersectionCounter++;
       if(intersectionCounter === 1) {
