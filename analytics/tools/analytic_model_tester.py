@@ -9,10 +9,10 @@ import utils
 import models
 import test_dataset
 
-#get_frame
-#get_segment
+# TODO: get_dataset
+# TODO: get_segment
 PEAK_DATASETS = []
-#dataset with 3 peaks
+# dataset with 3 peaks
 TEST_DATA = test_dataset.create_dataframe([0, 3, 5, 7, 5, 3, 0, 0, 1, 0, 1, 4, 6, 8, 6, 4, 1, 0, 0, 0, 1, 0, 3, 5, 7, 5, 3, 0, 1, 1])
 POSITIVE_SEGMENTS = [(1523889000000, 1523889000006), (1523889000021, 1523889000027)]
 NEGATIVE_SEGMENTS = [(1523889000009, 1523889000017)]
@@ -21,17 +21,18 @@ class Segment():
 
     def __init__(self, start: int, end: int, labeled: bool):
         self.start = start
-        #1523889000000 + start * 1000
         self.end = end
-        #1523889000000 + end * 1000
         self.labeled = labeled
 
     def get_segment(self):
-        return {'_id': 'q', 'analyticUnitId': 'q',
-                'from': self.start,
-                'to': self.end,
-                'labeled': self.labeled,
-                'deleted': not self.labeled}
+        return {
+            '_id': 'q',
+            'analyticUnitId': 'q',
+            'from': self.start,
+            'to': self.end,
+            'labeled': self.labeled,
+            'deleted': not self.labeled
+        }
 
 class Metric():
 
@@ -77,7 +78,7 @@ class ModelData():
             segments.append(Segment(bounds[0], bounds[1], False).get_segment())
 
         return segments
-    
+
     def get_all_correct_segments(self):
         return self.positive_segments
 
@@ -98,13 +99,15 @@ def main(model_type: str) -> None:
     return table_metric
 
 if __name__ == '__main__':
-    #This tool applies the model on datasets and verifies that the detection result corresponds to the correct values.
+    '''
+        This tool applies the model on datasets and verifies that the detection result corresponds to the correct values.
+        sys.argv[1] expects one of the models name -> see correct_name
+    '''
     # TODO: use enum
     correct_name = ['peak', 'trough', 'jump', 'drop', 'general']
     if len(sys.argv) < 2:
         print('Enter one of models name: {}'.format(correct_name))
         sys.exit(1)
-    #as sys.argv[1] expected one of the models name -> see correct_name
     model_type = str(sys.argv[1]).lower()
     if model_type in correct_name:
         print(main(model_type))
