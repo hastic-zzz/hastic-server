@@ -46,13 +46,13 @@ class ModelState():
 
     def __init__(
         self, 
-        pattern_center: List[int], 
-        pattern_model: List[float], 
-        convolve_max: float, 
-        convolve_min: float, 
-        window_size: int, 
-        conv_del_min: float, 
-        conv_del_max: float
+        pattern_center: List[int] = [],
+        pattern_model: List[float] = [],
+        convolve_max: float = 0,
+        convolve_min: float = 0,
+        window_size: int = 0,
+        conv_del_min: float = 0,
+        conv_del_max: float = 0
     ):
         self.pattern_center = pattern_center
         self.pattern_model = pattern_model
@@ -77,22 +77,7 @@ class ModelState():
     def from_json(json: Optional[dict] = None):
         if json is None:
             json = {}
-        pattern_center = json.get('pattern_center', [])
-        pattern_model = json.get('pattern_model', [])
-        convolve_max = json.get('convolve_max', 0)
-        convolve_min = json.get('convolve_min', 0)
-        window_size = json.get('window_size', 0)
-        conv_del_min = json.get('conv_del_min', 0)
-        conv_del_max = json.get('conv_del_max', 0)
-        return ModelState(
-            pattern_center,
-            pattern_model,
-            convolve_max,
-            convolve_min,
-            window_size,
-            conv_del_min,
-            conv_del_max
-        )
+        return ModelState(**json)
 
 class Model(ABC):
 
