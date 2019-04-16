@@ -100,7 +100,10 @@ export async function insertSegments(segments: Segment[]) {
   if(_.isEmpty(segments)) {
     return [];
   }
-  const analyticUnitId: AnalyticUnitId = segments[0].analyticUnitId;
+
+  let mergedSegments = mergeSegments(segments);
+
+  const analyticUnitId: AnalyticUnitId = mergedSegments[0].analyticUnitId;
   const learningSegments: Segment[] = await db.findMany({
     analyticUnitId,
     labeled: true,
@@ -110,7 +113,7 @@ export async function insertSegments(segments: Segment[]) {
   let segmentIdsToRemove: SegmentId[] = [];
   let segmentsToInsert: Segment[] = [];
 
-  for(let segment of segments) {
+  for(let segment of mergedSegments) {
     const intersectedLearning = learningSegments.filter(s => {
       return segment.from <= s.to && segment.to >= s.from;
     });
@@ -119,6 +122,7 @@ export async function insertSegments(segments: Segment[]) {
     }
 
     if(!segment.deleted && !segment.labeled) {
+
       const intersectedWithDeletedSegments = await db.findMany({
         analyticUnitId,
         to: { $gte: segment.from },
@@ -163,4 +167,46 @@ export async function setSegmentsDeleted(ids: SegmentId[]) {
 
 export function removeSegments(idsToRemove: SegmentId[]) {
   return db.removeMany(idsToRemove);
+}
+
+function mergeSegments(segments: Segment[]): Segment[] {
+  let segmentsEnds = [];
+  const endType = {
+    from: 0,
+    to: 1
+  }
+
+  const labeledSegments = segments.filter(s => s.deleted || s.labeled);
+
+  segments.map(s => {
+    const labeledIntersection = labeledSegments.filter(l => s.from > l.to || s.to < l.from);
+    if(!s.deleted && !s.labeled && labeledIntersection.length === 0) {
+      segmentsEnds.push({timestamp: s.from, type: endType.from});
+      segmentsEnds.push({timestamp: s.to, type: endType.to});
+    }
+  });
+
+  segmentsEnds = _.sortBy(segmentsEnds, ['timestamp', 'type'])
+
+  let intersectionCounter = 0;
+  let segmentFrom = 0;
+  let merged: Segment[] = [];
+
+  segmentsEnds.map(s => {
+    if(s.type === endType.from) {
+      intersectionCounter++;
+      if(intersectionCounter === 1) {
+        segmentFrom = s.timestamp;
+      }
+    }
+
+    if(s.type == endType.to) {
+      intersectionCounter--;
+      if(intersectionCounter === 0) {
+        merged.push(new Segment(this.analyticUnitId, segmentFrom, s.timestamp));
+      }
+    }
+  });
+
+  return merged;
 }

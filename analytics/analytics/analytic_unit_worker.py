@@ -60,6 +60,7 @@ class AnalyticUnitWorker:
         for chunk in get_intersected_chunks(data, chunk_intersection, chunk_size):
             await asyncio.sleep(0)
             chunk_dataframe = prepare_data(chunk)
+            self.__log_chunk_time_clause(chunk_dataframe)
             detected = self._detector.detect(chunk_dataframe, cache)
             self.__append_detection_result(detection_result, detected)
 
@@ -82,6 +83,7 @@ class AnalyticUnitWorker:
         for chunk in get_chunks(data, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
             await asyncio.sleep(0)
             chunk_dataframe = prepare_data(chunk)
+            self.__log_chunk_time_clause(chunk_dataframe)
             detected = self._detector.consume_data(chunk_dataframe, cache)
             self.__append_detection_result(detection_result, detected)
 
@@ -95,3 +97,6 @@ class AnalyticUnitWorker:
             detection_result['cache'] = new_chunk['cache']
             detection_result['lastDetectionTime'] = new_chunk['lastDetectionTime']
             detection_result['segments'].extend(new_chunk['segments'])
+
+    def __log_chunk_time_clause(self, chunk: pd.DataFrame):
+        logger.debug(f'Process {self.analytic_unit_id} chunk {chunk.iloc[0][0]} -- {chunk.iloc[-1][0]}')
