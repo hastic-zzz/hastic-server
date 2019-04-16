@@ -1,4 +1,4 @@
-from models import Model
+from models import Model, ModelState
 from typing import Union, List, Generator
 import utils
 import numpy as np
@@ -40,6 +40,9 @@ class GeneralModel(Model):
         segment = data[start: end]
         center_ind = start + math.ceil((end - start) / 2)
         return center_ind
+
+    def get_cache(self, cache):
+        return ModelState.from_json(cache)
 
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: AnalyticUnitId) -> None:
         logging.debug('Start method do_fit for analytic unit: {}'.format(id))
