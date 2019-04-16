@@ -14,7 +14,7 @@ export enum Collection { ANALYTIC_UNITS, ANALYTIC_UNIT_CACHES, SEGMENTS, THRESHO
  */
 export type DBQ = {
   findOne: (query: string | object) => Promise<any | null>,
-  findMany: (query: string[] | object) => Promise<any[]>,
+  findMany: (query: string[] | object, sortQuery?: object) => Promise<any[]>,
   insertOne: (document: object) => Promise<string>,
   insertMany: (documents: object[]) => Promise<string[]>,
   updateOne: (query: string | object, updateQuery: any) => Promise<any>,
@@ -142,13 +142,13 @@ let dbFindOne = (collection: Collection, query: string | object) => {
   });
 }
 
-let dbFindMany = (collection: Collection, query: string[] | object) => {
+let dbFindMany = (collection: Collection, query: string[] | object, sortQuery: object = {}) => {
   if(isEmptyArray(query)) {
     return Promise.resolve([]);
   }
   query = wrapIdsToQuery(query);
   return new Promise<any[]>((resolve, reject) => {
-    db.get(collection).find(query, (err, docs: any[]) => {
+    db.get(collection).find(query).sort(sortQuery).exec((err, docs: any[]) => {
       if(err) {
         reject(err);
       } else {
