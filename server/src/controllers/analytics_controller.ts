@@ -229,8 +229,9 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
     }
     await AnalyticUnitCache.setData(id, result.payload.cache);
   } catch (err) {
-    let message = err.message || JSON.stringify(err);
+    const message = err.message || JSON.stringify(err);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
+    throw new Error(message)
   }
 
 }
@@ -433,5 +434,6 @@ export async function runFirstLearning(id: AnalyticUnit.AnalyticUnitId) {
   // TODO: move setting status somehow "inside" learning
   await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.PENDING);
   runLearning(id)
-    .then(() => runDetect(id));
+    .then(() => runDetect(id))
+    .catch(err => console.error(err));
 }
