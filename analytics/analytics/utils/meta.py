@@ -29,37 +29,22 @@ def inited_params(target_init):
 
 def JSONClass(target_class):
 
-    class NewJSONClass(target_class):
-
-        def to_json(self) -> dict:
-            """
-            returns a json representation of the class
-            where all None - values and private fileds are skipped
-            """
-            private_prefix = '__' + target_class.__name__
-            result = {
-                k: v for k, v in self.__dict__.items()
-                if v is not None and not k.startswith(private_prefix)
-            }
-            return result
-
-        @staticmethod
-        def from_json(json_object: dict):
-            return NewJSONClass(**json_object)
-
-    return NewJSONClass
-
-
-class ServerMessage:
-
-    @inited_params
-    def __init__(self, method: str, payload: object = None, request_id: int = None):
+    def to_json(self) -> dict:
         """
-        does something interesting
+        returns a json representation of the class
+        where all None - values and private fileds are skipped
         """
-        print('mymethod', self.method)
+        private_prefix = '__'
+        result = {
+            k: v for k, v in self.__dict__.items()
+            if v is not None and not k.startswith(private_prefix)
+        }
+        return result
+    
+    def from_json(json_object: dict) -> target_class:
+        return target_class(**json_object)
 
-s = ServerMessage('naaaame', request_id=3)
-
-#ServerMessage.from_json({})
-#print(s.to_json())
+    target_class.__init__ = inited_params(target_class.__init__)
+    target_class.to_json = to_json
+    target_class.from_json = from_json
+    return target_class
