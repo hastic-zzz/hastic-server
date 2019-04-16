@@ -1,14 +1,43 @@
-from models import Model
+from models import Model, ModelState
 
 import utils
 import numpy as np
 import pandas as pd
 import scipy.signal
 from scipy.fftpack import fft
+from typing import Optional
 import math
 from scipy.signal import argrelextrema
 from scipy.stats import gaussian_kde
 
+class JumpModelState(ModelState):
+
+    def __init__(
+        self,
+        confidence: float = 0,
+        jump_height: float = 0,
+        jump_length: float = 0,
+        **kwargs
+    ):
+        super().__init__(**kwargs)
+        self.confidence = confidence
+        self.jump_height = jump_height
+        self.jump_length = jump_length
+
+    def to_json(self) -> dict:
+        json = super().to_json()
+        json.update({
+            'confidence': self.confidence,
+            'jump_height': self.jump_height,
+            'jump_length': self.jump_length,
+        })
+        return json
+
+    @staticmethod
+    def from_json(json: Optional[dict] = None):
+        if json is None:
+            json = {}
+        return JumpModelState(**json)
 
 class JumpModel(Model):
 
@@ -38,6 +67,9 @@ class JumpModel(Model):
         segment = data[start: end]
         segment_center_index = utils.find_pattern_center(segment, start, 'jump')
         return segment_center_index
+
+    def get_cache(self, cache: Optional[dict] = None) -> JumpModelState:
+        return JumpModelState.from_json(cache)
 
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: str) -> None:
         data = utils.cut_dataframe(dataframe)

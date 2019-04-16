@@ -101,6 +101,10 @@ class Model(ABC):
     def get_model_type(self) -> (str, bool):
         pass
 
+    @abstractmethod
+    def get_cache(self, cache: Optional[dict] = None) -> ModelState:
+        pass
+
     def fit(self, dataframe: pd.DataFrame, segments: list, id: AnalyticUnitId, cache: Optional[ModelCache]) -> ModelCache:
         logging.debug('Start method fit for analytic unit {}'.format(id))
         data = dataframe['value']

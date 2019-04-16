@@ -1,4 +1,4 @@
-from models import Model
+from models import Model, ModelState
 from typing import Union, List, Generator
 import utils
 import numpy as np
@@ -7,6 +7,7 @@ import scipy.signal
 from scipy.fftpack import fft
 from scipy.signal import argrelextrema
 from scipy.stats.stats import pearsonr
+from typing import Optional
 import math
 from scipy.stats import gaussian_kde
 from scipy.stats import norm
@@ -15,6 +16,20 @@ from analytic_types import AnalyticUnitId
 
 
 PEARSON_FACTOR = 0.7
+
+class GeneralModelState(ModelState):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def to_json(self) -> dict:
+        return super().to_json()
+
+    @staticmethod
+    def from_json(json: Optional[dict] = None):
+        if json is None:
+            json = {}
+        return GeneralModelState(**json)
 
 class GeneralModel(Model):
 
@@ -40,6 +55,9 @@ class GeneralModel(Model):
         segment = data[start: end]
         center_ind = start + math.ceil((end - start) / 2)
         return center_ind
+
+    def get_cache(self, cache: Optional[dict] = None) -> GeneralModelState:
+        return GeneralModelState.from_json(cache)
 
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: AnalyticUnitId) -> None:
         logging.debug('Start method do_fit for analytic unit: {}'.format(id))
