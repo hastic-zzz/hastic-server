@@ -1,14 +1,34 @@
-from models import Model
+from models import Model, ModelState
 
 import utils
 import numpy as np
 import pandas as pd
 import scipy.signal
 from scipy.fftpack import fft
+from typing import Optional
 import math
 from scipy.signal import argrelextrema
 from scipy.stats import gaussian_kde
 
+class JumpModelState(ModelState):
+
+    def __init__(
+        self,
+        confidence: float = 0,
+        jump_height: float = 0,
+        jump_length: float = 0,
+        **kwagrs
+    ):
+        super().__init__(**kwagrs)
+        self.confidence = confidence
+        self.jump_height = jump_height
+        self.jump_length = jump_length
+
+    @staticmethod
+    def from_json(json: Optional[dict] = None):
+        if json is None:
+            json = {}
+        return JumpModelState(**json)
 
 class JumpModel(Model):
 
