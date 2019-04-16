@@ -16,6 +16,17 @@ from analytic_types import AnalyticUnitId
 
 PEARSON_FACTOR = 0.7
 
+class GeneralModelState(ModelState):
+
+    def __init__(self, **kwagrs):
+        super().__init__(**kwagrs)
+
+    @staticmethod
+    def from_json(json: Optional[dict] = None):
+        if json is None:
+            json = {}
+        return GeneralModelState(**json)
+
 class GeneralModel(Model):
 
     def __init__(self):
@@ -42,7 +53,7 @@ class GeneralModel(Model):
         return center_ind
 
     def get_cache(self, cache):
-        return ModelState.from_json(cache)
+        return GeneralModelState.from_json(cache)
 
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: AnalyticUnitId) -> None:
         logging.debug('Start method do_fit for analytic unit: {}'.format(id))
