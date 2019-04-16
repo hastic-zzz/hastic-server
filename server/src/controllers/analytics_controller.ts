@@ -430,7 +430,7 @@ export async function updateThreshold(
   await Threshold.updateThreshold(id, value, condition);
 }
 
-export async function runFirstLearning(id: AnalyticUnit.AnalyticUnitId) {
+export async function runLearningWithDetection(id: AnalyticUnit.AnalyticUnitId) {
   // TODO: move setting status somehow "inside" learning
   await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.PENDING);
   runLearning(id)
