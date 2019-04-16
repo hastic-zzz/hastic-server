@@ -101,9 +101,9 @@ export async function insertSegments(segments: Segment[]) {
     return [];
   }
 
-  let mergedSegments = mergeSegments(segments);
+  const analyticUnitId: AnalyticUnitId = segments[0].analyticUnitId;
+  let mergedSegments = mergeSegments(segments, analyticUnitId);
 
-  const analyticUnitId: AnalyticUnitId = mergedSegments[0].analyticUnitId;
   const learningSegments: Segment[] = await db.findMany({
     analyticUnitId,
     labeled: true,
@@ -169,7 +169,7 @@ export function removeSegments(idsToRemove: SegmentId[]) {
   return db.removeMany(idsToRemove);
 }
 
-function mergeSegments(segments: Segment[]): Segment[] {
+function mergeSegments(segments: Segment[], analyticUnitId: AnalyticUnitId): Segment[] {
   let segmentEnds = [];
   const endType = {
     from: 0,
@@ -198,15 +198,13 @@ function mergeSegments(segments: Segment[]): Segment[] {
       if(intersectionCounter === 1) {
         segmentFrom = s.timestamp;
       }
-    }
-
-    if(s.type == endType.to) {
+    } else {
       intersectionCounter--;
       if(intersectionCounter === 0) {
-        merged.push(new Segment(this.analyticUnitId, segmentFrom, s.timestamp));
+        merged.push(new Segment(analyticUnitId, segmentFrom, s.timestamp));
       }
     }
   });
 
-  return merged;
+  return merged.concat(labeledSegments);
 }
