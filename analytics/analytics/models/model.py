@@ -2,7 +2,7 @@ import utils
 
 from abc import ABC, abstractmethod
 from attrdict import AttrDict
-from typing import Optional
+from typing import Optional, List
 import pandas as pd
 import math
 import logging
@@ -41,6 +41,43 @@ class Segment(AttrDict):
     def convert_nan_to_zero(self):
         nan_list = utils.find_nan_indexes(self.data)
         self.data = utils.nan_to_zero(self.data, nan_list)
+
+class ModelState():
+
+    def __init__(
+        self, 
+        pattern_center: List[int] = [],
+        pattern_model: List[float] = [],
+        convolve_max: float = 0,
+        convolve_min: float = 0,
+        window_size: int = 0,
+        conv_del_min: float = 0,
+        conv_del_max: float = 0
+    ):
+        self.pattern_center = pattern_center
+        self.pattern_model = pattern_model
+        self.convolve_max = convolve_max
+        self.convolve_min = convolve_min
+        self.window_size = window_size
+        self.conv_del_min = conv_del_min
+        self.conv_del_max = conv_del_max
+
+    def to_json(self) -> dict:
+        return {
+            'pattern_center': self.pattern_center,
+            'pattern_model': self.pattern_model,
+            'convolve_max': self.convolve_max,
+            'convolve_min': self.convolve_min,
+            'window_size': self.window_size,
+            'conv_del_min': self.conv_del_min,
+            'conv_del_max': self.conv_del_max,
+        }
+    
+    @staticmethod
+    def from_json(json: Optional[dict] = None):
+        if json is None:
+            json = {}
+        return ModelState(**json)
 
 class Model(ABC):
 
