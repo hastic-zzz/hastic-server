@@ -38,12 +38,12 @@ class GeneralModel(Model):
             'conv_del_min': 0,
             'conv_del_max': 0,
         }
-    
+
     def get_model_type(self) -> (str, bool):
         model = 'general'
         type_model = True
         return (model, type_model)
-    
+
     def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
         data = dataframe['value']
         segment = data[start: end]

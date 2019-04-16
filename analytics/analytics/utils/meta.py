@@ -18,7 +18,7 @@ def is_field_private(field_name: str) -> Optional[str]:
     return m is not None
 
 def inited_params(target_init):
-    target_params = signature(target_init).parameters.values() 
+    target_params = signature(target_init).parameters.values()
     if len(target_params) < 1:
         raise ValueError('init function mush have at least self parameter')
     if len(target_params) == 1:
@@ -53,7 +53,7 @@ def JSONClass(target_class):
             underscore_to_camel(k): v for k, v in self.__dict__.items()
             if v is not None and not is_field_private(k)
         }
-    
+
     def from_json(json_object: Optional[dict]) -> target_class:
         if json_object is None:
             json_object = {}

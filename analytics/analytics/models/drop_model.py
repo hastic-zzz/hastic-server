@@ -43,12 +43,12 @@ class DropModel(Model):
             'conv_del_min': 54000,
             'conv_del_max': 55000,
         }
-    
+
     def get_model_type(self) -> (str, bool):
         model = 'drop'
         type_model = False
         return (model, type_model)
-    
+
     def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
         data = dataframe['value']
         segment = data[start: end]

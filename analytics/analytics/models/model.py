@@ -27,7 +27,7 @@ class Segment(AttrDict):
         else:
             self.center_index = self.start + math.ceil(self.length / 2)
             self.pattern_timestamp = dataframe['timestamp'][self.center_index]
-        
+
         assert len(dataframe['value']) >= self.end + 1, \
             'segment {}-{} out of dataframe length={}'.format(self.start, self.end+1, len(dataframe['value']))
 
@@ -48,7 +48,7 @@ class Segment(AttrDict):
 class ModelState():
 
     def __init__(
-        self, 
+        self,
         pattern_center: List[int] = [],
         pattern_model: List[float] = [],
         convolve_max: float = 0,
@@ -114,7 +114,7 @@ class Model(ABC):
 
         assert len(labeled) > 0, f'labeled list empty, skip fitting for {id}'
 
-        if self.state.get('WINDOW_SIZE') == 0:            
+        if self.state.get('WINDOW_SIZE') == 0:
             self.state['WINDOW_SIZE'] = math.ceil(max_length / 2) if max_length else 0
         model, model_type = self.get_model_type()
         learning_info = self.get_parameters_from_segments(dataframe, labeled, deleted, model, model_type)
@@ -154,7 +154,7 @@ class Model(ABC):
             state['height_min'], state['height_max'] = utils.get_min_max(height_list, 0)
         else:
             raise ValueError('got non-dict as state for update fiting result: {}'.format(state))
-    
+
     def get_parameters_from_segments(self, dataframe: pd.DataFrame, labeled: list, deleted: list, model: str, model_type: bool) -> dict:
         logging.debug('Start parsing segments')
         learning_info = {
@@ -190,4 +190,4 @@ class Model(ABC):
                 learning_info['patterns_value'].append(aligned_segment.values[self.state['WINDOW_SIZE']])
         logging.debug('Parsing segments ended correctly with learning_info: {}'.format(learning_info))
         return learning_info
-        
+
