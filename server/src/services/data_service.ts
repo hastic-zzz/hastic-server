@@ -6,6 +6,7 @@ import * as fs from 'fs';
 
 export enum Collection { ANALYTIC_UNITS, ANALYTIC_UNIT_CACHES, SEGMENTS, THRESHOLD };
 
+export enum SortingOrder { ASCENDING = 1, DESCENDING = -1 };
 
 /**
  * Class which helps to make queries to your collection
