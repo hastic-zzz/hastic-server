@@ -19,8 +19,8 @@ PEARSON_FACTOR = 0.7
 
 class GeneralModelState(ModelState):
 
-    def __init__(self, **kwagrs):
-        super().__init__(**kwagrs)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     @staticmethod
     def from_json(json: Optional[dict] = None):

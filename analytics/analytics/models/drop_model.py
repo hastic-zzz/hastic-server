@@ -16,9 +16,9 @@ class DropModelState(ModelState):
         confidence: float = 0,
         drop_height: float = 0,
         drop_length: float = 0,
-        **kwagrs
+        **kwargs
     ):
-        super().__init__(**kwagrs)
+        super().__init__(**kwargs)
         self.confidence = confidence
         self.drop_height = drop_height
         self.drop_length = drop_length

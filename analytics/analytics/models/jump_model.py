@@ -17,9 +17,9 @@ class JumpModelState(ModelState):
         confidence: float = 0,
         jump_height: float = 0,
         jump_length: float = 0,
-        **kwagrs
+        **kwargs
     ):
-        super().__init__(**kwagrs)
+        super().__init__(**kwargs)
         self.confidence = confidence
         self.jump_height = jump_height
         self.jump_length = jump_length

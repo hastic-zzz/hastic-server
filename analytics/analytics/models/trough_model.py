@@ -18,9 +18,9 @@ class TroughModelState(ModelState):
         confidence: float = 0,
         height_max: float = 0,
         height_min: float = 0,
-        **kwagrs
+        **kwargs
     ):
-        super().__init__(**kwagrs)
+        super().__init__(**kwargs)
         self.confidence = confidence
         self.height_max = height_max
         self.height_min = height_min
