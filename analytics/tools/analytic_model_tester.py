@@ -1,8 +1,8 @@
 import sys
 ANALYTICS_PATH = '../analytics'
-sys.path.append(ANALYTICS_PATH)
 TESTS_PATH = '../tests'
-sys.path.append(TESTS_PATH)
+sys.path.extend([ANALYTICS_PATH, TESTS_PATH])
+
 import pandas as pd
 import numpy as np
 import utils
