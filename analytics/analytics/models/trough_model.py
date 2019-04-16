@@ -20,10 +20,10 @@ class TroughModelState(ModelState):
         height_min: float = 0,
         **kwagrs
     ):
+        super().__init__(**kwagrs)
         self.confidence = confidence
         self.height_max = height_max
         self.height_min = height_min
-        super().__init__(**kwagrs)
 
     @staticmethod
     def from_json(json: Optional[dict] = None):
