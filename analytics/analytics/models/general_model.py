@@ -22,6 +22,9 @@ class GeneralModelState(ModelState):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+    def to_json(self):
+        return super().to_json()
+
     @staticmethod
     def from_json(json: Optional[dict] = None):
         if json is None:

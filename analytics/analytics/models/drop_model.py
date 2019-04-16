@@ -23,6 +23,13 @@ class DropModelState(ModelState):
         self.drop_height = drop_height
         self.drop_length = drop_length
 
+    def to_json(self):
+        json = super().to_json()
+        json.update({'confidence': self.confidence,
+                    'drop_height': self.drop_height,
+                    'drop_length': self.drop_length, })
+        return json
+
     @staticmethod
     def from_json(json: Optional[dict] = None):
         if json is None:

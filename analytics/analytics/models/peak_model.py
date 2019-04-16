@@ -25,6 +25,13 @@ class PeakModelState(ModelState):
         self.height_max = height_max
         self.height_min = height_min
 
+    def to_json(self):
+        json = super().to_json()
+        json.update({'confidence': self.confidence,
+                    'height_max': self.height_max,
+                    'height_min': self.height_min, })
+        return json
+
     @staticmethod
     def from_json(json: Optional[dict] = None):
         if json is None:

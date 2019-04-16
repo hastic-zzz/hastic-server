@@ -24,6 +24,13 @@ class JumpModelState(ModelState):
         self.jump_height = jump_height
         self.jump_length = jump_length
 
+    def to_json(self):
+        json = super().to_json()
+        json.update({'confidence': self.confidence,
+                    'jump_height': self.jump_height,
+                    'jump_length': self.jump_length, })
+        return json
+
     @staticmethod
     def from_json(json: Optional[dict] = None):
         if json is None:
