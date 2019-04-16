@@ -1,40 +1,34 @@
+from analytic_types import AnalyticUnitId
 from models import Model, ModelState
 from typing import Union, List, Generator
 import utils
+import utils.meta
 import numpy as np
 import pandas as pd
 import scipy.signal
 from scipy.fftpack import fft
 from scipy.signal import argrelextrema
 from scipy.stats.stats import pearsonr
-from typing import Optional
-import math
+
 from scipy.stats import gaussian_kde
 from scipy.stats import norm
 import logging
-from analytic_types import AnalyticUnitId
 
+from typing import Optional
+import math
 
 PEARSON_FACTOR = 0.7
 
-class GeneralModelState(ModelState):
 
+@utils.meta.JSONClass
+class GeneralModelState(ModelState):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def to_json(self) -> dict:
-        return super().to_json()
-
-    @staticmethod
-    def from_json(json: Optional[dict] = None):
-        if json is None:
-            json = {}
-        return GeneralModelState(**json)
 
 class GeneralModel(Model):
 
     def __init__(self):
-        super()
         self.state = {
             'pattern_center': [],
             'pattern_model': [],

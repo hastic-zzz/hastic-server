@@ -5,12 +5,15 @@ from scipy.fftpack import fft
 from scipy.signal import argrelextrema
 from typing import Optional
 import utils
+import utils.meta
 import numpy as np
 import pandas as pd
 
 SMOOTHING_COEFF = 2400
 EXP_SMOOTHING_FACTOR = 0.01
 
+
+@utils.meta.JSONClass
 class TroughModelState(ModelState):
 
     def __init__(
@@ -25,20 +28,6 @@ class TroughModelState(ModelState):
         self.height_max = height_max
         self.height_min = height_min
 
-    def to_json(self) -> dict:
-        json = super().to_json()
-        json.update({
-            'confidence': self.confidence,
-            'height_max': self.height_max,
-            'height_min': self.height_min,
-        })
-        return json
-
-    @staticmethod
-    def from_json(json: Optional[dict] = None):
-        if json is None:
-            json = {}
-        return TroughModelState(**json)
 
 class TroughModel(Model):
 

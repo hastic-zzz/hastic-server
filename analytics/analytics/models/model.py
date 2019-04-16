@@ -8,17 +8,18 @@ import math
 import logging
 from analytic_types import AnalyticUnitId
 
+import utils.meta
+
 ModelCache = dict
 
 class Segment(AttrDict):
-
-    __percent_of_nans = 0
 
     def __init__(self, dataframe: pd.DataFrame, segment_map: dict, center_finder = None):
         self.update(segment_map)
         self.start = utils.timestamp_to_index(dataframe, pd.to_datetime(self['from'], unit='ms'))
         self.end = utils.timestamp_to_index(dataframe, pd.to_datetime(self['to'], unit='ms'))
         self.length = abs(self.end - self.start)
+        self.__percent_of_nans = 0
 
         if callable(center_finder):
             self.center_index = center_finder(dataframe, self.start, self.end)
@@ -42,6 +43,8 @@ class Segment(AttrDict):
         nan_list = utils.find_nan_indexes(self.data)
         self.data = utils.nan_to_zero(self.data, nan_list)
 
+
+@utils.meta.JSONClass
 class ModelState():
 
     def __init__(
@@ -62,22 +65,6 @@ class ModelState():
         self.conv_del_min = conv_del_min
         self.conv_del_max = conv_del_max
 
-    def to_json(self) -> dict:
-        return {
-            'pattern_center': self.pattern_center,
-            'pattern_model': self.pattern_model,
-            'convolve_max': self.convolve_max,
-            'convolve_min': self.convolve_min,
-            'window_size': self.window_size,
-            'conv_del_min': self.conv_del_min,
-            'conv_del_max': self.conv_del_max,
-        }
-    
-    @staticmethod
-    def from_json(json: Optional[dict] = None):
-        if json is None:
-            json = {}
-        return ModelState(**json)
 
 class Model(ABC):
 

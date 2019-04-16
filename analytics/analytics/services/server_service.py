@@ -9,6 +9,7 @@ import asyncio
 import traceback
 
 import utils.concurrent
+import utils.meta
 
 from typing import Optional
 
@@ -19,32 +20,13 @@ PARSE_MESSAGE_OR_SAVE_LOOP_INTERRUPTED = False
 SERVER_SOCKET_RECV_LOOP_INTERRUPTED = False
 
 
+@utils.meta.JSONClass
 class ServerMessage:
     def __init__(self, method: str, payload: object = None, request_id: int = None):
         self.method = method
         self.payload = payload
         self.request_id = request_id
 
-    def toJSON(self) -> dict:
-        result = {
-            'method': self.method
-        }
-        if self.payload is not None:
-            result['payload'] = self.payload
-        if self.request_id is not None:
-            result['requestId'] = self.request_id
-        return result
-
-    @staticmethod
-    def fromJSON(json: dict):
-        method = json['method']
-        payload = None
-        request_id = None
-        if 'payload' in json:
-            payload = json['payload']
-        if 'requestId' in json:
-            request_id = json['requestId']
-        return ServerMessage(method, payload, request_id)
 
 class ServerService(utils.concurrent.AsyncZmqActor):
 
@@ -63,8 +45,8 @@ class ServerService(utils.concurrent.AsyncZmqActor):
         # in theory, we can try to use zmq.proxy:
         # zmq.proxy(self.__actor_socket, self.__server_socket)
         # and do here something like:
-        # self.__actor_socket.send_string(json.dumps(message.toJSON()))
-        await self._put_message_to_thread(json.dumps(message.toJSON()))
+        # self.__actor_socket.send_string(json.dumps(message.to_json()))
+        await self._put_message_to_thread(json.dumps(message.to_json()))
 
     async def send_request_to_server(self, message: ServerMessage) -> object:
         if message.request_id is not None:
@@ -118,7 +100,7 @@ class ServerService(utils.concurrent.AsyncZmqActor):
     def __parse_message_or_save(self, text: str) -> Optional[ServerMessage]:
         try:
             message_object = json.loads(text)
-            message = ServerMessage.fromJSON(message_object)
+            message = ServerMessage.from_json(message_object)
             if message.request_id is not None:
                 self.__responses[message_object['requestId']] = message.payload
                 return None
