@@ -27,9 +27,11 @@ class PeakModelState(ModelState):
 
     def to_json(self) -> dict:
         json = super().to_json()
-        json.update({'confidence': self.confidence,
-                    'height_max': self.height_max,
-                    'height_min': self.height_min, })
+        json.update({
+            'confidence': self.confidence,
+            'height_max': self.height_max,
+            'height_min': self.height_min,
+        })
         return json
 
     @staticmethod

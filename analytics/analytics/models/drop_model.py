@@ -25,9 +25,11 @@ class DropModelState(ModelState):
 
     def to_json(self) -> dict:
         json = super().to_json()
-        json.update({'confidence': self.confidence,
-                    'drop_height': self.drop_height,
-                    'drop_length': self.drop_length, })
+        json.update({
+            'confidence': self.confidence,
+            'drop_height': self.drop_height,
+            'drop_length': self.drop_length,
+        })
         return json
 
     @staticmethod
