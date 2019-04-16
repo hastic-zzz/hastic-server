@@ -59,6 +59,9 @@ class JumpModel(Model):
         segment_center_index = utils.find_pattern_center(segment, start, 'jump')
         return segment_center_index
 
+    def get_cache(self, cache):
+        return JumpModelState.from_json(cache)
+
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: str) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
