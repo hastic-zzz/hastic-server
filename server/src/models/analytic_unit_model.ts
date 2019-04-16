@@ -174,7 +174,7 @@ export async function findById(id: AnalyticUnitId): Promise<AnalyticUnit> {
 }
 
 export async function findMany(query: FindManyQuery): Promise<AnalyticUnit[]> {
-  let analyticUnits = await db.findMany(query);
+  const analyticUnits = await db.findMany(query, { createdAt: 1, name: 1 });
   if(analyticUnits === null) {
     return [];
   }
