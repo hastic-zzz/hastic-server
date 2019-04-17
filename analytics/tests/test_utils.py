@@ -195,6 +195,12 @@ class TestUtils(unittest.TestCase):
         utils_result_segment = utils.get_distribution_density(segment)
         self.assertEqual(len(utils_result_data), 3)
         self.assertEqual(utils_result_segment, (0, 0, 0))
+
+    def test_get_distribution_density_with_nans(self):
+        segment = [np.NaN, 1, 1, 1, np.NaN, 3, 5, 5, 5, np.NaN]
+        segment = pd.Series(segment)
+        result = (3, 5, 1)
+        self.assertEqual(utils.get_distribution_density(segment), result)
     
     def test_find_pattern_jump_center(self):
         data = [1.0, 1.0, 1.0, 5.0, 5.0, 5.0]
