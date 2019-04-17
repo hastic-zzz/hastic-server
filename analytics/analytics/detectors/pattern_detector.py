@@ -47,7 +47,9 @@ class PatternDetector(Detector):
 
     def train(self, dataframe: pd.DataFrame, segments: list, cache: Optional[models.ModelCache]) -> models.ModelCache:
         # TODO: pass only part of dataframe that has segments
+        self.model.state = self.model.get_cache(cache)
         new_cache = self.model.fit(dataframe, segments, self.analytic_unit_id, cache)
+        new_cache = new_cache.to_json()
         if new_cache == None or len(new_cache) == 0:
             logging.warning('new_cache is empty with data: {}, segments: {}, cache: {}, analytic unit: {}'.format(dataframe, segments, cache, self.analytic_unit_id))
         return {
@@ -62,8 +64,8 @@ class PatternDetector(Detector):
             msg = f'{self.analytic_unit_id} detection got invalid cache, skip detection'
             logger.error(msg)
             raise ValueError(msg)
-
-        window_size = cache.get('windowSize')
+        self.model.state = self.model.get_cache(cache)
+        window_size = self.model.state.window_size
         if window_size is None:
             message = '{} got cache without window_size for detection'.format(self.analytic_unit_id)
             logger.error(message)
@@ -77,7 +79,7 @@ class PatternDetector(Detector):
         detected = self.model.detect(dataframe, self.analytic_unit_id, cache)
 
         segments = [{ 'from': segment[0], 'to': segment[1] } for segment in detected['segments']]
-        newCache = detected['cache']
+        newCache = detected['cache'].to_json()
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_detection_time = convert_pd_timestamp_to_ms(last_dataframe_time)
         return {

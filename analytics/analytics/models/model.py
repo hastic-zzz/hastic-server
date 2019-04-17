@@ -96,7 +96,7 @@ class Model(ABC):
         logging.debug('Start method fit for analytic unit {}'.format(id))
         data = dataframe['value']
         #if cache != None and len(cache) > 0:
-        self.state = self.get_cache(cache)
+        #self.state = self.get_cache(cache)
         max_length = 0
         labeled = []
         deleted = []
@@ -120,12 +120,12 @@ class Model(ABC):
         learning_info = self.get_parameters_from_segments(dataframe, labeled, deleted, model, model_type)
         self.do_fit(dataframe, labeled, deleted, learning_info, id)
         logging.debug('fit complete successful with self.state: {} for analytic unit: {}'.format(self.state, id))
-        return self.state.to_json()
+        return self.state
 
     def detect(self, dataframe: pd.DataFrame, id: str, cache: Optional[ModelCache]) -> dict:
         #If cache is None or empty dict - default parameters will be used instead
         #if cache != None and len(cache) > 0:
-        self.state = self.get_cache(cache)
+        #self.state = self.get_cache(cache)
         #else:
         #    logging.debug('Get empty cache in detect')
         if not self.state:
@@ -143,7 +143,7 @@ class Model(ABC):
             logging.warning('Return empty self.state after detect')
         return {
             'segments': segments,
-            'cache': self.state.to_json(),
+            'cache': self.state,
         }
 
     def _update_fiting_result(self, state: dict, confidences: list, convolve_list: list, del_conv_list: list, height_list: Optional[list] = None) -> None:
