@@ -63,14 +63,14 @@ class PatternDetector(Detector):
             logger.error(msg)
             raise ValueError(msg)
 
-        window_size = cache.get('WINDOW_SIZE')
+        window_size = cache.get('windowSize')
         if window_size is None:
-            message = '{} got cache without WINDOW_SIZE for detection'.format(self.analytic_unit_id)
+            message = '{} got cache without window_size for detection'.format(self.analytic_unit_id)
             logger.error(message)
             raise ValueError(message)
 
         if len(dataframe) < window_size * 2:
-            message = f'{self.analytic_unit_id} skip detection: data length: {len(dataframe)} less than WINDOW_SIZE: {window_size}'
+            message = f'{self.analytic_unit_id} skip detection: data length: {len(dataframe)} less than window_size: {window_size}'
             logger.error(message)
             raise ValueError(message)
 
@@ -100,7 +100,7 @@ class PatternDetector(Detector):
 
         self.bucket.receive_data(data_without_nan)
 
-        window_size = cache['WINDOW_SIZE']
+        window_size = cache['window_size']
 
         bucket_len = len(self.bucket.data)
         if bucket_len < window_size * 2:
@@ -124,4 +124,4 @@ class PatternDetector(Detector):
 
     def get_window_size(self, cache: Optional[ModelCache]) -> int:
         if cache is None: return self.DEFAULT_WINDOW_SIZE
-        return cache.get('WINDOW_SIZE', self.DEFAULT_WINDOW_SIZE)
+        return cache.get('window_size', self.DEFAULT_WINDOW_SIZE)
