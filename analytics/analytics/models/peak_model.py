@@ -34,19 +34,7 @@ class PeakModel(Model):
     def __init__(self):
         super()
         self.segments = []
-        self.state = {
-            'pattern_center': [],
-            'pattern_model': [],
-            'confidence': 1.5,
-            'convolve_max': 0,
-            'convolve_min': 0,
-            'WINDOW_SIZE': 0,
-            'conv_del_min': 0,
-            'conv_del_max': 0,
-            'height_max': 0,
-            'height_min': 0,
-        }
-    
+
     def get_model_type(self) -> (str, bool):
         model = 'peak'
         type_model = True
