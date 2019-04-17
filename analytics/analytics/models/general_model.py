@@ -1,25 +1,34 @@
-from models import Model
+from analytic_types import AnalyticUnitId
+from models import Model, ModelState
 from typing import Union, List, Generator
 import utils
+import utils.meta
 import numpy as np
 import pandas as pd
 import scipy.signal
 from scipy.fftpack import fft
 from scipy.signal import argrelextrema
 from scipy.stats.stats import pearsonr
-import math
+
 from scipy.stats import gaussian_kde
 from scipy.stats import norm
 import logging
-from analytic_types import AnalyticUnitId
 
+from typing import Optional
+import math
 
 PEARSON_FACTOR = 0.7
+
+
+@utils.meta.JSONClass
+class GeneralModelState(ModelState):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
 
 class GeneralModel(Model):
 
     def __init__(self):
-        super()
         self.state = {
             'pattern_center': [],
             'pattern_model': [],
@@ -29,17 +38,20 @@ class GeneralModel(Model):
             'conv_del_min': 0,
             'conv_del_max': 0,
         }
-    
+
     def get_model_type(self) -> (str, bool):
         model = 'general'
         type_model = True
         return (model, type_model)
-    
+
     def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
         data = dataframe['value']
         segment = data[start: end]
         center_ind = start + math.ceil((end - start) / 2)
         return center_ind
+
+    def get_cache(self, cache: Optional[dict] = None) -> GeneralModelState:
+        return GeneralModelState.from_json(cache)
 
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: AnalyticUnitId) -> None:
         logging.debug('Start method do_fit for analytic unit: {}'.format(id))

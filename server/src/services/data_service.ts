@@ -6,6 +6,7 @@ import * as fs from 'fs';
 
 export enum Collection { ANALYTIC_UNITS, ANALYTIC_UNIT_CACHES, SEGMENTS, THRESHOLD };
 
+export enum SortingOrder { ASCENDING = 1, DESCENDING = -1 };
 
 /**
  * Class which helps to make queries to your collection
@@ -14,7 +15,7 @@ export enum Collection { ANALYTIC_UNITS, ANALYTIC_UNIT_CACHES, SEGMENTS, THRESHO
  */
 export type DBQ = {
   findOne: (query: string | object) => Promise<any | null>,
-  findMany: (query: string[] | object) => Promise<any[]>,
+  findMany: (query: string[] | object, sortQuery?: object) => Promise<any[]>,
   insertOne: (document: object) => Promise<string>,
   insertMany: (documents: object[]) => Promise<string[]>,
   updateOne: (query: string | object, updateQuery: any) => Promise<any>,
@@ -142,13 +143,13 @@ let dbFindOne = (collection: Collection, query: string | object) => {
   });
 }
 
-let dbFindMany = (collection: Collection, query: string[] | object) => {
+let dbFindMany = (collection: Collection, query: string[] | object, sortQuery: object = {}) => {
   if(isEmptyArray(query)) {
     return Promise.resolve([]);
   }
   query = wrapIdsToQuery(query);
   return new Promise<any[]>((resolve, reject) => {
-    db.get(collection).find(query, (err, docs: any[]) => {
+    db.get(collection).find(query).sort(sortQuery).exec((err, docs: any[]) => {
       if(err) {
         reject(err);
       } else {
@@ -208,7 +209,7 @@ function checkDataFolders(): void {
 checkDataFolders();
 
 // TODO: it's better if models request db which we create if it`s needed
-db.set(Collection.ANALYTIC_UNITS, new nedb({ filename: config.ANALYTIC_UNITS_DATABASE_PATH, autoload: true }));
+db.set(Collection.ANALYTIC_UNITS, new nedb({ filename: config.ANALYTIC_UNITS_DATABASE_PATH, autoload: true, timestampData: true }));
 db.set(Collection.ANALYTIC_UNIT_CACHES, new nedb({ filename: config.ANALYTIC_UNIT_CACHES_DATABASE_PATH, autoload: true }));
 db.set(Collection.SEGMENTS, new nedb({ filename: config.SEGMENTS_DATABASE_PATH, autoload: true }));
 db.set(Collection.THRESHOLD, new nedb({ filename: config.THRESHOLD_DATABASE_PATH, autoload: true }));

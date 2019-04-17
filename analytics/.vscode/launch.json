@@ -21,7 +21,6 @@
             "name": "Python: Current File",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}\\bin\\server",
             "windows": {
                 "program": "${workspaceFolder}\\bin\\server"
             },

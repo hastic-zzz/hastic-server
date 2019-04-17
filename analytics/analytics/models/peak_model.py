@@ -1,15 +1,33 @@
-from models import Model
+from models import Model, ModelState
 
 import scipy.signal
 from scipy.fftpack import fft
 from scipy.signal import argrelextrema
-
+from typing import Optional, List
 import utils
+import utils.meta
 import numpy as np
 import pandas as pd
 
 SMOOTHING_COEFF = 2400
 EXP_SMOOTHING_FACTOR = 0.01
+
+
+@utils.meta.JSONClass
+class PeakModelState(ModelState):
+
+    def __init__(
+        self,
+        confidence: float = 0,
+        height_max: float = 0,
+        height_min: float = 0,
+        **kwargs
+    ):
+        super().__init__(**kwargs)
+        self.confidence = confidence
+        self.height_max = height_max
+        self.height_min = height_min
+
 
 class PeakModel(Model):
 
@@ -38,6 +56,9 @@ class PeakModel(Model):
         data = dataframe['value']
         segment = data[start: end]
         return segment.idxmax()
+
+    def get_cache(self, cache: Optional[dict] = None) -> PeakModelState:
+        return PeakModelState.from_json(cache)
 
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: str) -> None:
         data = utils.cut_dataframe(dataframe)

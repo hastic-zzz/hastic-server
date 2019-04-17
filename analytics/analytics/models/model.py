@@ -8,17 +8,18 @@ import math
 import logging
 from analytic_types import AnalyticUnitId
 
+import utils.meta
+
 ModelCache = dict
 
 class Segment(AttrDict):
-
-    __percent_of_nans = 0
 
     def __init__(self, dataframe: pd.DataFrame, segment_map: dict, center_finder = None):
         self.update(segment_map)
         self.start = utils.timestamp_to_index(dataframe, pd.to_datetime(self['from'], unit='ms'))
         self.end = utils.timestamp_to_index(dataframe, pd.to_datetime(self['to'], unit='ms'))
         self.length = abs(self.end - self.start)
+        self.__percent_of_nans = 0
 
         if callable(center_finder):
             self.center_index = center_finder(dataframe, self.start, self.end)
@@ -26,7 +27,7 @@ class Segment(AttrDict):
         else:
             self.center_index = self.start + math.ceil(self.length / 2)
             self.pattern_timestamp = dataframe['timestamp'][self.center_index]
-        
+
         assert len(dataframe['value']) >= self.end + 1, \
             'segment {}-{} out of dataframe length={}'.format(self.start, self.end+1, len(dataframe['value']))
 
@@ -42,10 +43,12 @@ class Segment(AttrDict):
         nan_list = utils.find_nan_indexes(self.data)
         self.data = utils.nan_to_zero(self.data, nan_list)
 
+
+@utils.meta.JSONClass
 class ModelState():
 
     def __init__(
-        self, 
+        self,
         pattern_center: List[int] = [],
         pattern_model: List[float] = [],
         convolve_max: float = 0,
@@ -62,22 +65,6 @@ class ModelState():
         self.conv_del_min = conv_del_min
         self.conv_del_max = conv_del_max
 
-    def to_json(self) -> dict:
-        return {
-            'pattern_center': self.pattern_center,
-            'pattern_model': self.pattern_model,
-            'convolve_max': self.convolve_max,
-            'convolve_min': self.convolve_min,
-            'window_size': self.window_size,
-            'conv_del_min': self.conv_del_min,
-            'conv_del_max': self.conv_del_max,
-        }
-    
-    @staticmethod
-    def from_json(json: Optional[dict] = None):
-        if json is None:
-            json = {}
-        return ModelState(**json)
 
 class Model(ABC):
 
@@ -99,6 +86,10 @@ class Model(ABC):
 
     @abstractmethod
     def get_model_type(self) -> (str, bool):
+        pass
+
+    @abstractmethod
+    def get_cache(self, cache: Optional[dict] = None) -> ModelState:
         pass
 
     def fit(self, dataframe: pd.DataFrame, segments: list, id: AnalyticUnitId, cache: Optional[ModelCache]) -> ModelCache:
@@ -123,7 +114,7 @@ class Model(ABC):
 
         assert len(labeled) > 0, f'labeled list empty, skip fitting for {id}'
 
-        if self.state.get('WINDOW_SIZE') == 0:            
+        if self.state.get('WINDOW_SIZE') == 0:
             self.state['WINDOW_SIZE'] = math.ceil(max_length / 2) if max_length else 0
         model, model_type = self.get_model_type()
         learning_info = self.get_parameters_from_segments(dataframe, labeled, deleted, model, model_type)
@@ -163,7 +154,7 @@ class Model(ABC):
             state['height_min'], state['height_max'] = utils.get_min_max(height_list, 0)
         else:
             raise ValueError('got non-dict as state for update fiting result: {}'.format(state))
-    
+
     def get_parameters_from_segments(self, dataframe: pd.DataFrame, labeled: list, deleted: list, model: str, model_type: bool) -> dict:
         logging.debug('Start parsing segments')
         learning_info = {
@@ -199,4 +190,4 @@ class Model(ABC):
                 learning_info['patterns_value'].append(aligned_segment.values[self.state['WINDOW_SIZE']])
         logging.debug('Parsing segments ended correctly with learning_info: {}'.format(learning_info))
         return learning_info
-        
+

@@ -1,13 +1,30 @@
-from models import Model
+from models import Model, ModelState
 
 import scipy.signal
 from scipy.fftpack import fft
 from scipy.signal import argrelextrema
 from scipy.stats import gaussian_kde
-
+from typing import Optional
 import utils
+import utils.meta
 import numpy as np
 import pandas as pd
+
+
+@utils.meta.JSONClass
+class DropModelState(ModelState):
+
+    def __init__(
+        self,
+        confidence: float = 0,
+        drop_height: float = 0,
+        drop_length: float = 0,
+        **kwargs
+    ):
+        super().__init__(**kwargs)
+        self.confidence = confidence
+        self.drop_height = drop_height
+        self.drop_length = drop_length
 
 
 class DropModel(Model):
@@ -26,17 +43,20 @@ class DropModel(Model):
             'conv_del_min': 54000,
             'conv_del_max': 55000,
         }
-    
+
     def get_model_type(self) -> (str, bool):
         model = 'drop'
         type_model = False
         return (model, type_model)
-    
+
     def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
         data = dataframe['value']
         segment = data[start: end]
         segment_center_index = utils.find_pattern_center(segment, start, 'drop')
         return segment_center_index
+
+    def get_cache(self, cache: Optional[dict] = None) -> DropModelState:
+        return DropModelState.from_json(cache)
 
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: str) -> None:
         data = utils.cut_dataframe(dataframe)
