@@ -146,12 +146,13 @@ class Model(ABC):
             'cache': self.state.to_json(),
         }
 
-    def _update_fiting_result(self, state: dict, confidences: list, convolve_list: list, del_conv_list: list, height_list: list) -> None:
+    def _update_fiting_result(self, state: dict, confidences: list, convolve_list: list, del_conv_list: list, height_list: Optional[list] = None) -> None:
         if issubclass(type(state), ModelState):
             state.confidence = float(min(confidences, default = 1.5))
             state.convolve_min, state.convolve_max = utils.get_min_max(convolve_list, state.window_size)
             state.conv_del_min, state.conv_del_max = utils.get_min_max(del_conv_list, 0)
-            state.height_min, state.height_max = utils.get_min_max(height_list, 0)
+            if height_list is not None:
+                state.height_min, state.height_max = utils.get_min_max(height_list, 0)
         else:
             raise ValueError('got not ModelState as state for update fiting result: {}'.format(state))
 

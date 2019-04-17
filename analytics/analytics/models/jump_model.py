@@ -68,7 +68,7 @@ class JumpModel(Model):
             del_conv_jump = scipy.signal.fftconvolve(deleted_jump, self.state.pattern_model)
             if len(del_conv_jump): del_conv_list.append(max(del_conv_jump))
 
-        self._update_fiting_result(self.state, learning_info['confidence'], convolve_list, del_conv_list, height_list)
+        self._update_fiting_result(self.state, learning_info['confidence'], convolve_list, del_conv_list)
         self.state.jump_height = float(min(learning_info['pattern_height'], default = 1))
         self.state.jump_length = int(max(learning_info['pattern_width'], default = 1))
 
