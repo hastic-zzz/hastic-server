@@ -120,7 +120,7 @@ class Model(ABC):
         logging.debug('fit complete successful with self.state: {} for analytic unit: {}'.format(self.state, id))
         return self.state
 
-    def detect(self, dataframe: pd.DataFrame, id: str) -> dict:
+    def detect(self, dataframe: pd.DataFrame, id: AnalyticUnitId) -> dict:
         if not self.state:
             logging.warning('self.state is empty - skip do_detect')
             return {
@@ -139,7 +139,7 @@ class Model(ABC):
             'cache': self.state,
         }
 
-    def _update_fiting_result(self, state: dict, confidences: list, convolve_list: list, del_conv_list: list, height_list: Optional[list] = None) -> None:
+    def _update_fiting_result(self, state: ModelState, confidences: list, convolve_list: list, del_conv_list: list, height_list: Optional[list] = None) -> None:
         if issubclass(type(state), ModelState):
             state.confidence = float(min(confidences, default = 1.5))
             state.convolve_min, state.convolve_max = utils.get_min_max(convolve_list, state.window_size)

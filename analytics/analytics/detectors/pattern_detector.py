@@ -50,7 +50,7 @@ class PatternDetector(Detector):
         self.model.state = self.model.get_cache(cache)
         new_cache = self.model.fit(dataframe, segments, self.analytic_unit_id)
         new_cache = new_cache.to_json()
-        if new_cache == None or len(new_cache) == 0:
+        if len(new_cache) == 0:
             logging.warning('new_cache is empty with data: {}, segments: {}, cache: {}, analytic unit: {}'.format(dataframe, segments, cache, self.analytic_unit_id))
         return {
             'cache': new_cache
@@ -79,11 +79,11 @@ class PatternDetector(Detector):
         detected = self.model.detect(dataframe, self.analytic_unit_id)
 
         segments = [{ 'from': segment[0], 'to': segment[1] } for segment in detected['segments']]
-        newCache = detected['cache'].to_json()
+        new_cache = detected['cache'].to_json()
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_detection_time = convert_pd_timestamp_to_ms(last_dataframe_time)
         return {
-            'cache': newCache,
+            'cache': new_cache,
             'segments': segments,
             'lastDetectionTime': last_detection_time
         }
@@ -102,7 +102,7 @@ class PatternDetector(Detector):
 
         self.bucket.receive_data(data_without_nan)
 
-        window_size = cache['window_size']
+        window_size = cache['windowSize']
 
         bucket_len = len(self.bucket.data)
         if bucket_len < window_size * 2:
@@ -126,4 +126,4 @@ class PatternDetector(Detector):
 
     def get_window_size(self, cache: Optional[ModelCache]) -> int:
         if cache is None: return self.DEFAULT_WINDOW_SIZE
-        return cache.get('window_size', self.DEFAULT_WINDOW_SIZE)
+        return cache.get('windowSize', self.DEFAULT_WINDOW_SIZE)

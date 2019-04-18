@@ -28,10 +28,6 @@ class JumpModelState(ModelState):
 
 
 class JumpModel(Model):
-
-    def __init__(self):
-        super()
-        self.segments = []
     
     def get_model_type(self) -> (str, bool):
         model = 'jump'
@@ -47,7 +43,7 @@ class JumpModel(Model):
     def get_cache(self, cache: Optional[dict] = None) -> JumpModelState:
         return JumpModelState.from_json(cache)
 
-    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: str) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: AnalyticUnitId) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         window_size = self.state.window_size
@@ -72,7 +68,7 @@ class JumpModel(Model):
         self.state.jump_height = float(min(learning_info['pattern_height'], default = 1))
         self.state.jump_length = int(max(learning_info['pattern_width'], default = 1))
 
-    def do_detect(self, dataframe: pd.DataFrame, id: str) -> list:
+    def do_detect(self, dataframe: pd.DataFrame, id: AnalyticUnitId) -> list:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         possible_jumps = utils.find_jump(data, self.state.jump_height, self.state.jump_length + 1)

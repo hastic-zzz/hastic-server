@@ -28,9 +28,6 @@ class DropModelState(ModelState):
 
 
 class DropModel(Model):
-    def __init__(self):
-        super()
-        self.segments = []
 
     def get_model_type(self) -> (str, bool):
         model = 'drop'
@@ -46,7 +43,7 @@ class DropModel(Model):
     def get_cache(self, cache: Optional[dict] = None) -> DropModelState:
         return DropModelState.from_json(cache)
 
-    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: str) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: AnalyticUnitId) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         window_size = self.state.window_size
@@ -71,7 +68,7 @@ class DropModel(Model):
         self.state.drop_height = int(min(learning_info['pattern_height'], default = 1))
         self.state.drop_length = int(max(learning_info['pattern_width'], default = 1))
 
-    def do_detect(self, dataframe: pd.DataFrame, id: str) -> list:
+    def do_detect(self, dataframe: pd.DataFrame, id: AnalyticUnitId) -> list:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         possible_drops = utils.find_drop(data, self.state.drop_height, self.state.drop_length + 1)

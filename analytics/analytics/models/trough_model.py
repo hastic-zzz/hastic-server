@@ -30,10 +30,6 @@ class TroughModelState(ModelState):
 
 
 class TroughModel(Model):
-
-    def __init__(self):
-        super()
-        self.segments = []
     
     def get_model_type(self) -> (str, bool):
         model = 'trough'
@@ -48,7 +44,7 @@ class TroughModel(Model):
     def get_cache(self, cache: Optional[dict] = None) -> TroughModelState:
         return TroughModelState.from_json(cache)
 
-    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: str) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: AnalyticUnitId) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         window_size = self.state.window_size
@@ -74,7 +70,7 @@ class TroughModel(Model):
 
         self._update_fiting_result(self.state, learning_info['confidence'], convolve_list, del_conv_list, height_list)
 
-    def do_detect(self, dataframe: pd.DataFrame, id: str):
+    def do_detect(self, dataframe: pd.DataFrame, id: AnalyticUnitId):
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         window_size = int(len(data)/SMOOTHING_COEFF) #test ws on flat data
