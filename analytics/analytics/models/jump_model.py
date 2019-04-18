@@ -44,7 +44,7 @@ class JumpModel(Model):
     def get_state(self, cache: Optional[dict] = None) -> JumpModelState:
         return JumpModelState.from_json(cache)
 
-    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: List[dict], deleted_segments: List[dict], learning_info: dict) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         window_size = self.state.window_size

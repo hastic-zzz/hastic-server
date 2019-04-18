@@ -43,7 +43,7 @@ class GeneralModel(Model):
     def get_state(self, cache: Optional[dict] = None) -> GeneralModelState:
         return GeneralModelState.from_json(cache)
 
-    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: List[dict], deleted_segments: List[dict], learning_info: dict) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         last_pattern_center = self.state.pattern_center

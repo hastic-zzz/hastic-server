@@ -5,7 +5,7 @@ import logging
 import config
 
 import pandas as pd
-from typing import Optional, Generator, List
+from typing import Optional, Generator
 
 from detectors import Detector
 from analytic_types import DataBucket

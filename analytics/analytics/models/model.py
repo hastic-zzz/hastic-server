@@ -73,7 +73,7 @@ class Model(ABC):
     DEL_CONV_ERROR = 0.02
 
     @abstractmethod
-    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: List[dict], deleted_segments: List[dict], learning_info: dict) -> None:
         pass
 
     @abstractmethod
@@ -92,7 +92,7 @@ class Model(ABC):
     def get_state(self, cache: Optional[dict] = None) -> ModelState:
         pass
 
-    def fit(self, dataframe: pd.DataFrame, segments: list, id: AnalyticUnitId) -> ModelState:
+    def fit(self, dataframe: pd.DataFrame, segments: List[dict], id: AnalyticUnitId) -> ModelState:
         logging.debug('Start method fit for analytic unit {}'.format(id))
         data = dataframe['value']
         max_length = 0
@@ -142,7 +142,7 @@ class Model(ABC):
         if height_list is not None:
             state.height_min, state.height_max = utils.get_min_max(height_list, 0)
 
-    def get_parameters_from_segments(self, dataframe: pd.DataFrame, labeled: list, deleted: list, model: str, model_type: bool) -> dict:
+    def get_parameters_from_segments(self, dataframe: pd.DataFrame, labeled: List[dict], deleted: List[dict], model: str, model_type: bool) -> dict:
         logging.debug('Start parsing segments')
         learning_info = {
             'confidence': [],
