@@ -98,20 +98,3 @@ class TestDataset(aiounittest.AsyncTestCase):
         without_manager = await self._test_detect(test_data)
         self.assertEqual(with_manager, without_manager)
 
-    async def test_cache(self):
-
-        cache_attrs = {
-            'PEAK': PeakModelState.from_json(None).__dict__.keys(),
-            'JUMP': JumpModelState.from_json(None).__dict__.keys(),
-            'DROP': DropModelState.from_json(None).__dict__.keys(),
-            'TROUGH': TroughModelState.from_json(None).__dict__.keys(),
-            'GENERAL': GeneralModelState.from_json(None).__dict__.keys(),
-        }
-
-        for pattern, attrs in cache_attrs.items():
-            test_data = TestData(get_random_id(), pattern, *self._get_test_dataset(pattern))
-            learn_task = self._get_learn_task(test_data)
-            cache = await self._learn(learn_task)
-            cache_keys = list(map(utils.meta.camel_to_underscore, cache.keys()))
-            for a in attrs:
-                self.assertTrue(a in cache_keys, msg='{} not in cache keys: {}'.format(a, cache_keys))
