@@ -1,7 +1,7 @@
 from models.model import Model, ModelCache, ModelState
-from models.drop_model import DropModel
-from models.peak_model import PeakModel
-from models.jump_model import JumpModel
+from models.drop_model import DropModel, DropModelState
+from models.peak_model import PeakModel, PeakModelState
+from models.jump_model import JumpModel, JumpModelState
 from models.custom_model import CustomModel
-from models.trough_model import TroughModel
-from models.general_model import GeneralModel
+from models.trough_model import TroughModel, TroughModelState
+from models.general_model import GeneralModel, GeneralModelState
