@@ -89,7 +89,7 @@ class Model(ABC):
         pass
 
     @abstractmethod
-    def get_cache(self, cache: Optional[dict] = None) -> ModelState:
+    def get_state(self, cache: Optional[dict] = None) -> ModelState:
         pass
 
     def fit(self, dataframe: pd.DataFrame, segments: list, id: AnalyticUnitId) -> ModelCache:

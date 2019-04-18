@@ -8,6 +8,7 @@ import utils
 import utils.meta
 import numpy as np
 import pandas as pd
+from analytic_types import AnalyticUnitId
 
 SMOOTHING_COEFF = 2400
 EXP_SMOOTHING_FACTOR = 0.01
@@ -41,7 +42,7 @@ class TroughModel(Model):
         segment = data[start: end]
         return segment.idxmin()
 
-    def get_cache(self, cache: Optional[dict] = None) -> TroughModelState:
+    def get_state(self, cache: Optional[dict] = None) -> TroughModelState:
         return TroughModelState.from_json(cache)
 
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: AnalyticUnitId) -> None:

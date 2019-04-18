@@ -16,6 +16,7 @@ import logging
 
 from typing import Optional
 import math
+from analytic_types import AnalyticUnitId
 
 PEARSON_FACTOR = 0.7
 
@@ -39,7 +40,7 @@ class GeneralModel(Model):
         center_ind = start + math.ceil((end - start) / 2)
         return center_ind
 
-    def get_cache(self, cache: Optional[dict] = None) -> GeneralModelState:
+    def get_state(self, cache: Optional[dict] = None) -> GeneralModelState:
         return GeneralModelState.from_json(cache)
 
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: AnalyticUnitId) -> None:

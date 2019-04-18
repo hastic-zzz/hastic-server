@@ -9,7 +9,7 @@ import utils
 import utils.meta
 import numpy as np
 import pandas as pd
-
+from analytic_types import AnalyticUnitId
 
 @utils.meta.JSONClass
 class DropModelState(ModelState):
@@ -40,7 +40,7 @@ class DropModel(Model):
         segment_center_index = utils.find_pattern_center(segment, start, 'drop')
         return segment_center_index
 
-    def get_cache(self, cache: Optional[dict] = None) -> DropModelState:
+    def get_state(self, cache: Optional[dict] = None) -> DropModelState:
         return DropModelState.from_json(cache)
 
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: AnalyticUnitId) -> None:

@@ -10,6 +10,7 @@ from typing import Optional
 import math
 from scipy.signal import argrelextrema
 from scipy.stats import gaussian_kde
+from analytic_types import AnalyticUnitId
 
 
 @utils.meta.JSONClass
@@ -40,7 +41,7 @@ class JumpModel(Model):
         segment_center_index = utils.find_pattern_center(segment, start, 'jump')
         return segment_center_index
 
-    def get_cache(self, cache: Optional[dict] = None) -> JumpModelState:
+    def get_state(self, cache: Optional[dict] = None) -> JumpModelState:
         return JumpModelState.from_json(cache)
 
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: AnalyticUnitId) -> None:

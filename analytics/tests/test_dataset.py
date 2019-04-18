@@ -25,7 +25,7 @@ class TestDataset(unittest.TestCase):
             model_name = model.__class__.__name__
 
             with self.assertRaises(AssertionError):
-                model.fit(dataframe, segments, 'test', dict())
+                model.fit(dataframe, segments, 'test')
     
     def test_peak_antisegments(self):
         data_val = [1.0, 1.0, 1.0, 2.0, 3.0, 2.0, 1.0, 1.0, 1.0, 1.0, 5.0, 7.0, 5.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
@@ -36,7 +36,7 @@ class TestDataset(unittest.TestCase):
         try:
             model = models.PeakModel()
             model_name = model.__class__.__name__
-            model.fit(dataframe, segments, 'test', dict())
+            model.fit(dataframe, segments, 'test')
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
         
@@ -49,7 +49,7 @@ class TestDataset(unittest.TestCase):
         try:
             model = models.JumpModel()
             model_name = model.__class__.__name__
-            model.fit(dataframe, segments, 'test', dict())
+            model.fit(dataframe, segments, 'test')
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
     
@@ -62,7 +62,7 @@ class TestDataset(unittest.TestCase):
         try:
             model = models.TroughModel()
             model_name = model.__class__.__name__
-            model.fit(dataframe, segments, 'test', dict())
+            model.fit(dataframe, segments, 'test')
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
     
@@ -75,7 +75,7 @@ class TestDataset(unittest.TestCase):
         try:
             model = models.DropModel()
             model_name = model.__class__.__name__
-            model.fit(dataframe, segments, 'test', dict())
+            model.fit(dataframe, segments, 'test')
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
 
@@ -88,7 +88,7 @@ class TestDataset(unittest.TestCase):
         try:
             model = models.GeneralModel()
             model_name = model.__class__.__name__
-            model.fit(dataframe, segments, 'test', dict())
+            model.fit(dataframe, segments, 'test')
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
     
@@ -101,7 +101,7 @@ class TestDataset(unittest.TestCase):
         try:
             model = models.JumpModel()
             model_name = model.__class__.__name__
-            model.fit(dataframe, segments, 'test', dict())
+            model.fit(dataframe, segments, 'test')
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
     
@@ -114,7 +114,7 @@ class TestDataset(unittest.TestCase):
         try:
             model = models.DropModel()
             model_name = model.__class__.__name__
-            model.fit(dataframe, segments, 'test', dict())
+            model.fit(dataframe, segments, 'test')
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
 
@@ -126,7 +126,7 @@ class TestDataset(unittest.TestCase):
         try:
             model = models.JumpModel()
             model_name = model.__class__.__name__
-            model.fit(dataframe, segments, 'test', dict())
+            model.fit(dataframe, segments, 'test')
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
     
@@ -166,7 +166,7 @@ class TestDataset(unittest.TestCase):
         try:
             for model in model_instances:
                 model_name = model.__class__.__name__
-                model.fit(dataframe, segments, 'test', dict())
+                model.fit(dataframe, segments, 'test')
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
 
@@ -175,7 +175,7 @@ class TestDataset(unittest.TestCase):
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000001, 'to': 1523889000003, 'labeled': True, 'deleted': False}]
         model = models.GeneralModel()
-        model.fit(dataframe, segments,'test', dict())
+        model.fit(dataframe, segments,'test')
         result = len(data_val) + 1
         for _ in range(2):
             model.do_detect(dataframe,'test')
@@ -190,7 +190,7 @@ class TestDataset(unittest.TestCase):
             'confidence': 2,
             'convolve_max': 8,
             'convolve_min': 7,
-            'WINDOW_SIZE': 1,
+            'windowSize': 1,
             'conv_del_min': 0,
             'conv_del_max': 0,
         }
@@ -198,7 +198,8 @@ class TestDataset(unittest.TestCase):
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000012, 'labeled': True, 'deleted': False}]
         model = models.PeakModel()
-        result = model.fit(dataframe, segments, 'test', cache)
+        model.state = model.get_state(cache)
+        result = model.fit(dataframe, segments, 'test')
         self.assertEqual(len(result['pattern_center']), 3)
 
     def test_trough_model_for_cache(self):

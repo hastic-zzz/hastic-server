@@ -47,7 +47,7 @@ class PatternDetector(Detector):
 
     def train(self, dataframe: pd.DataFrame, segments: list, cache: Optional[models.ModelCache]) -> models.ModelCache:
         # TODO: pass only part of dataframe that has segments
-        self.model.state = self.model.get_cache(cache)
+        self.model.state = self.model.get_state(cache)
         new_cache = self.model.fit(dataframe, segments, self.analytic_unit_id)
         new_cache = new_cache.to_json()
         if len(new_cache) == 0:
@@ -60,11 +60,11 @@ class PatternDetector(Detector):
         logger.debug('Unit {} got {} data points for detection'.format(self.analytic_unit_id, len(dataframe)))
         # TODO: split and sleep (https://github.com/hastic/hastic-server/pull/124#discussion_r214085643)
 
-        if cache is None or cache == {}:
+        if cache is None:
             msg = f'{self.analytic_unit_id} detection got invalid cache, skip detection'
             logger.error(msg)
             raise ValueError(msg)
-        self.model.state = self.model.get_cache(cache)
+        self.model.state = self.model.get_state(cache)
         window_size = self.model.state.window_size
         if window_size is None:
             message = '{} got cache without window_size for detection'.format(self.analytic_unit_id)
@@ -91,7 +91,7 @@ class PatternDetector(Detector):
     def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
         logging.debug('Start consume_data for analytic unit {}'.format(self.analytic_unit_id))
 
-        if cache is None or cache == {}:
+        if cache is None:
             logging.debug(f'consume_data get invalid cache {cache} for task {self.analytic_unit_id}, skip')
             return None
 
