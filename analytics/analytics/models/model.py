@@ -114,8 +114,8 @@ class Model(ABC):
 
         assert len(labeled) > 0, f'labeled list empty, skip fitting for {id}'
 
-        if self.state.get('WINDOW_SIZE') == 0:
-            self.state['WINDOW_SIZE'] = math.ceil(max_length / 2) if max_length else 0
+        self.state['WINDOW_SIZE'] = self.state.get('WINDOW_SIZE', max_length)
+
         model, model_type = self.get_model_type()
         learning_info = self.get_parameters_from_segments(dataframe, labeled, deleted, model, model_type)
         self.do_fit(dataframe, labeled, deleted, learning_info, id)

@@ -15,11 +15,7 @@ logger = logging.getLogger('AnalyticUnitWorker')
 
 class AnalyticUnitWorker:
 
-    CHUNK_WINDOW_SIZE_FACTOR = 100
-    CHUNK_INTERSECTION_FACTOR = 2
-
-    assert CHUNK_WINDOW_SIZE_FACTOR > CHUNK_INTERSECTION_FACTOR, \
-        'CHUNK_INTERSECTION_FACTOR should be less than CHUNK_WINDOW_SIZE_FACTOR'
+    CHUNK_WINDOW_SIZE_FACTOR = 50
 
     def __init__(self, analytic_unit_id: str, detector: detectors.Detector, executor: concurrent.futures.Executor):
         self.analytic_unit_id = analytic_unit_id
@@ -49,7 +45,6 @@ class AnalyticUnitWorker:
 
         window_size = self._detector.get_window_size(cache)
         chunk_size = window_size * self.CHUNK_WINDOW_SIZE_FACTOR
-        chunk_intersection = window_size * self.CHUNK_INTERSECTION_FACTOR
 
         detection_result = {
           'cache': None,
@@ -57,7 +52,7 @@ class AnalyticUnitWorker:
           'lastDetectionTime': None
         }
 
-        for chunk in get_intersected_chunks(data, chunk_intersection, chunk_size):
+        for chunk in get_intersected_chunks(data, window_size, chunk_size):
             await asyncio.sleep(0)
             chunk_dataframe = prepare_data(chunk)
             detected = self._detector.detect(chunk_dataframe, cache)

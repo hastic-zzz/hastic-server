@@ -36,8 +36,8 @@ def resolve_model_by_pattern(pattern: str) -> models.Model:
 class PatternDetector(Detector):
 
     MIN_BUCKET_SIZE = 150
-    BUCKET_WINDOW_SIZE_FACTOR = 5
-    DEFAULT_WINDOW_SIZE = 1
+    BUCKET_WINDOW_SIZE_FACTOR = 3
+    DEFAULT_WINDOW_SIZE = 3
 
     def __init__(self, pattern_type: str, analytic_unit_id: AnalyticUnitId):
         self.analytic_unit_id = analytic_unit_id
@@ -69,7 +69,7 @@ class PatternDetector(Detector):
             logger.error(message)
             raise ValueError(message)
 
-        if len(dataframe) < window_size * 2:
+        if len(dataframe) < window_size:
             message = f'{self.analytic_unit_id} skip detection: data length: {len(dataframe)} less than WINDOW_SIZE: {window_size}'
             logger.error(message)
             raise ValueError(message)
@@ -103,8 +103,8 @@ class PatternDetector(Detector):
         window_size = cache['WINDOW_SIZE']
 
         bucket_len = len(self.bucket.data)
-        if bucket_len < window_size * 2:
-            msg = f'{self.analytic_unit_id} bucket data {bucket_len} less than two window size {window_size * 2}, skip run detection from consume_data'
+        if bucket_len < window_size:
+            msg = f'{self.analytic_unit_id} bucket data {bucket_len} less than window size {window_size}, skip run detection from consume_data'
             logger.debug(msg)
             return None
 

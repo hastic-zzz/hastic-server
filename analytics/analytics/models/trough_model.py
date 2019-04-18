@@ -63,12 +63,12 @@ class TroughModel(Model):
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: str) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
-        window_size = self.state['WINDOW_SIZE']
+        half_window_size = self.state['WINDOW_SIZE'] // 2
         last_pattern_center = self.state.get('pattern_center', [])
         self.state['pattern_center'] = list(set(last_pattern_center + learning_info['segment_center_list']))
         self.state['pattern_model'] = utils.get_av_model(learning_info['patterns_list'])
-        convolve_list = utils.get_convolve(self.state['pattern_center'], self.state['pattern_model'], data, window_size)
-        correlation_list = utils.get_correlation(self.state['pattern_center'], self.state['pattern_model'], data, window_size)
+        convolve_list = utils.get_convolve(self.state['pattern_center'], self.state['pattern_model'], data, half_window_size)
+        correlation_list = utils.get_correlation(self.state['pattern_center'], self.state['pattern_model'], data, half_window_size)
         height_list = learning_info['patterns_value']
 
         del_conv_list = []
@@ -78,7 +78,7 @@ class TroughModel(Model):
         for segment in deleted_segments:
             del_min_index = segment.center_index
             delete_pattern_timestamp.append(segment.pattern_timestamp)
-            deleted = utils.get_interval(data, del_min_index, window_size)
+            deleted = utils.get_interval(data, del_min_index, half_window_size)
             deleted = utils.subtract_min_without_nan(deleted)
             del_conv = scipy.signal.fftconvolve(deleted, self.state['pattern_model'])
             if len(del_conv): del_conv_list.append(max(del_conv))
@@ -89,8 +89,8 @@ class TroughModel(Model):
     def do_detect(self, dataframe: pd.DataFrame, id: str):
         data = utils.cut_dataframe(dataframe)
         data = data['value']
-        window_size = int(len(data)/SMOOTHING_COEFF) #test ws on flat data
         all_mins = argrelextrema(np.array(data), np.less)[0]
+        half_window_size = self.state['WINDOW_SIZE'] // 2
 
         extrema_list = []
         for i in utils.exponential_smoothing(data - self.state['confidence'], EXP_SMOOTHING_FACTOR):
@@ -101,12 +101,12 @@ class TroughModel(Model):
             if data[i] < extrema_list[i]:
                 segments.append(i)
         result = self.__filter_detection(segments, data)
-        result = utils.get_borders_of_peaks(result, data, self.state.get('WINDOW_SIZE'), self.state.get('confidence'), inverse = True)
+        result = utils.get_borders_of_peaks(result, data, half_window_size, self.state.get('confidence'), inverse = True)
         return result
 
     def __filter_detection(self, segments: list, data: list) -> list:
         delete_list = []
-        variance_error = self.state['WINDOW_SIZE']
+        variance_error = half_window_size = self.state['WINDOW_SIZE'] // 2
         close_patterns = utils.close_filtering(segments, variance_error)
         segments = utils.best_pattern(close_patterns, data, 'min')
         if len(segments) == 0 or len(self.state.get('pattern_center', [])) == 0:
@@ -120,8 +120,8 @@ class TroughModel(Model):
         up_del_conv = self.state['conv_del_max'] * (1 + self.DEL_CONV_ERROR)
         low_del_conv = self.state['conv_del_min'] * (1 - self.DEL_CONV_ERROR)
         for segment in segments:
-            if segment > self.state['WINDOW_SIZE']:
-                convol_data = utils.get_interval(data, segment, self.state['WINDOW_SIZE'])
+            if segment > half_window_size:
+                convol_data = utils.get_interval(data, segment, half_window_size)
                 convol_data = utils.subtract_min_without_nan(convol_data)
                 percent_of_nans = convol_data.isnull().sum() / len(convol_data)
                 if percent_of_nans > 0.5:

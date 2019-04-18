@@ -61,12 +61,12 @@ class DropModel(Model):
     def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: str) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
-        window_size = self.state['WINDOW_SIZE']
+        half_window_size = self.state['WINDOW_SIZE'] // 2
         last_pattern_center = self.state.get('pattern_center', [])
         self.state['pattern_center'] = list(set(last_pattern_center + learning_info['segment_center_list']))
         self.state['pattern_model'] = utils.get_av_model(learning_info['patterns_list'])
-        convolve_list = utils.get_convolve(self.state['pattern_center'], self.state['pattern_model'], data, window_size)
-        correlation_list = utils.get_correlation(self.state['pattern_center'], self.state['pattern_model'], data, window_size)
+        convolve_list = utils.get_convolve(self.state['pattern_center'], self.state['pattern_model'], data, half_window_size)
+        correlation_list = utils.get_correlation(self.state['pattern_center'], self.state['pattern_model'], data, half_window_size)
         height_list = learning_info['patterns_value']
 
         del_conv_list = []
@@ -74,7 +74,7 @@ class DropModel(Model):
         for segment in deleted_segments:
             segment_cent_index = segment.center_index
             delete_pattern_timestamp.append(segment.pattern_timestamp)
-            deleted_drop = utils.get_interval(data, segment_cent_index, window_size)
+            deleted_drop = utils.get_interval(data, segment_cent_index, half_window_size)
             deleted_drop = utils.subtract_min_without_nan(deleted_drop)
             del_conv_drop = scipy.signal.fftconvolve(deleted_drop, self.state['pattern_model'])
             if len(del_conv_drop): del_conv_list.append(max(del_conv_drop))
@@ -92,7 +92,7 @@ class DropModel(Model):
 
     def __filter_detection(self, segments: list, data: list):
         delete_list = []
-        variance_error = self.state['WINDOW_SIZE']
+        variance_error = half_window_size = self.state['WINDOW_SIZE'] // 2
         close_patterns = utils.close_filtering(segments, variance_error)
         segments = utils.best_pattern(close_patterns, data, 'min')
         if len(segments) == 0 or len(self.state.get('pattern_center', [])) == 0:
@@ -100,8 +100,8 @@ class DropModel(Model):
             return segments
         pattern_data = self.state['pattern_model']
         for segment in segments:
-            if segment > self.state['WINDOW_SIZE'] and segment < (len(data) - self.state['WINDOW_SIZE']):
-                convol_data = utils.get_interval(data, segment, self.state['WINDOW_SIZE'])
+            if segment > half_window_size and segment < (len(data) - half_window_size):
+                convol_data = utils.get_interval(data, segment, half_window_size)
                 percent_of_nans = convol_data.isnull().sum() / len(convol_data)
                 if len(convol_data) == 0 or percent_of_nans > 0.5:
                     delete_list.append(segment)

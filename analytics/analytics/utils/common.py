@@ -191,17 +191,17 @@ def find_extremum_index(segment: np.ndarray, selector: bool) -> int:
     else:
         return segment.argmin()
 
-def get_interval(data: pd.Series, center: int, window_size: int, normalization = False) -> pd.Series:
+def get_interval(data: pd.Series, center: int, half_window_size: int, normalization = False) -> pd.Series:
     """
-    Get an interval with 2*window_size length
-    window_size to the left, window_size to the right of center
+    Get an interval with 2 * half_window_size length
+    half_window_size to the left, half_window_size to the right of center
     If normalization == True - subtract minimum from the interval
     """
     if center >= len(data):
         logging.warning('Pattern center {} is out of data with len {}'.format(center, len(data)))
         return []
-    left_bound = center - window_size
-    right_bound = center + window_size + 1
+    left_bound = center - half_window_size
+    right_bound = center + half_window_size + 1
     if left_bound < 0:
         left_bound = 0
     if right_bound > len(data):
