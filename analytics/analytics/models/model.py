@@ -121,12 +121,6 @@ class Model(ABC):
         return self.state
 
     def detect(self, dataframe: pd.DataFrame, id: AnalyticUnitId) -> dict:
-        if not self.state:
-            logging.warning('self.state is empty - skip do_detect')
-            return {
-                'segments': [],
-                'cache': {},
-            }
         result = self.do_detect(dataframe, id)
         segments = [(
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][x[0]]),
