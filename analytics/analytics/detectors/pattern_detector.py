@@ -102,6 +102,7 @@ class PatternDetector(Detector):
 
         self.bucket.receive_data(data_without_nan)
 
+        # TODO: use ModelState
         window_size = cache['windowSize']
 
         bucket_len = len(self.bucket.data)
