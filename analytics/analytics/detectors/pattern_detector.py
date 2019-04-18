@@ -45,7 +45,7 @@ class PatternDetector(Detector):
         self.model = resolve_model_by_pattern(self.pattern_type)
         self.bucket = DataBucket()
 
-    def train(self, dataframe: pd.DataFrame, segments: list, cache: Optional[models.ModelCache]) -> models.ModelCache:
+    def train(self, dataframe: pd.DataFrame, segments: list, cache: Optional[models.ModelCache]) -> models.ModelState:
         # TODO: pass only part of dataframe that has segments
         self.model.state = self.model.get_state(cache)
         new_cache = self.model.fit(dataframe, segments, self.analytic_unit_id)

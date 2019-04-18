@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import scipy.signal
 from scipy.fftpack import fft
-from typing import Optional
+from typing import Optional, List, Tuple
 import math
 from scipy.signal import argrelextrema
 from scipy.stats import gaussian_kde
@@ -44,7 +44,7 @@ class JumpModel(Model):
     def get_state(self, cache: Optional[dict] = None) -> JumpModelState:
         return JumpModelState.from_json(cache)
 
-    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: AnalyticUnitId) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         window_size = self.state.window_size
@@ -69,7 +69,7 @@ class JumpModel(Model):
         self.state.jump_height = float(min(learning_info['pattern_height'], default = 1))
         self.state.jump_length = int(max(learning_info['pattern_width'], default = 1))
 
-    def do_detect(self, dataframe: pd.DataFrame, id: AnalyticUnitId) -> list:
+    def do_detect(self, dataframe: pd.DataFrame) -> List[Tuple[int, int]]:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         possible_jumps = utils.find_jump(data, self.state.jump_height, self.state.jump_length + 1)

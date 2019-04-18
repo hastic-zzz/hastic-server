@@ -185,14 +185,14 @@ class TestDataset(unittest.TestCase):
     
     def test_peak_model_for_cache(self):
         cache = {
-            'pattern_center': [1, 6],
-            'model_peak': [1, 4, 0],
+            'patternCenter': [1, 6],
+            'modelPeak': [1, 4, 0],
             'confidence': 2,
-            'convolve_max': 8,
-            'convolve_min': 7,
+            'convolveMax': 8,
+            'convolveMin': 7,
             'windowSize': 1,
-            'conv_del_min': 0,
-            'conv_del_max': 0,
+            'convDelMin': 0,
+            'convDelMax': 0,
         }
         data_val = [2.0, 5.0, 1.0, 1.0, 1.0, 2.0, 5.0, 1.0, 1.0, 2.0, 3.0, 7.0, 1.0, 1.0, 1.0]
         dataframe = create_dataframe(data_val)
@@ -287,7 +287,7 @@ class TestDataset(unittest.TestCase):
                 try:
                     model = models.GeneralModel()
                     model_name = model.__class__.__name__
-                    model.detect(data, 'test', cache)
+                    model.detect(data, 'test')
                 except ValueError:
                     self.fail('Model {} raised unexpectedly with av_model {} and window size {}'.format(model_name, pattern_model, ws))
     
@@ -325,7 +325,7 @@ class TestDataset(unittest.TestCase):
         try:
             for model in model_instances:
                 model_name = model.__class__.__name__
-                model.detect(data, 'test', cache)
+                model.detect(data, 'test')
         except ValueError:
             self.fail('Model {} raised unexpectedly with dataset {} and cache {}'.format(model_name, data['value'], cache))
 

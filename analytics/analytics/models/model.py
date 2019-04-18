@@ -2,7 +2,7 @@ import utils
 
 from abc import ABC, abstractmethod
 from attrdict import AttrDict
-from typing import Optional, List
+from typing import Optional, List, Tuple
 import pandas as pd
 import math
 import logging
@@ -73,11 +73,11 @@ class Model(ABC):
     DEL_CONV_ERROR = 0.02
 
     @abstractmethod
-    def do_fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[ModelCache], learning_info: dict) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict) -> None:
         pass
 
     @abstractmethod
-    def do_detect(self, dataframe: pd.DataFrame) -> list:
+    def do_detect(self, dataframe: pd.DataFrame) -> List[Tuple[int, int]]:
         pass
 
     @abstractmethod
@@ -92,7 +92,7 @@ class Model(ABC):
     def get_state(self, cache: Optional[dict] = None) -> ModelState:
         pass
 
-    def fit(self, dataframe: pd.DataFrame, segments: list, id: AnalyticUnitId) -> ModelCache:
+    def fit(self, dataframe: pd.DataFrame, segments: list, id: AnalyticUnitId) -> ModelState:
         logging.debug('Start method fit for analytic unit {}'.format(id))
         data = dataframe['value']
         max_length = 0
@@ -116,18 +116,20 @@ class Model(ABC):
             self.state.window_size = math.ceil(max_length / 2) if max_length else 0
         model, model_type = self.get_model_type()
         learning_info = self.get_parameters_from_segments(dataframe, labeled, deleted, model, model_type)
-        self.do_fit(dataframe, labeled, deleted, learning_info, id)
+        self.do_fit(dataframe, labeled, deleted, learning_info)
         logging.debug('fit complete successful with self.state: {} for analytic unit: {}'.format(self.state, id))
         return self.state
 
     def detect(self, dataframe: pd.DataFrame, id: AnalyticUnitId) -> dict:
-        result = self.do_detect(dataframe, id)
+        logging.debug('Start method detect for analytic unit {}'.format(id))
+        result = self.do_detect(dataframe)
         segments = [(
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][x[0]]),
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][x[1]]),
         ) for x in result]
         if not self.state:
             logging.warning('Return empty self.state after detect')
+        logging.debug('Method detect complete successful for analytic unit {}'.format(id))
         return {
             'segments': segments,
             'cache': self.state,

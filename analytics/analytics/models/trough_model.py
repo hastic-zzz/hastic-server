@@ -3,7 +3,7 @@ from models import Model, ModelState
 import scipy.signal
 from scipy.fftpack import fft
 from scipy.signal import argrelextrema
-from typing import Optional
+from typing import Optional, List, Tuple
 import utils
 import utils.meta
 import numpy as np
@@ -45,7 +45,7 @@ class TroughModel(Model):
     def get_state(self, cache: Optional[dict] = None) -> TroughModelState:
         return TroughModelState.from_json(cache)
 
-    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict, id: AnalyticUnitId) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: list, deleted_segments: list, learning_info: dict) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         window_size = self.state.window_size
@@ -71,7 +71,7 @@ class TroughModel(Model):
 
         self._update_fiting_result(self.state, learning_info['confidence'], convolve_list, del_conv_list, height_list)
 
-    def do_detect(self, dataframe: pd.DataFrame, id: AnalyticUnitId):
+    def do_detect(self, dataframe: pd.DataFrame) -> List[Tuple[int, int]]:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         window_size = int(len(data)/SMOOTHING_COEFF) #test ws on flat data
