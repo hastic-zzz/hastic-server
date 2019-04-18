@@ -92,11 +92,9 @@ class Model(ABC):
     def get_cache(self, cache: Optional[dict] = None) -> ModelState:
         pass
 
-    def fit(self, dataframe: pd.DataFrame, segments: list, id: AnalyticUnitId, cache: Optional[ModelCache]) -> ModelCache:
+    def fit(self, dataframe: pd.DataFrame, segments: list, id: AnalyticUnitId) -> ModelCache:
         logging.debug('Start method fit for analytic unit {}'.format(id))
         data = dataframe['value']
-        #if cache != None and len(cache) > 0:
-        #self.state = self.get_cache(cache)
         max_length = 0
         labeled = []
         deleted = []
@@ -122,12 +120,7 @@ class Model(ABC):
         logging.debug('fit complete successful with self.state: {} for analytic unit: {}'.format(self.state, id))
         return self.state
 
-    def detect(self, dataframe: pd.DataFrame, id: str, cache: Optional[ModelCache]) -> dict:
-        #If cache is None or empty dict - default parameters will be used instead
-        #if cache != None and len(cache) > 0:
-        #self.state = self.get_cache(cache)
-        #else:
-        #    logging.debug('Get empty cache in detect')
+    def detect(self, dataframe: pd.DataFrame, id: str) -> dict:
         if not self.state:
             logging.warning('self.state is empty - skip do_detect')
             return {

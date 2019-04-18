@@ -48,7 +48,7 @@ class PatternDetector(Detector):
     def train(self, dataframe: pd.DataFrame, segments: list, cache: Optional[models.ModelCache]) -> models.ModelCache:
         # TODO: pass only part of dataframe that has segments
         self.model.state = self.model.get_cache(cache)
-        new_cache = self.model.fit(dataframe, segments, self.analytic_unit_id, cache)
+        new_cache = self.model.fit(dataframe, segments, self.analytic_unit_id)
         new_cache = new_cache.to_json()
         if new_cache == None or len(new_cache) == 0:
             logging.warning('new_cache is empty with data: {}, segments: {}, cache: {}, analytic unit: {}'.format(dataframe, segments, cache, self.analytic_unit_id))
@@ -76,7 +76,7 @@ class PatternDetector(Detector):
             logger.error(message)
             raise ValueError(message)
 
-        detected = self.model.detect(dataframe, self.analytic_unit_id, cache)
+        detected = self.model.detect(dataframe, self.analytic_unit_id)
 
         segments = [{ 'from': segment[0], 'to': segment[1] } for segment in detected['segments']]
         newCache = detected['cache'].to_json()
