@@ -23,7 +23,7 @@ class TestDataset(unittest.TestCase):
 
         for model in model_instances:
             model_name = model.__class__.__name__
-
+            model.state = model.get_state(None)
             with self.assertRaises(AssertionError):
                 model.fit(dataframe, segments, 'test')
     
@@ -36,6 +36,7 @@ class TestDataset(unittest.TestCase):
         try:
             model = models.PeakModel()
             model_name = model.__class__.__name__
+            model.state = model.get_state(None)
             model.fit(dataframe, segments, 'test')
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
@@ -49,6 +50,7 @@ class TestDataset(unittest.TestCase):
         try:
             model = models.JumpModel()
             model_name = model.__class__.__name__
+            model.state = model.get_state(None)
             model.fit(dataframe, segments, 'test')
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
@@ -62,6 +64,7 @@ class TestDataset(unittest.TestCase):
         try:
             model = models.TroughModel()
             model_name = model.__class__.__name__
+            model.state = model.get_state(None)
             model.fit(dataframe, segments, 'test')
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
@@ -75,6 +78,7 @@ class TestDataset(unittest.TestCase):
         try:
             model = models.DropModel()
             model_name = model.__class__.__name__
+            model.state = model.get_state(None)
             model.fit(dataframe, segments, 'test')
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
@@ -88,6 +92,7 @@ class TestDataset(unittest.TestCase):
         try:
             model = models.GeneralModel()
             model_name = model.__class__.__name__
+            model.state = model.get_state(None)
             model.fit(dataframe, segments, 'test')
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
@@ -101,6 +106,7 @@ class TestDataset(unittest.TestCase):
         try:
             model = models.JumpModel()
             model_name = model.__class__.__name__
+            model.state = model.get_state(None)
             model.fit(dataframe, segments, 'test')
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
@@ -113,6 +119,7 @@ class TestDataset(unittest.TestCase):
 
         try:
             model = models.DropModel()
+            model.state = model.get_state(None)
             model_name = model.__class__.__name__
             model.fit(dataframe, segments, 'test')
         except ValueError:
@@ -125,6 +132,7 @@ class TestDataset(unittest.TestCase):
 
         try:
             model = models.JumpModel()
+            model.state = model.get_state(None)
             model_name = model.__class__.__name__
             model.fit(dataframe, segments, 'test')
         except ValueError:
@@ -166,6 +174,7 @@ class TestDataset(unittest.TestCase):
         try:
             for model in model_instances:
                 model_name = model.__class__.__name__
+                model.state = model.get_state(None)
                 model.fit(dataframe, segments, 'test')
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
@@ -175,24 +184,27 @@ class TestDataset(unittest.TestCase):
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000001, 'to': 1523889000003, 'labeled': True, 'deleted': False}]
         model = models.GeneralModel()
+        model.state = model.get_state(None)
         model.fit(dataframe, segments,'test')
         result = len(data_val) + 1
         for _ in range(2):
-            model.do_detect(dataframe,'test')
-            max_pattern_index = max(model.do_detect(dataframe, 'test'))
+            model.do_detect(dataframe)
+            max_pattern_index = max(model.do_detect(dataframe))
             self.assertLessEqual(max_pattern_index[0], result)
 
     
     def test_peak_model_for_cache(self):
         cache = {
             'patternCenter': [1, 6],
-            'modelPeak': [1, 4, 0],
+            'patternModel': [1, 4, 0],
             'confidence': 2,
             'convolveMax': 8,
             'convolveMin': 7,
             'windowSize': 1,
             'convDelMin': 0,
             'convDelMax': 0,
+            'heightMax': 4,
+            'heightMin': 4,
         }
         data_val = [2.0, 5.0, 1.0, 1.0, 1.0, 2.0, 5.0, 1.0, 1.0, 2.0, 3.0, 7.0, 1.0, 1.0, 1.0]
         dataframe = create_dataframe(data_val)
@@ -200,54 +212,56 @@ class TestDataset(unittest.TestCase):
         model = models.PeakModel()
         model.state = model.get_state(cache)
         result = model.fit(dataframe, segments, 'test')
-        self.assertEqual(len(result['pattern_center']), 3)
+        self.assertEqual(len(result.pattern_center), 3)
 
     def test_trough_model_for_cache(self):
         cache = {
-            'pattern_center': [2, 6],
-            'pattern_model': [5, 0.5, 4],
+            'patternCenter': [2, 6],
+            'patternModel': [5, 0.5, 4],
             'confidence': 2,
-            'convolve_max': 8,
-            'convolve_min': 7,
-            'WINDOW_SIZE': 1,
-            'conv_del_min': 0,
-            'conv_del_max': 0,
+            'convolveMax': 8,
+            'convolveMin': 7,
+            'window_size': 1,
+            'convDelMin': 0,
+            'convDelMax': 0,
         }
         data_val = [5.0, 5.0, 1.0, 4.0, 5.0, 5.0, 0.0, 4.0, 5.0, 5.0, 6.0, 1.0, 5.0, 5.0, 5.0]
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000012, 'labeled': True, 'deleted': False}]
         model = models.TroughModel()
-        result = model.fit(dataframe, segments, 'test', cache)
-        self.assertEqual(len(result['pattern_center']), 3)
+        model.state = model.get_state(cache)
+        result = model.fit(dataframe, segments, 'test')
+        self.assertEqual(len(result.pattern_center), 3)
 
     def test_jump_model_for_cache(self):
         cache = {
-            'pattern_center': [2, 6],
-            'pattern_model': [5, 0.5, 4],
+            'patternCenter': [2, 6],
+            'patternModel': [5, 0.5, 4],
             'confidence': 2,
-            'convolve_max': 8,
-            'convolve_min': 7,
-            'WINDOW_SIZE': 1,
-            'conv_del_min': 0,
-            'conv_del_max': 0,
+            'convolveMax': 8,
+            'convolveMin': 7,
+            'window_size': 1,
+            'convDelMin': 0,
+            'convDelMax': 0,
         }
         data_val = [1.0, 1.0, 1.0, 4.0, 4.0, 0.0, 0.0, 5.0, 5.0, 0.0, 0.0, 4.0, 4.0, 4.0, 4.0]
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 152388900009, 'to': 1523889000013, 'labeled': True, 'deleted': False}]
         model = models.JumpModel()
-        result = model.fit(dataframe, segments, 'test', cache)
-        self.assertEqual(len(result['pattern_center']), 3)
+        model.state = model.get_state(cache)
+        result = model.fit(dataframe, segments, 'test')
+        self.assertEqual(len(result.pattern_center), 3)
 
     def test_models_for_pattern_model_cache(self):
         cache = {
-            'pattern_center': [4, 12],
-            'pattern_model': [],
+            'patternCenter': [4, 12],
+            'patternModel': [],
             'confidence': 2,
-            'convolve_max': 8,
-            'convolve_min': 7,
-            'WINDOW_SIZE': 2,
-            'conv_del_min': 0,
-            'conv_del_max': 0,
+            'convolveMax': 8,
+            'convolveMin': 7,
+            'window_size': 2,
+            'convDelMin': 0,
+            'convDelMax': 0,
         }
         data_val = [5.0, 5.0, 5.0, 5.0, 1.0, 1.0, 1.0, 1.0, 9.0, 9.0, 9.0, 9.0, 0, 0, 0, 0, 0, 0, 6.0, 6.0, 6.0, 1.0, 1.0, 1.0, 1.0, 1.0]
         dataframe = create_dataframe(data_val)
@@ -255,7 +269,8 @@ class TestDataset(unittest.TestCase):
         try:
             model = models.DropModel()
             model_name = model.__class__.__name__
-            model.fit(dataframe, segments, 'test', cache)
+            model.state = model.get_state(cache)
+            model.fit(dataframe, segments, 'test')
         except ValueError:
             self.fail('Model {} raised unexpectedly'.format(model_name))
     
@@ -268,11 +283,13 @@ class TestDataset(unittest.TestCase):
                         2.0, 8.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
         data = create_dataframe(problem_data)
         cache = {
-            'pattern_center': [5, 50],
-            'pattern_model': [],
-            'WINDOW_SIZE': 2,
-            'convolve_min': 0,
-            'convolve_max': 0,
+            'patternCenter': [5, 50],
+            'patternModel': [],
+            'windowSize': 2,
+            'convolveMin': 0,
+            'convolveMax': 0,
+            'convDelMin': 0,
+            'convDelMax': 0,
         }
         max_ws = 20
         iteration = 1
@@ -280,12 +297,13 @@ class TestDataset(unittest.TestCase):
             for _ in range(iteration):
                 pattern_model = create_random_model(ws)
                 convolve = scipy.signal.fftconvolve(pattern_model, pattern_model)
-                cache['WINDOW_SIZE'] = ws
-                cache['pattern_model'] = pattern_model
-                cache['convolve_min'] = max(convolve)
-                cache['convolve_max'] = max(convolve)
+                cache['windowSize'] = ws
+                cache['patternModel'] = pattern_model
+                cache['convolveMin'] = max(convolve)
+                cache['convolveMax'] = max(convolve)
                 try:
                     model = models.GeneralModel()
+                    model.state = model.get_state(cache)
                     model_name = model.__class__.__name__
                     model.detect(data, 'test')
                 except ValueError:
@@ -295,36 +313,36 @@ class TestDataset(unittest.TestCase):
         data = create_random_model(random.randint(1, 100))
         data = create_dataframe(data)
         model_instances = [
-            models.GeneralModel(),
             models.PeakModel(),
             models.TroughModel()
         ]
         cache = {
-            'pattern_center': [5, 50],
-            'pattern_model': [],
-            'WINDOW_SIZE': 2,
-            'convolve_min': 0,
-            'convolve_max': 0,
+            'patternCenter': [5, 50],
+            'patternModel': [],
+            'windowSize': 2,
+            'convolveMin': 0,
+            'convolveMax': 0,
             'confidence': 0,
-            'height_max': 0,
-            'height_min': 0,
-            'conv_del_min': 0,
-            'conv_del_max': 0,
+            'heightMax': 0,
+            'heightMin': 0,
+            'convDelMin': 0,
+            'convDelMax': 0,
         }
         ws = random.randint(1, int(len(data['value']/2)))
         pattern_model = create_random_model(ws)
         convolve = scipy.signal.fftconvolve(pattern_model, pattern_model)
         confidence = 0.2 * (data['value'].max() - data['value'].min())
-        cache['WINDOW_SIZE'] = ws
-        cache['pattern_model'] = pattern_model
-        cache['convolve_min'] = max(convolve)
-        cache['convolve_max'] = max(convolve)
+        cache['windowSize'] = ws
+        cache['patternModel'] = pattern_model
+        cache['convolveMin'] = max(convolve)
+        cache['convolveMax'] = max(convolve)
         cache['confidence'] = confidence
-        cache['height_max'] = data['value'].max()
-        cache['height_min'] = confidence
+        cache['heightMax'] = data['value'].max()
+        cache['heightMin'] = confidence
         try:
             for model in model_instances:
                 model_name = model.__class__.__name__
+                model.state = model.get_state(cache)
                 model.detect(data, 'test')
         except ValueError:
             self.fail('Model {} raised unexpectedly with dataset {} and cache {}'.format(model_name, data['value'], cache))
