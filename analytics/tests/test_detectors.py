@@ -9,7 +9,7 @@ class TestPatternDetector(unittest.TestCase):
 
         data = [[0,1], [1,2]]
         dataframe = pd.DataFrame(data, columns=['timestamp', 'values'])
-        cache = {'WINDOW_SIZE': 10}
+        cache = {'windowSize': 10}
 
         detector = pattern_detector.PatternDetector('GENERAL', 'test_id')
         

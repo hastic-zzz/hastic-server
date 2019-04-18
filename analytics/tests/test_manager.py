@@ -98,18 +98,31 @@ class TestDataset(aiounittest.AsyncTestCase):
         self.assertEqual(with_manager, without_manager)
 
     async def test_cache(self):
+        peak = PeakModel()
+        peak.state = peak.get_state(None)
+        jump = JumpModel()
+        jump.state = jump.get_state(None)
+        drop = DropModel()
+        drop.state = drop.get_state(None)
+        trough = TroughModel()
+        trough.state = trough.get_state(None)
+        general = GeneralModel()
+        general.state = general.get_state(None)
+
         cache_attrs = {
-            'PEAK': PeakModel().state.keys(),
-            'JUMP': JumpModel().state.keys(),
-            'DROP': DropModel().state.keys(),
-            'TROUGH': TroughModel().state.keys(),
-            'GENERAL': GeneralModel().state.keys()
+            'PEAK': peak.state.__dict__.keys(),
+            'JUMP': jump.state.__dict__.keys(),
+            'DROP': drop.state.__dict__.keys(),
+            'TROUGH': trough.state.__dict__.keys(),
+            'GENERAL': general.state.__dict__.keys(),
         }
 
         for pattern, attrs in cache_attrs.items():
             test_data = TestData(get_random_id(), pattern, *self._get_test_dataset(pattern))
             learn_task = self._get_learn_task(test_data)
             cache = await self._learn(learn_task)
-
+            for n in cache.keys(): cache[n.lower()] = cache.pop(n)
+            for n in cache.keys(): cache[n.lower()] = cache.pop(n)
             for a in attrs:
+                a = a.replace("_", "")
                 self.assertTrue(a in cache.keys(), msg='{} not in cache keys: {}'.format(a, cache.keys()))
