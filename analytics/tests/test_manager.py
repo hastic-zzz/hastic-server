@@ -1,5 +1,6 @@
 from models import PeakModel, DropModel, TroughModel, JumpModel, GeneralModel
-
+from models import PeakModelState, DropModelState, TroughModelState, JumpModelState, GeneralModelState
+import utils.meta
 import aiounittest
 from analytic_unit_manager import AnalyticUnitManager
 from collections import namedtuple
@@ -97,19 +98,3 @@ class TestDataset(aiounittest.AsyncTestCase):
         without_manager = await self._test_detect(test_data)
         self.assertEqual(with_manager, without_manager)
 
-    async def test_cache(self):
-        cache_attrs = {
-            'PEAK': PeakModel().state.keys(),
-            'JUMP': JumpModel().state.keys(),
-            'DROP': DropModel().state.keys(),
-            'TROUGH': TroughModel().state.keys(),
-            'GENERAL': GeneralModel().state.keys()
-        }
-
-        for pattern, attrs in cache_attrs.items():
-            test_data = TestData(get_random_id(), pattern, *self._get_test_dataset(pattern))
-            learn_task = self._get_learn_task(test_data)
-            cache = await self._learn(learn_task)
-
-            for a in attrs:
-                self.assertTrue(a in cache.keys(), msg='{} not in cache keys: {}'.format(a, cache.keys()))

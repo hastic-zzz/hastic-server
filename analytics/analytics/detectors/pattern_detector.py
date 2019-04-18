@@ -5,7 +5,7 @@ import logging
 import config
 
 import pandas as pd
-from typing import Optional, Generator
+from typing import Optional, Generator, List
 
 from detectors import Detector
 from analytic_types import DataBucket
@@ -45,10 +45,12 @@ class PatternDetector(Detector):
         self.model = resolve_model_by_pattern(self.pattern_type)
         self.bucket = DataBucket()
 
-    def train(self, dataframe: pd.DataFrame, segments: list, cache: Optional[models.ModelCache]) -> models.ModelCache:
+    def train(self, dataframe: pd.DataFrame, segments: List[dict], cache: Optional[models.ModelCache]) -> models.ModelState:
         # TODO: pass only part of dataframe that has segments
-        new_cache = self.model.fit(dataframe, segments, self.analytic_unit_id, cache)
-        if new_cache == None or len(new_cache) == 0:
+        self.model.state = self.model.get_state(cache)
+        new_cache = self.model.fit(dataframe, segments, self.analytic_unit_id)
+        new_cache = new_cache.to_json()
+        if len(new_cache) == 0:
             logging.warning('new_cache is empty with data: {}, segments: {}, cache: {}, analytic unit: {}'.format(dataframe, segments, cache, self.analytic_unit_id))
         return {
             'cache': new_cache
@@ -58,30 +60,30 @@ class PatternDetector(Detector):
         logger.debug('Unit {} got {} data points for detection'.format(self.analytic_unit_id, len(dataframe)))
         # TODO: split and sleep (https://github.com/hastic/hastic-server/pull/124#discussion_r214085643)
 
-        if cache is None or cache == {}:
+        if cache is None:
             msg = f'{self.analytic_unit_id} detection got invalid cache, skip detection'
             logger.error(msg)
             raise ValueError(msg)
-
-        window_size = cache.get('WINDOW_SIZE')
+        self.model.state = self.model.get_state(cache)
+        window_size = self.model.state.window_size
         if window_size is None:
-            message = '{} got cache without WINDOW_SIZE for detection'.format(self.analytic_unit_id)
+            message = '{} got cache without window_size for detection'.format(self.analytic_unit_id)
             logger.error(message)
             raise ValueError(message)
 
         if len(dataframe) < window_size * 2:
-            message = f'{self.analytic_unit_id} skip detection: data length: {len(dataframe)} less than WINDOW_SIZE: {window_size}'
+            message = f'{self.analytic_unit_id} skip detection: data length: {len(dataframe)} less than window_size: {window_size}'
             logger.error(message)
             raise ValueError(message)
 
-        detected = self.model.detect(dataframe, self.analytic_unit_id, cache)
+        detected = self.model.detect(dataframe, self.analytic_unit_id)
 
         segments = [{ 'from': segment[0], 'to': segment[1] } for segment in detected['segments']]
-        newCache = detected['cache']
+        new_cache = detected['cache'].to_json()
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_detection_time = convert_pd_timestamp_to_ms(last_dataframe_time)
         return {
-            'cache': newCache,
+            'cache': new_cache,
             'segments': segments,
             'lastDetectionTime': last_detection_time
         }
@@ -89,7 +91,7 @@ class PatternDetector(Detector):
     def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
         logging.debug('Start consume_data for analytic unit {}'.format(self.analytic_unit_id))
 
-        if cache is None or cache == {}:
+        if cache is None:
             logging.debug(f'consume_data get invalid cache {cache} for task {self.analytic_unit_id}, skip')
             return None
 
@@ -100,7 +102,8 @@ class PatternDetector(Detector):
 
         self.bucket.receive_data(data_without_nan)
 
-        window_size = cache['WINDOW_SIZE']
+        # TODO: use ModelState
+        window_size = cache['windowSize']
 
         bucket_len = len(self.bucket.data)
         if bucket_len < window_size * 2:
@@ -124,4 +127,4 @@ class PatternDetector(Detector):
 
     def get_window_size(self, cache: Optional[ModelCache]) -> int:
         if cache is None: return self.DEFAULT_WINDOW_SIZE
-        return cache.get('WINDOW_SIZE', self.DEFAULT_WINDOW_SIZE)
+        return cache.get('windowSize', self.DEFAULT_WINDOW_SIZE)
