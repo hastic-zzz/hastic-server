@@ -149,7 +149,7 @@ class Model(ABC):
     def _update_fiting_result(self, state: dict, confidences: list, convolve_list: list, del_conv_list: list, height_list: list) -> None:
         if type(state) is dict:
             state['confidence'] = float(min(confidences, default = 1.5))
-            state['convolve_min'], state['convolve_max'] = utils.get_min_max(convolve_list, state['WINDOW_SIZE'])
+            state['convolve_min'], state['convolve_max'] = utils.get_min_max(convolve_list, state['WINDOW_SIZE'] // 2)
             state['conv_del_min'], state['conv_del_max'] = utils.get_min_max(del_conv_list, 0)
             state['height_min'], state['height_max'] = utils.get_min_max(height_list, 0)
         else:
@@ -167,17 +167,18 @@ class Model(ABC):
             'patterns_value': [],
         }
         data = dataframe['value']
+        half_window_size = self.state['WINDOW_SIZE'] // 2
         for segment in labeled:
             confidence = utils.find_confidence(segment.data)[0]
             learning_info['confidence'].append(confidence)
             segment_center = segment.center_index
             learning_info['segment_center_list'].append(segment_center)
             learning_info['pattern_timestamp'].append(segment.pattern_timestamp)
-            aligned_segment = utils.get_interval(data, segment_center, self.state['WINDOW_SIZE'])
+            aligned_segment = utils.get_interval(data, segment_center, half_window_size)
             aligned_segment = utils.subtract_min_without_nan(aligned_segment)
             if len(aligned_segment) == 0:
-                logging.warning('cant add segment to learning because segment is empty where segments center is: {}, window_size: {}, and len_data: {}'.format(
-                    segment_center, self.state['WINDOW_SIZE'], len(data)))
+                logging.warning('cant add segment to learning because segment is empty where segments center is: {}, half_window_size: {}, and len_data: {}'.format(
+                    segment_center, half_window_size, len(data)))
                 continue
             learning_info['patterns_list'].append(aligned_segment)
             if model == 'peak' or model == 'trough':
@@ -187,7 +188,7 @@ class Model(ABC):
                 pattern_height, pattern_length = utils.find_parameters(segment.data, segment.start, model)
                 learning_info['pattern_height'].append(pattern_height)
                 learning_info['pattern_width'].append(pattern_length)
-                learning_info['patterns_value'].append(aligned_segment.values[self.state['WINDOW_SIZE']])
+                learning_info['patterns_value'].append(aligned_segment.values[half_window_size])
         logging.debug('Parsing segments ended correctly with learning_info: {}'.format(learning_info))
         return learning_info
 
