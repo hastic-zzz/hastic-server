@@ -15,6 +15,7 @@ export async function convertHalfWinowSize() {
   const db_info: DbInfo = await db.findOne(DB_INFO_ID);
 
   if(db_info === null || db_info.revision < REVISION_FOR_APPLY) {
+    console.log('start migraiton of window sizes');
     const caches = await AnalyticUnitCache.getAllCaches();
     for(let cache of caches) {
       if(cache.data !== undefined) {
@@ -25,5 +26,6 @@ export async function convertHalfWinowSize() {
 
     db_info.revision++;
     await db.updateOne(DB_INFO_ID, db_info);
+    console.log('end migraiton of window sizes');
   }
 }

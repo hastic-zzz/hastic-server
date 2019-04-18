@@ -10,6 +10,7 @@ import * as ProcessService from './services/process_service';
 import { HASTIC_PORT, PACKAGE_VERSION, GIT_INFO, ZMQ_CONNECTION_STRING, HASTIC_INSTANCE_NAME } from './config';
 
 import { convertPanelUrlToPanelId } from './migrations/0.3.2-beta';
+import { convertHalfWinowSize } from './migrations/window_size';
 
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
@@ -19,6 +20,7 @@ init();
 
 async function init() {
   await convertPanelUrlToPanelId();
+  await convertHalfWinowSize();
   AnalyticsController.init();
   ProcessService.registerExitHandler(AnalyticsController.terminate);
 
