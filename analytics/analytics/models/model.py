@@ -134,14 +134,11 @@ class Model(ABC):
         }
 
     def _update_fiting_result(self, state: ModelState, confidences: list, convolve_list: list, del_conv_list: list, height_list: Optional[list] = None) -> None:
-        if issubclass(type(state), ModelState):
-            state.confidence = float(min(confidences, default = 1.5))
-            state.convolve_min, state.convolve_max = utils.get_min_max(convolve_list, state.window_size)
-            state.conv_del_min, state.conv_del_max = utils.get_min_max(del_conv_list, 0)
-            if height_list is not None:
-                state.height_min, state.height_max = utils.get_min_max(height_list, 0)
-        else:
-            raise ValueError('got not ModelState as state for update fiting result: {}'.format(state))
+        state.confidence = float(min(confidences, default = 1.5))
+        state.convolve_min, state.convolve_max = utils.get_min_max(convolve_list, state.window_size)
+        state.conv_del_min, state.conv_del_max = utils.get_min_max(del_conv_list, 0)
+        if height_list is not None:
+            state.height_min, state.height_max = utils.get_min_max(height_list, 0)
 
     def get_parameters_from_segments(self, dataframe: pd.DataFrame, labeled: list, deleted: list, model: str, model_type: bool) -> dict:
         logging.debug('Start parsing segments')
