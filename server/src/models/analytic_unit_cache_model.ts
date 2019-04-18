@@ -38,6 +38,13 @@ export async function findById(id: AnalyticUnitId): Promise<AnalyticUnitCache> {
   return AnalyticUnitCache.fromObject(obj);
 }
 
+export async function getAllCaches(): Promise<AnalyticUnitCache[]> {
+  const caches = await db.findMany({
+    id: { $gt: '' }
+  });
+  return caches.map(obj => AnalyticUnitCache.fromObject(obj));
+}
+
 export async function create(id: AnalyticUnitId): Promise<AnalyticUnitId> {
   let cache = new AnalyticUnitCache(id);
   return db.insertOne(cache.toObject());
