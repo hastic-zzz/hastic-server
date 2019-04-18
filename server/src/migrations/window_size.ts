@@ -7,6 +7,7 @@ const DB_INFO_ID = '0';
 const REVISION_FOR_APPLY = 1
 
 type DbInfo = {
+  _id: string,
   revision: number
 }
 
@@ -14,7 +15,11 @@ type DbInfo = {
 export async function convertHalfWinowSize() {
   const db_info: DbInfo = await db.findOne(DB_INFO_ID);
 
-  if(db_info === null || db_info.revision < REVISION_FOR_APPLY) {
+  if(db_info === null) {
+    await db.insertOne({_id: DB_INFO_ID, revision: 0});
+  }
+
+  if(db_info.revision < REVISION_FOR_APPLY) {
     console.log('start migraiton of window sizes');
     const caches = await AnalyticUnitCache.getAllCaches();
     for(let cache of caches) {
@@ -27,5 +32,7 @@ export async function convertHalfWinowSize() {
     db_info.revision++;
     await db.updateOne(DB_INFO_ID, db_info);
     console.log('end migraiton of window sizes');
+  } else {
+    console.log('migraiton of window sizes not need');
   }
 }
