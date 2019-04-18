@@ -4,7 +4,7 @@ import * as nedb from 'nedb';
 import * as fs from 'fs';
 
 
-export enum Collection { ANALYTIC_UNITS, ANALYTIC_UNIT_CACHES, SEGMENTS, THRESHOLD };
+export enum Collection { ANALYTIC_UNITS, ANALYTIC_UNIT_CACHES, SEGMENTS, THRESHOLD, DB_VERSION };
 
 export enum SortingOrder { ASCENDING = 1, DESCENDING = -1 };
 
@@ -213,3 +213,4 @@ db.set(Collection.ANALYTIC_UNITS, new nedb({ filename: config.ANALYTIC_UNITS_DAT
 db.set(Collection.ANALYTIC_UNIT_CACHES, new nedb({ filename: config.ANALYTIC_UNIT_CACHES_DATABASE_PATH, autoload: true }));
 db.set(Collection.SEGMENTS, new nedb({ filename: config.SEGMENTS_DATABASE_PATH, autoload: true }));
 db.set(Collection.THRESHOLD, new nedb({ filename: config.THRESHOLD_DATABASE_PATH, autoload: true }));
+db.set(Collection.DB_VERSION, new nedb({ filename: config.DB_VERSION_PATH, autoload: true }));
