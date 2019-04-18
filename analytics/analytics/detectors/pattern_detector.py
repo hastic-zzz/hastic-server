@@ -124,4 +124,7 @@ class PatternDetector(Detector):
 
     def get_window_size(self, cache: Optional[ModelCache]) -> int:
         if cache is None: return self.DEFAULT_WINDOW_SIZE
-        return cache.get('WINDOW_SIZE', self.DEFAULT_WINDOW_SIZE)
+        window_size = cache.get('WINDOW_SIZE')
+        if window_size == None or window_size == 0:
+            window_size = self.DEFAULT_WINDOW_SIZE
+        return window_size

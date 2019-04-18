@@ -20,7 +20,7 @@ init();
 
 async function init() {
   await convertPanelUrlToPanelId();
-  await convertHalfWinowSize();
+  //await convertHalfWinowSize();
   AnalyticsController.init();
   ProcessService.registerExitHandler(AnalyticsController.terminate);
 
