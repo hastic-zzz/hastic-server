@@ -31,7 +31,3 @@ class TimeSeriesIndex(pd.DatetimeIndex):
 class TimeSeries(pd.Series):
     def __init__(self, values: List[object], tsindex: TimeSeriesIndex):
         super().__init__(values, index=tsindex)
-
-
-
-
