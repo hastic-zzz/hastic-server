@@ -4,22 +4,26 @@ import { AnalyticUnitId } from '../models/analytic_unit_model';
 import * as Router from 'koa-router';
 import * as _ from 'lodash';
 
-export enum DetectionStatus {
+export enum DetectionState {
   READY = 'READY',
   RUNNING = 'RUNNING',
   FAILED = 'FAILED'
 }
 
-declare type RunnedDetection = {
+declare type DetectionStatus = {
   id: AnalyticUnitId,
   from: number,
   to: number,
-  status: DetectionStatus
+  state: DetectionState
 }
 
-let runnnedDetections: RunnedDetection[] = [];
+declare type DetectionStatusResponce = {
+  timeranges: DetectionStatus[]
+}
 
-export async function getDetectionStatus(ctx: Router.IRouterContext) {
+let runnnedDetections: DetectionStatus[] = [];
+
+export async function getDetectionStatus(ctx: Router.IRouterContext): Promise<DetectionStatusResponce> {
   let id: AnalyticUnitId = ctx.request.query.id;
   if(id === undefined || id === '') {
     throw new Error('analyticUnitId (id) is missing');
@@ -34,28 +38,33 @@ export async function getDetectionStatus(ctx: Router.IRouterContext) {
     throw new Error(`to is missing or corrupted (got ${ctx.request.query.to})`);
   }
 
-  runnnedDetections.push({
+  const previousRun = _.find(runnnedDetections, {id, from, to});
+  if(previousRun !== undefined) {
+    return {
+      timeranges: [
+        previousRun
+      ]
+    }
+  }
+
+  const currentRun = {
     id,
     from,
     to,
-    status: DetectionStatus.RUNNING
-  });
+    state: DetectionState.RUNNING
+  };
+  runnnedDetections.push(currentRun);
   
   AnalyticsController.runDetect(id, from, to)
-  .then(() => _.find(runnnedDetections, {id, from, to}).status = DetectionStatus.READY)
+  .then(() => _.find(runnnedDetections, {id, from, to}).state = DetectionState.READY)
   .catch(err => {
     console.error(err);
-    _.find(runnnedDetections, {id, from, to}).status = DetectionStatus.FAILED;
+    _.find(runnnedDetections, {id, from, to}).state = DetectionState.FAILED;
   });
 
   return {
     timeranges: [
-      {
-        id,
-        from,
-        to,
-        status: DetectionStatus.RUNNING
-      }
+      currentRun
     ]
   };
 }
