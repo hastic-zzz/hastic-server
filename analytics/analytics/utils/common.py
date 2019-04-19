@@ -309,6 +309,7 @@ def get_correlation(segments: list, av_model: list, data: pd.Series, window_size
     return correlation_list
 
 def get_distribution_density(segment: pd.Series) -> float:
+    segment.dropna(inplace = True)
     if len(segment) < 2 or len(segment.nonzero()[0]) == 0:
         return (0, 0, 0)
     min_jump = min(segment)

@@ -2,7 +2,7 @@ import utils
 
 from abc import ABC, abstractmethod
 from attrdict import AttrDict
-from typing import Optional, List
+from typing import Optional, List, Tuple
 import pandas as pd
 import math
 import logging
@@ -73,11 +73,11 @@ class Model(ABC):
     DEL_CONV_ERROR = 0.02
 
     @abstractmethod
-    def do_fit(self, dataframe: pd.DataFrame, segments: list, cache: Optional[ModelCache], learning_info: dict) -> None:
+    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: List[dict], deleted_segments: List[dict], learning_info: dict) -> None:
         pass
 
     @abstractmethod
-    def do_detect(self, dataframe: pd.DataFrame) -> list:
+    def do_detect(self, dataframe: pd.DataFrame) -> List[Tuple[int, int]]:
         pass
 
     @abstractmethod
@@ -89,14 +89,12 @@ class Model(ABC):
         pass
 
     @abstractmethod
-    def get_cache(self, cache: Optional[dict] = None) -> ModelState:
+    def get_state(self, cache: Optional[dict] = None) -> ModelState:
         pass
 
-    def fit(self, dataframe: pd.DataFrame, segments: list, id: AnalyticUnitId, cache: Optional[ModelCache]) -> ModelCache:
+    def fit(self, dataframe: pd.DataFrame, segments: List[dict], id: AnalyticUnitId) -> ModelState:
         logging.debug('Start method fit for analytic unit {}'.format(id))
         data = dataframe['value']
-        if cache != None and len(cache) > 0:
-            self.state = cache
         max_length = 0
         labeled = []
         deleted = []
@@ -114,48 +112,37 @@ class Model(ABC):
 
         assert len(labeled) > 0, f'labeled list empty, skip fitting for {id}'
 
-        if self.state.get('WINDOW_SIZE') == 0:
-            self.state['WINDOW_SIZE'] = math.ceil(max_length / 2) if max_length else 0
+        if self.state.window_size == 0:
+            self.state.window_size = math.ceil(max_length / 2) if max_length else 0
         model, model_type = self.get_model_type()
         learning_info = self.get_parameters_from_segments(dataframe, labeled, deleted, model, model_type)
-        self.do_fit(dataframe, labeled, deleted, learning_info, id)
+        self.do_fit(dataframe, labeled, deleted, learning_info)
         logging.debug('fit complete successful with self.state: {} for analytic unit: {}'.format(self.state, id))
         return self.state
 
-    def detect(self, dataframe: pd.DataFrame, id: str, cache: Optional[ModelCache]) -> dict:
-        #If cache is None or empty dict - default parameters will be used instead
-        if cache != None and len(cache) > 0:
-            self.state = cache
-        else:
-            logging.debug('Get empty cache in detect')
-        if not self.state:
-            logging.warning('self.state is empty - skip do_detect')
-            return {
-                'segments': [],
-                'cache': {},
-            }
-        result = self.do_detect(dataframe, id)
+    def detect(self, dataframe: pd.DataFrame, id: AnalyticUnitId) -> dict:
+        logging.debug('Start method detect for analytic unit {}'.format(id))
+        result = self.do_detect(dataframe)
         segments = [(
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][x[0]]),
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][x[1]]),
         ) for x in result]
         if not self.state:
             logging.warning('Return empty self.state after detect')
+        logging.debug('Method detect complete successful for analytic unit {}'.format(id))
         return {
             'segments': segments,
             'cache': self.state,
         }
 
-    def _update_fiting_result(self, state: dict, confidences: list, convolve_list: list, del_conv_list: list, height_list: list) -> None:
-        if type(state) is dict:
-            state['confidence'] = float(min(confidences, default = 1.5))
-            state['convolve_min'], state['convolve_max'] = utils.get_min_max(convolve_list, state['WINDOW_SIZE'])
-            state['conv_del_min'], state['conv_del_max'] = utils.get_min_max(del_conv_list, 0)
-            state['height_min'], state['height_max'] = utils.get_min_max(height_list, 0)
-        else:
-            raise ValueError('got non-dict as state for update fiting result: {}'.format(state))
+    def _update_fiting_result(self, state: ModelState, confidences: list, convolve_list: list, del_conv_list: list, height_list: Optional[list] = None) -> None:
+        state.confidence = float(min(confidences, default = 1.5))
+        state.convolve_min, state.convolve_max = utils.get_min_max(convolve_list, state.window_size)
+        state.conv_del_min, state.conv_del_max = utils.get_min_max(del_conv_list, 0)
+        if height_list is not None:
+            state.height_min, state.height_max = utils.get_min_max(height_list, 0)
 
-    def get_parameters_from_segments(self, dataframe: pd.DataFrame, labeled: list, deleted: list, model: str, model_type: bool) -> dict:
+    def get_parameters_from_segments(self, dataframe: pd.DataFrame, labeled: List[dict], deleted: List[dict], model: str, model_type: bool) -> dict:
         logging.debug('Start parsing segments')
         learning_info = {
             'confidence': [],
@@ -173,11 +160,11 @@ class Model(ABC):
             segment_center = segment.center_index
             learning_info['segment_center_list'].append(segment_center)
             learning_info['pattern_timestamp'].append(segment.pattern_timestamp)
-            aligned_segment = utils.get_interval(data, segment_center, self.state['WINDOW_SIZE'])
+            aligned_segment = utils.get_interval(data, segment_center, self.state.window_size)
             aligned_segment = utils.subtract_min_without_nan(aligned_segment)
             if len(aligned_segment) == 0:
                 logging.warning('cant add segment to learning because segment is empty where segments center is: {}, window_size: {}, and len_data: {}'.format(
-                    segment_center, self.state['WINDOW_SIZE'], len(data)))
+                    segment_center, self.state.window_size, len(data)))
                 continue
             learning_info['patterns_list'].append(aligned_segment)
             if model == 'peak' or model == 'trough':
@@ -187,7 +174,7 @@ class Model(ABC):
                 pattern_height, pattern_length = utils.find_parameters(segment.data, segment.start, model)
                 learning_info['pattern_height'].append(pattern_height)
                 learning_info['pattern_width'].append(pattern_length)
-                learning_info['patterns_value'].append(aligned_segment.values[self.state['WINDOW_SIZE']])
+                learning_info['patterns_value'].append(aligned_segment.values[self.state.window_size])
         logging.debug('Parsing segments ended correctly with learning_info: {}'.format(learning_info))
         return learning_info
 
