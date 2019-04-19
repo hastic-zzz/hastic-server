@@ -246,7 +246,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     let analyticUnitType = unit.type;
     let detector = AnalyticUnit.getDetectorByType(analyticUnitType);
 
-    let range = undefined;
+    let range;
     if(from !== undefined && to !== undefined) {
       range = { from, to };
     }
