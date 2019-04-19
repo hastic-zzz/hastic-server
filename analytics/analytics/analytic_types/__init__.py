@@ -12,3 +12,5 @@ like PatternDetectionCache, then it should not be here.
 from analytic_types.data_bucket import DataBucket
 
 AnalyticUnitId = str
+
+TimeSeries = pandas.core.indexes.datetimes.DatetimeIndex
