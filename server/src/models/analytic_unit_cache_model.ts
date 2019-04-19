@@ -28,6 +28,15 @@ export class AnalyticUnitCache {
       obj.data,
     );
   }
+
+  public getIntersection(): number {
+    if(this.data !== undefined) {
+      //TODO: return one window size after resolving https://github.com/hastic/hastic-server/issues/508
+      return this.data.windowSize * 2;
+    }
+    return null;
+  }
+
 }
 
 export async function findById(id: AnalyticUnitId): Promise<AnalyticUnitCache> {

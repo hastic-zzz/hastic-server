@@ -1,5 +1,7 @@
 import * as AnalyticsController from '../controllers/analytics_controller';
-import { AnalyticUnitId } from '../models/analytic_unit_model';
+import * as AnalyticUnit from '../models/analytic_unit_model';
+import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
+
 
 import * as Router from 'koa-router';
 import * as _ from 'lodash';
@@ -11,7 +13,7 @@ export enum DetectionState {
 }
 
 declare type DetectionStatus = {
-  id: AnalyticUnitId,
+  id: AnalyticUnit.AnalyticUnitId,
   from: number,
   to: number,
   state: DetectionState
@@ -21,10 +23,10 @@ declare type DetectionStatusResponce = {
   timeranges: DetectionStatus[]
 }
 
-let runnnedDetections: DetectionStatus[] = [];
+let detections: DetectionStatus[] = [];
 
-export async function getDetectionStatus(ctx: Router.IRouterContext): Promise<DetectionStatusResponce> {
-  let id: AnalyticUnitId = ctx.request.query.id;
+export async function getDetectionStatus(ctx: Router.IRouterContext) {
+  let id: AnalyticUnit.AnalyticUnitId = ctx.request.query.id;
   if(id === undefined || id === '') {
     throw new Error('analyticUnitId (id) is missing');
   }
@@ -38,7 +40,31 @@ export async function getDetectionStatus(ctx: Router.IRouterContext): Promise<De
     throw new Error(`to is missing or corrupted (got ${ctx.request.query.to})`);
   }
 
-  const previousRun = _.find(runnnedDetections, {id, from, to});
+  const unitCache = await AnalyticUnitCache.findById(id);
+  const intersection = unitCache.getIntersection();
+  from = from + intersection;
+  to = to + intersection;
+
+  const intersectedDetections = detections.filter(s => {
+    return s.from <= to && s.to >= from && s.state === DetectionState.READY;
+  });
+  for(let detection of intersectedDetections) {
+    if(from >= detection.from && to <= detection.to) {
+      return {
+        timeranges: [{
+            id,
+            from,
+            to,
+            state: DetectionState.READY
+          }]
+      }
+    }
+
+    
+
+  };
+
+  const previousRun = _.find(detections, {id, from, to});
   if(previousRun !== undefined) {
     return {
       timeranges: [
@@ -53,20 +79,21 @@ export async function getDetectionStatus(ctx: Router.IRouterContext): Promise<De
     to,
     state: DetectionState.RUNNING
   };
-  runnnedDetections.push(currentRun);
+  detections.push(currentRun);
   
-  AnalyticsController.runDetect(id, from, to)
-  .then(() => _.find(runnnedDetections, {id, from, to}).state = DetectionState.READY)
+  AnalyticsController.runDetect(id, currentRun.from, currentRun.to)
+  .then(() => _.find(detections, {id, from, to}).state = DetectionState.READY)
   .catch(err => {
     console.error(err);
-    _.find(runnnedDetections, {id, from, to}).state = DetectionState.FAILED;
+    _.find(detections, {id, from, to}).state = DetectionState.FAILED;
   });
 
-  return {
+  const result: DetectionStatusResponce = {
     timeranges: [
       currentRun
     ]
   };
+  ctx.response.body = result;
 }
 
 export const router = new Router();
