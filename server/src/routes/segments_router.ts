@@ -2,7 +2,6 @@ import * as AnalyticsController from '../controllers/analytics_controller';
 
 import { AnalyticUnitId } from '../models/analytic_unit_model';
 import * as Segment from '../models/segment_model';
-import * as SegmentService from '../services/segment_service';
 
 import * as Router from 'koa-router';
 
@@ -12,22 +11,18 @@ async function getSegments(ctx: Router.IRouterContext) {
   if(id === undefined || id === '') {
     throw new Error('analyticUnitId (id) is missing');
   }
-
-  let lastSegmentId = undefined;
-  let from = undefined;
-  let to = undefined;
+  let query: Segment.FindManyQuery = {};
 
   if(!isNaN(+ctx.request.query.lastSegmentId)) {
-    lastSegmentId = +ctx.request.query.lastSegmentId;
+    query.intexGT = +ctx.request.query.lastSegmentId;
   }
   if(!isNaN(+ctx.request.query.from)) {
-    from = +ctx.request.query.from;
+    query.timeFromGTE = +ctx.request.query.from;
   }
   if(!isNaN(+ctx.request.query.to)) {
-    to = +ctx.request.query.to;
+    query.timeToLTE = +ctx.request.query.to;
   }
-  
-  const segments: Segment.Segment[] = await SegmentService.getSegments(id, from, to, lastSegmentId);
+  let segments = await Segment.findMany(id, query);
   ctx.response.body = { segments };
 }
 

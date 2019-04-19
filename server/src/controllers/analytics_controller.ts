@@ -108,22 +108,23 @@ async function runTask(task: AnalyticsTask): Promise<TaskResult> {
   });
 }
 
-async function query(analyticUnit: AnalyticUnit.AnalyticUnit, detector: AnalyticUnit.DetectorType) {
-  let range;
-  if(detector === AnalyticUnit.DetectorType.PATTERN) {
-    // TODO: find labeled OR deleted segments to generate timerange
-    const segments = await Segment.findMany(analyticUnit.id, { labeled: true });
-    if(segments.length === 0) {
-      throw new Error('Need at least 1 labeled segment');
-    }
+async function query(analyticUnit: AnalyticUnit.AnalyticUnit, detector: AnalyticUnit.DetectorType, range?: any) {
+  if(range === undefined) {
+    if(detector === AnalyticUnit.DetectorType.PATTERN) {
+      // TODO: find labeled OR deleted segments to generate timerange
+      const segments = await Segment.findMany(analyticUnit.id, { labeled: true });
+      if(segments.length === 0) {
+        throw new Error('Need at least 1 labeled segment');
+      }
 
-    range = getQueryRangeForLearningBySegments(segments);
-  } else if(detector === AnalyticUnit.DetectorType.THRESHOLD) {
-    const now = Date.now();
-    range = {
-      from: now - 5 * SECONDS_IN_MINUTE * 1000,
-      to: now
-    };
+      range = getQueryRangeForLearningBySegments(segments);
+    } else if(detector === AnalyticUnit.DetectorType.THRESHOLD) {
+      const now = Date.now();
+      range = {
+        from: now - 5 * SECONDS_IN_MINUTE * 1000,
+        to: now
+      };
+    }
   }
   console.log(`query time range: from ${new Date(range.from)} to ${new Date(range.to)}`);
 
@@ -236,7 +237,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
 
 }
 
-export async function runDetect(id: AnalyticUnit.AnalyticUnitId) {
+export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, to?: number) {
   let previousLastDetectionTime: number = undefined;
 
   try {
@@ -245,7 +246,11 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId) {
     let analyticUnitType = unit.type;
     let detector = AnalyticUnit.getDetectorByType(analyticUnitType);
 
-    const data = await query(unit, detector);
+    let range = undefined;
+    if(from !== undefined && to !== undefined) {
+      range = { from, to };
+    }
+    const data = await query(unit, detector, range);
 
     let oldCache = await AnalyticUnitCache.findById(id);
     if(oldCache !== null) {
