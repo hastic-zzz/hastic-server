@@ -14,4 +14,5 @@ from analytic_types.data_bucket import DataBucket
 
 AnalyticUnitId = str
 
-TimeSeries = pd.core.indexes.datetimes.DatetimeIndex
+TimeSeriesIndex = pd.core.indexes.datetimes.DatetimeIndex
+TimeSeries = pd.Series
