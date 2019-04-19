@@ -8,9 +8,10 @@ in analytic_unit_manager, it should be here.
 If you create something spicific which is used only in one place, 
 like PatternDetectionCache, then it should not be here.
 """
+import pandas as pd
 
 from analytic_types.data_bucket import DataBucket
 
 AnalyticUnitId = str
 
-TimeSeries = pandas.core.indexes.datetimes.DatetimeIndex
+TimeSeries = pd.core.indexes.datetimes.DatetimeIndex
