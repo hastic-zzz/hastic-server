@@ -17,13 +17,13 @@ declare type DetectionStatus = {
   state: DetectionState
 }
 
-declare type DetectionStatusResponce = {
+declare type DetectionStatusResponse = {
   timeranges: DetectionStatus[]
 }
 
 let runnnedDetections: DetectionStatus[] = [];
 
-export async function getDetectionStatus(ctx: Router.IRouterContext): Promise<DetectionStatusResponce> {
+export async function getDetectionStatus(ctx: Router.IRouterContext) {
   let id: AnalyticUnitId = ctx.request.query.id;
   if(id === undefined || id === '') {
     throw new Error('analyticUnitId (id) is missing');
@@ -40,7 +40,7 @@ export async function getDetectionStatus(ctx: Router.IRouterContext): Promise<De
 
   const previousRun = _.find(runnnedDetections, {id, from, to});
   if(previousRun !== undefined) {
-    return {
+    ctx.response.body = {
       timeranges: [
         previousRun
       ]
@@ -56,13 +56,13 @@ export async function getDetectionStatus(ctx: Router.IRouterContext): Promise<De
   runnnedDetections.push(currentRun);
   
   AnalyticsController.runDetect(id, from, to)
-  .then(() => _.find(runnnedDetections, {id, from, to}).state = DetectionState.READY)
-  .catch(err => {
-    console.error(err);
-    _.find(runnnedDetections, {id, from, to}).state = DetectionState.FAILED;
-  });
+    .then(() => _.find(runnnedDetections, {id, from, to}).state = DetectionState.READY)
+    .catch(err => {
+      console.error(err);
+      _.find(runnnedDetections, {id, from, to}).state = DetectionState.FAILED;
+    });
 
-  return {
+  ctx.response.body = {
     timeranges: [
       currentRun
     ]
