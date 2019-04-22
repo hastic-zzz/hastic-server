@@ -42,27 +42,41 @@ export async function getDetectionStatus(ctx: Router.IRouterContext) {
 
   const unitCache = await AnalyticUnitCache.findById(id);
   const intersection = unitCache.getIntersection();
-  from = from + intersection;
-  to = to + intersection;
-
-  const intersectedDetections = detections.filter(s => {
-    return s.from <= to && s.to >= from && s.state === DetectionState.READY;
+  const intersectedDetections: DetectionStatus[] = getIntersectedRegions({from, to}, detections);
+  let rangesBorders: number[] = [];
+  _.sortBy(intersectedDetections, 'from').map(d => {
+    rangesBorders.push(d.from);
+    rangesBorders.push(d.to);
   });
-  for(let detection of intersectedDetections) {
-    if(from >= detection.from && to <= detection.to) {
-      return {
-        timeranges: [{
-            id,
-            from,
-            to,
-            state: DetectionState.READY
-          }]
+  insertToSorted(rangesBorders, from);
+  insertToSorted(rangesBorders, to);
+
+  let alreadyDetected = false;
+  let startDetectionRange = null;
+  let endDetectionRange = null;
+  let newDetectionRanges: any[] = [];
+  for(let border of rangesBorders) {
+    if(border === from) {
+      if(!alreadyDetected) {
+        startDetectionRange = from;
       }
+      continue;
     }
 
-    
+    if(border === to) {
+      endDetectionRange = to;
+      
+      break;
+    }
 
-  };
+    if(alreadyDetected) { //end of already detected region, start point for new detection
+      startDetectionRange = border;
+    } else { //end of new detection region
+      endDetectionRange = border;
+      newDetectionRanges.push({from: startDetectionRange, to: endDetectionRange});
+    }
+    alreadyDetected = !alreadyDetected; //toggle 
+  }
 
   const previousRun = _.find(detections, {id, from, to});
   if(previousRun !== undefined) {
@@ -95,6 +109,20 @@ export async function getDetectionStatus(ctx: Router.IRouterContext) {
   };
   ctx.response.body = result;
 }
+
+function getIntersectedRegions(range: any, ranges: any[], state?): any[] {
+  const from = range.from;
+  const to = range.to;
+  if(state === undefined) {
+    state = DetectionState.READY;
+  }
+  return ranges.filter(r => r.from <= to && r.to >= from && r.state === state);
+}
+
+function insertToSorted(array: number[], value: number) {
+  return array.splice(_.sortedIndex(array, value), 0, value);
+}
+
 
 export const router = new Router();
 
