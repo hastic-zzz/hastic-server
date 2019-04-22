@@ -11,7 +11,7 @@ export declare type Span = {
 }
 
 export function insertToSorted(array: number[], value: number) {
-  return array.splice(_.sortedIndex(array, value), 0, value);
+  array.splice(_.sortedIndex(array, value), 0, value);
 }
 
 //TODO: use data base query instead of filter
