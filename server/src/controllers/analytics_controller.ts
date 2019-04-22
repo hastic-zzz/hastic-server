@@ -458,8 +458,8 @@ export async function getDetectionSpans(analyticUnitId: AnalyticUnit.AnalyticUni
     spanBorders.push(d.from);
     spanBorders.push(d.to);
   });
-  insertToSorted(spanBorders, from);
-  insertToSorted(spanBorders, to);
+  spanBorders = insertToSorted(spanBorders, from);
+  spanBorders = insertToSorted(spanBorders, to);
   let newDetectionRanges = getNonIntersectedSpans(from, to, spanBorders);
 
   if(newDetectionRanges.length === 0) {

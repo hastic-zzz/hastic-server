@@ -1,3 +1,4 @@
+//TODO: move this code to span model
 import { Detection, DetectionStatus } from '../models/detection_model';
 
 import * as _ from 'lodash';
@@ -13,6 +14,7 @@ export function insertToSorted(array: number[], value: number) {
   return array.splice(_.sortedIndex(array, value), 0, value);
 }
 
+//TODO: use data base query instead of filter
 export function getIntersectedDetections(
   detections: Detection[],
   analyticUnitId: AnalyticUnitId,
