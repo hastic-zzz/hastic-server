@@ -451,6 +451,11 @@ export async function runLearningWithDetection(id: AnalyticUnit.AnalyticUnitId) 
 export async function getDetectionSpans(analyticUnitId: AnalyticUnit.AnalyticUnitId, from: number, to: number): Promise<Detection[]> {
 
   const unitCache = await AnalyticUnitCache.findById(analyticUnitId);
+
+  if(unitCache === null) {
+    throw new Error(`got null cache for ${analyticUnitId}`);
+  }
+
   const intersection = unitCache.getIntersection();
   const intersectedDetections: Detection[] = getIntersectedDetections(detections, analyticUnitId, from, to);
   let spanBorders: number[] = [];
