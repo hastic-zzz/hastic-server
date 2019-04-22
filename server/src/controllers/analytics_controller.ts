@@ -33,7 +33,7 @@ let dataPuller: DataPuller;
 
 let detectionsCount: number = 0;
 
-let runningDetections: Detection[] = [];
+let detections: Detection[] = [];
 
 
 function onTaskResult(taskResult: TaskResult) {
@@ -451,7 +451,7 @@ export async function getDetectionSpans(analyticUnitId, from: number, to: number
 
   const unitCache = await AnalyticUnitCache.findById(analyticUnitId);
   const intersection = unitCache.getIntersection();
-  const intersectedDetections: Detection[] = getIntersectedDetections(new Detection(analyticUnitId, from, to, null), runningDetections);
+  const intersectedDetections: Detection[] = getIntersectedDetections(new Detection(analyticUnitId, from, to, null), detections);
   let rangesBorders: number[] = [];
   _.sortBy(intersectedDetections, 'from').map(d => {
     rangesBorders.push(d.from);
@@ -495,10 +495,10 @@ export async function getDetectionSpans(analyticUnitId, from: number, to: number
       const intersectedTo = d.to + intersection
 
       runDetect(analyticUnitId, intersectedFrom, intersectedTo)
-      .then(() => _.find(runningDetections, {analyticUnitId, from, to})[0].status = DetectionStatus.READY)
+      .then(() => mergeDetecionSpan(analyticUnitId, from, to))
       .catch(err => {
         console.error(err);
-        _.find(runningDetections, {analyticUnitId, from, to})[0].state = DetectionStatus.FAILED;
+        _.find(detections, {analyticUnitId, from, to})[0].state = DetectionStatus.FAILED;
       });
     });
   }
@@ -510,5 +510,13 @@ export async function getDetectionSpans(analyticUnitId, from: number, to: number
 }
 
 export function mergeDetecionSpan(analyticUnitId: AnalyticUnit.AnalyticUnitId, from: number, to: number) {
+  const intersectedDetections = getIntersectedDetections(new Detection(analyticUnitId, from, to, DetectionStatus.READY), detections);
+  let minFrom: number = _.minBy(intersectedDetections, 'from').from;
+  minFrom = Math.min(from, minFrom);
 
+  let maxTo: number = _.maxBy(intersectedDetections, 'to').to;
+  maxTo = Math.max(to, maxTo);
+
+  detections = detections.filter(d => !_.includes(intersectedDetections, d));
+  detections.push(new Detection(analyticUnitId, minFrom, maxTo, DetectionStatus.READY));
 }
