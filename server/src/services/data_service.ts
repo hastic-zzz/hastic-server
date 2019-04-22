@@ -9,7 +9,7 @@ export enum Collection {
   ANALYTIC_UNIT_CACHES,
   SEGMENTS,
   THRESHOLD,
-  DETECTION_STATUS
+  DETECTION_SPANS
 };
 
 export enum SortingOrder { ASCENDING = 1, DESCENDING = -1 };
@@ -219,4 +219,4 @@ db.set(Collection.ANALYTIC_UNITS, new nedb({ filename: config.ANALYTIC_UNITS_DAT
 db.set(Collection.ANALYTIC_UNIT_CACHES, new nedb({ filename: config.ANALYTIC_UNIT_CACHES_DATABASE_PATH, autoload: true }));
 db.set(Collection.SEGMENTS, new nedb({ filename: config.SEGMENTS_DATABASE_PATH, autoload: true }));
 db.set(Collection.THRESHOLD, new nedb({ filename: config.THRESHOLD_DATABASE_PATH, autoload: true }));
-db.set(Collection.DETECTION_STATUS, new nedb({ filename: config.DETECTION_STATUS_DATABASE_PATH, autoload: true }));
+db.set(Collection.DETECTION_SPANS, new nedb({ filename: config.DETECTION_SPANS_DATABASE_PATH, autoload: true }));

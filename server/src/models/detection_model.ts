@@ -3,7 +3,7 @@ import { Collection, makeDBQ } from '../services/data_service';
 
 import * as _ from 'lodash';
 
-let db = makeDBQ(Collection.DETECTION_STATUS);
+let db = makeDBQ(Collection.DETECTION_SPANS);
 
 export enum DetectionStatus {
   READY = 'READY',
