@@ -1,4 +1,4 @@
-import * as DetectionController from '../controllers/detections_controller';
+import * as AnalyticsController from '../controllers/analytics_controller';
 import { AnalyticUnitId } from '../models/analytic_unit_model';
 import { Detection } from '../models/detection_model';
 
@@ -25,7 +25,7 @@ export async function getDetectionSpans(ctx: Router.IRouterContext) {
   }
 
   let response: DetectionSpansResponse = { spans: [] };
-  response.spans = await DetectionController.getDetectionSpans(id, from, to);
+  response.spans = await AnalyticsController.getDetectionSpans(id, from, to);
   ctx.response.body = response;
 }
 
