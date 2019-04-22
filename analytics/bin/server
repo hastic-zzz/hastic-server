@@ -3,8 +3,8 @@
 import sys
 import os
 
-if sys.version_info[:3] < (3, 6, 5):
-    sys.stderr.write('Minumum python version is 3.6.5\n')
+if sys.version_info[:3] < (3, 6, 5) or sys.version_info[:2] >= (3, 7):
+    sys.stderr.write('Required python is >= 3.6.5 and < 3.7.0 \n')
     sys.stderr.write('Your python version is: %d.%d.%d\n' % sys.version_info[:3])
     sys.exit(1)
 
