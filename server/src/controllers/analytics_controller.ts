@@ -9,6 +9,8 @@ import { AlertService } from '../services/alert_service';
 import { HASTIC_API_KEY } from '../config';
 import { DataPuller } from '../services/data_puller';
 import { getGrafanaUrl } from '../utils/grafana';
+import { Detection, DetectionStatus } from '../models/detection_model';
+import { insertToSorted, getIntersectedDetections } from '../utils/spans';
 
 import { queryByMetric, GrafanaUnavailable, DatasourceUnavailable } from 'grafana-datasource-kit';
 
@@ -30,6 +32,8 @@ let grafanaAvailableWebhok: Function = undefined;
 let dataPuller: DataPuller;
 
 let detectionsCount: number = 0;
+
+let runningDetections: Detection[] = [];
 
 
 function onTaskResult(taskResult: TaskResult) {
@@ -441,4 +445,70 @@ export async function runLearningWithDetection(id: AnalyticUnit.AnalyticUnitId) 
   runLearning(id)
     .then(() => runDetect(id))
     .catch(err => console.error(err));
+}
+
+export async function getDetectionSpans(analyticUnitId, from: number, to: number): Promise<Detection[]> {
+
+  const unitCache = await AnalyticUnitCache.findById(analyticUnitId);
+  const intersection = unitCache.getIntersection();
+  const intersectedDetections: Detection[] = getIntersectedDetections(new Detection(analyticUnitId, from, to, null), runningDetections);
+  let rangesBorders: number[] = [];
+  _.sortBy(intersectedDetections, 'from').map(d => {
+    rangesBorders.push(d.from);
+    rangesBorders.push(d.to);
+  });
+  insertToSorted(rangesBorders, from);
+  insertToSorted(rangesBorders, to);
+
+  let alreadyDetected = false;
+  let startDetectionRange = null;
+  let newDetectionRanges: any[] = [];
+
+  for(let border of rangesBorders) {
+    if(border === from) {
+      if(!alreadyDetected) {
+        startDetectionRange = from;
+      }
+      continue;
+    }
+
+    if(border === to) {
+      if(!alreadyDetected) {
+        newDetectionRanges.push({from: startDetectionRange, to});
+      }
+      break;
+    }
+
+    if(alreadyDetected) { //end of already detected region, start point for new detection
+      startDetectionRange = border;
+    } else { //end of new detection region
+      newDetectionRanges.push({from: startDetectionRange, to});
+    }
+    alreadyDetected = !alreadyDetected;
+  }
+
+  if(newDetectionRanges.length === 0) {
+    return [ new Detection(analyticUnitId, from, to, DetectionStatus.READY) ];
+  } else {
+    newDetectionRanges.map(d => {
+      const intersectedFrom = Math.min(d.from - intersection, 0);
+      const intersectedTo = d.to + intersection
+
+      runDetect(analyticUnitId, intersectedFrom, intersectedTo)
+      .then(() => _.find(runningDetections, {analyticUnitId, from, to})[0].status = DetectionStatus.READY)
+      .catch(err => {
+        console.error(err);
+        _.find(runningDetections, {analyticUnitId, from, to})[0].state = DetectionStatus.FAILED;
+      });
+    });
+  }
+
+  let result: Detection[] = [];
+  intersectedDetections.map(i => result.push(new Detection(i.analyticUnitId, i.from, i.from, DetectionStatus.READY)));
+  newDetectionRanges.map(n => result.push(new Detection(n.analyticUnitId, n.from, n.from, DetectionStatus.RUNNING)));
+  return result;
+}
+
+export function mergeDetecionSpan(analyticUnitId: AnalyticUnit.AnalyticUnitId, from: number, to: number) {
+
 }

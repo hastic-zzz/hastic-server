@@ -36,6 +36,9 @@ export class Detection {
     if(isNaN(to)) {
       throw new Error('to is NaN');
     }
+    if(status === undefined) {
+      throw new Error('status is undefined');
+    }
   }
 
   public toObject() {

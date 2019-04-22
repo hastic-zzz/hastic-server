@@ -1,6 +1,7 @@
 import { AnalyticsTask, AnalyticsTaskType } from '../models/analytics_task_model';
 import * as AnalyticUnit from '../models/analytic_unit_model';
 import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
+import { mergeDetecionSpan } from '../controllers/analytics_controller';
 import { AnalyticsService } from './analytics_service';
 import { HASTIC_API_KEY } from '../config';
 import { availableReporter } from '../utils/reporter';
