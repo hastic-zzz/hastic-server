@@ -466,7 +466,7 @@ export async function getDetectionSpans(analyticUnitId: AnalyticUnit.AnalyticUni
     return [ new Detection(analyticUnitId, from, to, DetectionStatus.READY) ];
   } else {
     newDetectionRanges.map(d => {
-      const intersectedFrom = Math.min(d.from - intersection, 0);
+      const intersectedFrom = Math.max(d.from - intersection, 0);
       const intersectedTo = d.to + intersection
       runDetect(analyticUnitId, intersectedFrom, intersectedTo);
     });
