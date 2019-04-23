@@ -270,10 +270,11 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
     let result = await runTask(task);
     if(range !== undefined) {
+      const to = result.payload.lastDetectionTime || range.to;
       if(result.status === AnalyticUnit.AnalyticUnitStatus.SUCCESS || result.status === AnalyticUnit.AnalyticUnitStatus.READY) {
-        await Detection.insertSpan(new Detection.DetectionSpan(id, range.from, range.to, Detection.DetectionStatus.READY));
+        await Detection.insertSpan(new Detection.DetectionSpan(id, range.from, to, Detection.DetectionStatus.READY));
       } else if (result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
-        await Detection.insertSpan(new Detection.DetectionSpan(id, range.from, range.to, Detection.DetectionStatus.FAILED));
+        await Detection.insertSpan(new Detection.DetectionSpan(id, range.from, to, Detection.DetectionStatus.FAILED));
       }
     }
     if(result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
@@ -282,7 +283,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
 
     let payload = await processDetectionResult(id, result.payload);
 
-    await deleteNonDetectedSegments(id, payload);
+    // await deleteNonDetectedSegments(id, payload);
 
     await Promise.all([
       Segment.insertSegments(payload.segments),
@@ -467,23 +468,17 @@ export async function getDetectionSpans(
     return runDetectionOnExtendedSpan(analyticUnitId, from, to, unitCache);
   }
 
-  let spanBorders: number[] = [];
+  const spanBorders = Detection.getSpanBorders(intersectedSpans);
 
-  _.sortBy(intersectedSpans, 'from').map(d => {
-    spanBorders.push(d.from);
-    spanBorders.push(d.to);
-  });
   let newDetectionSpans = getNonIntersectedSpans(from, to, spanBorders);
-  let result = intersectedSpans;
-  let promises = [];
   if(newDetectionSpans.length === 0) {
     return [ new Detection.DetectionSpan(analyticUnitId, from, to, Detection.DetectionStatus.READY) ];
-  } else {
-    promises = newDetectionSpans.map(span => runDetectionOnExtendedSpan(analyticUnitId, span.from, span.to, unitCache));
   }
 
-  result = _.concat(result, _.flatten(await Promise.all(promises)));
-  return result;
+  let promises = newDetectionSpans
+    .map(span => runDetectionOnExtendedSpan(analyticUnitId, span.from, span.to, unitCache));
+
+  return _.concat(intersectedSpans, _.flatten(await Promise.all(promises)));
 }
 
 async function runDetectionOnExtendedSpan(
@@ -502,7 +497,7 @@ async function runDetectionOnExtendedSpan(
   const intersectedTo = to + intersection
   runDetect(analyticUnitId, intersectedFrom, intersectedTo);
 
-  const detection = new Detection.DetectionSpan(analyticUnitId, from, to, Detection.DetectionStatus.RUNNING);
+  const detection = new Detection.DetectionSpan(analyticUnitId, intersectedFrom, intersectedTo, Detection.DetectionStatus.RUNNING);
   await Detection.insertSpan(detection);
   return [detection];
 }

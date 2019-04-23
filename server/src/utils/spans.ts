@@ -1,8 +1,6 @@
 //TODO: move this code to span model
-import { DetectionSpan, DetectionStatus } from '../models/detection_model';
 
 import * as _ from 'lodash';
-import { AnalyticUnitId } from '../models/analytic_unit_model';
 
 export declare type Span = {
   from: number,
@@ -35,7 +33,7 @@ export function getNonIntersectedSpans(from: number, to: number, spanBorders: nu
 
     if(border >= to) {
       if(!alreadyDetected) {
-        result.push({from: startDetectionRange, to});
+        result.push({ from: startDetectionRange, to });
       }
       break;
     }
@@ -44,14 +42,14 @@ export function getNonIntersectedSpans(from: number, to: number, spanBorders: nu
       startDetectionRange = border;
     } else { //end of new detection region
       if(startDetectionRange !== null) {
-        result.push({from: startDetectionRange, to: border});
+        result.push({ from: startDetectionRange, to: border});
       }
     }
     alreadyDetected = !alreadyDetected;
   }
 
   if(border < to) {
-    result.push({from: startDetectionRange, to});
+    result.push({ from: startDetectionRange, to });
   }
 
   return result;

@@ -101,12 +101,12 @@ export async function getIntersectedSpans(
   analyticUnitId: AnalyticUnitId,
   from: number,
   to: number,
-  status: DetectionStatus = DetectionStatus.READY
+  status?: DetectionStatus
 ): Promise<DetectionSpan[]> {
   return findMany(analyticUnitId, { status, timeFromLTE: to, timeToGTE: from });
 }
 
-export async function insertSpan(span: DetectionSpan) {  
+export async function insertSpan(span: DetectionSpan) {
   const intersections = await getIntersectedSpans(span.analyticUnitId, span.from, span.to, span.status);
   let spanToInsert;
   if(!_.isEmpty(intersections)) {
@@ -124,4 +124,16 @@ export async function insertSpan(span: DetectionSpan) {
     spanToInsert = span.toObject();
   }
   return db.insertOne(spanToInsert);
+}
+
+export function getSpanBorders(spans: DetectionSpan[]): number[] {
+  let spanBorders: number[] = [];
+
+  _.sortBy(spans.map(span => span.toObject()), 'from')
+    .forEach(span => {
+      spanBorders.push(span.from);
+      spanBorders.push(span.to);
+    });
+
+  return spanBorders;
 }
