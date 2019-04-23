@@ -30,11 +30,12 @@ export class AnalyticUnitCache {
   }
 
   public getIntersection(): number {
-    if(this.data !== undefined) {
+    if(this.data !== undefined && this.data !== null) {
       //TODO: return one window size after resolving https://github.com/hastic/hastic-server/issues/508
       return this.data.windowSize * 2;
     }
-    return null;
+    // TODO: default window size
+    return 3;
   }
 
 }

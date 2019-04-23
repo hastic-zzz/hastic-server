@@ -10,7 +10,7 @@ import { AlertService } from '../services/alert_service';
 import { HASTIC_API_KEY } from '../config';
 import { DataPuller } from '../services/data_puller';
 import { getGrafanaUrl } from '../utils/grafana';
-import { insertToSorted, getNonIntersectedSpans } from '../utils/spans';
+import { getNonIntersectedSpans } from '../utils/spans';
 
 import { queryByMetric, GrafanaUnavailable, DatasourceUnavailable } from 'grafana-datasource-kit';
 
@@ -270,7 +270,11 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
     let result = await runTask(task);
     if(range !== undefined) {
-      await Detection.insertSpan(new Detection.DetectionSpan(id, range.from, range.to, result.status))
+      if(result.status === AnalyticUnit.AnalyticUnitStatus.SUCCESS || result.status === AnalyticUnit.AnalyticUnitStatus.READY) {
+        await Detection.insertSpan(new Detection.DetectionSpan(id, range.from, range.to, Detection.DetectionStatus.READY));
+      } else if (result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
+        await Detection.insertSpan(new Detection.DetectionSpan(id, range.from, range.to, Detection.DetectionStatus.FAILED));
+      }
     }
     if(result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
       throw new Error(result.error);
@@ -455,44 +459,58 @@ export async function getDetectionSpans(
   from: number,
   to: number
 ): Promise<Detection.DetectionSpan[]> {
+  const intersectedSpans = await Detection.getIntersectedSpans(analyticUnitId, from, to);
+
   const unitCache = await AnalyticUnitCache.findById(analyticUnitId);
 
-  if(unitCache === null) {
-    return [];
+  if(_.isEmpty(intersectedSpans)) {
+    return runDetectionWithIntersections(analyticUnitId, from, to, unitCache);
   }
 
-  const intersection = unitCache.getIntersection();
-  const runningDetections = Detection.findMany(analyticUnitId, { status: Detection.DetectionStatus.RUNNING });
-  const intersectedDetections = await Detection.getIntersectedSpans(analyticUnitId, from, to);
   let spanBorders: number[] = [];
 
-  _.sortBy(intersectedDetections, 'from').map(d => {
+  _.sortBy(intersectedSpans, 'from').map(d => {
     spanBorders.push(d.from);
     spanBorders.push(d.to);
   });
   let newDetectionSpans = getNonIntersectedSpans(from, to, spanBorders);
-
+  let result = intersectedSpans;
   if(newDetectionSpans.length === 0) {
     return [ new Detection.DetectionSpan(analyticUnitId, from, to, Detection.DetectionStatus.READY) ];
   } else {
-    newDetectionSpans.map(d => {
-      if(_.find(runningDetections, { from: d.from, to: d.to }) !== undefined) {
-        return;
+    newDetectionSpans.map(async span => {
+      const running = await Detection.findMany(analyticUnitId, {
+        timeFromGTE: span.from,
+        timeToLTE: span.to
+      });
+      if(!_.isEmpty(running)) {
+        result = _.concat(result, running);
+      } else {
+        result = _.concat(result, await runDetectionWithIntersections(analyticUnitId, span.from, span.to, unitCache));
       }
-      const intersectedFrom = Math.max(d.from - intersection, 0);
-      const intersectedTo = d.to + intersection
-      runDetect(analyticUnitId, intersectedFrom, intersectedTo);
     });
   }
 
-  let result: Detection.DetectionSpan[] = [];
-  intersectedDetections.map(i => result.push(new Detection.DetectionSpan(analyticUnitId, i.from, i.to, Detection.DetectionStatus.READY)));
-  let promises = [];
-  newDetectionSpans.map(span => {
-    const detection = new Detection.DetectionSpan(analyticUnitId, span.from, span.to, Detection.DetectionStatus.RUNNING);
-    result.push(detection);
-    promises.push(Detection.insertSpan(detection));
-  });
-  await Promise.all(promises);
   return result;
+}
+
+async function runDetectionWithIntersections(
+  analyticUnitId: AnalyticUnit.AnalyticUnitId,
+  from: number,
+  to: number,
+  unitCache: AnalyticUnitCache.AnalyticUnitCache
+) {
+  if (unitCache === null) {
+    return [];
+  }
+
+  const intersection = unitCache.getIntersection();
+
+  const intersectedFrom = Math.max(from - intersection, 0);
+  const intersectedTo = to + intersection
+  runDetect(analyticUnitId, intersectedFrom, intersectedTo);
+
+  const detection = new Detection.DetectionSpan(analyticUnitId, from, to, Detection.DetectionStatus.RUNNING);
+  await Detection.insertSpan(detection);
+  return [detection];
 }
