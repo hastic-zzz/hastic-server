@@ -505,7 +505,7 @@ async function runDetectionOnExtendedSpan(
   from: number,
   to: number,
   analyticUnitCache: AnalyticUnitCache.AnalyticUnitCache
-) {
+): Promise<Detection.DetectionSpan[]> {
   if(analyticUnitCache === null) {
     return [];
   }
