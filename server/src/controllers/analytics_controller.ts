@@ -468,15 +468,22 @@ export async function getDetectionSpans(
   from: number,
   to: number
 ): Promise<Detection.DetectionSpan[]> {
-  const intersectedSpans = await Detection.getIntersectedSpans(analyticUnitId, from, to, Detection.DetectionStatus.READY);
+  const readySpans = await Detection.getIntersectedSpans(analyticUnitId, from, to, Detection.DetectionStatus.READY);
+  const alreadyRunningSpans = await Detection.getIntersectedSpans(analyticUnitId, from, to, Detection.DetectionStatus.RUNNING);
 
   const analyticUnitCache = await AnalyticUnitCache.findById(analyticUnitId);
 
-  if(_.isEmpty(intersectedSpans)) {
-    return runDetectionOnExtendedSpan(analyticUnitId, from, to, analyticUnitCache);
+  if(_.isEmpty(readySpans)) {
+    const span = await runDetectionOnExtendedSpan(analyticUnitId, from, to, analyticUnitCache);
+    
+    if(span === null) {
+      return [];
+    } else {
+      return [span];
+    }
   }
 
-  const spanBorders = Detection.getSpanBorders(intersectedSpans);
+  const spanBorders = Detection.getSpanBorders(readySpans);
 
   let newDetectionSpans = getNonIntersectedSpans(from, to, spanBorders);
   if(newDetectionSpans.length === 0) {
@@ -484,20 +491,23 @@ export async function getDetectionSpans(
   }
 
   let runningSpansPromises = [];
-  newDetectionSpans.forEach(span => {
-    const insideRunning = Detection.findMany(analyticUnitId, {
+  let newRunningSpans: Detection.DetectionSpan[] = [];
+  runningSpansPromises = newDetectionSpans.map(async span => {
+    const insideRunning = await Detection.findMany(analyticUnitId, {
       status: Detection.DetectionStatus.RUNNING,
       timeFromLTE: span.from,
       timeToGTE: span.to
     });
 
     if(_.isEmpty(insideRunning)) {
-      runningSpansPromises.push(runDetectionOnExtendedSpan(analyticUnitId, span.from, span.to, analyticUnitCache));
+      const runningSpan = await runDetectionOnExtendedSpan(analyticUnitId, span.from, span.to, analyticUnitCache);
+      newRunningSpans.push(runningSpan);
     }
-  })
+  });
 
-  const newRunningSpans = await Promise.all(runningSpansPromises);
-  return _.concat(intersectedSpans, _.flatten(newRunningSpans));
+  await Promise.all(runningSpansPromises);
+
+  return _.concat(readySpans, alreadyRunningSpans, newRunningSpans.filter(span => span !== null));
 }
 
 async function runDetectionOnExtendedSpan(
@@ -505,9 +515,9 @@ async function runDetectionOnExtendedSpan(
   from: number,
   to: number,
   analyticUnitCache: AnalyticUnitCache.AnalyticUnitCache
-): Promise<Detection.DetectionSpan[]> {
+): Promise<Detection.DetectionSpan> {
   if(analyticUnitCache === null) {
-    return [];
+    return null;
   }
 
   const intersection = analyticUnitCache.getIntersection();
@@ -523,5 +533,5 @@ async function runDetectionOnExtendedSpan(
     Detection.DetectionStatus.RUNNING
   );
   await Detection.insertSpan(detection);
-  return [detection];
+  return detection;
 }
