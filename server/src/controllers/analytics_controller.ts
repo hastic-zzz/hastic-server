@@ -9,7 +9,7 @@ import { AlertService } from '../services/alert_service';
 import { HASTIC_API_KEY } from '../config';
 import { DataPuller } from '../services/data_puller';
 import { getGrafanaUrl } from '../utils/grafana';
-import { Detection, DetectionStatus } from '../models/detection_model';
+import { DetectionSpan, DetectionStatus } from '../models/detection_model';
 import { insertToSorted, getIntersectedDetections, getNonIntersectedSpans } from '../utils/spans';
 
 import { queryByMetric, GrafanaUnavailable, DatasourceUnavailable } from 'grafana-datasource-kit';
@@ -33,7 +33,7 @@ let dataPuller: DataPuller;
 
 let detectionsCount: number = 0;
 
-let detections: Detection[] = [];
+let detections: DetectionSpan[] = [];
 
 
 function onTaskResult(taskResult: TaskResult) {
@@ -268,11 +268,14 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
       { detector, analyticUnitType, lastDetectionTime: unit.lastDetectionTime, data, cache: oldCache }
     );
     console.log(`run task, id:${id}`);
+    await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
     let result = await runTask(task);
     if(result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
       throw new Error(result.error);
     }
-    mergeDetecionSpan(id, range.from, range.to);
+    if(range !== undefined) {
+      mergeDetectionSpan(id, range.from, range.to);
+    }
 
     let payload = await processDetectionResult(id, result.payload);
 
@@ -448,17 +451,19 @@ export async function runLearningWithDetection(id: AnalyticUnit.AnalyticUnitId) 
     .catch(err => console.error(err));
 }
 
-export async function getDetectionSpans(analyticUnitId: AnalyticUnit.AnalyticUnitId, from: number, to: number): Promise<Detection[]> {
+export async function getDetectionSpans(analyticUnitId: AnalyticUnit.AnalyticUnitId, from: number, to: number): Promise<DetectionSpan[]> {
 
   const unitCache = await AnalyticUnitCache.findById(analyticUnitId);
 
   if(unitCache === null) {
-    throw new Error(`got null cache for ${analyticUnitId}`);
+    return [];
   }
 
   const intersection = unitCache.getIntersection();
-  const intersectedDetections: Detection[] = getIntersectedDetections(detections, analyticUnitId, from, to);
+  const runningDetections = _.find(detections, detection => detection.status === DetectionStatus.RUNNING);
+  const intersectedDetections: DetectionSpan[] = getIntersectedDetections(detections, analyticUnitId, from, to);
   let spanBorders: number[] = [];
+
   _.sortBy(intersectedDetections, 'from').map(d => {
     spanBorders.push(d.from);
     spanBorders.push(d.to);
@@ -468,22 +473,29 @@ export async function getDetectionSpans(analyticUnitId: AnalyticUnit.AnalyticUni
   let newDetectionRanges = getNonIntersectedSpans(from, to, spanBorders);
 
   if(newDetectionRanges.length === 0) {
-    return [ new Detection(analyticUnitId, from, to, DetectionStatus.READY) ];
+    return [ new DetectionSpan(analyticUnitId, from, to, DetectionStatus.READY) ];
   } else {
     newDetectionRanges.map(d => {
+      if(_.find(runningDetections, { from: d.from, to: d.to }) !== undefined) {
+        return;
+      }
       const intersectedFrom = Math.max(d.from - intersection, 0);
       const intersectedTo = d.to + intersection
       runDetect(analyticUnitId, intersectedFrom, intersectedTo);
     });
   }
 
-  let result: Detection[] = [];
-  intersectedDetections.map(i => result.push(new Detection(analyticUnitId, i.from, i.to, DetectionStatus.READY)));
-  newDetectionRanges.map(n => result.push(new Detection(analyticUnitId, n.from, n.to, DetectionStatus.RUNNING)));
+  let result: DetectionSpan[] = [];
+  intersectedDetections.map(i => result.push(new DetectionSpan(analyticUnitId, i.from, i.to, DetectionStatus.READY)));
+  newDetectionRanges.map(n => {
+    const detection = new DetectionSpan(analyticUnitId, n.from, n.to, DetectionStatus.RUNNING);
+    result.push(detection);
+    detections.push(detection);
+  });
   return result;
 }
 
-export function mergeDetecionSpan(analyticUnitId: AnalyticUnit.AnalyticUnitId, from: number, to: number) {
+export function mergeDetectionSpan(analyticUnitId: AnalyticUnit.AnalyticUnitId, from: number, to: number) {
   const intersectedDetections = getIntersectedDetections(detections, analyticUnitId, from, to);
   let minFrom: number = _.minBy(intersectedDetections, 'from').from;
   minFrom = Math.min(from, minFrom);
@@ -492,5 +504,5 @@ export function mergeDetecionSpan(analyticUnitId: AnalyticUnit.AnalyticUnitId, f
   maxTo = Math.max(to, maxTo);
 
   detections = detections.filter(d => !_.includes(intersectedDetections, d));
-  detections.push(new Detection(analyticUnitId, minFrom, maxTo, DetectionStatus.READY));
+  detections.push(new DetectionSpan(analyticUnitId, minFrom, maxTo, DetectionStatus.READY));
 }

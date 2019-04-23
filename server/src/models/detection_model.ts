@@ -13,7 +13,7 @@ export enum DetectionStatus {
 
 export type DetectionId = string;
 
-export class Detection {
+export class DetectionSpan {
   constructor(
     public analyticUnitId: AnalyticUnitId,
     public from: number,
@@ -50,11 +50,11 @@ export class Detection {
     };
   }
 
-  static fromObject(obj: any): Detection {
+  static fromObject(obj: any): DetectionSpan {
     if(obj === undefined) {
       throw new Error('obj is undefined');
     }
-    return new Detection(
+    return new DetectionSpan(
       obj.analyticUnitId,
       +obj.from, +obj.to, obj._id
     );
