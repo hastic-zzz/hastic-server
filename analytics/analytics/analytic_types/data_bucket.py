@@ -1,9 +1,7 @@
 import pandas as pd
 
 
-class DataBucket(object):
-
-    data: pd.DataFrame
+class DataBucket:
 
     def __init__(self):
         self.data = pd.DataFrame([], columns=['timestamp', 'value'])
