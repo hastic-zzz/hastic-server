@@ -31,19 +31,26 @@ export function getIntersectedDetections(
 }
 
 export function getNonIntersectedSpans(from: number, to: number, spanBorders: number[]): Span[] {
+  let isFromProcessed = false;
   let alreadyDetected = false;
   let startDetectionRange = null;
   let result: Span[] = [];
 
   for(let border of spanBorders) {
-    if(border === from) {
-      if(!alreadyDetected) {
-        startDetectionRange = from;
+    if(!isFromProcessed && border >= from) {
+      isFromProcessed = true;
+      if(border === from) {
+        if(alreadyDetected) {
+          startDetectionRange = from;
+        }
+      } else {
+          if(!alreadyDetected) {
+          startDetectionRange = from;
+        }
       }
-      continue;
     }
 
-    if(border === to) {
+    if(border >= to) {
       if(!alreadyDetected) {
         result.push({from: startDetectionRange, to});
       }
@@ -53,7 +60,9 @@ export function getNonIntersectedSpans(from: number, to: number, spanBorders: nu
     if(alreadyDetected) { //end of already detected region, start point for new detection
       startDetectionRange = border;
     } else { //end of new detection region
-      result.push({from: startDetectionRange, to});
+      if(startDetectionRange !== null) {
+        result.push({from: startDetectionRange, to: border});
+      }
     }
     alreadyDetected = !alreadyDetected;
   }
