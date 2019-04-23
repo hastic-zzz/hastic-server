@@ -464,7 +464,7 @@ export async function getDetectionSpans(
   const unitCache = await AnalyticUnitCache.findById(analyticUnitId);
 
   if(_.isEmpty(intersectedSpans)) {
-    return runDetectionWithIntersections(analyticUnitId, from, to, unitCache);
+    return runDetectionOnExtendedSpan(analyticUnitId, from, to, unitCache);
   }
 
   let spanBorders: number[] = [];
@@ -475,26 +475,18 @@ export async function getDetectionSpans(
   });
   let newDetectionSpans = getNonIntersectedSpans(from, to, spanBorders);
   let result = intersectedSpans;
+  let promises = [];
   if(newDetectionSpans.length === 0) {
     return [ new Detection.DetectionSpan(analyticUnitId, from, to, Detection.DetectionStatus.READY) ];
   } else {
-    newDetectionSpans.map(async span => {
-      const running = await Detection.findMany(analyticUnitId, {
-        timeFromGTE: span.from,
-        timeToLTE: span.to
-      });
-      if(!_.isEmpty(running)) {
-        result = _.concat(result, running);
-      } else {
-        result = _.concat(result, await runDetectionWithIntersections(analyticUnitId, span.from, span.to, unitCache));
-      }
-    });
+    promises = newDetectionSpans.map(span => runDetectionOnExtendedSpan(analyticUnitId, span.from, span.to, unitCache));
   }
 
+  result = _.concat(result, _.flatten(await Promise.all(promises)));
   return result;
 }
 
-async function runDetectionWithIntersections(
+async function runDetectionOnExtendedSpan(
   analyticUnitId: AnalyticUnit.AnalyticUnitId,
   from: number,
   to: number,
