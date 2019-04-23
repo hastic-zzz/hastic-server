@@ -270,11 +270,17 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
     let result = await runTask(task);
     if(range !== undefined) {
-      const to = result.payload.lastDetectionTime || range.to;
-      if(result.status === AnalyticUnit.AnalyticUnitStatus.SUCCESS || result.status === AnalyticUnit.AnalyticUnitStatus.READY) {
-        await Detection.insertSpan(new Detection.DetectionSpan(id, range.from, to, Detection.DetectionStatus.READY));
+      if(
+        result.status === AnalyticUnit.AnalyticUnitStatus.SUCCESS ||
+        result.status === AnalyticUnit.AnalyticUnitStatus.READY
+      ) {
+        await Detection.insertSpan(
+          new Detection.DetectionSpan(id, range.from, range.to, Detection.DetectionStatus.READY)
+        );
       } else if (result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
-        await Detection.insertSpan(new Detection.DetectionSpan(id, range.from, to, Detection.DetectionStatus.FAILED));
+        await Detection.insertSpan(
+          new Detection.DetectionSpan(id, range.from, range.to, Detection.DetectionStatus.FAILED)
+        );
       }
     }
     if(result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
@@ -283,6 +289,8 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
 
     let payload = await processDetectionResult(id, result.payload);
 
+    // TODO: uncomment it
+    // It clears segments when redetecting on another timerange
     // await deleteNonDetectedSegments(id, payload);
 
     await Promise.all([
@@ -460,7 +468,7 @@ export async function getDetectionSpans(
   from: number,
   to: number
 ): Promise<Detection.DetectionSpan[]> {
-  const intersectedSpans = await Detection.getIntersectedSpans(analyticUnitId, from, to);
+  const intersectedSpans = await Detection.getIntersectedSpans(analyticUnitId, from, to, Detection.DetectionStatus.READY);
 
   const unitCache = await AnalyticUnitCache.findById(analyticUnitId);
 
@@ -475,10 +483,21 @@ export async function getDetectionSpans(
     return [ new Detection.DetectionSpan(analyticUnitId, from, to, Detection.DetectionStatus.READY) ];
   }
 
-  let promises = newDetectionSpans
-    .map(span => runDetectionOnExtendedSpan(analyticUnitId, span.from, span.to, unitCache));
+  let promises = [];
+  newDetectionSpans.forEach(span => {
+    const insideRunning = Detection.findMany(analyticUnitId, {
+      status: Detection.DetectionStatus.RUNNING,
+      timeFromLTE: span.from,
+      timeToGTE: span.to
+    });
 
-  return _.concat(intersectedSpans, _.flatten(await Promise.all(promises)));
+    if(_.isEmpty(insideRunning)) {
+      promises.push(runDetectionOnExtendedSpan(analyticUnitId, span.from, span.to, unitCache));
+    }
+  })
+
+  const newRunning = await Promise.all(promises);
+  return _.concat(intersectedSpans, _.flatten(newRunning));
 }
 
 async function runDetectionOnExtendedSpan(

@@ -107,9 +107,10 @@ export async function getIntersectedSpans(
 }
 
 export async function insertSpan(span: DetectionSpan) {
+  let spanToInsert = span.toObject();
+
   const intersections = await getIntersectedSpans(span.analyticUnitId, span.from, span.to, span.status);
-  let spanToInsert;
-  if(!_.isEmpty(intersections)) {
+  if(!_.isEmpty(intersections) && span.status === DetectionStatus.READY) {
     let minFrom: number = _.minBy(intersections, 'from').from;
     minFrom = Math.min(span.from, minFrom);
 
@@ -117,11 +118,11 @@ export async function insertSpan(span: DetectionSpan) {
     maxTo = Math.max(span.to, maxTo);
 
     const spansInside = await findMany(span.analyticUnitId, { timeFromGTE: minFrom, timeToLTE: maxTo });
-    await db.removeMany(spansInside.map(span => span.id));
+    const toRemove = _.concat(intersections.map(span => span.id), spansInside.map(span => span.id));
+
+    await db.removeMany(toRemove);
 
     spanToInsert = new DetectionSpan(span.analyticUnitId, minFrom, maxTo, span.status).toObject();
-  } else {
-    spanToInsert = span.toObject();
   }
   return db.insertOne(spanToInsert);
 }
