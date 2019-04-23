@@ -12,6 +12,7 @@ export function insertToSorted(array: number[], value: number) {
 }
 
 export function getNonIntersectedSpans(from: number, to: number, spanBorders: number[]): Span[] {
+  // spanBorders array must be sorted ascending
   let isFromProcessed = false;
   let alreadyDetected = false;
   let startDetectionRange = null;
