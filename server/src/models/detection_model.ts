@@ -13,7 +13,7 @@ export enum DetectionStatus {
 
 export type DetectionId = string;
 
-export class Detection {
+export class DetectionSpan {
   constructor(
     public analyticUnitId: AnalyticUnitId,
     public from: number,
@@ -46,17 +46,77 @@ export class Detection {
       _id: this.id,
       analyticUnitId: this.analyticUnitId,
       from: this.from,
-      to: this.to
+      to: this.to,
+      status: this.status
     };
   }
 
-  static fromObject(obj: any): Detection {
+  static fromObject(obj: any): DetectionSpan {
     if(obj === undefined) {
       throw new Error('obj is undefined');
     }
-    return new Detection(
+    return new DetectionSpan(
       obj.analyticUnitId,
-      +obj.from, +obj.to, obj._id
+      +obj.from, +obj.to,
+      obj.status,
+      obj._id
     );
   }
+}
+
+export type FindManyQuery = {
+  status?: DetectionStatus,
+  timeFromLTE?: number,
+  timeToGTE?: number,
+}
+
+export async function findMany(id: AnalyticUnitId, query?: FindManyQuery): Promise<DetectionSpan[]> {
+  let dbQuery: any = { analyticUnitId: id };
+  if(query.status !== undefined) {
+    dbQuery.status = query.status;
+  }
+  if(query.timeFromLTE !== undefined) {
+    dbQuery.from = { $lte: query.timeFromLTE };
+  }
+  if(query.timeToGTE !== undefined) {
+    dbQuery.to = { $gte: query.timeToGTE };
+  }
+
+  const spans = await db.findMany(dbQuery);
+  if(spans === null) {
+    return [];
+  }
+  return spans.map(DetectionSpan.fromObject);
+}
+
+export async function getIntersectedSpans(
+  analyticUnitId: AnalyticUnitId,
+  from: number,
+  to: number,
+  status: DetectionStatus = DetectionStatus.READY
+): Promise<DetectionSpan[]> {
+  return findMany(analyticUnitId, { status, timeFromLTE: to, timeToGTE: from });
+}
+
+export async function insertSpan(span: DetectionSpan) {
+  let detections = await findMany(span.analyticUnitId, { status: span.status });
+  const intersections = await getIntersectedSpans(span.analyticUnitId, span.from, span.to, span.status);
+  let spanToInsert;
+
+  if(!_.isEmpty(intersections)) {
+    let minFrom: number = _.minBy(intersections, 'from').from;
+    minFrom = Math.min(span.from, minFrom);
+
+    let maxTo: number = _.maxBy(intersections, 'to').to;
+    maxTo = Math.max(span.to, maxTo);
+
+    await db.removeMany(detections
+      .filter(detection => _.includes(intersections, detection))
+      .map(detection => detection.id));
+
+    spanToInsert = new DetectionSpan(span.analyticUnitId, minFrom, maxTo, span.status).toObject();
+  } else {
+    spanToInsert = span.toObject();
+  }
+  return db.insertOne(spanToInsert);
 }

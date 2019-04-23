@@ -1,8 +1,7 @@
 //TODO: move this code to span model
-import { Detection, DetectionStatus } from '../models/detection_model';
+import { DetectionSpan, DetectionStatus } from '../models/detection_model';
 
 import * as _ from 'lodash';
-import { toUnicode } from 'punycode';
 import { AnalyticUnitId } from '../models/analytic_unit_model';
 
 export declare type Span = {
@@ -12,22 +11,6 @@ export declare type Span = {
 
 export function insertToSorted(array: number[], value: number) {
   array.splice(_.sortedIndex(array, value), 0, value);
-}
-
-//TODO: use data base query instead of filter
-export function getIntersectedDetections(
-  detections: Detection[],
-  analyticUnitId: AnalyticUnitId,
-  from: number,
-  to: number,
-  status: DetectionStatus = DetectionStatus.READY
-  ): Detection[] {
-    return detections.filter(d => {
-      return d.from <= to &&
-        d.to >= from &&
-          d.status === status &&
-            d.analyticUnitId === analyticUnitId;
-  });
 }
 
 export function getNonIntersectedSpans(from: number, to: number, spanBorders: number[]): Span[] {

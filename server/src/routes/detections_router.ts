@@ -1,12 +1,12 @@
 import * as AnalyticsController from '../controllers/analytics_controller';
 import { AnalyticUnitId } from '../models/analytic_unit_model';
-import { Detection } from '../models/detection_model';
+import { DetectionSpan } from '../models/detection_model';
 
 import * as Router from 'koa-router';
 
 
 declare type DetectionSpansResponse = {
-  spans: Detection[]
+  spans: DetectionSpan[]
 }
 
 export async function getDetectionSpans(ctx: Router.IRouterContext) {
