@@ -516,7 +516,12 @@ async function runDetectionOnExtendedSpan(
   const intersectedTo = to + intersection
   runDetect(analyticUnitId, intersectedFrom, intersectedTo);
 
-  const detection = new Detection.DetectionSpan(analyticUnitId, intersectedFrom, intersectedTo, Detection.DetectionStatus.RUNNING);
+  const detection = new Detection.DetectionSpan(
+    analyticUnitId,
+    intersectedFrom,
+    intersectedTo,
+    Detection.DetectionStatus.RUNNING
+  );
   await Detection.insertSpan(detection);
   return [detection];
 }
