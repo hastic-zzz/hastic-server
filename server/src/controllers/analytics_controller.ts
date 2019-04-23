@@ -266,6 +266,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
       { detector, analyticUnitType, lastDetectionTime: unit.lastDetectionTime, data, cache: oldCache }
     );
     console.log(`run task, id:${id}`);
+    // TODO: status: detection
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
     let result = await runTask(task);
     if(range !== undefined) {
