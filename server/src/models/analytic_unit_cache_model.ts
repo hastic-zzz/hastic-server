@@ -2,8 +2,9 @@ import { AnalyticUnitId } from "./analytic_unit_model";
 import { Collection, makeDBQ } from '../services/data_service';
 
 
-let db = makeDBQ(Collection.ANALYTIC_UNIT_CACHES);
-
+const db = makeDBQ(Collection.ANALYTIC_UNIT_CACHES);
+// TODO: count milliseconds in index from dataset
+const MILLISECONDS_IN_INDEX = 60000;
 
 export class AnalyticUnitCache {
   public constructor(
@@ -32,10 +33,10 @@ export class AnalyticUnitCache {
   public getIntersection(): number {
     if(this.data !== undefined && this.data !== null) {
       //TODO: return one window size after resolving https://github.com/hastic/hastic-server/issues/508
-      return this.data.windowSize * 2;
+      return this.data.windowSize * 2 * MILLISECONDS_IN_INDEX;
     }
     // TODO: default window size
-    return 3;
+    return 3 * MILLISECONDS_IN_INDEX;
   }
 
 }
