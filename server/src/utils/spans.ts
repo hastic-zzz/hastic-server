@@ -13,22 +13,6 @@ export function insertToSorted(array: number[], value: number) {
   array.splice(_.sortedIndex(array, value), 0, value);
 }
 
-//TODO: use data base query instead of filter
-export function getIntersectedDetections(
-  detections: DetectionSpan[],
-  analyticUnitId: AnalyticUnitId,
-  from: number,
-  to: number,
-  status: DetectionStatus = DetectionStatus.READY
-): DetectionSpan[] {
-    return detections.filter(d => {
-      return d.from <= to &&
-        d.to >= from &&
-          d.status === status &&
-            d.analyticUnitId === analyticUnitId;
-  });
-}
-
 export function getNonIntersectedSpans(from: number, to: number, spanBorders: number[]): Span[] {
   let alreadyDetected = false;
   let startDetectionRange = null;

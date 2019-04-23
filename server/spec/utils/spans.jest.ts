@@ -1,4 +1,4 @@
-import { insertToSorted, getIntersectedDetections, getNonIntersectedSpans } from '../../src/utils/spans';
+import { insertToSorted } from '../../src/utils/spans';
 
 import 'jest';
 
