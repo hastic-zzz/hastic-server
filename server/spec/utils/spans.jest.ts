@@ -1,34 +1,6 @@
-import { insertToSorted, getNonIntersectedSpans } from '../../src/utils/spans';
+import { getNonIntersectedSpans } from '../../src/utils/spans';
 
 import 'jest';
-
-describe('insertToSorted', function(){
-
-  it('smoke test', function() {
-    let array = [0, 1, 2, 4, 5];
-    insertToSorted(array, 3);
-    expect(array).toEqual([0, 1, 2, 3, 4, 5]);
-  });
-
-  it('insertion to middle', function() {
-    let array = [0, 1, 2, 3, 4, 5];
-    insertToSorted(array, 3);
-    expect(array).toEqual([0, 1, 2, 3, 3, 4, 5]);
-  });
-
-  it('insertion to end', function() {
-    let array = [0, 1, 2, 4, 5];
-    insertToSorted(array, 6);
-    expect(array).toEqual([0, 1, 2, 4, 5, 6]);
-  });
-
-  it('insertion to empty list', function() {
-    let array = [];
-    insertToSorted(array, 6);
-    expect(array).toEqual([6]);
-  });
-
-});
 
 describe('getNonIntersectedSpans', function(){
 

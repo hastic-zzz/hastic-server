@@ -7,10 +7,6 @@ export declare type Span = {
   to: number
 }
 
-export function insertToSorted(array: number[], value: number) {
-  array.splice(_.sortedIndex(array, value), 0, value);
-}
-
 export function getNonIntersectedSpans(from: number, to: number, spanBorders: number[]): Span[] {
   // spanBorders array must be sorted ascending
   let isFromProcessed = false;
