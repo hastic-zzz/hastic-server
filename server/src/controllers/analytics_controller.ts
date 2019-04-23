@@ -470,10 +470,10 @@ export async function getDetectionSpans(
 ): Promise<Detection.DetectionSpan[]> {
   const intersectedSpans = await Detection.getIntersectedSpans(analyticUnitId, from, to, Detection.DetectionStatus.READY);
 
-  const unitCache = await AnalyticUnitCache.findById(analyticUnitId);
+  const analyticUnitCache = await AnalyticUnitCache.findById(analyticUnitId);
 
   if(_.isEmpty(intersectedSpans)) {
-    return runDetectionOnExtendedSpan(analyticUnitId, from, to, unitCache);
+    return runDetectionOnExtendedSpan(analyticUnitId, from, to, analyticUnitCache);
   }
 
   const spanBorders = Detection.getSpanBorders(intersectedSpans);
@@ -492,7 +492,7 @@ export async function getDetectionSpans(
     });
 
     if(_.isEmpty(insideRunning)) {
-      promises.push(runDetectionOnExtendedSpan(analyticUnitId, span.from, span.to, unitCache));
+      promises.push(runDetectionOnExtendedSpan(analyticUnitId, span.from, span.to, analyticUnitCache));
     }
   })
 
@@ -504,13 +504,13 @@ async function runDetectionOnExtendedSpan(
   analyticUnitId: AnalyticUnit.AnalyticUnitId,
   from: number,
   to: number,
-  unitCache: AnalyticUnitCache.AnalyticUnitCache
+  analyticUnitCache: AnalyticUnitCache.AnalyticUnitCache
 ) {
-  if (unitCache === null) {
+  if(analyticUnitCache === null) {
     return [];
   }
 
-  const intersection = unitCache.getIntersection();
+  const intersection = analyticUnitCache.getIntersection();
 
   const intersectedFrom = Math.max(from - intersection, 0);
   const intersectedTo = to + intersection
