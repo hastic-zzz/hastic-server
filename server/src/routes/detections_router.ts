@@ -25,6 +25,7 @@ export async function getDetectionSpans(ctx: Router.IRouterContext) {
   }
 
   let response: DetectionSpansResponse = { spans: [] };
+  // TODO: invalidate
   response.spans = await AnalyticsController.getDetectionSpans(id, from, to);
   ctx.response.body = response;
 }
