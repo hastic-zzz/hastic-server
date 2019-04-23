@@ -483,7 +483,7 @@ export async function getDetectionSpans(
     return [ new Detection.DetectionSpan(analyticUnitId, from, to, Detection.DetectionStatus.READY) ];
   }
 
-  let promises = [];
+  let runningSpansPromises = [];
   newDetectionSpans.forEach(span => {
     const insideRunning = Detection.findMany(analyticUnitId, {
       status: Detection.DetectionStatus.RUNNING,
@@ -492,12 +492,12 @@ export async function getDetectionSpans(
     });
 
     if(_.isEmpty(insideRunning)) {
-      promises.push(runDetectionOnExtendedSpan(analyticUnitId, span.from, span.to, analyticUnitCache));
+      runningSpansPromises.push(runDetectionOnExtendedSpan(analyticUnitId, span.from, span.to, analyticUnitCache));
     }
   })
 
-  const newRunning = await Promise.all(promises);
-  return _.concat(intersectedSpans, _.flatten(newRunning));
+  const newRunningSpans = await Promise.all(runningSpansPromises);
+  return _.concat(intersectedSpans, _.flatten(newRunningSpans));
 }
 
 async function runDetectionOnExtendedSpan(
