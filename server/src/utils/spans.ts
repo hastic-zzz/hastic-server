@@ -19,7 +19,7 @@ export function getNonIntersectedSpans(from: number, to: number, spanBorders: nu
   let startDetectionRange = null;
   let result: Span[] = [];
 
-  for(let border of spanBorders) {
+  for(var border of spanBorders) {
     if(!isFromProcessed && border >= from) {
       isFromProcessed = true;
       if(border === from) {
@@ -48,6 +48,10 @@ export function getNonIntersectedSpans(from: number, to: number, spanBorders: nu
       }
     }
     alreadyDetected = !alreadyDetected;
+  }
+
+  if(border < to) {
+    result.push({from: startDetectionRange, to});
   }
 
   return result;
