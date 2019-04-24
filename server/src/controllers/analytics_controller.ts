@@ -285,27 +285,23 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     const result = await runTask(task);
 
     if(result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
-      if(range !== undefined) {
-        await Detection.insertSpan(
-          new Detection.DetectionSpan(id, range.from, range.to, Detection.DetectionStatus.FAILED)
-        );
-      }
+      await Detection.insertSpan(
+        new Detection.DetectionSpan(id, range.from, range.to, Detection.DetectionStatus.FAILED)
+      );
       throw new Error(result.error);
     }
 
     const payload = await processDetectionResult(id, result.payload);
-    if(range !== undefined) {
-      const cache = AnalyticUnitCache.AnalyticUnitCache.fromObject({ _id: id, data: payload.cache });
-      const intersection = cache.getIntersection();
-      await Detection.insertSpan(
-        new Detection.DetectionSpan(
-          id,
-          range.from + intersection,
-          range.to - intersection,
-          Detection.DetectionStatus.READY
-        )
-      );
-    }
+    const cache = AnalyticUnitCache.AnalyticUnitCache.fromObject({ _id: id, data: payload.cache });
+    const intersection = cache.getIntersection();
+    await Detection.insertSpan(
+      new Detection.DetectionSpan(
+        id,
+        range.from + intersection,
+        range.to - intersection,
+        Detection.DetectionStatus.READY
+      )
+    );
 
     // TODO: uncomment it
     // It clears segments when redetecting on another timerange
