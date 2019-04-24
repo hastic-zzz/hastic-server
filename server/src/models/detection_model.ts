@@ -138,3 +138,7 @@ export function getSpanBorders(spans: DetectionSpan[]): number[] {
 
   return spanBorders;
 }
+
+export function clearSpans(analyticUnitId: AnalyticUnitId) {
+  return db.removeMany({ analyticUnitId });
+}

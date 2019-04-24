@@ -458,6 +458,7 @@ export async function updateThreshold(
 export async function runLearningWithDetection(id: AnalyticUnit.AnalyticUnitId) {
   // TODO: move setting status somehow "inside" learning
   await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.PENDING);
+  await Detection.clearSpans(id);
   runLearning(id)
     .then(() => runDetect(id))
     .catch(err => console.error(err));
