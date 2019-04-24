@@ -64,8 +64,9 @@ mkdir -p %{buildroot}/usr/lib/hastic-server/server/dist
 mkdir -p %{buildroot}/usr/lib/hastic-server/.git/refs/heads
 mkdir -p %{buildroot}/usr/lib/hastic-server/analytics/dist/server
 cp -r server/dist %{buildroot}/usr/lib/hastic-server/server/
+cp -r server/package.json %{buildroot}/usr/lib/hastic-server/server/
 cp -r .git/HEAD %{buildroot}/usr/lib/hastic-server/.git
-cp -r .git/refs/heads %{buildroot}/usr/lib/hastic-server/.git/refs
+cp -r .git/refs/heads/ %{buildroot}/usr/lib/hastic-server/.git/refs/
 cp -r analytics/dist/server %{buildroot}/usr/lib/hastic-server/analytics/dist/
 
 %post
