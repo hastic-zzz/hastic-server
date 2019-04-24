@@ -268,31 +268,34 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     console.log(`run task, id:${id}`);
     // TODO: status: detection
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
-    let result = await runTask(task);
-    if(range !== undefined) {
-      if(
-        result.status === AnalyticUnit.AnalyticUnitStatus.SUCCESS ||
-        result.status === AnalyticUnit.AnalyticUnitStatus.READY
-      ) {
-        await Detection.insertSpan(
-          new Detection.DetectionSpan(id, range.from, range.to, Detection.DetectionStatus.READY)
-        );
-      } else if (result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
+    const result = await runTask(task);
+
+    if(result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
+      if(range !== undefined) {
         await Detection.insertSpan(
           new Detection.DetectionSpan(id, range.from, range.to, Detection.DetectionStatus.FAILED)
         );
       }
-    }
-    if(result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
       throw new Error(result.error);
     }
 
-    let payload = await processDetectionResult(id, result.payload);
+    const payload = await processDetectionResult(id, result.payload);
+    if(range !== undefined) {
+      const cache = AnalyticUnitCache.AnalyticUnitCache.fromObject({ _id: id, data: payload.cache });
+      const intersection = cache.getIntersection();
+      await Detection.insertSpan(
+        new Detection.DetectionSpan(
+          id,
+          range.from + intersection,
+          range.to - intersection,
+          Detection.DetectionStatus.READY
+        )
+      );
+    }
 
     // TODO: uncomment it
     // It clears segments when redetecting on another timerange
     // await deleteNonDetectedSegments(id, payload);
-
     await Promise.all([
       Segment.insertSegments(payload.segments),
       AnalyticUnitCache.setData(id, payload.cache),
@@ -476,7 +479,7 @@ export async function getDetectionSpans(
 
   if(_.isEmpty(readySpans)) {
     const span = await runDetectionOnExtendedSpan(analyticUnitId, from, to, analyticUnitCache);
-    
+
     if(span === null) {
       return [];
     } else {
@@ -524,13 +527,13 @@ async function runDetectionOnExtendedSpan(
   const intersection = analyticUnitCache.getIntersection();
 
   const intersectedFrom = Math.max(from - intersection, 0);
-  const intersectedTo = to + intersection
+  const intersectedTo = to + intersection;
   runDetect(analyticUnitId, intersectedFrom, intersectedTo);
 
   const detection = new Detection.DetectionSpan(
     analyticUnitId,
-    intersectedFrom,
-    intersectedTo,
+    from,
+    to,
     Detection.DetectionStatus.RUNNING
   );
   await Detection.insertSpan(detection);
