@@ -1,6 +1,6 @@
 """
 It is the place where we put all classes and types
-which is common for all of the code.
+common for all analytics code
 
 For example, if you write someting which is used
 in analytic_unit_manager, it should be here.
@@ -8,10 +8,9 @@ in analytic_unit_manager, it should be here.
 If you create something spicific which is used only in one place, 
 like PatternDetectionCache, then it should not be here.
 """
+
 import pandas as pd
 from typing import Union, List
-
-from analytic_types.data_bucket import DataBucket
 
 AnalyticUnitId = str
 
