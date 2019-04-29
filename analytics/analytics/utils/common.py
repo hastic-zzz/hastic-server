@@ -17,15 +17,15 @@ CONFIDENCE_FACTOR = 0.5
 SMOOTHING_FACTOR = 5
 
 
-def exponential_smoothing(series: pd.Series, alpha: float, last_smooth: Optional[float] = None) -> pd.Series:
+def exponential_smoothing(series: pd.Series, alpha: float, last_smoothed_value: Optional[float] = None) -> pd.Series:
     if alpha < 0 or alpha > 1:
         raise ValueError('Alpha must be within the boundaries: 0 <= alpha <= 1')
     if len(series) < 2:
         return series
-    if not last_smooth:
+    if last_smoothed_value == None:
         result = [series.values[0]]
     else:
-        result = [float(last_smooth)]
+        result = [float(last_smoothed_value)]
     if np.isnan(result):
         result = [0]
     for n in range(1, len(series)):
