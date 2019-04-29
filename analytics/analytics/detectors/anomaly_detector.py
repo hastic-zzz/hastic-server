@@ -48,14 +48,11 @@ class AnomalyDetector(Detector):
     def get_confidence_window(self, smooth_data: pd.Series, condfidence: float) -> Tuple[pd.Series, pd.Series]:
         #build confidence interval above and below smoothed data
         pass
-    
-    def find_anomaly(self, data, conf):
-        pass
 
     def get_dependency_level(self, alpha: float) -> int:
-        # 
-        for level in range(100):
-            if (1 - alpha) ** level < 0.01:
+        #get the number of values that will affect the next value
+        for level in range(1, 100):
+            if (1 - alpha) ** level < 0.1:
                 break
         return level
 
