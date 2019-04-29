@@ -19,6 +19,8 @@ def get_detector_by_type(
         return detectors.PatternDetector(analytic_unit_type, analytic_unit_id)
     elif detector_type == 'threshold':
         return detectors.ThresholdDetector()
+    elif detector_type == 'anomaly':
+        return detectors.AnomalyDetector()
 
     raise ValueError('Unknown detector type "%s"' % detector_type)
 
