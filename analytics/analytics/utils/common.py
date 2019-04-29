@@ -22,7 +22,7 @@ def exponential_smoothing(series: pd.Series, alpha: float, last_smoothed_value: 
         raise ValueError('Alpha must be within the boundaries: 0 <= alpha <= 1')
     if len(series) < 2:
         return series
-    if last_smoothed_value == None:
+    if last_smoothed_value is None:
         result = [series.values[0]]
     else:
         result = [float(last_smoothed_value)]
