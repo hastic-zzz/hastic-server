@@ -10,6 +10,7 @@ from models import ModelCache
 
 logger = logging.getLogger('ANOMALY_DETECTOR')
 
+
 class AnomalyDetector(Detector):
 
     def __init__(self, *args, **kwargs):
@@ -18,8 +19,8 @@ class AnomalyDetector(Detector):
     def train(self, dataframe: pd.DataFrame, payload: Union[list, dict], cache: Optional[ModelCache]) -> ModelCache:
         return {
             'cache': {
-                'coinfedence': payload['coinfedence'],
-                'coinfedence': payload['alpha']
+                'confidence': payload['confidence'],
+                'alpha': payload['alpha']
             }
         }
 
