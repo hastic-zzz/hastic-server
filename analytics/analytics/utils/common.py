@@ -6,7 +6,7 @@ from scipy.signal import argrelextrema
 from scipy.stats import gaussian_kde
 from scipy.stats.stats import pearsonr
 import math
-from typing import Union, List, Generator, Tuple
+from typing import Optional, Union, List, Generator, Tuple
 import utils
 import logging
 from itertools import islice
@@ -16,15 +16,23 @@ SHIFT_FACTOR = 0.05
 CONFIDENCE_FACTOR = 0.5
 SMOOTHING_FACTOR = 5
 
-def exponential_smoothing(series, alpha):
-    result = [series[0]]
+
+def exponential_smoothing(series: pd.Series, alpha: float, last_smooth: Optional[float] = None) -> pd.Series:
+    if alpha < 0 or alpha > 1:
+        raise ValueError('Alpha must be within the boundaries: 0 <= alpha <= 1')
+    if len(series) < 2:
+        return series
+    if not last_smooth:
+        result = [series.values[0]]
+    else:
+        result = [float(last_smooth)]
     if np.isnan(result):
         result = [0]
     for n in range(1, len(series)):
         if np.isnan(series[n]):
             series[n] = 0
         result.append(alpha * series[n] + (1 - alpha) * result[n - 1])
-    return result
+    return pd.Series(result, index = series.index)
 
 def segments_box(segments):
     max_time = 0
