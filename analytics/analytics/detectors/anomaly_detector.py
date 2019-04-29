@@ -31,6 +31,14 @@ class AnomalyDetector(Detector):
     
     def find_anomaly(self, data, conf):
         pass
+
+    def get_dependency_level(self, alpha: float) -> int:
+        # 
+        for level in range(100):
+            if (1 - alpha) ** level < 0.01:
+                break
+        return level
+
     
     def detect(self, data: pd.DataFrame, confidence_interval: List[pd.Series, pd.Series]) -> 
 
