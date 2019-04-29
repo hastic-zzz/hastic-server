@@ -41,15 +41,15 @@ class AnomalyDetector(Detector):
         self.detect(data, cache)
 
 
-    def smooth_data(self, dataframe: pd.DataFrame) -> List[Tuple[int, float]]:
+    def __smooth_data(self, dataframe: pd.DataFrame) -> List[Tuple[int, float]]:
         #smooth data using exponential smoothing/moving average/weighted_average
         pass
     
-    def get_confidence_window(self, smooth_data: pd.Series, condfidence: float) -> Tuple[pd.Series, pd.Series]:
+    def __get_confidence_window(self, smooth_data: pd.Series, condfidence: float) -> Tuple[pd.Series, pd.Series]:
         #build confidence interval above and below smoothed data
         pass
 
-    def get_dependency_level(self, alpha: float) -> int:
+    def __get_dependency_level(self, alpha: float) -> int:
         #get the number of values that will affect the next value
         for level in range(1, 100):
             if (1 - alpha) ** level < 0.1:
