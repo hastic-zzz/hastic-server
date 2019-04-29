@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from pandas import DataFrame
+import logging
+from pandas as pd
 from typing import Optional, Union
 
 from analytic_types import AnalyticUnitId
@@ -14,7 +15,7 @@ class AnomalyDetector(Detector):
     def __init__(self, *args, **kwargs):
         self.bucket = DataBucket()
 
-    def train(self, dataframe: DataFrame, payload: Union[list, dict], cache: Optional[ModelCache]) -> ModelCache:
+    def train(self, dataframe: pd.DataFrame, payload: Union[list, dict], cache: Optional[ModelCache]) -> ModelCache:
         return {
             'cache': {
                 'coinfedence': payload['coinfedence'],
@@ -22,7 +23,7 @@ class AnomalyDetector(Detector):
             }
         }
 
-    def detect(self, dataframe: DataFrame, cache: Optional[ModelCache]) -> dict:
+    def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
         last_values = None
         if cache is not None:
             last_values = cache['last_values']
@@ -32,13 +33,31 @@ class AnomalyDetector(Detector):
         last_detection_time = dataframe[-1]
         return {
             'cache': cache,
-            'segments': segments,
-            'lastDetectionTime': now
+            'segments': [],
+            'lastDetectionTime': last_detection_time
         }
 
-    def consume_data(self, data: DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
-
+    def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
         self.detect(data, cache)
+
+
+    def smooth_data(self, dataframe: pd.DataFrame) -> List[List[int, float]]:
+        #smooth data using exponential smoothing/moving average/weighted_average
+        pass
+    
+    def get_confidence_window(self, smooth_data: pd.Series, condfidence: float) -> List[pd.Series, pd.Series]:
+        #build confidence interval above and below smoothed data
+        pass
+    
+    def find_anomaly(self, data, conf):
+        pass
+
+    def get_dependency_level(self, alpha: float) -> int:
+        # 
+        for level in range(100):
+            if (1 - alpha) ** level < 0.01:
+                break
+        return level
 
     def get_window_size(self, cache: Optional[ModelCache]) -> int:
         if cache is None:
