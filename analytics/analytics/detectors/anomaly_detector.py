@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import logging
-from pandas as pd
-from typing import Optional, Union
+import pandas as pd
+from typing import Optional, Union, List, Tuple
 
 from analytic_types import AnalyticUnitId
 from analytic_types.data_bucket import DataBucket
@@ -41,11 +41,11 @@ class AnomalyDetector(Detector):
         self.detect(data, cache)
 
 
-    def smooth_data(self, dataframe: pd.DataFrame) -> List[List[int, float]]:
+    def smooth_data(self, dataframe: pd.DataFrame) -> List[Tuple[int, float]]:
         #smooth data using exponential smoothing/moving average/weighted_average
         pass
     
-    def get_confidence_window(self, smooth_data: pd.Series, condfidence: float) -> List[pd.Series, pd.Series]:
+    def get_confidence_window(self, smooth_data: pd.Series, condfidence: float) -> Tuple[pd.Series, pd.Series]:
         #build confidence interval above and below smoothed data
         pass
     
