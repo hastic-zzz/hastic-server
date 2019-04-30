@@ -12,6 +12,7 @@ async function query(ctx: Router.IRouterContext) {
   let from = ctx.request.query.from;
   let to = ctx.request.query.to;
   const analyticUnitId = ctx.request.query.analyticUnitId;
+  const smoothing = ctx.request.query.smoothing;
 
   if(analyticUnitId === undefined) {
     throw new Error(`data router error: request must contain analyticUnitId`);
