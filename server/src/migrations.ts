@@ -83,11 +83,9 @@ async function convertUnderscoreToCamelCase() {
   const analyticUnitCaches = await analyticUnitCachesDB.findMany({});
 
   const updatedAnalyticUnitCaches = analyticUnitCaches.map(analyticUnitCache => {
-    let data;
+    let data = null;
     if(analyticUnitCache.data !== null) {
       data = _.mapKeys(analyticUnitCache.data, (value, key) => _.camelCase(key));
-    } else {
-      data = null;
     }
 
     return { data, _id: analyticUnitCache._id };
