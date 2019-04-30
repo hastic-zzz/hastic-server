@@ -46,11 +46,11 @@ async function convertPanelUrlToPanelId() {
     return;
   }
 
-  const panelUrlRegex = /^(.+)\/d\/([^\/]+)\/.+panelId=(\d+)/;
-  const newPanelUrlRegex = /^(.+)\/dashboard\/(\w+).+panelId=(\d+)/;
+  const PANEL_URL_REGEX = /^(.+)\/d\/([^\/]+)\/.+panelId=(\d+)/;
+  const NEW_PANEL_URL_REGEX = /^(.+)\/dashboard\/(\w+).+panelId=(\d+)/;
   const updatedAnalyticUnits = analyticUnits
     .map(analyticUnit => {
-      const parsedPanelUrl = analyticUnit.panelUrl.match(panelUrlRegex) || analyticUnit.panelUrl.match(newPanelUrlRegex);
+      const parsedPanelUrl = analyticUnit.panelUrl.match(PANEL_URL_REGEX) || analyticUnit.panelUrl.match(NEW_PANEL_URL_REGEX);
       if(parsedPanelUrl === null) {
         console.log(`Cannot parse url: ${analyticUnit.panelUrl}`);
         return null;
