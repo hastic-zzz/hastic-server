@@ -21,9 +21,7 @@ const REVISIONS = new Map<number, Function>([
 export async function applyDBMigrations() {
   let meta: DbMeta = await metaDB.findOne(DB_META_ID);
   if(meta === null) {
-    meta = {
-      revision: 0
-    };
+    meta = { revision: 0 };
     await metaDB.insertOne({ _id: DB_META_ID, ...meta });
   }
 
