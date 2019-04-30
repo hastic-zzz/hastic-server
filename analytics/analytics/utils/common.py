@@ -128,7 +128,7 @@ def close_filtering(pattern_list: List[int], win_size: int) -> List[Tuple[int, i
     return s
 
 
-def unite_intersecting_segments(segments: List[int, int]) -> List[Tuple[int, int]]:
+def unite_intersecting_segments(segments: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
     '''
     At the entrance - list of segments with start and end.
     Find intersecting segments in this list and unite it.

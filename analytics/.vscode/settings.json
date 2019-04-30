@@ -9,7 +9,11 @@
     "**/__pycache__/": true
 },
 "python.unitTest.unittestArgs": [
-    "-v"
+    "-v",
+    "-s",
+    "./tests",
+    "-p",
+    "test_*.py"
 ],
 "python.unitTest.pyTestEnabled": false,
 "python.unitTest.nosetestsEnabled": false,
