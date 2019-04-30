@@ -41,7 +41,7 @@ class AnomalyDetector(Detector):
             if val > upper_bound[idx] or val < lower_bound[idx]:
                 segemnts.append(idx)
 
-        last_detection_time = dataframe[-1]
+        last_detection_time = dataframe['timestamp'][-1]
         return {
             'cache': cache,
             'segments': segemnts,
