@@ -35,6 +35,12 @@ export const ANALYTIC_UNIT_TYPES = {
       name: 'Threshold',
       value: 'THRESHOLD'
     }
+  ],
+  anomaly: [
+    {
+      name: 'Anomaly',
+      value: 'ANOMALY'
+    }
   ]
 };
 
