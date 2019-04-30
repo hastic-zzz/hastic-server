@@ -18,7 +18,7 @@ const REVISIONS = new Map<number, Function>([
   [2, convertUnderscoreToCamelCase]
 ]);
 
-export async function applyMigrations() {
+export async function applyDBMigrations() {
   let meta: DbMeta = await metaDB.findOne(DB_META_ID);
   if(meta === null) {
     meta = {

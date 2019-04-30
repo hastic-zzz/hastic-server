@@ -10,7 +10,7 @@ import * as ProcessService from './services/process_service';
 
 import { HASTIC_PORT, PACKAGE_VERSION, GIT_INFO, ZMQ_CONNECTION_STRING, HASTIC_INSTANCE_NAME } from './config';
 
-import { applyMigrations } from './migrations';
+import { applyDBMigrations } from './migrations';
 
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
@@ -19,7 +19,7 @@ import * as bodyParser from 'koa-bodyparser';
 init();
 
 async function init() {
-  await applyMigrations();
+  await applyDBMigrations();
   AnalyticsController.init();
   ProcessService.registerExitHandler(AnalyticsController.terminate);
 
