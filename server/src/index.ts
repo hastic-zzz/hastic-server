@@ -10,7 +10,7 @@ import * as ProcessService from './services/process_service';
 
 import { HASTIC_PORT, PACKAGE_VERSION, GIT_INFO, ZMQ_CONNECTION_STRING, HASTIC_INSTANCE_NAME } from './config';
 
-import { convertPanelUrlToPanelId } from './migrations/0.3.2-beta';
+import { applyMigrations } from './migrations';
 
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
@@ -19,7 +19,7 @@ import * as bodyParser from 'koa-bodyparser';
 init();
 
 async function init() {
-  await convertPanelUrlToPanelId();
+  await applyMigrations();
   AnalyticsController.init();
   ProcessService.registerExitHandler(AnalyticsController.terminate);
 
@@ -31,7 +31,7 @@ async function init() {
   });
 
 
-  app.use(bodyParser())
+  app.use(bodyParser());
 
   app.use(async function(ctx, next) {
     ctx.set('Access-Control-Allow-Origin', '*');
