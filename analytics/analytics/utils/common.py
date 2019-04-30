@@ -114,7 +114,7 @@ def get_same_length(patterns_list):
             pat.extend(added_values)
     return patterns_list
 
-def close_filtering(pattern_list, win_size):
+def close_filtering(pattern_list: List[int], win_size: int) -> List[int, int]:
     if len(pattern_list) == 0:
         return []
     s = [[pattern_list[0]]]
@@ -126,6 +126,22 @@ def close_filtering(pattern_list, win_size):
             k += 1
             s.append([pattern_list[i]])
     return s
+
+
+def unite_intersecting_segments(segments: List[int, int]) -> List[int, int]:
+    '''
+    At the entrance - list of segments with start and end.
+    Find intersecting segments in this list and unite it.
+    '''
+    last_couple = segments[0]
+    for i in range(1,len(segments)):
+        if segments[i][0] <= last_couple[1]:
+            segments[i][0] = last_couple[0]
+            segments[i-1] = []
+        else:
+            last_couple = segments[i]
+    segments = [x for x in segments if x != []]
+    return segments
 
 def best_pattern(pattern_list: list, data: pd.Series, dir: str) -> list:
     new_pattern_list = []
