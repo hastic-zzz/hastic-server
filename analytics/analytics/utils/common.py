@@ -114,7 +114,7 @@ def get_same_length(patterns_list):
             pat.extend(added_values)
     return patterns_list
 
-def close_filtering(pattern_list: List[int], win_size: int) -> List[int, int]:
+def close_filtering(pattern_list: List[int], win_size: int) -> List[Tuple[int, int]]:
     if len(pattern_list) == 0:
         return []
     s = [[pattern_list[0]]]
@@ -128,7 +128,7 @@ def close_filtering(pattern_list: List[int], win_size: int) -> List[int, int]:
     return s
 
 
-def unite_intersecting_segments(segments: List[int, int]) -> List[int, int]:
+def unite_intersecting_segments(segments: List[int, int]) -> List[Tuple[int, int]]:
     '''
     At the entrance - list of segments with start and end.
     Find intersecting segments in this list and unite it.
