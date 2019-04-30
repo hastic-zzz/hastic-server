@@ -24,3 +24,6 @@ class Detector(ABC):
     @abstractmethod
     def get_window_size(self, cache: Optional[ModelCache]) -> int:
         pass
+
+    def is_detection_intersected(self) -> bool:
+        return True

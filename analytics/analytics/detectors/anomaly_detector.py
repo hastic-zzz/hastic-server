@@ -25,24 +25,28 @@ class AnomalyDetector(Detector):
 
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
         data = dataframe['value']
-        last_values = None
+        alpha = cache['alpha']
+        confidence = cache['confidence']
+
+        last_value = None
         if cache is not None:
-            last_values = cache['last_values']
+            last_value = cache.get('lastValue')
 
-        #TODO detection code here
-        smoth_data = utils.exponential_smoothing(data, cache['alpha'])
-        upper_bound = utils.exponential_smoothing(data + cache['confidence'], cache['alpha'])
-        lower_bound = utils.exponential_smoothing(data - cache['confidence'], cache['alpha'])
+        smooth_data = utils.exponential_smoothing(data, alpha, last_value)
+        upper_bound = utils.exponential_smoothing(data + confidence, alpha, last_value)
+        lower_bound = utils.exponential_smoothing(data - confidence, alpha, last_value)
 
-        segemnts = []
+        segments = []
         for idx, val in enumerate(data.values):
             if val > upper_bound[idx] or val < lower_bound[idx]:
-                segemnts.append(idx)
+                segments.append(idx)
 
         last_detection_time = dataframe['timestamp'][-1]
+        cache['lastValue'] = smooth_data[-1]
+
         return {
             'cache': cache,
-            'segments': segemnts,
+            'segments': segments,
             'lastDetectionTime': last_detection_time
         }
 
@@ -76,3 +80,7 @@ class AnomalyDetector(Detector):
 
         #TODO: calculate value based on `alpha` value from cache
         return 1
+
+
+    def is_detection_intersected(self) -> bool:
+        return False
