@@ -1,9 +1,7 @@
-from abc import ABC, abstractmethod
 import logging
 import pandas as pd
 from typing import Optional, Union, List, Tuple
 
-from analytic_types import AnalyticUnitId
 from analytic_types.data_bucket import DataBucket
 from detectors import Detector
 from models import ModelCache
