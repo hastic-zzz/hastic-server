@@ -69,8 +69,8 @@ async function convertPanelUrlToPanelId() {
     .filter(analyticUnit => analyticUnit !== null);
 
   console.log(updatedAnalyticUnits);
-  const promises = updatedAnalyticUnits.map(async analyticUnit =>
-    await analyticUnitsDB.updateOne(analyticUnit._id, {
+  const promises = updatedAnalyticUnits.map(analyticUnit =>
+    analyticUnitsDB.updateOne(analyticUnit._id, {
       panelUrl: undefined,
       ...analyticUnit
     })
@@ -93,8 +93,8 @@ async function convertUnderscoreToCamelCase() {
     return { data, _id: analyticUnitCache._id };
   });
 
-  const promises = updatedAnalyticUnitCaches.map(async analyticUnitCache =>
-    await analyticUnitCachesDB.updateOne(analyticUnitCache._id, { data: analyticUnitCache.data })
+  const promises = updatedAnalyticUnitCaches.map(analyticUnitCache =>
+    analyticUnitCachesDB.updateOne(analyticUnitCache._id, { data: analyticUnitCache.data })
   );
 
   await Promise.all(promises);
