@@ -7,6 +7,7 @@ from analytic_types import AnalyticUnitId
 from analytic_types.data_bucket import DataBucket
 from detectors import Detector
 from models import ModelCache
+import utils
 
 logger = logging.getLogger('ANOMALY_DETECTOR')
 
@@ -25,16 +26,25 @@ class AnomalyDetector(Detector):
         }
 
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
+        data = dataframe['value']
         last_values = None
         if cache is not None:
             last_values = cache['last_values']
 
         #TODO detection code here
+        smoth_data = utils.exponential_smoothing(data, cache['alpha'])
+        upper_bound = utils.exponential_smoothing(data + cache['confidence'], cache['alpha'])
+        lower_bound = utils.exponential_smoothing(data - cache['confidence'], cache['alpha'])
+
+        segemnts = []
+        for idx, val in enumerate(data.values):
+            if val > upper_bound[idx] or val < lower_bound[idx]:
+                segemnts.append(idx)
 
         last_detection_time = dataframe[-1]
         return {
             'cache': cache,
-            'segments': [],
+            'segments': segemnts,
             'lastDetectionTime': last_detection_time
         }
 
