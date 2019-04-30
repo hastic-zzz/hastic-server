@@ -20,7 +20,6 @@ export const THRESHOLD_DATABASE_PATH = path.join(DATA_PATH, 'treshold.db');
 export const DETECTION_SPANS_DATABASE_PATH = path.join(DATA_PATH, 'detection_spans.db');
 export const DB_META_PATH = path.join(DATA_PATH, 'db_meta.db');
 
-
 export const HASTIC_PORT = getConfigField('HASTIC_PORT', '8000');
 export const ZMQ_IPC_PATH = getConfigField('ZMQ_IPC_PATH', path.join(os.tmpdir(), 'hastic'));
 export const ZMQ_DEV_PORT = getConfigField('ZMQ_DEV_PORT', '8002');
