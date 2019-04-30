@@ -3,13 +3,13 @@ import { Collection, makeDBQ } from './services/data_service';
 import * as _ from 'lodash';
 
 
-const dbInfoDB = makeDBQ(Collection.DB_INFO);
+const metaDB = makeDBQ(Collection.DB_META);
 const analyticUnitsDB = makeDBQ(Collection.ANALYTIC_UNITS);
 const analyticUnitCachesDB = makeDBQ(Collection.ANALYTIC_UNIT_CACHES);
 
-const DB_INFO_ID = '0';
+const DB_META_ID = '0';
 
-type DbInfo = {
+type DbMeta = {
   revision: number
 };
 
@@ -19,21 +19,21 @@ const REVISIONS = new Map<number, Function>([
 ]);
 
 export async function applyMigrations() {
-  let dbInfo: DbInfo = await dbInfoDB.findOne(DB_INFO_ID);
-  if(dbInfo === null) {
-    dbInfo = {
+  let meta: DbMeta = await metaDB.findOne(DB_META_ID);
+  if(meta === null) {
+    meta = {
       revision: 0
     };
-    await dbInfoDB.insertOne({ _id: DB_INFO_ID, ...dbInfo });
+    await metaDB.insertOne({ _id: DB_META_ID, ...meta });
   }
 
   await REVISIONS.forEach(async (migration, revision) => {
-    if(dbInfo.revision < revision) {
+    if(meta.revision < revision) {
       console.log(`Applying migration ${revision}`);
       await migration();
 
-      dbInfo.revision = revision;
-      await dbInfoDB.updateOne(DB_INFO_ID, dbInfo);
+      meta.revision = revision;
+      await metaDB.updateOne(DB_META_ID, meta);
     }
   });
 }
