@@ -1,5 +1,5 @@
 import * as AnalyticsController from '../controllers/analytics_controller';
-import { AnalyticUnitId } from '../models/analytic_unit_model';
+import { AnalyticUnitId } from '../models/analytic_units/analytic_unit_model';
 import { DetectionSpan } from '../models/detection_model';
 
 import * as Router from 'koa-router';

@@ -1,4 +1,4 @@
-import * as AnalyticUnit from '../models/analytic_unit_model';
+import * as AnalyticUnit from '../models/analytic_units/analytic_unit_model';
 import { HASTIC_API_KEY } from '../config';
 import { getGrafanaUrl } from '../utils/grafana';
 

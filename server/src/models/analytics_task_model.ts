@@ -1,4 +1,4 @@
-import { AnalyticUnitId } from "./analytic_unit_model";
+import { AnalyticUnitId } from "./analytic_units/analytic_unit_model";
 
 import { uid } from "../utils/uid";
 

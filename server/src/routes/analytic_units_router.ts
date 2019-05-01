@@ -1,5 +1,5 @@
 import * as AnalyticsController from '../controllers/analytics_controller';
-import * as AnalyticUnit from '../models/analytic_unit_model';
+import * as AnalyticUnit from '../models/analytic_units/analytic_unit_model';
 
 import { createAnalyticUnitFromObject } from '../controllers/analytics_controller';
 

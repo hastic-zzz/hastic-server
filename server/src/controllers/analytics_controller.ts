@@ -3,7 +3,7 @@ import { AnalyticsTask, AnalyticsTaskType, AnalyticsTaskId } from '../models/ana
 import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import * as Segment from '../models/segment_model';
 import * as Threshold from '../models/threshold_model';
-import * as AnalyticUnit from '../models/analytic_unit_model';
+import * as AnalyticUnit from '../models/analytic_units/analytic_unit_model';
 import * as Detection from '../models/detection_model';
 import { AnalyticsService } from '../services/analytics_service';
 import { AlertService } from '../services/alert_service';
