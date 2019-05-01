@@ -146,6 +146,21 @@ def unite_intersecting_segments(segments: List[Tuple[int, int]]) -> List[Tuple[i
     segments = [x for x in segments if x != []]
     return segments
 
+def get_start_and_end_of_segments(segments: List[List[int]]) -> List[Tuple[int, int]]:
+    '''
+    find start and end of segment: [1, 2, 3, 4] -> [1, 4]
+    if segment is 1 index - it will be doubled: [7] -> [7, 7]
+    '''
+    result = []
+    for segment in segments:
+        if len(segment) > 1:
+            segment = [segment[0], segment[-1]]
+        else:
+            segment = [segment[0], segment[0]]
+        result.append(segment)
+    return result
+
+
 def best_pattern(pattern_list: list, data: pd.Series, dir: str) -> list:
     new_pattern_list = []
     for val in pattern_list:
