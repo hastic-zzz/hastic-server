@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 import logging
 import pandas as pd
 from typing import Optional, Union, List, Tuple
@@ -9,8 +8,8 @@ from detectors import Detector
 from models import ModelCache
 import utils
 
-MAX_DEPENDEPCY_LEVEL = 100
-MIN_DEPENDECY_FACTOR = 0.1
+MAX_DEPENDENCY_LEVEL = 100
+MIN_DEPENDENCY_FACTOR = 0.1
 logger = logging.getLogger('ANOMALY_DETECTOR')
 
 
@@ -33,10 +32,9 @@ class AnomalyDetector(Detector):
         if cache is not None:
             last_values = cache['last_values']
 
-        #TODO detection code here
-        smoth_data = utils.exponential_smoothing(data, cache['alpha'])
-        upper_bound = smoth_data + cache['confidence']
-        lower_bound = smoth_data - cache['confidence']
+        smothed_data = utils.exponential_smoothing(data, cache['alpha'])
+        upper_bound = smothed_data + cache['confidence']
+        lower_bound = smothed_data - cache['confidence']
 
         anomaly_indexes = []
         for idx, val in enumerate(data.values):
@@ -63,7 +61,7 @@ class AnomalyDetector(Detector):
         if cache is None:
             raise ValueError('anomaly detector got None cache')
         
-        for level in range(1, MAX_DEPENDEPCY_LEVEL):
-            if (1 - cache['alpha']) ** level < MIN_DEPENDECY_FACTOR:
+        for level in range(1, MAX_DEPENDENCY_LEVEL):
+            if (1 - cache['alpha']) ** level < MIN_DEPENDENCY_FACTOR:
                 break
         return level

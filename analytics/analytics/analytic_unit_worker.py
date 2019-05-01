@@ -99,7 +99,7 @@ class AnalyticUnitWorker:
             detection_result['segments'].extend(new_chunk['segments'])
     
     def __get_intersections(self, segments: List[dict]) -> List[dict]:
-        timestamps = [[segment['from'], segment['to']] for segment in segments]
-        timestamps = utils.unite_intersecting_segments(timestamps)
-        segments = [{'from': segment[0], 'to': segment[1]} for segment in timestamps]
+        segments = [[segment['from'], segment['to']] for segment in segments]
+        segments = utils.unite_intersecting_segments(segments)
+        segments = [{'from': segment[0], 'to': segment[1]} for segment in segments]
         return segments
