@@ -227,8 +227,8 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
       taskPayload.segments = segmentObjs;
     } else if(detector === AnalyticUnit.DetectorType.THRESHOLD) {
       taskPayload.threshold = {
-        value: (<ThresholdAnalyticUnit>analyticUnit).value,
-        condition: (<ThresholdAnalyticUnit>analyticUnit).condition
+        value: (analyticUnit as ThresholdAnalyticUnit).value,
+        condition: (analyticUnit as ThresholdAnalyticUnit).condition
       };
     }
 
