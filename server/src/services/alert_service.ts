@@ -1,7 +1,7 @@
 import { sendAnalyticWebhook, sendInfoWebhook, InfoAlert, AnalyticAlert, WebhookType } from './notification_service';
 
 import * as _ from 'lodash';
-import * as AnalyticUnit from '../models/analytic_units/analytic_unit_model';
+import * as AnalyticUnit from '../models/analytic_units';
 import { Segment } from '../models/segment_model';
 import { availableReporter } from '../utils/reporter';
 

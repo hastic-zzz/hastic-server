@@ -1,5 +1,5 @@
 import { deleteNonDetectedSegments } from '../src/controllers/analytics_controller';
-import * as AnalyticUnit from '../src/models/analytic_units/analytic_unit_model';
+import * as AnalyticUnit from '../src/models/analytic_units';
 import * as Segment from '../src/models/segment_model';
 
 import * as _ from 'lodash';

@@ -45,13 +45,9 @@ export async function remove(id: AnalyticUnitId): Promise<void> {
   await db.removeOne(id);
 }
 
-export async function update(id: AnalyticUnitId, unit: AnalyticUnit) {
-  const updateObj = {
-    name: unit.name,
-    labeledColor: unit.labeledColor,
-    deletedColor: unit.deletedColor,
-    visible: unit.visible
-  };
+export async function update(id: AnalyticUnitId, obj: any) {
+  const analyticUnit = createAnalyticUnitFromObject(obj);
+  const updateObj = analyticUnit.toPanelObject();
 
   return db.updateOne(id, updateObj);
 }
