@@ -66,3 +66,9 @@ class AnomalyDetector(Detector):
             if (1 - cache['alpha']) ** level < MIN_DEPENDENCY_FACTOR:
                 break
         return level
+
+    def get_intersections(self, segments: List[dict]) -> List[dict]:
+        segments = [[segment['from'], segment['to']] for segment in segments]
+        segments = utils.unite_intersecting_segments(segments)
+        segments = [{'from': segment[0], 'to': segment[1]} for segment in segments]
+        return segments
