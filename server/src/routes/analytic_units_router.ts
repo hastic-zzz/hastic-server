@@ -1,7 +1,7 @@
 import * as AnalyticsController from '../controllers/analytics_controller';
-import * as AnalyticUnit from '../models/analytic_units/analytic_unit_model';
+import * as AnalyticUnit from '../models/analytic_units';
 
-import { createAnalyticUnitFromObject } from '../controllers/analytics_controller';
+import { saveAnalyticUnitFromObject } from '../controllers/analytics_controller';
 
 import * as Router from 'koa-router';
 import * as _ from 'lodash';
@@ -50,7 +50,7 @@ function getTypes(ctx: Router.IRouterContext) {
 }
 
 async function createUnit(ctx: Router.IRouterContext) {
-  const id = await createAnalyticUnitFromObject(ctx.request.body);
+  const id = await saveAnalyticUnitFromObject(ctx.request.body);
 
   ctx.response.body = { id };
 }

@@ -2,9 +2,9 @@ import { AnalyticsMessageMethod, AnalyticsMessage } from '../models/analytics_me
 import { AnalyticsTask, AnalyticsTaskType, AnalyticsTaskId } from '../models/analytics_task_model';
 import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import * as Segment from '../models/segment_model';
-import * as Threshold from '../models/threshold_model';
-import * as AnalyticUnit from '../models/analytic_units/analytic_unit_model';
+import * as AnalyticUnit from '../models/analytic_units';
 import * as Detection from '../models/detection_model';
+import { ThresholdAnalyticUnit } from '../models/analytic_units/threshold_analytic_unit_model';
 import { AnalyticsService } from '../services/analytics_service';
 import { AlertService } from '../services/alert_service';
 import { HASTIC_API_KEY } from '../config';
@@ -226,8 +226,10 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
       segmentObjs = _.concat(segmentObjs, deletedSegmentsObjs);
       taskPayload.segments = segmentObjs;
     } else if(detector === AnalyticUnit.DetectorType.THRESHOLD) {
-      const threshold = await Threshold.findOne(id);
-      taskPayload.threshold = threshold;
+      taskPayload.threshold = {
+        value: (<ThresholdAnalyticUnit>analyticUnit).value,
+        condition: (<ThresholdAnalyticUnit>analyticUnit).condition
+      };
     }
 
     const range = await getQueryRange(id, detector);
@@ -420,11 +422,11 @@ export async function getActiveWebhooks() {
   return analyticUnits.map(analyticUnit => analyticUnit.id);
 }
 
-export async function createAnalyticUnitFromObject(obj: any): Promise<AnalyticUnit.AnalyticUnitId> {
+export async function saveAnalyticUnitFromObject(obj: any): Promise<AnalyticUnit.AnalyticUnitId> {
   if(obj.datasource !== undefined) {
     obj.metric.datasource = obj.datasource;
   }
-  const unit: AnalyticUnit.AnalyticUnit = AnalyticUnit.AnalyticUnit.fromObject(obj);
+  const unit: AnalyticUnit.AnalyticUnit = AnalyticUnit.createAnalyticUnitFromObject(obj);
   const id = await AnalyticUnit.create(unit);
 
   return id;
@@ -458,14 +460,6 @@ export async function updateSegments(
   const addedIds = await Segment.insertSegments(segmentsToInsert);
 
   return { addedIds };
-}
-
-export async function updateThreshold(
-  id: AnalyticUnit.AnalyticUnitId,
-  value: number,
-  condition: Threshold.Condition
-) {
-  await Threshold.updateThreshold(id, value, condition);
 }
 
 export async function runLearningWithDetection(id: AnalyticUnit.AnalyticUnitId) {

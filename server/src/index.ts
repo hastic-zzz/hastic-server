@@ -1,6 +1,5 @@
 import { router as analyticUnitsRouter } from './routes/analytic_units_router';
 import { router as segmentsRouter } from './routes/segments_router';
-import { router as thresholdRouter } from './routes/threshold_router';
 import { router as dataRouter } from './routes/data_router';
 import { router as detectionsRouter }  from './routes/detections_router';
 
@@ -56,7 +55,6 @@ async function init() {
   const rootRouter = new Router();
   rootRouter.use('/analyticUnits', analyticUnitsRouter.routes(), analyticUnitsRouter.allowedMethods());
   rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
-  rootRouter.use('/threshold', thresholdRouter.routes(), thresholdRouter.allowedMethods());
   rootRouter.use('/query', dataRouter.routes(), dataRouter.allowedMethods());
   rootRouter.use('/detections', detectionsRouter.routes(), detectionsRouter.allowedMethods());
 
