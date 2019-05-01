@@ -133,6 +133,8 @@ def unite_intersecting_segments(segments: List[Tuple[int, int]]) -> List[Tuple[i
     At the entrance - list of segments with start and end.
     Find intersecting segments in this list and unite it.
     '''
+    if len(segments) < 2:
+        return segments
     last_couple = segments[0]
     for i in range(1,len(segments)):
         if segments[i][0] <= last_couple[1]:
