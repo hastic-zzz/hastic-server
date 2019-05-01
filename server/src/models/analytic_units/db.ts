@@ -5,6 +5,8 @@ import { Collection, makeDBQ, SortingOrder } from '../../services/data_service';
 
 import { Metric } from 'grafana-datasource-kit';
 
+import * as _ from 'lodash';
+
 
 const db = makeDBQ(Collection.ANALYTIC_UNITS);
 
@@ -45,9 +47,27 @@ export async function remove(id: AnalyticUnitId): Promise<void> {
   await db.removeOne(id);
 }
 
+/**
+ * Changes values of analytic unit fields to according values of obj
+ *
+ * @param id analytic unit id
+ * @param obj object with keys and values which need to be updated in analytic unit
+ */
 export async function update(id: AnalyticUnitId, obj: any) {
-  const analyticUnit = createAnalyticUnitFromObject(obj);
-  const updateObj = analyticUnit.toPanelObject();
+  const analyticUnitObj = await db.findOne(id);
+  if(analyticUnitObj === null) {
+    throw new Error(`Analytic unit ${id} doesn't exist`);
+  }
+
+  const analyticUnit = createAnalyticUnitFromObject(analyticUnitObj);
+  let updateObj: any = analyticUnit.toPanelObject();
+  delete updateObj.id;
+  updateObj = _.mapValues(updateObj, (value, key) => {
+    if(_.has(obj, key)) {
+      return obj[key];
+    }
+    return value;
+  });
 
   return db.updateOne(id, updateObj);
 }
