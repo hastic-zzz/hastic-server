@@ -42,6 +42,7 @@ class AnomalyDetector(Detector):
                 anomaly_indexes.append(data.index[idx])
         segments = utils.close_filtering(anomaly_indexes, 1)
         segments = utils.get_start_and_end_of_segments(segments)
+        #TODO: change segments int indexes(or pd timestamps) to timestamp for node
         last_detection_time = dataframe[-1]
         return {
             'cache': cache,
