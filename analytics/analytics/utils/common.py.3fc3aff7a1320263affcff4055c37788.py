@@ -141,7 +141,8 @@ def unite_intersecting_segments(segments: List[Tuple[int, int]]) -> List[Tuple[i
             segments[i][0] = min(last_couple[0], segments[i][0])
             segments[i][1] = max(last_couple[1], segments[i][1])
             segments[i-1] = []
-        last_couple = segments[i]
+        else:
+            last_couple = segments[i]
     segments = [x for x in segments if x != []]
     return segments
 
