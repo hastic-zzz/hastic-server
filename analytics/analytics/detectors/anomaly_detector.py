@@ -91,6 +91,9 @@ class AnomalyDetector(Detector):
         return False
 
     def concat_detection_results(self, detection_results: List[DetectionResult]) -> DetectionResult:
+        if detection_results == []:
+            return None
+        
         united_segments = []
         for result in detection_results:
             segments = [[segment['from'], segment['to']] for segment in result.segments]

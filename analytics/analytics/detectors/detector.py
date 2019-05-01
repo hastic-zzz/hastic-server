@@ -30,8 +30,12 @@ class Detector(ABC):
         return True
 
     def concat_detection_results(self, detection_results: List[DetectionResult]) -> DetectionResult:
+        if detection_results == []:
+            return None
+
         united_result = detection_results[0]
         for result in detection_results[1:]:
             united_result.cache = result.cache
-            united_result.lastDetectionTime = result.lastDetectionTime
+            united_result.last_detection_time = result.last_detection_time
             united_result.segments.extend(result.segments)
+        return united_result

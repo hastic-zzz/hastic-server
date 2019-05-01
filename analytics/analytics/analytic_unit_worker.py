@@ -66,6 +66,9 @@ class AnalyticUnitWorker:
             detected: DetectionResult = self._detector.detect(chunk_dataframe, cache)
             detections.append(detected)
 
+        if detections == []:
+            raise RuntimeError(f'do_detect for {self.analytic_unit_id} got empty  detection result')
+
         detection_result = self._detector.concat_detection_results(detections)
 
         return detection_result.to_json()
@@ -82,11 +85,12 @@ class AnalyticUnitWorker:
             await asyncio.sleep(0)
             chunk_dataframe = prepare_data(chunk)
             detected: DetectionResult = self._detector.consume_data(chunk_dataframe, cache)
-            detections.append(detected)
+            if detected is not None:
+                detections.append(detected)
 
         detection_result = self._detector.concat_detection_results(detections)
 
-        if detection_result.lastDetectionTime is None:
+        if detection_result.last_detection_time is None:
             return None
         else:
             return detection_result.to_json()
