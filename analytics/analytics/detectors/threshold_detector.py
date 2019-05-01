@@ -7,6 +7,7 @@ from detectors import Detector
 from models import ModelCache
 from time import time
 from utils import convert_sec_to_ms, convert_pd_timestamp_to_ms
+from analytic_types.detectors_typing import DetectionResult
 
 
 logger = log.getLogger('THRESHOLD_DETECTOR')
@@ -27,7 +28,7 @@ class ThresholdDetector(Detector):
             }
         }
 
-    def detect(self, dataframe: pd.DataFrame, cache: ModelCache) -> dict:
+    def detect(self, dataframe: pd.DataFrame, cache: ModelCache) -> DetectionResult:
         if cache is None or cache == {}:
             raise ValueError('Threshold detector error: cannot detect before learning')
         value = cache['value']
@@ -64,13 +65,9 @@ class ThresholdDetector(Detector):
                 if last_value < value:
                     segments.append(segment)
 
-        return {
-            'cache': cache,
-            'segments': segments,
-            'lastDetectionTime': now
-        }
+        return DetectionResult(cache, segment, now)
 
-    def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
+    def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[DetectionResult]:
         result = self.detect(data, cache)
         return result if result else None
 

@@ -1,7 +1,8 @@
 from models import ModelCache
 from abc import ABC, abstractmethod
 from pandas import DataFrame
-from typing import Optional, Union
+from typing import Optional, Union, List
+from analytic_types.detectors_typing import DetectionResult
 
 
 class Detector(ABC):
@@ -27,3 +28,10 @@ class Detector(ABC):
 
     def is_detection_intersected(self) -> bool:
         return True
+
+    def concat_detection_results(self, detection_results: List[DetectionResult]) -> DetectionResult:
+        united_result = detection_results[0]
+        for result in detection_results[1:]:
+            united_result.cache = result.cache
+            united_result.lastDetectionTime = result.lastDetectionTime
+            united_result.segments.extend(result.segments)
