@@ -37,14 +37,16 @@ class ThresholdDetector(Detector):
         segments = []
         for index, row in dataframe.iterrows():
             current_timestamp = convert_pd_timestamp_to_ms(row['timestamp'])
+            segment = { 'from': current_timestamp, 'to': current_timestamp }
             # TODO: merge segments
-            segment = { 'from': current_timestamp, 'to': current_timestamp , 'params': { value: row['value'] } }
             if pd.isnull(row['value']):
                 if condition == 'NO_DATA':
+                    segment['params'] = { value: None }
                     segments.append(segment)
                 continue
 
-            current_value = float(row['value'])
+            current_value = row['value']
+            segment['params'] = { value: row['value'] }
             if condition == '>':
                 if current_value > value:
                     segments.append(segment)
@@ -61,10 +63,12 @@ class ThresholdDetector(Detector):
                 if current_value < value:
                     segments.append(segment)
 
+        last_entry = dataframe.iloc[-1]
+        last_detection_time = convert_pd_timestamp_to_ms(last_entry['timestamp'])
         return {
             'cache': cache,
             'segments': segments,
-            'lastDetectionTime': convert_pd_timestamp_to_ms(dataframe.iloc[-1]['timestamp'])
+            'lastDetectionTime': last_detection_time
         }
 
     def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
