@@ -1,6 +1,8 @@
 import { AnalyticUnitId } from './analytic_units';
 import { Collection, makeDBQ } from '../services/data_service';
 
+import * as _ from 'lodash';
+
 
 const db = makeDBQ(Collection.ANALYTIC_UNIT_CACHES);
 // TODO: count milliseconds in index from dataset
@@ -31,7 +33,7 @@ export class AnalyticUnitCache {
   }
 
   public getIntersection(): number {
-    if(this.data !== undefined && this.data !== null) {
+    if(_.has(this.data, 'windowSize')) {
       //TODO: return one window size after resolving https://github.com/hastic/hastic-server/issues/508
       return this.data.windowSize * 2 * MILLISECONDS_IN_INDEX;
     }
