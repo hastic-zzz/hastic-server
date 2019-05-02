@@ -1,14 +1,14 @@
 import config
-import detectors
+import  detectors
 import logging
 import pandas as pd
-from typing import Optional, Union, Generator, List
+from typing import Optional, Union, Generator, List, Tuple
 from models import ModelCache
 import concurrent.futures
 import asyncio
 import utils
 from utils import get_intersected_chunks, get_chunks, prepare_data
-from analytic_types.detectors_typing import DetectionResult
+from analytic_types.detectors_typing import DetectionResult, ProcessingResult
 
 
 logger = logging.getLogger('AnalyticUnitWorker')
@@ -46,7 +46,7 @@ class AnalyticUnitWorker:
         except asyncio.TimeoutError:
             raise Exception('Timeout ({}s) exceeded while learning'.format(config.LEARNING_TIMEOUT))
 
-    async def do_detect(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
+    async def do_detect(self, data: List[Tuple[int, int]], cache: Optional[ModelCache]) -> dict:
 
         window_size = self._detector.get_window_size(cache)
         chunk_size = window_size * self.CHUNK_WINDOW_SIZE_FACTOR
@@ -67,7 +67,7 @@ class AnalyticUnitWorker:
             detections.append(detected)
 
         if detections == []:
-            raise RuntimeError(f'do_detect for {self.analytic_unit_id} got empty  detection result')
+            raise RuntimeError(f'do_detect for {self.analytic_unit_id} got empty detection results')
 
         detection_result = self._detector.concat_detection_results(detections)
 
@@ -77,7 +77,7 @@ class AnalyticUnitWorker:
         if self._training_future is not None:
             self._training_future.cancel()
 
-    async def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
+    async def consume_data(self, data: List[Tuple[int, int]], cache: Optional[ModelCache]) -> Optional[dict]:
         window_size = self._detector.get_window_size(cache)
 
         detections: List[DetectionResult] = []
@@ -94,3 +94,22 @@ class AnalyticUnitWorker:
             return None
         else:
             return detection_result.to_json()
+
+    async def process_data(self, data: List[Tuple[int, int]], cache: ModelCache) -> dict:
+        assert isinstance(self._detector, detectors.ProcessingDetector), f'{self.analytic_unit_id} detector is not ProcessingDetector, can`t process data'
+        assert cache is not None, f'{self.analytic_unit_id} got empty cache for processing data'
+
+        processing_results: List[ProcessingResult] = []
+        window_size = self._detector.get_window_size(cache)
+        for chunk in get_chunks(data, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
+            await asyncio.sleep(0)
+            chunk_dataframe = prepare_data(chunk)
+            processed: ProcessingResult = self._detector.process_data(chunk_dataframe, cache)
+            if processed is not None:
+                processing_results.append(processed)
+
+        if processing_results == []:
+            raise RuntimeError(f'process_data for {self.analytic_unit_id} got empty processing results')
+
+        united_result = self._detector.concat_processing_results(processing_results, cache)
+        return united_result

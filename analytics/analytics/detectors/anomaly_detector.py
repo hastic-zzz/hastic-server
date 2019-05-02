@@ -4,8 +4,8 @@ from typing import Optional, Union, List, Tuple
 
 from analytic_types import AnalyticUnitId
 from analytic_types.data_bucket import DataBucket
-from analytic_types.detectors_typing import DetectionResult
-from detectors import Detector
+from analytic_types.detectors_typing import DetectionResult, ProcessingResult
+from detectors import ProcessingDetector
 from models import ModelCache
 import utils
 from analytic_types import AnalyticUnitId
@@ -15,7 +15,7 @@ MIN_DEPENDENCY_FACTOR = 0.1
 logger = logging.getLogger('ANOMALY_DETECTOR')
 
 
-class AnomalyDetector(Detector):
+class AnomalyDetector(ProcessingDetector):
 
     def __init__(self, analytic_unit_id: AnalyticUnitId):
         self.analytic_unit_id = analytic_unit_id
@@ -31,8 +31,6 @@ class AnomalyDetector(Detector):
 
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> DetectionResult:
         data = dataframe['value']
-        alpha = cache['alpha']
-        confidence = cache['confidence']
 
         last_value = None
         if cache is not None:
@@ -94,14 +92,20 @@ class AnomalyDetector(Detector):
         if detection_results == []:
             return None
         
-        united_segments = []
+        united_result = DetectionResult()
+
         for result in detection_results:
             segments = [[segment['from'], segment['to']] for segment in result.segments]
             segments = utils.unite_intersecting_segments(segments)
             segments = [{'from': segment[0], 'to': segment[1]} for segment in segments]
-            united_segments.extend(segments)
 
-        last_cache = detection_results[-1].cache
-        last_detection_time = detection_results[-1].last_detection_time
+            united_result.segments.extend(segments)
+            united_result.cache = result.cache
+            united_result.last_detection_time = result.last_detection_time
 
-        return DetectionResult(last_cache, united_segments, last_detection_time)
+        return united_result
+
+    def process_data(self, data: pd.DataFrame, cache: ModelCache) -> ProcessingResult:
+        smoothed = utils.exponential_smoothing(data, cache['alpha'])
+        result = ProcessingResult(smoothed.values.tolist())
+        return result

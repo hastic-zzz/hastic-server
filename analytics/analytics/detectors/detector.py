@@ -2,7 +2,7 @@ from models import ModelCache
 from abc import ABC, abstractmethod
 from pandas import DataFrame
 from typing import Optional, Union, List
-from analytic_types.detectors_typing import DetectionResult
+from analytic_types.detectors_typing import DetectionResult, ProcessingResult
 
 
 class Detector(ABC):
@@ -38,4 +38,20 @@ class Detector(ABC):
             united_result.cache = result.cache
             united_result.last_detection_time = result.last_detection_time
             united_result.segments.extend(result.segments)
+        return united_result
+
+class ProcessingDetector(Detector):
+
+    @abstractmethod
+    def process_data(self, data, cache: Optional[ModelCache]) -> ProcessingResult:
+        pass
+
+    def concat_processing_results(self, processing_results: List[ProcessingResult]) -> ProcessingResult:
+        if processing_results == []:
+            return None
+
+        united_result = ProcessingResult()
+        for result in processing_results:
+            united_result.data.extend(result.data)
+
         return united_result

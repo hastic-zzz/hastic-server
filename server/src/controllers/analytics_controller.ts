@@ -103,7 +103,7 @@ export function terminate() {
   alertService.stopAlerting();
 }
 
-async function runTask(task: AnalyticsTask): Promise<TaskResult> {
+export async function runTask(task: AnalyticsTask): Promise<TaskResult> {
   return new Promise<TaskResult>((resolver: TaskResolver) => {
     taskResolvers.set(task.id, resolver); // it will be resolved in onTaskResult()
     analyticsService.sendTask(task);      // we dont wait for result here
@@ -251,7 +251,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
 
 }
 
-export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, to?: number) {
+export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, to?: number, args?: any) {
   let previousLastDetectionTime: number = undefined;
 
   try {
