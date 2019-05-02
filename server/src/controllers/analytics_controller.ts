@@ -22,6 +22,8 @@ const SECONDS_IN_MINUTE = 60;
 
 type TaskResult = any;
 type DetectionResult = any;
+// TODO: move type definitions somewhere
+type TimeRange = { from: number, to: number };
 export type TaskResolver = (taskResult: TaskResult) => void;
 
 const taskResolvers = new Map<AnalyticsTaskId, TaskResolver>();
@@ -113,7 +115,7 @@ async function runTask(task: AnalyticsTask): Promise<TaskResult> {
 async function getQueryRange(
   analyticUnitId: AnalyticUnit.AnalyticUnitId,
   detectorType: AnalyticUnit.DetectorType
-): Promise<{ from: number, to: number }> {
+): Promise<TimeRange> {
   if(detectorType === AnalyticUnit.DetectorType.PATTERN) {
     // TODO: find labeled OR deleted segments to generate timerange
     const segments = await Segment.findMany(analyticUnitId, { labeled: true });
@@ -137,7 +139,7 @@ async function getQueryRange(
 
 async function query(
   analyticUnit: AnalyticUnit.AnalyticUnit,
-  range: { from: number, to: number }
+  range: TimeRange
 ) {
   console.log(`query time range: from ${new Date(range.from)} to ${new Date(range.to)}`);
 
@@ -232,7 +234,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
       };
     }
 
-    let range;
+    let range: TimeRange;
     if(from !== undefined && to !== undefined) {
       range = { from, to };
     } else {
@@ -267,7 +269,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     let analyticUnitType = unit.type;
     let detector = AnalyticUnit.getDetectorByType(analyticUnitType);
 
-    let range;
+    let range: TimeRange;
     if(from !== undefined && to !== undefined) {
       range = { from, to };
     } else {
