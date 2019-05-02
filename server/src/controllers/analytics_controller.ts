@@ -192,7 +192,7 @@ function getQueryRangeForLearningBySegments(segments: Segment.Segment[]) {
   return { from, to };
 }
 
-export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
+export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number, to?: number) {
   console.log('learning started...');
   try {
 
@@ -232,7 +232,12 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
       };
     }
 
-    const range = await getQueryRange(id, detector);
+    let range;
+    if(from !== undefined && to !== undefined) {
+      range = { from, to };
+    } else {
+      range = await getQueryRange(id, detector);
+    }
     taskPayload.data = await query(analyticUnit, range);
 
     let task = new AnalyticsTask(
@@ -462,12 +467,16 @@ export async function updateSegments(
   return { addedIds };
 }
 
-export async function runLearningWithDetection(id: AnalyticUnit.AnalyticUnitId) {
+export async function runLearningWithDetection(
+  id: AnalyticUnit.AnalyticUnitId,
+  from?: number,
+  to?: number
+): Promise<void> {
   // TODO: move setting status somehow "inside" learning
   await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.PENDING);
   await Detection.clearSpans(id);
-  runLearning(id)
-    .then(() => runDetect(id))
+  runLearning(id, from, to)
+    .then(() => runDetect(id, from, to))
     .catch(err => console.error(err));
 }
 
