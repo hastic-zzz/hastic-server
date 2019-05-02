@@ -9,7 +9,7 @@ export abstract class AnalyticUnit {
     public grafanaUrl: string,
     public panelId: string,
     // TODO: enum type
-    // TODO: type -> modelType
+    // TODO: type -> subType
     public type: string,
     public metric?: Metric,
     public alert?: boolean,
