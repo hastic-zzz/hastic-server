@@ -1,5 +1,5 @@
 /*
-  How to add migrations:
+  How to add a migration:
   - create migration function
   - add it with the next revision number to REVISIONS Map
   It will be automatically applied if actual DB revision < added revision
