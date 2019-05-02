@@ -1,3 +1,10 @@
+/*
+  How to add migrations:
+  - create migration function
+  - add it with the next revision number to REVISIONS Map
+  It will be automatically applied if actual DB revision < added revision
+*/
+
 import { Collection, makeDBQ } from './services/data_service';
 
 import * as _ from 'lodash';
