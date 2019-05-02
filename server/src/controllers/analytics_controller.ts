@@ -474,6 +474,10 @@ export async function runLearningWithDetection(
 ): Promise<void> {
   // TODO: move setting status somehow "inside" learning
   await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.PENDING);
+  const foundSegments = await Segment.findMany(id, { labeled: false, deleted: false });
+  if(foundSegments !== null) {
+    await Segment.removeSegments(foundSegments.map(segment => segment.id));
+  }
   await Detection.clearSpans(id);
   runLearning(id, from, to)
     .then(() => runDetect(id, from, to))
