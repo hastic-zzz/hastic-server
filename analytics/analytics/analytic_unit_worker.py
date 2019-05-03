@@ -57,14 +57,7 @@ class AnalyticUnitWorker:
           'lastDetectionTime': None
         }
 
-        chunks = []
-        # XXX: get_chunks(data, chunk_size) == get_intersected_chunks(data, 0, chunk_size)
-        if self._detector.is_detection_intersected():
-            chunks = get_intersected_chunks(data, chunk_intersection, chunk_size)
-        else:
-            chunks = get_chunks(data, chunk_size)
-
-        for chunk in chunks:
+        for chunk in get_intersected_chunks(data, chunk_intersection, chunk_size):
             await asyncio.sleep(0)
             chunk_dataframe = prepare_data(chunk)
             detected = self._detector.detect(chunk_dataframe, cache)
@@ -93,7 +86,7 @@ class AnalyticUnitWorker:
             self.__append_detection_result(detection_result, detected)
         
         detection_result['segments'] = self._detector.get_intersections(detection_result['segments'])
-        
+
         if detection_result['lastDetectionTime'] is None:
             return None
         else:

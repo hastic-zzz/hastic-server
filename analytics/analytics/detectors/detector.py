@@ -28,6 +28,3 @@ class Detector(ABC):
     @abstractmethod
     def get_intersections(self, segments: List[dict]) -> List[dict]:
         pass
-
-    def is_detection_intersected(self) -> bool:
-        return True
