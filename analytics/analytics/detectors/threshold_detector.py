@@ -77,6 +77,3 @@ class ThresholdDetector(Detector):
 
     def get_window_size(self, cache: Optional[ModelCache]) -> int:
         return self.WINDOW_SIZE
-
-    def get_intersections(self, segments: List[dict]) -> List[dict]:
-        return segments
