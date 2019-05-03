@@ -33,8 +33,8 @@ class Detector(ABC):
         if detection_results == []:
             return None
 
-        united_result = detection_results[0]
-        for result in detection_results[1:]:
+        united_result = DetectionResult()
+        for result in detection_results:
             united_result.cache = result.cache
             united_result.last_detection_time = result.last_detection_time
             united_result.segments.extend(result.segments)

@@ -90,7 +90,7 @@ class AnalyticUnitWorker:
 
         detection_result = self._detector.concat_detection_results(detections)
 
-        if detection_result.last_detection_time is None:
+        if detection_result is None or detection_result.last_detection_time is None:
             return None
         else:
             return detection_result.to_json()
