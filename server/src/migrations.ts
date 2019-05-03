@@ -1,3 +1,10 @@
+/*
+  How to add a migration:
+  - create migration function
+  - add it with the next revision number to REVISIONS Map
+  It will be automatically applied if actual DB revision < added revision
+*/
+
 import { Collection, makeDBQ } from './services/data_service';
 
 import * as _ from 'lodash';
@@ -6,6 +13,7 @@ import * as _ from 'lodash';
 const metaDB = makeDBQ(Collection.DB_META);
 const analyticUnitsDB = makeDBQ(Collection.ANALYTIC_UNITS);
 const analyticUnitCachesDB = makeDBQ(Collection.ANALYTIC_UNIT_CACHES);
+const thresholdsDB = makeDBQ(Collection.THRESHOLD);
 
 const DB_META_ID = '0';
 
@@ -15,7 +23,8 @@ type DbMeta = {
 
 const REVISIONS = new Map<number, Function>([
   [1, convertPanelUrlToPanelId],
-  [2, convertUnderscoreToCamelCase]
+  [2, convertUnderscoreToCamelCase],
+  [3, integrateThresholdsIntoAnalyticUnits]
 ]);
 
 export async function applyDBMigrations() {
@@ -38,9 +47,7 @@ export async function applyDBMigrations() {
 
 async function convertPanelUrlToPanelId() {
   const analyticUnits = await analyticUnitsDB.findMany({ panelUrl: { $exists: true } });
-  console.log(`Found ${analyticUnits.length} analytic units with panelUrl field`);
   if(analyticUnits.length === 0) {
-    console.log('Nothing to migrate');
     return;
   }
 
@@ -50,7 +57,6 @@ async function convertPanelUrlToPanelId() {
     .map(analyticUnit => {
       const parsedPanelUrl = analyticUnit.panelUrl.match(PANEL_URL_REGEX) || analyticUnit.panelUrl.match(NEW_PANEL_URL_REGEX);
       if(parsedPanelUrl === null) {
-        console.log(`Cannot parse url: ${analyticUnit.panelUrl}`);
         return null;
       }
       const grafanaUrl = parsedPanelUrl[1];
@@ -94,4 +100,18 @@ async function convertUnderscoreToCamelCase() {
   );
 
   await Promise.all(promises);
+}
+
+async function integrateThresholdsIntoAnalyticUnits() {
+  const thresholds = await thresholdsDB.findMany({});
+
+  const promises = thresholds.map(threshold =>
+    analyticUnitsDB.updateOne(threshold._id, {
+      value: threshold.value,
+      condition: threshold.condition
+    })
+  );
+
+  await Promise.all(promises);
+  await thresholdsDB.removeMany({});
 }

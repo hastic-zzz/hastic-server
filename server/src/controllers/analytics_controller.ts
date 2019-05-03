@@ -2,9 +2,9 @@ import { AnalyticsMessageMethod, AnalyticsMessage } from '../models/analytics_me
 import { AnalyticsTask, AnalyticsTaskType, AnalyticsTaskId } from '../models/analytics_task_model';
 import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import * as Segment from '../models/segment_model';
-import * as Threshold from '../models/threshold_model';
-import * as AnalyticUnit from '../models/analytic_unit_model';
+import * as AnalyticUnit from '../models/analytic_units';
 import * as Detection from '../models/detection_model';
+import { ThresholdAnalyticUnit } from '../models/analytic_units/threshold_analytic_unit_model';
 import { AnalyticsService } from '../services/analytics_service';
 import { AlertService } from '../services/alert_service';
 import { HASTIC_API_KEY } from '../config';
@@ -22,6 +22,8 @@ const SECONDS_IN_MINUTE = 60;
 
 type TaskResult = any;
 type DetectionResult = any;
+// TODO: move type definitions somewhere
+type TimeRange = { from: number, to: number };
 export type TaskResolver = (taskResult: TaskResult) => void;
 
 const taskResolvers = new Map<AnalyticsTaskId, TaskResolver>();
@@ -113,7 +115,7 @@ export async function runTask(task: AnalyticsTask): Promise<TaskResult> {
 async function getQueryRange(
   analyticUnitId: AnalyticUnit.AnalyticUnitId,
   detectorType: AnalyticUnit.DetectorType
-): Promise<{ from: number, to: number }> {
+): Promise<TimeRange> {
   if(detectorType === AnalyticUnit.DetectorType.PATTERN) {
     // TODO: find labeled OR deleted segments to generate timerange
     const segments = await Segment.findMany(analyticUnitId, { labeled: true });
@@ -137,7 +139,7 @@ async function getQueryRange(
 
 async function query(
   analyticUnit: AnalyticUnit.AnalyticUnit,
-  range: { from: number, to: number }
+  range: TimeRange
 ) {
   console.log(`query time range: from ${new Date(range.from)} to ${new Date(range.to)}`);
 
@@ -192,7 +194,7 @@ function getQueryRangeForLearningBySegments(segments: Segment.Segment[]) {
   return { from, to };
 }
 
-export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
+export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number, to?: number) {
   console.log('learning started...');
   try {
 
@@ -226,11 +228,18 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId) {
       segmentObjs = _.concat(segmentObjs, deletedSegmentsObjs);
       taskPayload.segments = segmentObjs;
     } else if(detector === AnalyticUnit.DetectorType.THRESHOLD) {
-      const threshold = await Threshold.findOne(id);
-      taskPayload.threshold = threshold;
+      taskPayload.threshold = {
+        value: (analyticUnit as ThresholdAnalyticUnit).value,
+        condition: (analyticUnit as ThresholdAnalyticUnit).condition
+      };
     }
 
-    const range = await getQueryRange(id, detector);
+    let range: TimeRange;
+    if(from !== undefined && to !== undefined) {
+      range = { from, to };
+    } else {
+      range = await getQueryRange(id, detector);
+    }
     taskPayload.data = await query(analyticUnit, range);
 
     let task = new AnalyticsTask(
@@ -260,7 +269,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     let analyticUnitType = unit.type;
     let detector = AnalyticUnit.getDetectorByType(analyticUnitType);
 
-    let range;
+    let range: TimeRange;
     if(from !== undefined && to !== undefined) {
       range = { from, to };
     } else {
@@ -420,11 +429,11 @@ export async function getActiveWebhooks() {
   return analyticUnits.map(analyticUnit => analyticUnit.id);
 }
 
-export async function createAnalyticUnitFromObject(obj: any): Promise<AnalyticUnit.AnalyticUnitId> {
+export async function saveAnalyticUnitFromObject(obj: any): Promise<AnalyticUnit.AnalyticUnitId> {
   if(obj.datasource !== undefined) {
     obj.metric.datasource = obj.datasource;
   }
-  const unit: AnalyticUnit.AnalyticUnit = AnalyticUnit.AnalyticUnit.fromObject(obj);
+  const unit: AnalyticUnit.AnalyticUnit = AnalyticUnit.createAnalyticUnitFromObject(obj);
   const id = await AnalyticUnit.create(unit);
 
   return id;
@@ -460,20 +469,20 @@ export async function updateSegments(
   return { addedIds };
 }
 
-export async function updateThreshold(
+export async function runLearningWithDetection(
   id: AnalyticUnit.AnalyticUnitId,
-  value: number,
-  condition: Threshold.Condition
-) {
-  await Threshold.updateThreshold(id, value, condition);
-}
-
-export async function runLearningWithDetection(id: AnalyticUnit.AnalyticUnitId) {
+  from?: number,
+  to?: number
+): Promise<void> {
   // TODO: move setting status somehow "inside" learning
   await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.PENDING);
+  const foundSegments = await Segment.findMany(id, { labeled: false, deleted: false });
+  if(foundSegments !== null) {
+    await Segment.removeSegments(foundSegments.map(segment => segment.id));
+  }
   await Detection.clearSpans(id);
-  runLearning(id)
-    .then(() => runDetect(id))
+  runLearning(id, from, to)
+    .then(() => runDetect(id, from, to))
     .catch(err => console.error(err));
 }
 

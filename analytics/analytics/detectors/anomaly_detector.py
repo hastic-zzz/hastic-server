@@ -8,7 +8,6 @@ from analytic_types.detectors_typing import DetectionResult, ProcessingResult
 from detectors import ProcessingDetector
 from models import ModelCache
 import utils
-from analytic_types import AnalyticUnitId
 
 MAX_DEPENDENCY_LEVEL = 100
 MIN_DEPENDENCY_FACTOR = 0.1
@@ -17,7 +16,7 @@ logger = logging.getLogger('ANOMALY_DETECTOR')
 
 class AnomalyDetector(ProcessingDetector):
 
-    def __init__(self, analytic_unit_id: AnalyticUnitId):
+    def __init__(self, analytic_unit_id):
         self.analytic_unit_id = analytic_unit_id
         self.bucket = DataBucket()
 
@@ -31,12 +30,12 @@ class AnomalyDetector(ProcessingDetector):
 
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> DetectionResult:
         data = dataframe['value']
-
         last_value = None
+
         if cache is not None:
             last_value = cache.get('lastValue')
 
-        smothed_data = utils.exponential_smoothing(data, cache['alpha'])
+        smothed_data = utils.exponential_smoothing(data, cache['alpha'], last_value)
         upper_bound = smothed_data + cache['confidence']
         lower_bound = smothed_data - cache['confidence']
 
@@ -46,9 +45,12 @@ class AnomalyDetector(ProcessingDetector):
                 anomaly_indexes.append(data.index[idx])
         segments = utils.close_filtering(anomaly_indexes, 1)
         segments = utils.get_start_and_end_of_segments(segments)
-        #TODO: change segments int indexes(or pd timestamps) to timestamp for node
-
-        last_detection_time = dataframe['timestamp'][-1]
+        segments = [(
+            utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[0]]),
+            utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[1]]),
+        ) for segment in segments]
+        last_dataframe_time = dataframe.iloc[-1]['timestamp']
+        last_detection_time = utils.convert_pd_timestamp_to_ms(last_dataframe_time)
         cache['lastValue'] = smothed_data[-1]
 
         return DetectionResult(cache, segments, last_detection_time)
@@ -69,8 +71,6 @@ class AnomalyDetector(ProcessingDetector):
 
         if len(self.bucket.data) >= self.get_window_size(cache):
             self.detect(self.bucket, cache)
-
-
 
     def get_window_size(self, cache: Optional[ModelCache]) -> int:
         '''
@@ -96,7 +96,7 @@ class AnomalyDetector(ProcessingDetector):
 
         for result in detection_results:
             segments = [[segment['from'], segment['to']] for segment in result.segments]
-            segments = utils.unite_intersecting_segments(segments)
+            segments = utils.merge_intersecting_intervals(segments)
             segments = [{'from': segment[0], 'to': segment[1]} for segment in segments]
 
             united_result.segments.extend(segments)
@@ -106,6 +106,6 @@ class AnomalyDetector(ProcessingDetector):
         return united_result
 
     def process_data(self, data: pd.DataFrame, cache: ModelCache) -> ProcessingResult:
-        smoothed = utils.exponential_smoothing(data, cache['alpha'])
+        smoothed = utils.exponential_smoothing(data, cache['alpha'], cache.get('lastValue'))
         result = ProcessingResult(smoothed.values.tolist())
         return result

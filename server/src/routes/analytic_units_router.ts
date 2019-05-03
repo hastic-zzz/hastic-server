@@ -1,7 +1,7 @@
 import * as AnalyticsController from '../controllers/analytics_controller';
-import * as AnalyticUnit from '../models/analytic_unit_model';
+import * as AnalyticUnit from '../models/analytic_units';
 
-import { createAnalyticUnitFromObject } from '../controllers/analytics_controller';
+import { saveAnalyticUnitFromObject } from '../controllers/analytics_controller';
 
 import * as Router from 'koa-router';
 import * as _ from 'lodash';
@@ -50,7 +50,7 @@ function getTypes(ctx: Router.IRouterContext) {
 }
 
 async function createUnit(ctx: Router.IRouterContext) {
-  const id = await createAnalyticUnitFromObject(ctx.request.body);
+  const id = await saveAnalyticUnitFromObject(ctx.request.body);
 
   ctx.response.body = { id };
 }
@@ -61,7 +61,7 @@ async function updateUnit(ctx: Router.IRouterContext) {
     throw new Error('Cannot update undefined id');
   }
 
-  AnalyticUnit.update(analyticUnit.id, analyticUnit);
+  await AnalyticUnit.update(analyticUnit.id, analyticUnit);
   ctx.response.body = {
     code: 200,
     message: 'Success'
@@ -123,9 +123,11 @@ async function deleteUnit(ctx: Router.IRouterContext) {
 }
 
 async function runDetect(ctx: Router.IRouterContext) {
-  const { ids } = ctx.request.body as { ids: AnalyticUnit.AnalyticUnitId[] };
+  const { ids, from, to } = ctx.request.body as {
+    ids: AnalyticUnit.AnalyticUnitId[], from: number, to: number
+  };
 
-  await Promise.all(ids.map(AnalyticsController.runLearningWithDetection));
+  await Promise.all(ids.map(id => AnalyticsController.runLearningWithDetection(id, from, to)));
 
   ctx.response.body = {
     code: 200,

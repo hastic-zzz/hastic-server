@@ -1,7 +1,8 @@
-import * as AnalyticUnit from '../models/analytic_unit_model';
+
 import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import { AnalyticsTask, AnalyticsTaskType } from '../models/analytics_task_model';
 import * as AnalyticsController from '../controllers/analytics_controller';
+import * as AnalyticUnit from '../models/analytic_units';
 import { HASTIC_API_KEY } from '../config';
 import { getGrafanaUrl } from '../utils/grafana';
 
