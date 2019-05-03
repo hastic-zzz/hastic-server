@@ -2,11 +2,14 @@ import logging
 import pandas as pd
 from typing import Optional, Union, List, Tuple
 
+from analytic_types import AnalyticUnitId
 from analytic_types.data_bucket import DataBucket
 from detectors import Detector
 from models import ModelCache
 import utils
 
+MAX_DEPENDENCY_LEVEL = 100
+MIN_DEPENDENCY_FACTOR = 0.1
 logger = logging.getLogger('ANOMALY_DETECTOR')
 
 
@@ -27,22 +30,27 @@ class AnomalyDetector(Detector):
         data = dataframe['value']
         last_values = None
         if cache is not None:
-            last_values = cache['last_values']
+            last_values = cache.get('last_values')
 
-        #TODO detection code here
-        smoth_data = utils.exponential_smoothing(data, cache['alpha'])
-        upper_bound = utils.exponential_smoothing(data + cache['confidence'], cache['alpha'])
-        lower_bound = utils.exponential_smoothing(data - cache['confidence'], cache['alpha'])
+        smothed_data = utils.exponential_smoothing(data, cache['alpha'])
+        upper_bound = smothed_data + cache['confidence']
+        lower_bound = smothed_data - cache['confidence']
 
-        segemnts = []
+        anomaly_indexes = []
         for idx, val in enumerate(data.values):
-            if val > upper_bound[idx] or val < lower_bound[idx]:
-                segemnts.append(idx)
-
-        last_detection_time = dataframe['timestamp'][-1]
+            if val > upper_bound.values[idx] or val < lower_bound.values[idx]:
+                anomaly_indexes.append(data.index[idx])
+        segments = utils.close_filtering(anomaly_indexes, 1)
+        segments = utils.get_start_and_end_of_segments(segments)
+        segments = [(
+            utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[0]]),
+            utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[1]]),
+        ) for segment in segments]
+        last_dataframe_time = dataframe.iloc[-1]['timestamp']
+        last_detection_time = utils.convert_pd_timestamp_to_ms(last_dataframe_time)
         return {
             'cache': cache,
-            'segments': segemnts,
+            'segments': segments,
             'lastDetectionTime': last_detection_time
         }
 
@@ -50,29 +58,21 @@ class AnomalyDetector(Detector):
         self.detect(data, cache)
 
 
-    def __smooth_data(self, dataframe: pd.DataFrame) -> List[Tuple[int, float]]:
-        '''
-        smooth data using exponential smoothing/moving average/weighted_average
-        '''
-    
-    def __get_confidence_window(self, smooth_data: pd.Series, condfidence: float) -> Tuple[pd.Series, pd.Series]:
-        '''
-        build confidence interval above and below smoothed data
-        '''
-
-    def __get_dependency_level(self, alpha: float) -> int:
+    def get_window_size(self, cache: Optional[ModelCache]) -> int:
         '''
         get the number of values that will affect the next value
         '''
 
-        for level in range(1, 100):
-            if (1 - alpha) ** level < 0.1:
+        if cache is None:
+            raise ValueError('anomaly detector got None cache')
+        
+        for level in range(1, MAX_DEPENDENCY_LEVEL):
+            if (1 - cache['alpha']) ** level < MIN_DEPENDENCY_FACTOR:
                 break
         return level
 
-    def get_window_size(self, cache: Optional[ModelCache]) -> int:
-        if cache is None:
-            raise ValueError('anomaly detector got None cache')
-
-        #TODO: calculate value based on `alpha` value from cache
-        return 1
+    def get_intersections(self, segments: List[dict]) -> List[dict]:
+        segments = [[segment['from'], segment['to']] for segment in segments]
+        segments = utils.merge_intersecting_intervals(segments)
+        segments = [{'from': segment[0], 'to': segment[1]} for segment in segments]
+        return segments

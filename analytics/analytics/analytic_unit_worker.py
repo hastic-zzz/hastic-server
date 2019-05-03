@@ -2,11 +2,11 @@ import config
 import detectors
 import logging
 import pandas as pd
-from typing import Optional, Union, Generator
+from typing import Optional, Union, Generator, List
 from models import ModelCache
 import concurrent.futures
 import asyncio
-
+import utils
 from utils import get_intersected_chunks, get_chunks, prepare_data
 
 
@@ -62,7 +62,7 @@ class AnalyticUnitWorker:
             chunk_dataframe = prepare_data(chunk)
             detected = self._detector.detect(chunk_dataframe, cache)
             self.__append_detection_result(detection_result, detected)
-
+        detection_result['segments'] = self._detector.get_intersections(detection_result['segments'])
         return detection_result
 
     def cancel(self):
@@ -84,6 +84,8 @@ class AnalyticUnitWorker:
             chunk_dataframe = prepare_data(chunk)
             detected = self._detector.consume_data(chunk_dataframe, cache)
             self.__append_detection_result(detection_result, detected)
+        
+        detection_result['segments'] = self._detector.get_intersections(detection_result['segments'])
 
         if detection_result['lastDetectionTime'] is None:
             return None
