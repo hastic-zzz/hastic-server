@@ -1,7 +1,7 @@
 import logging as log
 
 import pandas as pd
-from typing import Optional
+from typing import Optional, List
 
 from detectors import Detector
 from models import ModelCache

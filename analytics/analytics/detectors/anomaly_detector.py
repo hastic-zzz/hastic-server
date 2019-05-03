@@ -30,7 +30,7 @@ class AnomalyDetector(Detector):
         data = dataframe['value']
         last_values = None
         if cache is not None:
-            last_values = cache['last_values']
+            last_values = cache.get('last_values')
 
         smothed_data = utils.exponential_smoothing(data, cache['alpha'])
         upper_bound = smothed_data + cache['confidence']
@@ -46,7 +46,8 @@ class AnomalyDetector(Detector):
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[0]]),
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[1]]),
         ) for segment in segments]
-        last_detection_time = dataframe[-1]
+        last_dataframe_time = dataframe.iloc[-1]['timestamp']
+        last_detection_time = utils.convert_pd_timestamp_to_ms(last_dataframe_time)
         return {
             'cache': cache,
             'segments': segments,

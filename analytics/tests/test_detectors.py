@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 
-from detectors import pattern_detector, threshold_detector
+from detectors import pattern_detector, threshold_detector, anomaly_detector
 
 class TestPatternDetector(unittest.TestCase):
 
@@ -28,3 +28,21 @@ class TestThresholdDetector(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             detector.detect([], {})
+
+
+class TestAnomalyDetector(unittest.TestCase):
+
+    def test_dataframe(self):
+        data_val = [0, 1, 2, 1, 2, 10, 1, 2, 1]
+        data_ind = [1523889000000 + i for i in range(len(data_val))]
+        data = {'timestamp': data_ind, 'value': data_val}
+        dataframe = pd.DataFrame(data = data)
+        dataframe['timestamp'] = pd.to_datetime(dataframe['timestamp'], unit='ms')
+        cache =  {
+            'confidence': 2,
+            'alpha': 0.1,
+        }
+        detector = anomaly_detector.AnomalyDetector()
+        detect_result = detector.detect(dataframe, cache)
+        result = [(1523889000005.0, 1523889000005.0)]
+        self.assertEqual(result, detect_result['segments'])
