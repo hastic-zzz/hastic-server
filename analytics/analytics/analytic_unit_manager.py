@@ -19,7 +19,7 @@ def get_detector_by_type(
     elif detector_type == 'threshold':
         return detectors.ThresholdDetector()
     elif detector_type == 'anomaly':
-        return detectors.AnomalyDetector()
+        return detectors.AnomalyDetector(analytic_unit_id)
 
     raise ValueError('Unknown detector type "%s"' % detector_type)
 
@@ -73,6 +73,8 @@ class AnalyticUnitManager:
                 raise ValueError('No segments or threshold in LEARN payload')
         elif task['type'] == 'DETECT':
             return await worker.do_detect(data, payload['cache'])
+        elif task['type'] == 'PROCESS':
+            return await worker.process_data(data, payload['cache'])
 
         raise ValueError('Unknown task type "%s"' % task['type'])
 

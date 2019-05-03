@@ -55,8 +55,7 @@ async function query(ctx: Router.IRouterContext) {
   const grafanaUrl = getGrafanaUrl(analyticUnit.grafanaUrl);
   const data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
 
-  const anomalyDetectorType = _.first(AnalyticUnit.ANALYTIC_UNIT_TYPES.anomaly).value;
-  if(analyticUnit.detectorType !== anomalyDetectorType) {
+  if(analyticUnit.detectorType !== AnalyticUnit.DetectorType.ANOMALY) {
     ctx.response.body = { results: data };
     return;
   }

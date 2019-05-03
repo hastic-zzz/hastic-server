@@ -46,7 +46,8 @@ export const ANALYTIC_UNIT_TYPES = {
 
 export enum DetectorType {
   PATTERN = 'pattern',
-  THRESHOLD = 'threshold'
+  THRESHOLD = 'threshold',
+  ANOMALY = 'anomaly'
 };
 
 export type AnalyticUnitId = string;
