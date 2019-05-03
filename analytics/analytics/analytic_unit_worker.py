@@ -62,7 +62,7 @@ class AnalyticUnitWorker:
             chunk_dataframe = prepare_data(chunk)
             detected = self._detector.detect(chunk_dataframe, cache)
             self.__append_detection_result(detection_result, detected)
-        detection_result['segments'] = self.__get_intersections(detection_result['segments'])
+        detection_result['segments'] = self._detector.get_intersections(detection_result['segments'])
         return detection_result
 
     def cancel(self):
@@ -85,7 +85,7 @@ class AnalyticUnitWorker:
             detected = self._detector.consume_data(chunk_dataframe, cache)
             self.__append_detection_result(detection_result, detected)
         
-        detection_result['segments'] = self.__get_intersections(detection_result['segments'])
+        detection_result['segments'] = self._detector.get_intersections(detection_result['segments'])
 
         if detection_result['lastDetectionTime'] is None:
             return None
@@ -97,9 +97,3 @@ class AnalyticUnitWorker:
             detection_result['cache'] = new_chunk['cache']
             detection_result['lastDetectionTime'] = new_chunk['lastDetectionTime']
             detection_result['segments'].extend(new_chunk['segments'])
-    
-    def __get_intersections(self, segments: List[dict]) -> List[dict]:
-        segments = [[segment['from'], segment['to']] for segment in segments]
-        segments = utils.unite_intersecting_segments(segments)
-        segments = [{'from': segment[0], 'to': segment[1]} for segment in segments]
-        return segments
