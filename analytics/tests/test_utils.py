@@ -270,7 +270,7 @@ class TestUtils(unittest.TestCase):
         data = pd.Series([5,4,3,2,1,0,1,2,3])
         result_list = [4, 5, 6]
         self.assertIn(utils.get_end_of_segment(data, False), result_list)
-    
+
     def test_get_borders_of_peaks(self):
         data = pd.Series([1,0,1,2,3,2,1,0,0,1,2,3,4,3,2,2,1,0,1,2,3,4,5,3,2,1,0])
         pattern_center = [4, 12, 22]
@@ -278,7 +278,7 @@ class TestUtils(unittest.TestCase):
         confidence = 1.5
         result = [(1, 7), (9, 15), (19, 25)]
         self.assertEqual(utils.get_borders_of_peaks(pattern_center, data, ws, confidence), result)
-    
+
     def test_get_borders_of_peaks_for_trough(self):
         data = pd.Series([4,4,5,5,3,1,3,5,5,6,3,2])
         pattern_center = [5]
@@ -286,6 +286,88 @@ class TestUtils(unittest.TestCase):
         confidence = 3
         result = [(3, 7)]
         self.assertEqual(utils.get_borders_of_peaks(pattern_center, data, ws, confidence, inverse = True), result)
+
+    def test_get_start_and_end_of_segments(self):
+        segments = [[1, 2, 3, 4], [5, 6, 7], [8], [], [12, 12]]
+        result = [[1, 4], [5, 7], [8, 8], [12, 12]]
+        utils_result = utils.get_start_and_end_of_segments(segments)
+        for idx, val in enumerate(utils_result):
+            self.assertEqual(result[idx][0], val[0])
+            self.assertEqual(result[idx][1], val[1])
+
+    def test_get_start_and_end_of_segments_empty(self):
+        segments = []
+        result = []
+        utils_result = utils.get_start_and_end_of_segments(segments)
+        self.assertEqual(result, utils_result)
+
+    def test_merge_intersecting_intervals(self):
+        index = [[10, 20], [30, 40]]
+        result = [[10, 20], [30, 40]]
+        utils_result = utils.merge_intersecting_intervals(index)
+        for idx, val in enumerate(utils_result):
+            self.assertEqual(result[idx][0], val[0])
+            self.assertEqual(result[idx][1], val[1])
+
+    def test_merge_intersecting_intervals_1(self):
+        index = [[10, 20], [13, 23], [15, 17], [20, 40]]
+        result = [[10, 40]]
+        utils_result = utils.merge_intersecting_intervals(index)
+        for idx, val in enumerate(utils_result):
+            self.assertEqual(result[idx][0], val[0])
+            self.assertEqual(result[idx][1], val[1])
+
+    def test_merge_intersecting_intervals_empty(self):
+        index = []
+        result = []
+        utils_result = utils.merge_intersecting_intervals(index)
+        self.assertEqual(result, utils_result)
+
+    def test_merge_intersecting_intervals_one(self):
+        index = [[10, 20]]
+        result = [[10, 20]]
+        utils_result = utils.merge_intersecting_intervals(index)
+        self.assertEqual(result, utils_result)
+
+    def test_merge_intersecting_intervals_2(self):
+        index = [[10, 20], [13, 23], [25, 30], [35, 40]]
+        result = [[10, 23], [25, 30], [35, 40]]
+        utils_result = utils.merge_intersecting_intervals(index)
+        for idx, val in enumerate(utils_result):
+            self.assertEqual(result[idx][0], val[0])
+            self.assertEqual(result[idx][1], val[1])
+
+    def test_merge_intersecting_intervals_3(self):
+        index = [[10, 50], [5, 40], [15, 25], [6, 50]]
+        result = [[5, 50]]
+        utils_result = utils.merge_intersecting_intervals(index)
+        for idx, val in enumerate(utils_result):
+            self.assertEqual(result[idx][0], val[0])
+            self.assertEqual(result[idx][1], val[1])
+
+    def test_merge_intersecting_intervals_4(self):
+        index = [[5, 10], [10, 20], [25, 50]]
+        result = [[5, 20], [25, 50]]
+        utils_result = utils.merge_intersecting_intervals(index)
+        for idx, val in enumerate(utils_result):
+            self.assertEqual(result[idx][0], val[0])
+            self.assertEqual(result[idx][1], val[1])
+
+    def test_merge_intersecting_intervals_5(self):
+        index = [[20, 40], [10, 15], [50, 60]]
+        result = [[10, 15], [20, 40], [50, 60]]
+        utils_result = utils.merge_intersecting_intervals(index)
+        for idx, val in enumerate(utils_result):
+            self.assertEqual(result[idx][0], val[0])
+            self.assertEqual(result[idx][1], val[1])
+
+    def test_merge_intersecting_intervals_6(self):
+        index = [[20, 40], [10, 20], [50, 60]]
+        result = [[10, 40], [50, 60]]
+        utils_result = utils.merge_intersecting_intervals(index)
+        for idx, val in enumerate(utils_result):
+            self.assertEqual(result[idx][0], val[0])
+            self.assertEqual(result[idx][1], val[1])
 
 if __name__ == '__main__':
     unittest.main()

@@ -44,7 +44,7 @@ class AnomalyDetector(Detector):
         segments = utils.get_start_and_end_of_segments(segments)
         segments = [(
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[0]]),
-            utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[1]])
+            utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[1]]),
         ) for segment in segments]
         last_detection_time = dataframe[-1]
         return {
@@ -72,6 +72,6 @@ class AnomalyDetector(Detector):
 
     def get_intersections(self, segments: List[dict]) -> List[dict]:
         segments = [[segment['from'], segment['to']] for segment in segments]
-        segments = utils.unite_intersecting_segments(segments)
+        segments = utils.merge_intersecting_intervals(segments)
         segments = [{'from': segment[0], 'to': segment[1]} for segment in segments]
         return segments
