@@ -2,7 +2,7 @@ import logging as log
 
 import pandas as pd
 import numpy as np
-from typing import Optional
+from typing import Optional, List
 
 from detectors import Detector
 from models import ModelCache
@@ -80,3 +80,6 @@ class ThresholdDetector(Detector):
 
     def get_window_size(self, cache: Optional[ModelCache]) -> int:
         return self.WINDOW_SIZE
+
+    def get_intersections(self, segments: List[dict]) -> List[dict]:
+        return segments
