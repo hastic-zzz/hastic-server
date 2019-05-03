@@ -1,6 +1,5 @@
 import { router as analyticUnitsRouter } from './routes/analytic_units_router';
 import { router as segmentsRouter } from './routes/segments_router';
-import { router as thresholdRouter } from './routes/threshold_router';
 import { router as dataRouter } from './routes/data_router';
 import { router as detectionsRouter }  from './routes/detections_router';
 
@@ -10,7 +9,7 @@ import * as ProcessService from './services/process_service';
 
 import { HASTIC_PORT, PACKAGE_VERSION, GIT_INFO, ZMQ_CONNECTION_STRING, HASTIC_INSTANCE_NAME } from './config';
 
-import { convertPanelUrlToPanelId } from './migrations/0.3.2-beta';
+import { applyDBMigrations } from './migrations';
 
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
@@ -19,7 +18,7 @@ import * as bodyParser from 'koa-bodyparser';
 init();
 
 async function init() {
-  await convertPanelUrlToPanelId();
+  await applyDBMigrations();
   AnalyticsController.init();
   ProcessService.registerExitHandler(AnalyticsController.terminate);
 
@@ -31,7 +30,7 @@ async function init() {
   });
 
 
-  app.use(bodyParser())
+  app.use(bodyParser());
 
   app.use(async function(ctx, next) {
     ctx.set('Access-Control-Allow-Origin', '*');
@@ -56,7 +55,6 @@ async function init() {
   const rootRouter = new Router();
   rootRouter.use('/analyticUnits', analyticUnitsRouter.routes(), analyticUnitsRouter.allowedMethods());
   rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
-  rootRouter.use('/threshold', thresholdRouter.routes(), thresholdRouter.allowedMethods());
   rootRouter.use('/query', dataRouter.routes(), dataRouter.allowedMethods());
   rootRouter.use('/detections', detectionsRouter.routes(), detectionsRouter.allowedMethods());
 
