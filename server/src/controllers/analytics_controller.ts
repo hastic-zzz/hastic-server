@@ -212,7 +212,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
 
     // TODO: create an analytics serialization method in AnalyticUnit
     let analyticUnitType = analyticUnit.type;
-    let detector = AnalyticUnit.getDetectorByType(analyticUnitType);
+    const detector = analyticUnit.detectorType;
     let taskPayload: any = { detector, analyticUnitType, cache: oldCache };
 
     if(detector === AnalyticUnit.DetectorType.PATTERN) {
@@ -267,7 +267,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     let unit = await AnalyticUnit.findById(id);
     previousLastDetectionTime = unit.lastDetectionTime;
     let analyticUnitType = unit.type;
-    let detector = AnalyticUnit.getDetectorByType(analyticUnitType);
+    const detector = unit.detectorType;
 
     let range: TimeRange;
     if(from !== undefined && to !== undefined) {
