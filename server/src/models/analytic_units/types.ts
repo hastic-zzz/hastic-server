@@ -50,6 +50,12 @@ export const ANALYTIC_UNIT_TYPES = {
       value: 'DROP'
     }
   ],
+  anomaly: [
+    {
+      name: 'Anomaly',
+      value: 'ANOMALY'
+    }
+  ],
   threshold: [
     {
       name: 'Threshold',
@@ -60,5 +66,6 @@ export const ANALYTIC_UNIT_TYPES = {
 
 export enum DetectorType {
   PATTERN = 'pattern',
+  ANOMALY = 'anomaly',
   THRESHOLD = 'threshold'
 };
