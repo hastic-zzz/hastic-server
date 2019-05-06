@@ -138,7 +138,7 @@ function getDetectorByType(analyticUnitType: string): string {
 
   let detector;
   _.forOwn(analyticUnitTypesMapping, (types, detectorType) => {
-    if(types.includes(analyticUnitType)) {
+    if(_.includes(types, analyticUnitType)) {
       detector = detectorType;
     }
   });
