@@ -135,7 +135,7 @@ export class DataPuller {
       if(cache !== null) {
         cache = cache.data
       }
-      const detector = AnalyticUnit.getDetectorByType(analyticUnit.type);
+      const detector = analyticUnit.detectorType;
       let payload = {
         data: payloadValues,
         from: this._unitTimes[analyticUnit.id],

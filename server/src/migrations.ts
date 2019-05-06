@@ -3,6 +3,8 @@
   - create migration function
   - add it with the next revision number to REVISIONS Map
   It will be automatically applied if actual DB revision < added revision
+
+  Note: do not import code from other modules here because it can be changed
 */
 
 import { Collection, makeDBQ } from './services/data_service';
@@ -24,7 +26,8 @@ type DbMeta = {
 const REVISIONS = new Map<number, Function>([
   [1, convertPanelUrlToPanelId],
   [2, convertUnderscoreToCamelCase],
-  [3, integrateThresholdsIntoAnalyticUnits]
+  [3, integrateThresholdsIntoAnalyticUnits],
+  [4, addDetectorTypes]
 ]);
 
 export async function applyDBMigrations() {
@@ -114,4 +117,34 @@ async function integrateThresholdsIntoAnalyticUnits() {
 
   await Promise.all(promises);
   await thresholdsDB.removeMany({});
+}
+
+async function addDetectorTypes() {
+  const analyticUnits = await analyticUnitsDB.findMany({ detectorType: { $exists: false } });
+
+  const promises = analyticUnits.map(analyticUnit => 
+    analyticUnitsDB.updateOne(analyticUnit._id, { detectorType: getDetectorByType(analyticUnit.type) })
+  );
+
+  await Promise.all(promises);
+}
+
+function getDetectorByType(analyticUnitType: string): string {
+  const analyticUnitTypesMapping = {
+    pattern: [ 'GENERAL', 'PEAK', 'TROUGH', 'JUMP', 'DROP' ],
+    anomaly: [ 'ANOMALY' ],
+    threshold: [ 'THRESHOLD' ]
+  };
+
+  let detector;
+  _.forOwn(analyticUnitTypesMapping, (types, detectorType) => {
+    if(types.includes(analyticUnitType)) {
+      detector = detectorType;
+    }
+  });
+
+  if(detector === undefined) {
+    throw new Error(`Can't find detector for analytic unit of type "${analyticUnitType}"`);
+  }
+  return detector;
 }

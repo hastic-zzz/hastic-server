@@ -131,7 +131,7 @@ export class AlertService {
   }
 
   public addAnalyticUnit(analyticUnit: AnalyticUnit.AnalyticUnit) {
-    let detector = AnalyticUnit.getDetectorByType(analyticUnit.type);
+    const detector = analyticUnit.detectorType;
     let alertsType = {};
 
     alertsType[AnalyticUnit.DetectorType.THRESHOLD] = ThresholdAlert;
