@@ -3,10 +3,11 @@
   - create migration function
   - add it with the next revision number to REVISIONS Map
   It will be automatically applied if actual DB revision < added revision
+
+  Note: do not import code from other modules here because it can be changed
 */
 
 import { Collection, makeDBQ } from './services/data_service';
-import { getDetectorByType } from './models/analytic_units';
 
 import * as _ from 'lodash';
 
@@ -126,4 +127,24 @@ async function addDetectorTypes() {
   );
 
   await Promise.all(promises);
+}
+
+function getDetectorByType(analyticUnitType: string): string {
+  const analyticUnitTypesMapping = {
+    pattern: [ 'GENERAL', 'PEAK', 'TROUGH', 'JUMP', 'DROP' ],
+    anomaly: [ 'ANOMALY' ],
+    threshold: [ 'THRESHOLD' ]
+  };
+
+  let detector;
+  _.forOwn(analyticUnitTypesMapping, (types, detectorType) => {
+    if(types.includes(analyticUnitType)) {
+      detector = detectorType;
+    }
+  });
+
+  if(detector === undefined) {
+    throw new Error(`Can't find detector for analytic unit of type "${analyticUnitType}"`);
+  }
+  return detector;
 }
