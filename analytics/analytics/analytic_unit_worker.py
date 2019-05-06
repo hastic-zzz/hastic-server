@@ -9,6 +9,7 @@ import asyncio
 import utils
 from utils import get_intersected_chunks, get_chunks, prepare_data
 
+from analytic_types.detector_typing import DetectionResult
 
 logger = logging.getLogger('AnalyticUnitWorker')
 
@@ -45,39 +46,30 @@ class AnalyticUnitWorker:
         except asyncio.TimeoutError:
             raise Exception('Timeout ({}s) exceeded while learning'.format(config.LEARNING_TIMEOUT))
 
-    async def do_detect(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
+    async def do_detect(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> DetectionResult:
 
         window_size = self._detector.get_window_size(cache)
         chunk_size = window_size * self.CHUNK_WINDOW_SIZE_FACTOR
         chunk_intersection = window_size * self.CHUNK_INTERSECTION_FACTOR
 
-        detection_result = {
-          'cache': None,
-          'segments': [],
-          'lastDetectionTime': None
-        }
+        detection_result = DetectionResult()
 
         for chunk in get_intersected_chunks(data, chunk_intersection, chunk_size):
             await asyncio.sleep(0)
             chunk_dataframe = prepare_data(chunk)
             detected = self._detector.detect(chunk_dataframe, cache)
             self.__append_detection_result(detection_result, detected)
-        detection_result['segments'] = self._detector.get_intersections(detection_result['segments'])
-        return detection_result
+        detection_result.segments = self._detector.get_intersections(detection_result.segments)
+        return detection_result.to_json()
 
     def cancel(self):
         if self._training_future is not None:
             self._training_future.cancel()
 
-    async def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
+    async def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[DetectionResult]:
         window_size = self._detector.get_window_size(cache)
 
-        #TODO: make class DetectionResult
-        detection_result = {
-          'cache': None,
-          'segments': [],
-          'lastDetectionTime': None
-        }
+        detection_result = DetectionResult()
 
         for chunk in get_chunks(data, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
             await asyncio.sleep(0)
@@ -85,15 +77,16 @@ class AnalyticUnitWorker:
             detected = self._detector.consume_data(chunk_dataframe, cache)
             self.__append_detection_result(detection_result, detected)
         
-        detection_result['segments'] = self._detector.get_intersections(detection_result['segments'])
+        detection_result.segments = self._detector.get_intersections(detection_result.segments)
 
-        if detection_result['lastDetectionTime'] is None:
+        if detection_result.lastDetectionTime is None:
             return None
         else:
-            return detection_result
+            return detection_result.to_json()
 
-    def __append_detection_result(self, detection_result: dict, new_chunk: dict):
+    # TODO: move result concatination to detector's classes
+    def __append_detection_result(self, detection_result: DetectionResult, new_chunk: dict):
         if new_chunk is not None:
-            detection_result['cache'] = new_chunk['cache']
-            detection_result['lastDetectionTime'] = new_chunk['lastDetectionTime']
-            detection_result['segments'].extend(new_chunk['segments'])
+            detection_result.cache = new_chunk.cache
+            detection_result.lastDetectionTime = new_chunk.lastDetectionTime
+            detection_result.segments.extend(new_chunk.segments)

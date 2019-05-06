@@ -12,6 +12,7 @@ from analytic_types.data_bucket import DataBucket
 from models import ModelCache
 from utils import convert_pd_timestamp_to_ms
 from analytic_types import AnalyticUnitId
+from analytic_types.detector_typing import DetectionResult
 
 
 logger = logging.getLogger('PATTERN_DETECTOR')
@@ -45,7 +46,7 @@ class PatternDetector(Detector):
         self.model = resolve_model_by_pattern(self.pattern_type)
         self.bucket = DataBucket()
 
-    def train(self, dataframe: pd.DataFrame, segments: List[dict], cache: Optional[models.ModelCache]) -> models.ModelState:
+    def train(self, dataframe: pd.DataFrame, segments: List[dict], cache: Optional[models.ModelCache]) -> models.ModelCache:
         # TODO: pass only part of dataframe that has segments
         self.model.state = self.model.get_state(cache)
         new_cache = self.model.fit(dataframe, segments, self.analytic_unit_id)
@@ -56,7 +57,7 @@ class PatternDetector(Detector):
             'cache': new_cache
         }
 
-    def detect(self, dataframe: pd.DataFrame, cache: Optional[models.ModelCache]) -> dict:
+    def detect(self, dataframe: pd.DataFrame, cache: Optional[models.ModelCache]) -> DetectionResult:
         logger.debug('Unit {} got {} data points for detection'.format(self.analytic_unit_id, len(dataframe)))
         # TODO: split and sleep (https://github.com/hastic/hastic-server/pull/124#discussion_r214085643)
 
@@ -82,13 +83,9 @@ class PatternDetector(Detector):
         new_cache = detected['cache'].to_json()
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_detection_time = convert_pd_timestamp_to_ms(last_dataframe_time)
-        return {
-            'cache': new_cache,
-            'segments': segments,
-            'lastDetectionTime': last_detection_time
-        }
+        return DetectionResult(new_cache, segments, last_detection_time)
 
-    def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
+    def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[DetectionResult]:
         logging.debug('Start consume_data for analytic unit {}'.format(self.analytic_unit_id))
 
         if cache is None:
