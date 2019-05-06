@@ -6,6 +6,7 @@
 */
 
 import { Collection, makeDBQ } from './services/data_service';
+import { getDetectorByType } from './models/analytic_units';
 
 import * as _ from 'lodash';
 
@@ -24,7 +25,8 @@ type DbMeta = {
 const REVISIONS = new Map<number, Function>([
   [1, convertPanelUrlToPanelId],
   [2, convertUnderscoreToCamelCase],
-  [3, integrateThresholdsIntoAnalyticUnits]
+  [3, integrateThresholdsIntoAnalyticUnits],
+  [4, addDetectorTypes]
 ]);
 
 export async function applyDBMigrations() {
@@ -114,4 +116,14 @@ async function integrateThresholdsIntoAnalyticUnits() {
 
   await Promise.all(promises);
   await thresholdsDB.removeMany({});
+}
+
+async function addDetectorTypes() {
+  const analyticUnits = await analyticUnitsDB.findMany({ detectorType: { $exists: false } });
+
+  const promises = analyticUnits.map(analyticUnit => 
+    analyticUnitsDB.updateOne(analyticUnit._id, { detectorType: getDetectorByType(analyticUnit.type) })
+  );
+
+  await Promise.all(promises);
 }
