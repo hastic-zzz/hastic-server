@@ -127,24 +127,23 @@ def close_filtering(pattern_list: List[int], win_size: int) -> List[Tuple[int, i
             s.append([pattern_list[i]])
     return s
 
-
-def merge_intersecting_intervals(intervals: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
+def merge_intersecting_segments(segments: List[dict]) -> List[dict]:
     '''
-    At the entrance - list of intervals with start and end.
-    Find intersecting intervals in this list and merge it.
+    At the entrance - list of segments with 'from' and 'to'.
+    Find intersecting segments in this list and merge it.
     '''
-    if len(intervals) < 2:
-        return intervals
-    intervals = sorted(intervals)
-    last_couple = intervals[0]
-    for i in range(1,len(intervals)):
-        if intervals[i][0] <= last_couple[1]:
-            intervals[i][0] = min(last_couple[0], intervals[i][0])
-            intervals[i][1] = max(last_couple[1], intervals[i][1])
-            intervals[i-1] = []
-        last_couple = intervals[i]
-    intervals = [x for x in intervals if x != []]
-    return intervals
+    if len(segments) < 2:
+        return segments
+    segments = sorted(segments, key = lambda k: k['from'])
+    last_couple = segments[0]
+    for i in range(1, len(segments)):
+        if segments[i]['from'] <= last_couple['to']:
+            segments[i]['from'] = min(last_couple['from'], segments[i]['from'])
+            segments[i]['to'] = max(last_couple['to'], segments[i]['to'])
+            segments[i - 1] = []
+        last_couple = segments[i]
+    segments = [x for x in segments if x != []]
+    return segments
 
 def get_start_and_end_of_segments(segments: List[List[int]]) -> List[Tuple[int, int]]:
     '''
