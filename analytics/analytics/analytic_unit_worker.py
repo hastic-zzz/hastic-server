@@ -88,5 +88,5 @@ class AnalyticUnitWorker:
     def __append_detection_result(self, detection_result: DetectionResult, new_chunk: dict):
         if new_chunk is not None:
             detection_result.cache = new_chunk.cache
-            detection_result.lastDetectionTime = new_chunk.lastDetectionTime
+            detection_result.last_detection_time = new_chunk.last_detection_time
             detection_result.segments.extend(new_chunk.segments)

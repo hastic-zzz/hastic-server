@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from typing import Optional, List
 
-from analytic_types.detector_typing import DetectionResult, ThresholdCache
+from analytic_types.detector_typing import DetectionResult
 from detectors import Detector
 from models import ModelCache
 from time import time

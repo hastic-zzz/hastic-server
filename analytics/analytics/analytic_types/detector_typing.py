@@ -10,8 +10,8 @@ class DetectionResult:
         self,
         cache: dict = dict(),
         segments: list = [],
-        lastDetectionTime: int = None
+        last_detection_time: int = None
     ):
         self.cache = cache
         self.segments = segments
-        self.lastDetectionTime = lastDetectionTime
+        self.last_detection_time = last_detection_time
