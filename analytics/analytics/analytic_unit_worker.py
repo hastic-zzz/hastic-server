@@ -3,12 +3,12 @@ import detectors
 import logging
 import pandas as pd
 from typing import Optional, Union, Generator, List
-from models import ModelCache
 import concurrent.futures
 import asyncio
 import utils
 from utils import get_intersected_chunks, get_chunks, prepare_data
 
+from analytic_types import ModelCache
 from analytic_types.detector_typing import DetectionResult
 
 logger = logging.getLogger('AnalyticUnitWorker')

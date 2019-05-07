@@ -4,9 +4,9 @@ import pandas as pd
 import numpy as np
 from typing import Optional, List
 
+from analytic_types import ModelCache
 from analytic_types.detector_typing import DetectionResult
 from detectors import Detector
-from models import ModelCache
 from time import time
 from utils import convert_sec_to_ms, convert_pd_timestamp_to_ms
 

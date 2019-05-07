@@ -1,4 +1,5 @@
 import utils.meta
+from analytic_types import ModelCache
 
 
 @utils.meta.JSONClass
@@ -6,7 +7,7 @@ class DetectionResult:
 
     def __init__(
         self,
-        cache: dict = dict(),
+        cache: ModelCache = ModelCache(),
         segments: list = [],
         last_detection_time: int = None
     ):
