@@ -52,7 +52,7 @@ class AnalyticUnitWorker:
         chunk_size = window_size * self.CHUNK_WINDOW_SIZE_FACTOR
         chunk_intersection = window_size * self.CHUNK_INTERSECTION_FACTOR
 
-        detection_result = DetectionResult()
+        detection_result = DetectionResult({}, [], None)
 
         for chunk in get_intersected_chunks(data, chunk_intersection, chunk_size):
             await asyncio.sleep(0)
@@ -69,7 +69,7 @@ class AnalyticUnitWorker:
     async def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[DetectionResult]:
         window_size = self._detector.get_window_size(cache)
 
-        detection_result = DetectionResult()
+        detection_result = DetectionResult({}, [], None)
 
         for chunk in get_chunks(data, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
             await asyncio.sleep(0)
@@ -85,7 +85,7 @@ class AnalyticUnitWorker:
             return detection_result.to_json()
 
     # TODO: move result concatenation to Detectors
-    def __append_detection_result(self, detection_result: DetectionResult, new_chunk: dict):
+    def __append_detection_result(self, detection_result: DetectionResult, new_chunk: DetectionResult):
         if new_chunk is not None:
             detection_result.cache = new_chunk.cache
             detection_result.last_detection_time = new_chunk.last_detection_time
