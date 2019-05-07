@@ -7,15 +7,27 @@ import pandas as pd
 import math
 import logging
 from analytic_types import AnalyticUnitId
+from analytic_types.segment import Segment
 
 import utils.meta
 
-class Segment(AttrDict):
+class ModelSegment(Segment):
 
-    def __init__(self, dataframe: pd.DataFrame, segment_map: dict, center_finder = None):
-        self.update(segment_map)
-        self.start = utils.timestamp_to_index(dataframe, pd.to_datetime(self['from'], unit='ms'))
-        self.end = utils.timestamp_to_index(dataframe, pd.to_datetime(self['to'], unit='ms'))
+    def __init__(
+        self,
+        start_timestamp: int,
+        end_timestamp: int,
+        labeled: bool,
+        deleted: bool,
+        dataframe: pd.DataFrame,
+        center_finder = None
+    ):
+        super().__init__(start_timestamp, end_timestamp)
+        self.labeled = labeled
+        self.deleted = deleted
+
+        self.start = utils.timestamp_to_index(dataframe, pd.to_datetime(self.start_timestamp, unit='ms'))
+        self.end = utils.timestamp_to_index(dataframe, pd.to_datetime(self.end_timestamp, unit='ms'))
         self.length = abs(self.end - self.start)
         self.__percent_of_nans = 0
 
@@ -27,7 +39,7 @@ class Segment(AttrDict):
             self.pattern_timestamp = dataframe['timestamp'][self.center_index]
 
         assert len(dataframe['value']) >= self.end + 1, \
-            'segment {}-{} out of dataframe length={}'.format(self.start, self.end+1, len(dataframe['value']))
+            'segment {}-{} out of dataframe length={}'.format(self.start, self.end + 1, len(dataframe['value']))
 
         self.data = dataframe['value'][self.start: self.end + 1]
 
@@ -98,7 +110,14 @@ class Model(ABC):
         deleted = []
         for segment_map in segments:
             if segment_map['labeled'] or segment_map['deleted']:
-                segment = Segment(dataframe, segment_map, self.find_segment_center)
+                segment = ModelSegment(
+                    segment_map['from'],
+                    segment_map['to'],
+                    segment_map['labeled'],
+                    segment_map['deleted'],
+                    dataframe,
+                    self.find_segment_center
+                )
                 if segment.percent_of_nans > 0.1 or len(segment.data) == 0:
                     logging.debug(f'segment {segment.start}-{segment.end} skip because of invalid data')
                     continue
