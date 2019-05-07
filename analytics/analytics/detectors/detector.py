@@ -4,6 +4,7 @@ from typing import Optional, Union, List
 
 from analytic_types import ModelCache
 from analytic_types.detector_typing import DetectionResult
+from analytic_types.segment import Segment
 
 
 class Detector(ABC):
@@ -27,5 +28,5 @@ class Detector(ABC):
     def get_window_size(self, cache: Optional[ModelCache]) -> int:
         pass
 
-    def merge_segments(self, segments: List[dict]) -> List[dict]:
+    def merge_segments(self, segments: List[Segment]) -> List[Segment]:
         return segments

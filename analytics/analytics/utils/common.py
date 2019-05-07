@@ -11,6 +11,7 @@ import utils
 import logging
 from itertools import islice
 from collections import deque
+from analytic_types.segment import Segment
 
 SHIFT_FACTOR = 0.05
 CONFIDENCE_FACTOR = 0.5
@@ -127,22 +128,21 @@ def close_filtering(pattern_list: List[int], win_size: int) -> List[Tuple[int, i
             s.append([pattern_list[i]])
     return s
 
-def merge_intersecting_segments(segments: List[dict]) -> List[dict]:
+def merge_intersecting_segments(segments: List[Segment]) -> List[Segment]:
     '''
-    At the entrance - list of segments with 'from' and 'to'.
-    Find intersecting segments in this list and merge it.
+    Find intersecting segments in segments list and merge it.
     '''
     if len(segments) < 2:
         return segments
-    segments = sorted(segments, key = lambda k: k['from'])
-    last_couple = segments[0]
+    segments = sorted(segments, key = lambda segment: segment.start_timestamp)
+    previous_segment = segments[0]
     for i in range(1, len(segments)):
-        if segments[i]['from'] <= last_couple['to']:
-            segments[i]['from'] = min(last_couple['from'], segments[i]['from'])
-            segments[i]['to'] = max(last_couple['to'], segments[i]['to'])
-            segments[i - 1] = []
-        last_couple = segments[i]
-    segments = [x for x in segments if x != []]
+        if segments[i].start_timestamp <= previous_segment.end_timestamp:
+            segments[i].start_timestamp = min(previous_segment.start_timestamp, segments[i].start_timestamp)
+            segments[i].end_timestamp = max(previous_segment.end_timestamp, segments[i].end_timestamp)
+            segments[i - 1] = None
+        previous_segment = segments[i]
+    segments = [x for x in segments if x != None]
     return segments
 
 def get_start_and_end_of_segments(segments: List[List[int]]) -> List[Tuple[int, int]]:

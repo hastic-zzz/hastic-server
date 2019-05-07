@@ -6,6 +6,7 @@ from typing import Optional, List
 
 from analytic_types import ModelCache
 from analytic_types.detector_typing import DetectionResult
+from analytic_types.segment import Segment
 from detectors import Detector
 from time import time
 from utils import convert_sec_to_ms, convert_pd_timestamp_to_ms
@@ -41,16 +42,16 @@ class ThresholdDetector(Detector):
         segments = []
         for index, row in dataframe.iterrows():
             current_timestamp = convert_pd_timestamp_to_ms(row['timestamp'])
-            segment = { 'from': current_timestamp, 'to': current_timestamp }
+            segment = Segment(current_timestamp, current_timestamp)
             # TODO: merge segments
             if pd.isnull(row['value']):
                 if condition == 'NO_DATA':
-                    segment['params'] = { value: None }
+                    segment.params = { value: None }
                     segments.append(segment)
                 continue
 
             current_value = row['value']
-            segment['params'] = { value: row['value'] }
+            segment.params = { value: row['value'] }
             if condition == '>':
                 if current_value > value:
                     segments.append(segment)
