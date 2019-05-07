@@ -25,17 +25,3 @@ export function createAnalyticUnitFromObject(obj: any): AnalyticUnit {
       throw new Error(`Can't create analytic unit with type "${detectorType}"`);
   }
 }
-
-export function getDetectorByType(analyticUnitType: string): DetectorType {
-  let detector;
-  _.forOwn(ANALYTIC_UNIT_TYPES, (types, detectorType) => {
-    if(_.find(types, { value: analyticUnitType }) !== undefined) {
-      detector = detectorType;
-    }
-  });
-
-  if(detector === undefined) {
-    throw new Error(`Can't find detector for analytic unit of type "${analyticUnitType}"`);
-  }
-  return detector;
-}
