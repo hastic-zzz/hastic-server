@@ -1,5 +1,4 @@
 import utils.meta
-import operator
 
 
 @utils.meta.JSONClass
