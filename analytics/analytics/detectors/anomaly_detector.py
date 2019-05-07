@@ -71,8 +71,6 @@ class AnomalyDetector(Detector):
                 break
         return level
 
-    def get_intersections(self, segments: List[dict]) -> List[dict]:
-        segments = [[segment['from'], segment['to']] for segment in segments]
-        segments = utils.merge_intersecting_intervals(segments)
-        segments = [{'from': segment[0], 'to': segment[1]} for segment in segments]
+    def merge_segments(self, segments: List[dict]) -> List[dict]:
+        segments = utils.merge_intersecting_segments(segments)
         return segments

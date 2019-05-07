@@ -129,5 +129,3 @@ class PatternDetector(Detector):
         if cache is None: return self.DEFAULT_WINDOW_SIZE
         return cache.get('windowSize', self.DEFAULT_WINDOW_SIZE)
 
-    def get_intersections(self, segments: List[dict]) -> List[dict]:
-        return segments

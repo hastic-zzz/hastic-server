@@ -25,6 +25,5 @@ class Detector(ABC):
     def get_window_size(self, cache: Optional[ModelCache]) -> int:
         pass
 
-    @abstractmethod
-    def get_intersections(self, segments: List[dict]) -> List[dict]:
-        pass
+    def merge_segments(self, segments: List[dict]) -> List[dict]:
+        return segments
