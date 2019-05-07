@@ -2,10 +2,10 @@ import logging
 import pandas as pd
 from typing import Optional, Union, List, Tuple
 
-from analytic_types import AnalyticUnitId
+from analytic_types import AnalyticUnitId, ModelCache
+from analytic_types.detector_typing import DetectionResult
 from analytic_types.data_bucket import DataBucket
 from detectors import Detector
-from models import ModelCache
 import utils
 
 MAX_DEPENDENCY_LEVEL = 100
@@ -26,7 +26,7 @@ class AnomalyDetector(Detector):
             }
         }
 
-    def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> dict:
+    def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> DetectionResult:
         data = dataframe['value']
         last_values = None
         if cache is not None:
@@ -48,13 +48,9 @@ class AnomalyDetector(Detector):
         ) for segment in segments]
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_detection_time = utils.convert_pd_timestamp_to_ms(last_dataframe_time)
-        return {
-            'cache': cache,
-            'segments': segments,
-            'lastDetectionTime': last_detection_time
-        }
+        return DetectionResult(cache, segments, last_detection_time)
 
-    def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
+    def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[DetectionResult]:
         self.detect(data, cache)
 
 

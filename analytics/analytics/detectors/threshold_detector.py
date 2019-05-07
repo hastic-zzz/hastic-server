@@ -4,8 +4,9 @@ import pandas as pd
 import numpy as np
 from typing import Optional, List
 
+from analytic_types import ModelCache
+from analytic_types.detector_typing import DetectionResult
 from detectors import Detector
-from models import ModelCache
 from time import time
 from utils import convert_sec_to_ms, convert_pd_timestamp_to_ms
 
@@ -28,7 +29,7 @@ class ThresholdDetector(Detector):
             }
         }
 
-    def detect(self, dataframe: pd.DataFrame, cache: ModelCache) -> dict:
+    def detect(self, dataframe: pd.DataFrame, cache: ModelCache) -> DetectionResult:
         if cache is None or cache == {}:
             raise ValueError('Threshold detector error: cannot detect before learning')
         if len(dataframe) == 0:
@@ -68,13 +69,10 @@ class ThresholdDetector(Detector):
 
         last_entry = dataframe.iloc[-1]
         last_detection_time = convert_pd_timestamp_to_ms(last_entry['timestamp'])
-        return {
-            'cache': cache,
-            'segments': segments,
-            'lastDetectionTime': last_detection_time
-        }
+        return DetectionResult(cache, segments, last_detection_time)
 
-    def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
+
+    def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[DetectionResult]:
         result = self.detect(data, cache)
         return result if result else None
 
