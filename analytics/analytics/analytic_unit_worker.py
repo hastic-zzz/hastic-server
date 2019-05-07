@@ -79,7 +79,7 @@ class AnalyticUnitWorker:
         
         detection_result.segments = self._detector.get_intersections(detection_result.segments)
 
-        if detection_result.lastDetectionTime is None:
+        if detection_result.last_detection_time is None:
             return None
         else:
             return detection_result.to_json()
