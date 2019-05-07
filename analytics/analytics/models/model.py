@@ -10,8 +10,6 @@ from analytic_types import AnalyticUnitId
 
 import utils.meta
 
-ModelCache = dict
-
 class Segment(AttrDict):
 
     def __init__(self, dataframe: pd.DataFrame, segment_map: dict, center_finder = None):

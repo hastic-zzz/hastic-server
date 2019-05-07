@@ -14,6 +14,7 @@ from typing import Union, List
 
 AnalyticUnitId = str
 
+ModelCache = dict
 
 """
 Example:

@@ -1,7 +1,9 @@
-from models import ModelCache
 from abc import ABC, abstractmethod
 from pandas import DataFrame
 from typing import Optional, Union, List
+
+from analytic_types import ModelCache
+from analytic_types.detector_typing import DetectionResult
 
 
 class Detector(ABC):
@@ -14,11 +16,11 @@ class Detector(ABC):
         pass
 
     @abstractmethod
-    def detect(self, dataframe: DataFrame, cache: Optional[ModelCache]) -> dict:
+    def detect(self, dataframe: DataFrame, cache: Optional[ModelCache]) -> DetectionResult:
         pass
 
     @abstractmethod
-    def consume_data(self, data: DataFrame, cache: Optional[ModelCache]) -> Optional[dict]:
+    def consume_data(self, data: DataFrame, cache: Optional[ModelCache]) -> Optional[DetectionResult]:
         pass
 
     @abstractmethod

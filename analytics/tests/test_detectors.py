@@ -45,4 +45,4 @@ class TestAnomalyDetector(unittest.TestCase):
         detector = anomaly_detector.AnomalyDetector()
         detect_result = detector.detect(dataframe, cache)
         result = [(1523889000005.0, 1523889000005.0)]
-        self.assertEqual(result, detect_result['segments'])
+        self.assertEqual(result, detect_result.segments)
