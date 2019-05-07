@@ -1,3 +1,5 @@
+from analytic_types.segment import Segment
+
 import utils
 import unittest
 import numpy as np
@@ -291,9 +293,9 @@ class TestUtils(unittest.TestCase):
         segments = [[1, 2, 3, 4], [5, 6, 7], [8], [], [12, 12]]
         result = [[1, 4], [5, 7], [8, 8], [12, 12]]
         utils_result = utils.get_start_and_end_of_segments(segments)
-        for idx, val in enumerate(utils_result):
-            self.assertEqual(result[idx][0], val[0])
-            self.assertEqual(result[idx][1], val[1])
+        for got, expected in zip(utils_result, result):
+            self.assertEqual(got[0], expected[0])
+            self.assertEqual(got[1], expected[1])
 
     def test_get_start_and_end_of_segments_empty(self):
         segments = []
@@ -302,72 +304,50 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(result, utils_result)
 
     def test_merge_intersecting_segments(self):
-        index = [{'from': 10, 'to': 20}, {'from': 30, 'to': 40}]
-        result = [[10, 20], [30, 40]]
-        utils_result = utils.merge_intersecting_segments(index)
-        for idx, val in enumerate(utils_result):
-            self.assertEqual(result[idx][0], val['from'])
-            self.assertEqual(result[idx][1], val['to'])
+        test_cases = [
+            {
+                'index': [Segment(10, 20), Segment(30, 40)],
+                'result': [[10, 20], [30, 40]]
+            },
+            {
+                'index': [Segment(10, 20), Segment(13, 23), Segment(15, 17), Segment(20, 40)],
+                'result': [[10, 40]]
+            },
+            {
+                'index': [],
+                'result': []
+            },
+            {
+                'index': [Segment(10, 20)],
+                'result': [[10, 20]]
+            },
+            {
+                'index': [Segment(10, 20), Segment(13, 23), Segment(25, 30), Segment(35, 40)],
+                'result': [[10, 23], [25, 30], [35, 40]]
+            },
+            {
+                'index': [Segment(10, 50), Segment(5, 40), Segment(15, 25), Segment(6, 50)],
+                'result': [[5, 50]]
+            },
+            {
+                'index': [Segment(5, 10), Segment(10, 20), Segment(25, 50)],
+                'result': [[5, 20], [25, 50]]
+            },
+            {
+                'index': [Segment(20, 40), Segment(10, 15), Segment(50, 60)],
+                'result': [[10, 15], [20, 40], [50, 60]]
+            },
+            {
+                'index': [Segment(20, 40), Segment(10, 20), Segment(50, 60)],
+                'result': [[10, 40], [50, 60]]
+            },
+        ]
 
-    def test_merge_intersecting_segments_1(self):
-        index = [{'from': 10, 'to': 20}, {'from': 13, 'to': 23}, {'from': 15, 'to': 17}, {'from': 20, 'to': 40}]
-        result = [[10, 40]]
-        utils_result = utils.merge_intersecting_segments(index)
-        for idx, val in enumerate(utils_result):
-            self.assertEqual(result[idx][0], val['from'])
-            self.assertEqual(result[idx][1], val['to'])
-
-    def test_merge_intersecting_segments_empty(self):
-        index = []
-        result = []
-        utils_result = utils.merge_intersecting_segments(index)
-        self.assertEqual(result, utils_result)
-
-    def test_merge_intersecting_segments_one(self):
-        index = [{'from': 10, 'to': 20}]
-        result = [{'from': 10, 'to': 20}]
-        utils_result = utils.merge_intersecting_segments(index)
-        self.assertEqual(result, utils_result)
-
-    def test_merge_intersecting_segments_2(self):
-        index = [{'from': 10, 'to': 20}, {'from': 13, 'to': 23}, {'from': 25, 'to': 30}, {'from': 35, 'to': 40}]
-        result = [[10, 23], [25, 30], [35, 40]]
-        utils_result = utils.merge_intersecting_segments(index)
-        for idx, val in enumerate(utils_result):
-            self.assertEqual(result[idx][0], val['from'])
-            self.assertEqual(result[idx][1], val['to'])
-
-    def test_merge_intersecting_segments_3(self):
-        index = [{'from': 10, 'to': 50}, {'from': 5, 'to': 40}, {'from': 15, 'to': 25}, {'from': 6, 'to': 50}]
-        result = [[5, 50]]
-        utils_result = utils.merge_intersecting_segments(index)
-        for idx, val in enumerate(utils_result):
-            self.assertEqual(result[idx][0], val['from'])
-            self.assertEqual(result[idx][1], val['to'])
-
-    def test_merge_intersecting_segments_4(self):
-        index = [{'from': 5, 'to': 10}, {'from': 10, 'to': 20}, {'from': 25, 'to': 50}]
-        result = [[5, 20], [25, 50]]
-        utils_result = utils.merge_intersecting_segments(index)
-        for idx, val in enumerate(utils_result):
-            self.assertEqual(result[idx][0], val['from'])
-            self.assertEqual(result[idx][1], val['to'])
-
-    def test_merge_intersecting_segments_5(self):
-        index = [{'from': 20, 'to': 40}, {'from': 10, 'to': 15}, {'from': 50, 'to': 60}]
-        result = [[10, 15], [20, 40], [50, 60]]
-        utils_result = utils.merge_intersecting_segments(index)
-        for idx, val in enumerate(utils_result):
-            self.assertEqual(result[idx][0], val['from'])
-            self.assertEqual(result[idx][1], val['to'])
-
-    def test_merge_intersecting_segments_6(self):
-        index = [{'from': 20, 'to': 40}, {'from': 10, 'to': 20}, {'from': 50, 'to': 60}]
-        result = [[10, 40], [50, 60]]
-        utils_result = utils.merge_intersecting_segments(index)
-        for idx, val in enumerate(utils_result):
-            self.assertEqual(result[idx][0], val['from'])
-            self.assertEqual(result[idx][1], val['to'])
+        for case in test_cases:
+            utils_result = utils.merge_intersecting_segments(case['index'])
+            for got, expected in zip(utils_result, case['result']):
+                self.assertEqual(got.start_timestamp, expected[0])
+                self.assertEqual(got.end_timestamp, expected[1])
 
 if __name__ == '__main__':
     unittest.main()
