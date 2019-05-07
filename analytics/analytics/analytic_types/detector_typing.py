@@ -1,6 +1,4 @@
 import utils.meta
-from enum import Enum
-import operator
 
 
 @utils.meta.JSONClass

@@ -79,12 +79,12 @@ class AnalyticUnitWorker:
         
         detection_result.segments = self._detector.get_intersections(detection_result.segments)
 
-        if detection_result.lastDetectionTime is None:
+        if detection_result.last_detection_time is None:
             return None
         else:
             return detection_result.to_json()
 
-    # TODO: move result concatination to detector's classes
+    # TODO: move result concatenation to Detectors
     def __append_detection_result(self, detection_result: DetectionResult, new_chunk: dict):
         if new_chunk is not None:
             detection_result.cache = new_chunk.cache
