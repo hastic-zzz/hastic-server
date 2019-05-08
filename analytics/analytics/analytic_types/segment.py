@@ -2,10 +2,7 @@ from typing import Optional
 
 class Segment:
     '''
-    Used as Detector result
-    Stores fields that node expects: 
-    - `from`, `to` timestamps
-    - `params`
+    Used for segment manipulation instead of { 'from': ..., 'to': ... } dict
     '''
 
     def __init__(self, start_timestamp: int, end_timestamp: int, params: Optional[dict] = None):
