@@ -52,7 +52,7 @@ class AnalyticUnitWorker:
         chunk_size = window_size * self.CHUNK_WINDOW_SIZE_FACTOR
         chunk_intersection = window_size * self.CHUNK_INTERSECTION_FACTOR
 
-        detection_result = DetectionResult({}, [], None)
+        detection_result = DetectionResult()
 
         for chunk in get_intersected_chunks(data, chunk_intersection, chunk_size):
             await asyncio.sleep(0)
@@ -69,7 +69,7 @@ class AnalyticUnitWorker:
     async def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[DetectionResult]:
         window_size = self._detector.get_window_size(cache)
 
-        detection_result = DetectionResult({}, [], None)
+        detection_result = DetectionResult()
 
         for chunk in get_chunks(data, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
             await asyncio.sleep(0)
