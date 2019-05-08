@@ -68,7 +68,7 @@ async function query(ctx: Router.IRouterContext) {
     analyticUnitType,
     detector,
     cache
-  }
+  };
 
   const processingTask = new AnalyticsTask(analyticUnitId, AnalyticsTaskType.PROCESS, payload);
   let result = await AnalyticsController.runTask(processingTask);
