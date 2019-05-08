@@ -52,6 +52,7 @@ class AnalyticUnitWorker:
         chunk_size = window_size * self.CHUNK_WINDOW_SIZE_FACTOR
         chunk_intersection = window_size * self.CHUNK_INTERSECTION_FACTOR
 
+        detections: List[DetectionResult] = []
         chunks = []
         # XXX: get_chunks(data, chunk_size) == get_intersected_chunks(data, 0, chunk_size)
         if self._detector.is_detection_intersected():
@@ -62,9 +63,13 @@ class AnalyticUnitWorker:
         for chunk in chunks:
             await asyncio.sleep(0)
             chunk_dataframe = prepare_data(chunk)
-            detected = self._detector.detect(chunk_dataframe, cache)
-            self.__append_detection_result(detection_result, detected)
-        detection_result.segments = self._detector.merge_segments(detection_result.segments)
+            detected: DetectionResult = self._detector.detect(chunk_dataframe, cache)
+            detections.append(detected)
+
+        if len(detections) == 0:
+            raise RuntimeError(f'do_detect for {self.analytic_unit_id} got empty detection results')
+
+        detection_result = self._detector.concat_detection_results(detections)
         return detection_result.to_json()
 
     def cancel(self):
@@ -102,7 +107,7 @@ class AnalyticUnitWorker:
             if processed is not None:
                 processed_chunks.append(processed)
 
-        if processed_chunks == []:
+        if len(processed_chunks) == 0:
             raise RuntimeError(f'process_data for {self.analytic_unit_id} got empty processing results')
 
         result = self._detector.concat_processing_results(processed_chunks)

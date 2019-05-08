@@ -48,8 +48,8 @@ class ProcessingDetector(Detector):
     def process_data(self, data, cache: Optional[ModelCache]) -> ProcessingResult:
         pass
 
-    def concat_processing_results(self, processing_results: List[ProcessingResult]) -> ProcessingResult:
-        if processing_results == []:
+    def concat_processing_results(self, processing_results: List[ProcessingResult]) -> Optional[ProcessingResult]:
+        if len(processing_results) == 0:
             return None
 
         united_result = ProcessingResult()
