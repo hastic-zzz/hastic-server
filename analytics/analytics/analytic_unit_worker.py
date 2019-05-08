@@ -46,7 +46,7 @@ class AnalyticUnitWorker:
         except asyncio.TimeoutError:
             raise Exception('Timeout ({}s) exceeded while learning'.format(config.LEARNING_TIMEOUT))
 
-    async def do_detect(self, data: list, cache: Optional[ModelCache]) -> dict:
+    async def do_detect(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> DetectionResult:
 
         window_size = self._detector.get_window_size(cache)
         chunk_size = window_size * self.CHUNK_WINDOW_SIZE_FACTOR
