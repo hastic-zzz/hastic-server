@@ -70,8 +70,8 @@ class AnalyticUnitWorker:
         if detections == []:
             raise RuntimeError(f'do_detect for {self.analytic_unit_id} got empty detection results')
 
-        detection_result = self._detector.get_intersections(detection_result.segments)
-        return detection_result.to_json()
+        detection_result = self._detector.concat_detection_results(detections)
+        return detection_result
 
     def cancel(self):
         if self._training_future is not None:
@@ -80,17 +80,17 @@ class AnalyticUnitWorker:
     async def consume_data(self, data: list, cache: Optional[ModelCache]) -> Optional[DetectionResult]:
         window_size = self._detector.get_window_size(cache)
 
-        detection_results: List[DetectionResult] = []
+        detections: List[DetectionResult] = []
 
         for chunk in get_chunks(data, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
             await asyncio.sleep(0)
             chunk_dataframe = prepare_data(chunk)
             detected = self._detector.consume_data(chunk_dataframe, cache)
-            detection_results.append(detected)
+            detections.append(detected)
 
-        result = self._detector.concat_detection_results(detection_results)
+        detection_result = self._detector.concat_detection_results(detections)
 
         if detection_result.last_detection_time is None:
             return None
         else:
-            return detection_result.to_json()
+            return detection_result

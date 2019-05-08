@@ -82,7 +82,7 @@ class AnalyticUnitManager:
             result_payload = await self.__handle_analytic_task(task)
             result_message =  {
                 'status': 'SUCCESS',
-                'payload': result_payload
+                'payload': result_payload.to_json()
             }
             log.debug('End correctly handle_analytic_task with anatytic unit: {}'.format(task['analyticUnitId']))
             return result_message
