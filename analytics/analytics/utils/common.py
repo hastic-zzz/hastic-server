@@ -134,12 +134,12 @@ def merge_intersecting_segments(segments: List[Segment]) -> List[Segment]:
     '''
     if len(segments) < 2:
         return segments
-    segments = sorted(segments, key = lambda segment: segment.start_timestamp)
+    segments = sorted(segments, key = lambda segment: segment.from_timestamp)
     previous_segment = segments[0]
     for i in range(1, len(segments)):
-        if segments[i].start_timestamp <= previous_segment.end_timestamp:
-            segments[i].start_timestamp = min(previous_segment.start_timestamp, segments[i].start_timestamp)
-            segments[i].end_timestamp = max(previous_segment.end_timestamp, segments[i].end_timestamp)
+        if segments[i].from_timestamp <= previous_segment.to_timestamp:
+            segments[i].from_timestamp = min(previous_segment.from_timestamp, segments[i].from_timestamp)
+            segments[i].to_timestamp = max(previous_segment.to_timestamp, segments[i].to_timestamp)
             segments[i - 1] = None
         previous_segment = segments[i]
     segments = [x for x in segments if x is not None]

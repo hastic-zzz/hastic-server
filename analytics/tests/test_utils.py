@@ -346,8 +346,8 @@ class TestUtils(unittest.TestCase):
         for case in test_cases:
             utils_result = utils.merge_intersecting_segments(case['index'])
             for got, expected in zip(utils_result, case['result']):
-                self.assertEqual(got.start_timestamp, expected[0])
-                self.assertEqual(got.end_timestamp, expected[1])
+                self.assertEqual(got.from_timestamp, expected[0])
+                self.assertEqual(got.to_timestamp, expected[1])
 
 if __name__ == '__main__':
     unittest.main()
