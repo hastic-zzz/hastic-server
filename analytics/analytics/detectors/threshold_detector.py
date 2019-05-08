@@ -41,17 +41,16 @@ class ThresholdDetector(Detector):
 
         segments = []
         for index, row in dataframe.iterrows():
+            current_value = row['value']
             current_timestamp = convert_pd_timestamp_to_ms(row['timestamp'])
             segment = Segment(current_timestamp, current_timestamp)
+
             # TODO: merge segments
-            if pd.isnull(row['value']):
+            if pd.isnull(current_value):
                 if condition == 'NO_DATA':
-                    segment.params = { value: None }
                     segments.append(segment)
                 continue
 
-            current_value = row['value']
-            segment.params = { value: row['value'] }
             if condition == '>':
                 if current_value > value:
                     segments.append(segment)
