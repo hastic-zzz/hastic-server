@@ -142,7 +142,7 @@ def merge_intersecting_segments(segments: List[Segment]) -> List[Segment]:
             segments[i].end_timestamp = max(previous_segment.end_timestamp, segments[i].end_timestamp)
             segments[i - 1] = None
         previous_segment = segments[i]
-    segments = [x for x in segments if x != None]
+    segments = [x for x in segments if x is not None]
     return segments
 
 def get_start_and_end_of_segments(segments: List[List[int]]) -> List[Tuple[int, int]]:
