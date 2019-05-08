@@ -83,7 +83,7 @@ class AnalyticUnitWorker:
             if detected is not None:
                 detections.append(detected)
 
-        if detections == []:
+        if len(detections) == 0:
             return None
         else:
             detection_result = self._detector.concat_detection_results(detections)
