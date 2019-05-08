@@ -28,6 +28,7 @@ class AnomalyDetector(ProcessingDetector):
             }
         }
 
+    # TODO: ModelCache -> ModelState
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> DetectionResult:
         data = dataframe['value']
         last_value = None
@@ -52,6 +53,7 @@ class AnomalyDetector(ProcessingDetector):
 
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_detection_time = utils.convert_pd_timestamp_to_ms(last_dataframe_time)
+        # TODO: ['lastValue'] -> .last_value
         cache['lastValue'] = smoothed_data[-1]
 
         return DetectionResult(cache, segments, last_detection_time)
