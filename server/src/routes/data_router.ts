@@ -1,4 +1,7 @@
 import * as AnalyticUnit from '../models/analytic_units';
+import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
+import { AnalyticsTask, AnalyticsTaskType } from '../models/analytics_task_model';
+import * as AnalyticsController from '../controllers/analytics_controller';
 import { HASTIC_API_KEY } from '../config';
 import { getGrafanaUrl } from '../utils/grafana';
 
@@ -47,8 +50,32 @@ async function query(ctx: Router.IRouterContext) {
   }
 
   const grafanaUrl = getGrafanaUrl(analyticUnit.grafanaUrl);
-  const results = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
-  ctx.response.body = { results };
+  const data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
+
+  if(analyticUnit.detectorType !== AnalyticUnit.DetectorType.ANOMALY) {
+    ctx.response.body = { results: data };
+    return;
+  }
+
+  let cache = await AnalyticUnitCache.findById(analyticUnitId);
+  if(cache !== null) {
+    throw Error(`${analyticUnitId} got empty cache for processing`)
+  }
+  const analyticUnitType = analyticUnit.type;
+  const detector = analyticUnit.detectorType;
+  const payload = {
+    data,
+    analyticUnitType,
+    detector,
+    cache
+  }
+
+  const processingTask = new AnalyticsTask(analyticUnitId, AnalyticsTaskType.PROCESS, payload);
+  let result = await AnalyticsController.runTask(processingTask);
+  if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
+    throw new Error(result.error);
+  }
+  ctx.response.body = { results: result.data };
 }
 
 export const router = new Router();

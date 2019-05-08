@@ -17,6 +17,7 @@ import { queryByMetric, GrafanaUnavailable, DatasourceUnavailable } from 'grafan
 
 import * as _ from 'lodash';
 import { WebhookType } from '../services/notification_service';
+import { AnomalyAnalyticUnit } from '../models/analytic_units/anomaly_analytic_unit_model';
 
 const SECONDS_IN_MINUTE = 60;
 
@@ -105,7 +106,7 @@ export function terminate() {
   alertService.stopAlerting();
 }
 
-async function runTask(task: AnalyticsTask): Promise<TaskResult> {
+export async function runTask(task: AnalyticsTask): Promise<TaskResult> {
   return new Promise<TaskResult>((resolver: TaskResolver) => {
     taskResolvers.set(task.id, resolver); // it will be resolved in onTaskResult()
     analyticsService.sendTask(task);      // we dont wait for result here
@@ -232,6 +233,11 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
         value: (analyticUnit as ThresholdAnalyticUnit).value,
         condition: (analyticUnit as ThresholdAnalyticUnit).condition
       };
+    } else if(detector === AnalyticUnit.DetectorType.ANOMALY) {
+      taskPayload = {
+        alpha: (analyticUnit as AnomalyAnalyticUnit).alpha,
+        confidence: (analyticUnit as AnomalyAnalyticUnit).confidence
+      }
     }
 
     let range: TimeRange;

@@ -24,7 +24,7 @@ class DetectionResult:
     # TODO: use @utils.meta.JSONClass (now it can't serialize list of objects)
     def to_json(self):
         return {
-            'cache': self.cache.to_json(),
+            'cache': self.cache,
             'segments': list(map(lambda segment: segment.to_json(), self.segments)),
             'lastDetectionTime': self.last_detection_time
         }

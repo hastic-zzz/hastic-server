@@ -46,7 +46,7 @@ class AnalyticUnitWorker:
         except asyncio.TimeoutError:
             raise Exception('Timeout ({}s) exceeded while learning'.format(config.LEARNING_TIMEOUT))
 
-    async def do_detect(self, data: list, cache: Optional[ModelCache]) -> DetectionResult:
+    async def do_detect(self, data: list, cache: Optional[ModelCache]) -> dict:
 
         window_size = self._detector.get_window_size(cache)
         chunk_size = window_size * self.CHUNK_WINDOW_SIZE_FACTOR
@@ -71,13 +71,13 @@ class AnalyticUnitWorker:
             raise RuntimeError(f'do_detect for {self.analytic_unit_id} got empty detection results')
 
         detection_result = self._detector.concat_detection_results(detections)
-        return detection_result
+        return detection_result.to_json()
 
     def cancel(self):
         if self._training_future is not None:
             self._training_future.cancel()
 
-    async def consume_data(self, data: list, cache: Optional[ModelCache]) -> Optional[DetectionResult]:
+    async def consume_data(self, data: list, cache: Optional[ModelCache]) -> Optional[dict]:
         window_size = self._detector.get_window_size(cache)
 
         detections: List[DetectionResult] = []
@@ -86,27 +86,30 @@ class AnalyticUnitWorker:
             await asyncio.sleep(0)
             chunk_dataframe = prepare_data(chunk)
             detected = self._detector.consume_data(chunk_dataframe, cache)
-            detections.append(detected)
+            if detected is not None:
+                detections.append(detected)
 
-        detection_result = self._detector.concat_detection_results(detections)
-
-        if detection_result is None or detection_result.last_detection_time is None:
+        if detections == []:
             return None
         else:
-            return detection_result
+            detection_result = self._detector.concat_detection_results(detections)
+            return detection_result.to_json()
 
     async def process_data(self, data: List[Tuple[int, int]], cache: ModelCache) -> dict:
         assert isinstance(self._detector, detectors.ProcessingDetector), f'{self.analytic_unit_id} detector is not ProcessingDetector, can`t process data'
         assert cache is not None, f'{self.analytic_unit_id} got empty cache for processing data'
 
-        processing_results: List[ProcessingResult] = []
+        processed_chunks: List[ProcessingResult] = []
         window_size = self._detector.get_window_size(cache)
         for chunk in get_chunks(data, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
             await asyncio.sleep(0)
             chunk_dataframe = prepare_data(chunk)
             processed: ProcessingResult = self._detector.process_data(chunk_dataframe, cache)
             if processed is not None:
-                processing_results.append(processed)
+                processed_chunks.append(processed)
 
-        if processing_results == []:
+        if processed_chunks == []:
             raise RuntimeError(f'process_data for {self.analytic_unit_id} got empty processing results')
+
+        result = self._detector.concat_processing_results(processed_chunks)
+        return result.to_json()

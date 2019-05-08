@@ -10,7 +10,8 @@ export enum AnalyticsTaskType {
   LEARN = 'LEARN',
   DETECT = 'DETECT',
   CANCEL = 'CANCEL',
-  PUSH = 'PUSH'
+  PUSH = 'PUSH',
+  PROCESS = 'PROCESS'
 };
 
 export class AnalyticsTask {
