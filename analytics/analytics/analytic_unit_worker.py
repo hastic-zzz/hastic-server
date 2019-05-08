@@ -59,7 +59,7 @@ class AnalyticUnitWorker:
             chunk_dataframe = prepare_data(chunk)
             detected = self._detector.detect(chunk_dataframe, cache)
             self.__append_detection_result(detection_result, detected)
-        detection_result.segments = self._detector.get_intersections(detection_result.segments)
+        detection_result.segments = self._detector.merge_segments(detection_result.segments)
         return detection_result.to_json()
 
     def cancel(self):
@@ -77,7 +77,7 @@ class AnalyticUnitWorker:
             detected = self._detector.consume_data(chunk_dataframe, cache)
             self.__append_detection_result(detection_result, detected)
         
-        detection_result.segments = self._detector.get_intersections(detection_result.segments)
+        detection_result.segments = self._detector.merge_segments(detection_result.segments)
 
         if detection_result.last_detection_time is None:
             return None
@@ -85,7 +85,7 @@ class AnalyticUnitWorker:
             return detection_result.to_json()
 
     # TODO: move result concatenation to Detectors
-    def __append_detection_result(self, detection_result: DetectionResult, new_chunk: dict):
+    def __append_detection_result(self, detection_result: DetectionResult, new_chunk: DetectionResult):
         if new_chunk is not None:
             detection_result.cache = new_chunk.cache
             detection_result.last_detection_time = new_chunk.last_detection_time

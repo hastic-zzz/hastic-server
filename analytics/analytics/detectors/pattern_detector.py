@@ -12,6 +12,7 @@ from analytic_types.data_bucket import DataBucket
 from utils import convert_pd_timestamp_to_ms
 from analytic_types import AnalyticUnitId, ModelCache
 from analytic_types.detector_typing import DetectionResult
+from analytic_types.segment import Segment
 
 
 logger = logging.getLogger('PATTERN_DETECTOR')
@@ -78,7 +79,7 @@ class PatternDetector(Detector):
 
         detected = self.model.detect(dataframe, self.analytic_unit_id)
 
-        segments = [{ 'from': segment[0], 'to': segment[1] } for segment in detected['segments']]
+        segments = [Segment(segment[0], segment[1]) for segment in detected['segments']]
         new_cache = detected['cache'].to_json()
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_detection_time = convert_pd_timestamp_to_ms(last_dataframe_time)
@@ -123,7 +124,6 @@ class PatternDetector(Detector):
 
     def get_window_size(self, cache: Optional[ModelCache]) -> int:
         if cache is None: return self.DEFAULT_WINDOW_SIZE
+        # TODO: windowSize -> window_size
         return cache.get('windowSize', self.DEFAULT_WINDOW_SIZE)
 
-    def get_intersections(self, segments: List[dict]) -> List[dict]:
-        return segments
