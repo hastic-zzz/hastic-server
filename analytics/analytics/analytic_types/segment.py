@@ -16,5 +16,6 @@ class Segment:
         return {
             'from': self.from_timestamp,
             'to': self.to_timestamp,
+            # TODO: remove params
             'params': self.params
         }
