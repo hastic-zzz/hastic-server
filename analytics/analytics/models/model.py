@@ -11,7 +11,15 @@ from analytic_types.segment import Segment
 
 import utils.meta
 
-class ModelSegment(Segment):
+class AnalyticSegment(Segment):
+    '''
+    Segment with specific analytics fields used by models:
+    - `labeled` / `deleted` flags
+    - `start` / `end` / `center` indices
+    - `length`
+    - `data`
+    - etc
+    '''
 
     def __init__(
         self,
@@ -110,7 +118,7 @@ class Model(ABC):
         deleted = []
         for segment_map in segments:
             if segment_map['labeled'] or segment_map['deleted']:
-                segment = ModelSegment(
+                segment = AnalyticSegment(
                     segment_map['from'],
                     segment_map['to'],
                     segment_map['labeled'],

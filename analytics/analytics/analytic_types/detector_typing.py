@@ -1,17 +1,21 @@
 from analytic_types import ModelCache
 from analytic_types.segment import Segment
 
-from typing import List
+from typing import List, Optional
 
 
 class DetectionResult:
 
     def __init__(
         self,
-        cache: ModelCache = ModelCache(),
-        segments: List[Segment] = [],
+        cache: Optional[ModelCache] = None,
+        segments: Optional[List[Segment]] = None,
         last_detection_time: int = None
     ):
+        if cache is None:
+            cache = {}
+        if segments is None:
+            segments = []
         self.cache = cache
         self.segments = segments
         self.last_detection_time = last_detection_time
