@@ -90,7 +90,23 @@ class AnalyticUnitWorker:
 
         detection_result = self._detector.concat_detection_results(detections)
 
-        if detection_result.last_detection_time is None:
+        if detection_result is None or detection_result.last_detection_time is None:
             return None
         else:
             return detection_result
+
+    async def process_data(self, data: List[Tuple[int, int]], cache: ModelCache) -> dict:
+        assert isinstance(self._detector, detectors.ProcessingDetector), f'{self.analytic_unit_id} detector is not ProcessingDetector, can`t process data'
+        assert cache is not None, f'{self.analytic_unit_id} got empty cache for processing data'
+
+        processing_results: List[ProcessingResult] = []
+        window_size = self._detector.get_window_size(cache)
+        for chunk in get_chunks(data, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
+            await asyncio.sleep(0)
+            chunk_dataframe = prepare_data(chunk)
+            processed: ProcessingResult = self._detector.process_data(chunk_dataframe, cache)
+            if processed is not None:
+                processing_results.append(processed)
+
+        if processing_results == []:
+            raise RuntimeError(f'process_data for {self.analytic_unit_id} got empty processing results')
