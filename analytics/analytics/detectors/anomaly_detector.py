@@ -69,6 +69,11 @@ class AnomalyDetector(Detector):
                 break
         return level
 
-    def merge_segments(self, segments: List[Segment]) -> List[Segment]:
-        segments = utils.merge_intersecting_segments(segments)
-        return segments
+    def concat_detection_results(self, detections: List[DetectionResult]) -> DetectionResult:
+        result = DetectionResult()
+        for detection in detections:
+            result.segments.extend(detection.segments)
+            result.last_detection_time = detection.last_detection_time
+            result.cache = detection.cache
+        result.segments = utils.merge_intersecting_segments(result.segments)
+        return result

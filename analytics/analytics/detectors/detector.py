@@ -28,5 +28,10 @@ class Detector(ABC):
     def get_window_size(self, cache: Optional[ModelCache]) -> int:
         pass
 
-    def merge_segments(self, segments: List[Segment]) -> List[Segment]:
-        return segments
+    def concat_detection_results(self, detections: List[DetectionResult]) -> DetectionResult:
+        result = DetectionResult()
+        for detection in detections:
+            result.segments.extend(detection.segments)
+            result.last_detection_time = detection.last_detection_time
+            result.cache = detection.cache
+        return result
