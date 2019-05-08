@@ -60,7 +60,7 @@ class AnomalyDetector(ProcessingDetector):
 
     def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[DetectionResult]:
         if cache is None:
-            msg = f'consume_data get invalid cache {cache} for task {self.analytic_unit_id}'
+            msg = f'consume_data got invalid cache {cache} for task {self.analytic_unit_id}'
             logging.debug(msg)
             raise ValueError(msg)
 
