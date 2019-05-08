@@ -216,28 +216,34 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
     const detector = analyticUnit.detectorType;
     let taskPayload: any = { detector, analyticUnitType, cache: oldCache };
 
-    if(detector === AnalyticUnit.DetectorType.PATTERN) {
-      let segments = await Segment.findMany(id, { labeled: true });
-      if(segments.length === 0) {
-        throw new Error('Need at least 1 labeled segment');
-      }
+    switch(detector) {
+      case AnalyticUnit.DetectorType.PATTERN:
+        let segments = await Segment.findMany(id, { labeled: true });
+        if (segments.length === 0) {
+          throw new Error('Need at least 1 labeled segment');
+        }
 
-      let segmentObjs = segments.map(s => s.toObject());
+        let segmentObjs = segments.map(s => s.toObject());
 
-      let deletedSegments = await Segment.findMany(id, { deleted: true });
-      let deletedSegmentsObjs = deletedSegments.map(s => s.toObject());
-      segmentObjs = _.concat(segmentObjs, deletedSegmentsObjs);
-      taskPayload.segments = segmentObjs;
-    } else if(detector === AnalyticUnit.DetectorType.THRESHOLD) {
-      taskPayload.threshold = {
-        value: (analyticUnit as ThresholdAnalyticUnit).value,
-        condition: (analyticUnit as ThresholdAnalyticUnit).condition
-      };
-    } else if(detector === AnalyticUnit.DetectorType.ANOMALY) {
-      taskPayload = {
-        alpha: (analyticUnit as AnomalyAnalyticUnit).alpha,
-        confidence: (analyticUnit as AnomalyAnalyticUnit).confidence
-      }
+        let deletedSegments = await Segment.findMany(id, { deleted: true });
+        let deletedSegmentsObjs = deletedSegments.map(s => s.toObject());
+        segmentObjs = _.concat(segmentObjs, deletedSegmentsObjs);
+        taskPayload.segments = segmentObjs;
+        break;
+      case AnalyticUnit.DetectorType.THRESHOLD:
+        taskPayload.threshold = {
+          value: (analyticUnit as ThresholdAnalyticUnit).value,
+          condition: (analyticUnit as ThresholdAnalyticUnit).condition
+        };
+        break;
+      case AnalyticUnit.DetectorType.ANOMALY:
+        taskPayload = {
+          alpha: (analyticUnit as AnomalyAnalyticUnit).alpha,
+          confidence: (analyticUnit as AnomalyAnalyticUnit).confidence
+        }
+        break;
+      default:
+        throw new Error(`Unknown type of detector: ${detector}`);
     }
 
     let range: TimeRange;
