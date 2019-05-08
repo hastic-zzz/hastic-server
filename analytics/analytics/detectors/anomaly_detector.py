@@ -3,7 +3,7 @@ import pandas as pd
 from typing import Optional, Union, List, Tuple
 
 from analytic_types import AnalyticUnitId, ModelCache
-from analytic_types.detectors_typing import DetectionResult, ProcessingResult
+from analytic_types.detector_typing import DetectionResult, ProcessingResult
 from analytic_types.data_bucket import DataBucket
 from analytic_types.segment import Segment
 from detectors import ProcessingDetector

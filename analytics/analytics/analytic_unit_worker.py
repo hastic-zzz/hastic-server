@@ -2,7 +2,7 @@ import config
 import detectors
 import logging
 import pandas as pd
-from typing import Optional, Union, Generator, List
+from typing import Optional, Union, Generator, List, Tuple
 import concurrent.futures
 import asyncio
 import utils

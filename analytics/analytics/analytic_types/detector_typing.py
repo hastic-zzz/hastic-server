@@ -1,8 +1,9 @@
 from analytic_types import ModelCache
 from analytic_types.segment import Segment
 
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
+import utils.meta
 
 class DetectionResult:
 
@@ -23,7 +24,18 @@ class DetectionResult:
     # TODO: use @utils.meta.JSONClass (now it can't serialize list of objects)
     def to_json(self):
         return {
-            'cache': self.cache,
+            'cache': self.cache.to_json(),
             'segments': list(map(lambda segment: segment.to_json(), self.segments)),
             'lastDetectionTime': self.last_detection_time
         }
+
+@utils.meta.JSONClass
+class ProcessingResult():
+
+    def __init__(
+        self,
+        data: List[Tuple[int, int]] = None
+    ):
+        if data is None:
+            data = []
+        self.data = data
