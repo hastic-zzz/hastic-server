@@ -101,11 +101,9 @@ class AnomalyDetector(ProcessingDetector):
         result.segments = utils.merge_intersecting_segments(result.segments)
         return result
 
+    # TODO: ModelCache -> ModelState
     def process_data(self, data: pd.DataFrame, cache: ModelCache) -> ProcessingResult:
         smoothed = utils.exponential_smoothing(data, cache['alpha'], cache.get('lastValue'))
-        #for idx, val in enumerate(smoothed.values):
-        #    res.append([data['timestamp'][idx], val])
-        #smoothed = res
         result = ProcessingResult(smoothed.to_list())
         return result
 
