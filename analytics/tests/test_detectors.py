@@ -42,7 +42,7 @@ class TestAnomalyDetector(unittest.TestCase):
             'confidence': 2,
             'alpha': 0.1,
         }
-        detector = anomaly_detector.AnomalyDetector()
+        detector = anomaly_detector.AnomalyDetector('test_id')
         detect_result = detector.detect(dataframe, cache)
         result = [{ 'from': 1523889000005.0, 'to': 1523889000005.0 }]
         self.assertEqual(result, detect_result.to_json()['segments'])
