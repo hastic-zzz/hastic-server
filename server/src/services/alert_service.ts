@@ -26,9 +26,7 @@ export class Alert {
       from: segment.from,
       to: segment.to 
     };
-    if(segment.params) {
-      alert.params = segment.params;
-    }
+
     return alert;
   }
 }

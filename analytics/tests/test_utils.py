@@ -294,8 +294,7 @@ class TestUtils(unittest.TestCase):
         result = [[1, 4], [5, 7], [8, 8], [12, 12]]
         utils_result = utils.get_start_and_end_of_segments(segments)
         for got, expected in zip(utils_result, result):
-            self.assertEqual(got[0], expected[0])
-            self.assertEqual(got[1], expected[1])
+            self.assertEqual(got, expected)
 
     def test_get_start_and_end_of_segments_empty(self):
         segments = []
@@ -346,8 +345,8 @@ class TestUtils(unittest.TestCase):
         for case in test_cases:
             utils_result = utils.merge_intersecting_segments(case['index'])
             for got, expected in zip(utils_result, case['result']):
-                self.assertEqual(got.start_timestamp, expected[0])
-                self.assertEqual(got.end_timestamp, expected[1])
+                self.assertEqual(got.from_timestamp, expected[0])
+                self.assertEqual(got.to_timestamp, expected[1])
 
 if __name__ == '__main__':
     unittest.main()

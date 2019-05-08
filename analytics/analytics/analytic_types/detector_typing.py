@@ -34,7 +34,7 @@ class ProcessingResult():
 
     def __init__(
         self,
-        data: List[Tuple[int, int]] = None
+        data: Optional[List[Tuple[int, int]]] = None
     ):
         if data is None:
             data = []

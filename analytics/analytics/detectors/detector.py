@@ -28,7 +28,6 @@ class Detector(ABC):
     def get_window_size(self, cache: Optional[ModelCache]) -> int:
         pass
 
-
     def is_detection_intersected(self) -> bool:
         return True
 
@@ -39,6 +38,9 @@ class Detector(ABC):
             result.last_detection_time = detection.last_detection_time
             result.cache = detection.cache
         return result
+
+    def merge_segments(self, segments: List[Segment]) -> List[Segment]:
+        return segments
 
 class ProcessingDetector(Detector):
 

@@ -6,7 +6,7 @@ from analytic_types import AnalyticUnitId, ModelCache
 from analytic_types.detector_typing import DetectionResult, ProcessingResult
 from analytic_types.data_bucket import DataBucket
 from analytic_types.segment import Segment
-from detectors import ProcessingDetector
+from detectors import Detector, ProcessingDetector
 import utils
 
 MAX_DEPENDENCY_LEVEL = 100
@@ -42,11 +42,9 @@ class AnomalyDetector(ProcessingDetector):
         for idx, val in enumerate(data.values):
             if val > upper_bound.values[idx] or val < lower_bound.values[idx]:
                 anomaly_indexes.append(data.index[idx])
-
         # TODO: use Segment in utils
         segments = utils.close_filtering(anomaly_indexes, 1)
         segments = utils.get_start_and_end_of_segments(segments)
-
         segments = [Segment(
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[0]]),
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[1]]),
@@ -86,7 +84,7 @@ class AnomalyDetector(ProcessingDetector):
 
         if cache is None:
             raise ValueError('anomaly detector got None cache')
-        
+
         for level in range(1, MAX_DEPENDENCY_LEVEL):
             if (1 - cache['alpha']) ** level < MIN_DEPENDENCY_FACTOR:
                 break
@@ -108,3 +106,7 @@ class AnomalyDetector(ProcessingDetector):
         #smoothed = res
         result = ProcessingResult(smoothed.to_list())
         return result
+
+    def merge_segments(self, segments: List[Segment]) -> List[Segment]:
+        segments = utils.merge_intersecting_segments(segments)
+        return segments
