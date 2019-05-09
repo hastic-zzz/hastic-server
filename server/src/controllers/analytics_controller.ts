@@ -577,7 +577,8 @@ async function runDetectionOnExtendedSpan(
 export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: number, to: number): Promise<any[]> {
 
   try {
-    const data = await query(analyticUnit, { from, to });
+    const grafanaUrl = getGrafanaUrl(analyticUnit.grafanaUrl);
+    const data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
 
     if(analyticUnit.detectorType !== AnalyticUnit.DetectorType.ANOMALY) {
       return data;
@@ -592,7 +593,7 @@ export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: numb
       const analyticUnitType = analyticUnit.type;
       const detector = analyticUnit.detectorType;
       const payload = {
-        data,
+        data: data.values,
         analyticUnitType,
         detector,
         cache
@@ -603,7 +604,7 @@ export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: numb
       if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
         throw new Error(`got error while procesing data ${result.error}`);
       }
-      return result.payload.data;
+      return { values: result.payload.data, columns: dataPuller.columns }
     }
   } catch (err) {
     const message = err.message || JSON.stringify(err);
