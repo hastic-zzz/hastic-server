@@ -134,6 +134,7 @@ export class AlertService {
 
     alertsType[AnalyticUnit.DetectorType.THRESHOLD] = ThresholdAlert;
     alertsType[AnalyticUnit.DetectorType.PATTERN] = PatternAlert;
+    alertsType[AnalyticUnit.DetectorType.ANOMALY] = Alert;
 
     this._alerts[analyticUnit.id] = new alertsType[detector](analyticUnit);
   }

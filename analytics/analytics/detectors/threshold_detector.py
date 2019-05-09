@@ -44,7 +44,6 @@ class ThresholdDetector(Detector):
             current_value = row['value']
             current_timestamp = convert_pd_timestamp_to_ms(row['timestamp'])
             segment = Segment(current_timestamp, current_timestamp)
-
             # TODO: merge segments
             if pd.isnull(current_value):
                 if condition == 'NO_DATA':

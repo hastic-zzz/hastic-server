@@ -2,14 +2,14 @@ import config
 import detectors
 import logging
 import pandas as pd
-from typing import Optional, Union, Generator, List
+from typing import Optional, Union, Generator, List, Tuple
 import concurrent.futures
 import asyncio
 import utils
 from utils import get_intersected_chunks, get_chunks, prepare_data
 
 from analytic_types import ModelCache
-from analytic_types.detector_typing import DetectionResult
+from analytic_types.detector_typing import DetectionResult, ProcessingResult
 
 logger = logging.getLogger('AnalyticUnitWorker')
 
@@ -52,41 +52,63 @@ class AnalyticUnitWorker:
         chunk_size = window_size * self.CHUNK_WINDOW_SIZE_FACTOR
         chunk_intersection = window_size * self.CHUNK_INTERSECTION_FACTOR
 
-        detection_result = DetectionResult()
+        detections: List[DetectionResult] = []
+        chunks = []
+        # XXX: get_chunks(data, chunk_size) == get_intersected_chunks(data, 0, chunk_size)
+        if self._detector.is_detection_intersected():
+            chunks = get_intersected_chunks(data, chunk_intersection, chunk_size)
+        else:
+            chunks = get_chunks(data, chunk_size)
 
-        for chunk in get_intersected_chunks(data, chunk_intersection, chunk_size):
+        for chunk in chunks:
             await asyncio.sleep(0)
             chunk_dataframe = prepare_data(chunk)
-            detected = self._detector.detect(chunk_dataframe, cache)
-            self.__append_detection_result(detection_result, detected)
-        detection_result.segments = self._detector.merge_segments(detection_result.segments)
+            detected: DetectionResult = self._detector.detect(chunk_dataframe, cache)
+            detections.append(detected)
+
+        if len(detections) == 0:
+            raise RuntimeError(f'do_detect for {self.analytic_unit_id} got empty detection results')
+
+        detection_result = self._detector.concat_detection_results(detections)
         return detection_result.to_json()
 
     def cancel(self):
         if self._training_future is not None:
             self._training_future.cancel()
 
-    async def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[DetectionResult]:
+    async def consume_data(self, data: list, cache: Optional[ModelCache]) -> Optional[dict]:
         window_size = self._detector.get_window_size(cache)
 
-        detection_result = DetectionResult()
+        detections: List[DetectionResult] = []
 
         for chunk in get_chunks(data, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
             await asyncio.sleep(0)
             chunk_dataframe = prepare_data(chunk)
             detected = self._detector.consume_data(chunk_dataframe, cache)
-            self.__append_detection_result(detection_result, detected)
-        
-        detection_result.segments = self._detector.merge_segments(detection_result.segments)
+            if detected is not None:
+                detections.append(detected)
 
-        if detection_result.last_detection_time is None:
+        if len(detections) == 0:
             return None
         else:
+            detection_result = self._detector.concat_detection_results(detections)
             return detection_result.to_json()
 
-    # TODO: move result concatenation to Detectors
-    def __append_detection_result(self, detection_result: DetectionResult, new_chunk: DetectionResult):
-        if new_chunk is not None:
-            detection_result.cache = new_chunk.cache
-            detection_result.last_detection_time = new_chunk.last_detection_time
-            detection_result.segments.extend(new_chunk.segments)
+    async def process_data(self, data: list, cache: ModelCache) -> dict:
+        assert isinstance(self._detector, detectors.ProcessingDetector), f'{self.analytic_unit_id} detector is not ProcessingDetector, can`t process data'
+        assert cache is not None, f'{self.analytic_unit_id} got empty cache for processing data'
+
+        processed_chunks: List[ProcessingResult] = []
+        window_size = self._detector.get_window_size(cache)
+        for chunk in get_chunks(data, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
+            await asyncio.sleep(0)
+            chunk_dataframe = prepare_data(chunk)
+            processed: ProcessingResult = self._detector.process_data(chunk_dataframe, cache)
+            if processed is not None:
+                processed_chunks.append(processed)
+
+        if len(processed_chunks) == 0:
+            raise RuntimeError(f'process_data for {self.analytic_unit_id} got empty processing results')
+
+        result = self._detector.concat_processing_results(processed_chunks)
+        return result.to_json()
