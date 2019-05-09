@@ -616,5 +616,4 @@ export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: numb
     await AnalyticUnit.setStatus(analyticUnit.id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
     throw new Error(message);
   }
-
 }
