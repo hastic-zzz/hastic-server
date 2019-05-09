@@ -13,7 +13,7 @@ services:
       GRAFANA_URL: ${GRAFANA_URL}
       HASTIC_INSTANCE_NAME: ${HASTIC_INSTANCE_NAME}
     ports:
-      - 8000:8000
+      - ${HASTIC_PORT:-8000}:8000
     volumes:
       - data-volume:/var/www/data
     restart: always
