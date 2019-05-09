@@ -4,7 +4,7 @@ import { AnalyticUnit } from './analytic_unit_model';
 import { PatternAnalyticUnit } from './pattern_analytic_unit_model';
 import { ThresholdAnalyticUnit } from './threshold_analytic_unit_model';
 import { AnomalyAnalyticUnit } from './anomaly_analytic_unit_model';
- import {
+import {
   findById,
   findMany,
   create,
