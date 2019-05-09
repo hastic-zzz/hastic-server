@@ -607,7 +607,7 @@ export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: numb
       const processingTask = new AnalyticsTask(analyticUnit.id, AnalyticsTaskType.PROCESS, payload);
       const result = await runTask(processingTask);
       if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
-        throw new Error(`got error while procesing data ${result.error}`);
+        throw new Error(`Data processing error: ${result.error}`);
       }
       return { values: result.payload.data, columns: data.columns }
     }
