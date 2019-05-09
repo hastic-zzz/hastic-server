@@ -583,7 +583,6 @@ export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: numb
     if(analyticUnit.detectorType !== AnalyticUnit.DetectorType.ANOMALY) {
       return data;
     } else {
-
       let cache = await AnalyticUnitCache.findById(analyticUnit.id);
       if(
         cache === null ||
