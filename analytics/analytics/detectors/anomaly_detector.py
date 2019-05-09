@@ -106,7 +106,9 @@ class AnomalyDetector(ProcessingDetector):
     def process_data(self, data: pd.DataFrame, cache: ModelCache) -> ProcessingResult:
         # TODO: exponential_smoothing should return dataframe with related timestamps
         smoothed = utils.exponential_smoothing(data['value'], cache['alpha'], cache.get('lastValue'))
-        result = ProcessingResult(list(zip((data.timestamp.values.astype(np.int64) / 1000000 ).tolist(), smoothed.values.tolist())))
+        timestamps = utils.convert_series_to_timestamp_list(data.timestamp)
+        smoothed_dataset = list(zip(timestamps, smoothed.values.tolist()))
+        result = ProcessingResult(smoothed_dataset)
         return result
 
     def merge_segments(self, segments: List[Segment]) -> List[Segment]:
