@@ -222,7 +222,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
     switch(detector) {
       case AnalyticUnit.DetectorType.PATTERN:
         let segments = await Segment.findMany(id, { labeled: true });
-        if (segments.length === 0) {
+        if(segments.length === 0) {
           throw new Error('Need at least 1 labeled segment');
         }
 
