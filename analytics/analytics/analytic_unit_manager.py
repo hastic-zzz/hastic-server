@@ -69,6 +69,8 @@ class AnalyticUnitManager:
                 return await worker.do_train(payload['segments'], data, payload['cache'])
             elif 'threshold' in payload:
                 return await worker.do_train(payload['threshold'], data, payload['cache'])
+            elif 'anomaly' in payload:
+                return await worker.do_train(payload['anomaly'], data, payload['cache'])
             else:
                 raise ValueError('No segments or threshold in LEARN payload')
         elif task['type'] == 'DETECT':

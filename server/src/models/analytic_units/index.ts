@@ -3,7 +3,8 @@ import { AnalyticUnitId, AnalyticUnitStatus, DetectorType, ANALYTIC_UNIT_TYPES }
 import { AnalyticUnit } from './analytic_unit_model';
 import { PatternAnalyticUnit } from './pattern_analytic_unit_model';
 import { ThresholdAnalyticUnit } from './threshold_analytic_unit_model';
-import {
+import { AnomalyAnalyticUnit } from './anomaly_analytic_unit_model';
+ import {
   findById,
   findMany,
   create,
@@ -17,7 +18,7 @@ import {
 
 
 export {
-  AnalyticUnit, PatternAnalyticUnit, ThresholdAnalyticUnit,
+  AnalyticUnit, PatternAnalyticUnit, ThresholdAnalyticUnit, AnomalyAnalyticUnit,
   AnalyticUnitId, AnalyticUnitStatus, DetectorType, ANALYTIC_UNIT_TYPES,
   createAnalyticUnitFromObject,
   findById, findMany,

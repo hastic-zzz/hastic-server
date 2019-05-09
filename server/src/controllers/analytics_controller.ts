@@ -127,7 +127,10 @@ async function getQueryRange(
     return getQueryRangeForLearningBySegments(segments);
   }
 
-  if(detectorType === AnalyticUnit.DetectorType.THRESHOLD) {
+  if(
+    detectorType === AnalyticUnit.DetectorType.THRESHOLD ||
+    detectorType === AnalyticUnit.DetectorType.ANOMALY
+  ) {
     const now = Date.now();
     return {
       from: now - 5 * SECONDS_IN_MINUTE * 1000,
@@ -237,7 +240,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
         };
         break;
       case AnalyticUnit.DetectorType.ANOMALY:
-        taskPayload = {
+        taskPayload.anomaly = {
           alpha: (analyticUnit as AnomalyAnalyticUnit).alpha,
           confidence: (analyticUnit as AnomalyAnalyticUnit).confidence
         }
@@ -569,4 +572,43 @@ async function runDetectionOnExtendedSpan(
   );
   await Detection.insertSpan(detection);
   return detection;
+}
+
+export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: number, to: number) {
+
+  try {
+    const data = await query(analyticUnit, { from, to });
+
+    if(analyticUnit.detectorType !== AnalyticUnit.DetectorType.ANOMALY) {
+      return data;
+    } else {
+      let cache = await AnalyticUnitCache.findById(analyticUnit.id);
+      if(cache !== null) {
+        cache = cache.data;
+      } else {
+        throw Error(`${analyticUnit.id} got empty cache for processing`)
+      }
+    
+      const analyticUnitType = analyticUnit.type;
+      const detector = analyticUnit.detectorType;
+      const payload = {
+        data,
+        analyticUnitType,
+        detector,
+        cache
+      };
+
+      const processingTask = new AnalyticsTask(analyticUnit.id, AnalyticsTaskType.PROCESS, payload);
+      const result = await runTask(processingTask);
+      if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
+        throw new Error(`got error while procesing data ${result.error}`);
+      }
+      return result;
+    }
+  } catch (err) {
+    const message = err.message || JSON.stringify(err);
+    await AnalyticUnit.setStatus(analyticUnit.id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
+    throw new Error(message);
+  }
+
 }
