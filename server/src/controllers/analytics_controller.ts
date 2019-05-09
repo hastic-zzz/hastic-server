@@ -243,7 +243,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
         taskPayload.anomaly = {
           alpha: (analyticUnit as AnomalyAnalyticUnit).alpha,
           confidence: (analyticUnit as AnomalyAnalyticUnit).confidence
-        }
+        };
         break;
       default:
         throw new Error(`Unknown type of detector: ${detector}`);
