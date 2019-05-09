@@ -17,7 +17,7 @@ logger = logging.getLogger('ANOMALY_DETECTOR')
 
 class AnomalyDetector(ProcessingDetector):
 
-    def __init__(self, analytic_unit_id):
+    def __init__(self, analytic_unit_id: AnalyticUnitId):
         self.analytic_unit_id = analytic_unit_id
         self.bucket = DataBucket()
 
