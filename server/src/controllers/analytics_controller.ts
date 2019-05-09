@@ -585,7 +585,11 @@ export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: numb
     } else {
 
       let cache = await AnalyticUnitCache.findById(analyticUnit.id);
-      if(cache === null) {
+      if(
+        cache === null ||
+        cache.data.alpha !== (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).alpha ||
+        cache.data.confidence !== (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).confidence
+      ) {
         await runLearning(analyticUnit.id, from, to);
         cache = await AnalyticUnitCache.findById(analyticUnit.id);
       }
