@@ -575,7 +575,6 @@ async function runDetectionOnExtendedSpan(
 }
 
 export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: number, to: number) {
-
   try {
     const grafanaUrl = getGrafanaUrl(analyticUnit.grafanaUrl);
     const data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
