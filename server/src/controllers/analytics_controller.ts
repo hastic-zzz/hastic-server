@@ -574,7 +574,7 @@ async function runDetectionOnExtendedSpan(
   return detection;
 }
 
-export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: number, to: number): Promise<any[]> {
+export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: number, to: number) {
 
   try {
     const grafanaUrl = getGrafanaUrl(analyticUnit.grafanaUrl);
@@ -583,12 +583,14 @@ export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: numb
     if(analyticUnit.detectorType !== AnalyticUnit.DetectorType.ANOMALY) {
       return data;
     } else {
+
       let cache = await AnalyticUnitCache.findById(analyticUnit.id);
-      if(cache !== null) {
-        cache = cache.data;
-      } else {
-        throw Error(`${analyticUnit.id} got empty cache for processing`)
+      if(cache === null) {
+        await runLearning(analyticUnit.id, from, to);
+        cache = await AnalyticUnitCache.findById(analyticUnit.id);
       }
+
+      cache = cache.data;
     
       const analyticUnitType = analyticUnit.type;
       const detector = analyticUnit.detectorType;
@@ -604,7 +606,7 @@ export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: numb
       if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
         throw new Error(`got error while procesing data ${result.error}`);
       }
-      return { values: result.payload.data, columns: dataPuller.columns }
+      return { values: result.payload.data, columns: data.columns }
     }
   } catch (err) {
     const message = err.message || JSON.stringify(err);
