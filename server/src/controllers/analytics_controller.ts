@@ -574,7 +574,7 @@ async function runDetectionOnExtendedSpan(
   return detection;
 }
 
-export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: number, to: number) {
+export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: number, to: number): Promise<any[]> {
 
   try {
     const data = await query(analyticUnit, { from, to });
@@ -603,7 +603,7 @@ export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: numb
       if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
         throw new Error(`got error while procesing data ${result.error}`);
       }
-      return result;
+      return result.payload.data;
     }
   } catch (err) {
     const message = err.message || JSON.stringify(err);

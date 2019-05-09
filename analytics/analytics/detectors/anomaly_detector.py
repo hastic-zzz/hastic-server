@@ -103,8 +103,8 @@ class AnomalyDetector(ProcessingDetector):
 
     # TODO: ModelCache -> ModelState
     def process_data(self, data: pd.DataFrame, cache: ModelCache) -> ProcessingResult:
-        smoothed = utils.exponential_smoothing(data, cache['alpha'], cache.get('lastValue'))
-        result = ProcessingResult(smoothed.to_list())
+        smoothed = utils.exponential_smoothing(data['value'], cache['alpha'], cache.get('lastValue'))
+        result = ProcessingResult(list(zip(data.timestamp.values.tolist(), smoothed.values.tolist())))
         return result
 
     def merge_segments(self, segments: List[Segment]) -> List[Segment]:

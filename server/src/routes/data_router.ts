@@ -43,7 +43,7 @@ async function query(ctx: Router.IRouterContext) {
     throw new Error(`can't find analytic unit ${analyticUnitId}`);
   }
 
-  const results = AnalyticsController.getHSR(analyticUnit, from, to);
+  const results = await AnalyticsController.getHSR(analyticUnit, from, to);
   ctx.response.body = { results };
 }
 
