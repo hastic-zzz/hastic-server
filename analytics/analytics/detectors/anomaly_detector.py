@@ -32,6 +32,7 @@ class AnomalyDetector(ProcessingDetector):
     # TODO: ModelCache -> ModelState
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> DetectionResult:
         data = dataframe['value']
+
         last_value = None
         if cache is not None:
             last_value = cache.get('last_value')
@@ -110,7 +111,3 @@ class AnomalyDetector(ProcessingDetector):
         smoothed_dataset = list(zip(timestamps, smoothed.values.tolist()))
         result = ProcessingResult(smoothed_dataset)
         return result
-
-    def merge_segments(self, segments: List[Segment]) -> List[Segment]:
-        segments = utils.merge_intersecting_segments(segments)
-        return segments
