@@ -17,6 +17,7 @@ import { queryByMetric, GrafanaUnavailable, DatasourceUnavailable } from 'grafan
 
 import * as _ from 'lodash';
 import { WebhookType } from '../services/notification_service';
+import { AnomalyAnalyticUnit } from '../models/analytic_units/anomaly_analytic_unit_model';
 
 const SECONDS_IN_MINUTE = 60;
 
@@ -105,7 +106,7 @@ export function terminate() {
   alertService.stopAlerting();
 }
 
-async function runTask(task: AnalyticsTask): Promise<TaskResult> {
+export async function runTask(task: AnalyticsTask): Promise<TaskResult> {
   return new Promise<TaskResult>((resolver: TaskResolver) => {
     taskResolvers.set(task.id, resolver); // it will be resolved in onTaskResult()
     analyticsService.sendTask(task);      // we dont wait for result here
@@ -126,7 +127,10 @@ async function getQueryRange(
     return getQueryRangeForLearningBySegments(segments);
   }
 
-  if(detectorType === AnalyticUnit.DetectorType.THRESHOLD) {
+  if(
+    detectorType === AnalyticUnit.DetectorType.THRESHOLD ||
+    detectorType === AnalyticUnit.DetectorType.ANOMALY
+  ) {
     const now = Date.now();
     return {
       from: now - 5 * SECONDS_IN_MINUTE * 1000,
@@ -215,23 +219,34 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
     const detector = analyticUnit.detectorType;
     let taskPayload: any = { detector, analyticUnitType, cache: oldCache };
 
-    if(detector === AnalyticUnit.DetectorType.PATTERN) {
-      let segments = await Segment.findMany(id, { labeled: true });
-      if(segments.length === 0) {
-        throw new Error('Need at least 1 labeled segment');
-      }
+    switch(detector) {
+      case AnalyticUnit.DetectorType.PATTERN:
+        let segments = await Segment.findMany(id, { labeled: true });
+        if(segments.length === 0) {
+          throw new Error('Need at least 1 labeled segment');
+        }
 
-      let segmentObjs = segments.map(s => s.toObject());
+        let segmentObjs = segments.map(s => s.toObject());
 
-      let deletedSegments = await Segment.findMany(id, { deleted: true });
-      let deletedSegmentsObjs = deletedSegments.map(s => s.toObject());
-      segmentObjs = _.concat(segmentObjs, deletedSegmentsObjs);
-      taskPayload.segments = segmentObjs;
-    } else if(detector === AnalyticUnit.DetectorType.THRESHOLD) {
-      taskPayload.threshold = {
-        value: (analyticUnit as ThresholdAnalyticUnit).value,
-        condition: (analyticUnit as ThresholdAnalyticUnit).condition
-      };
+        let deletedSegments = await Segment.findMany(id, { deleted: true });
+        let deletedSegmentsObjs = deletedSegments.map(s => s.toObject());
+        segmentObjs = _.concat(segmentObjs, deletedSegmentsObjs);
+        taskPayload.segments = segmentObjs;
+        break;
+      case AnalyticUnit.DetectorType.THRESHOLD:
+        taskPayload.threshold = {
+          value: (analyticUnit as ThresholdAnalyticUnit).value,
+          condition: (analyticUnit as ThresholdAnalyticUnit).condition
+        };
+        break;
+      case AnalyticUnit.DetectorType.ANOMALY:
+        taskPayload.anomaly = {
+          alpha: (analyticUnit as AnomalyAnalyticUnit).alpha,
+          confidence: (analyticUnit as AnomalyAnalyticUnit).confidence
+        };
+        break;
+      default:
+        throw new Error(`Unknown type of detector: ${detector}`);
     }
 
     let range: TimeRange;
@@ -557,4 +572,47 @@ async function runDetectionOnExtendedSpan(
   );
   await Detection.insertSpan(detection);
   return detection;
+}
+
+export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: number, to: number) {
+  try {
+    const grafanaUrl = getGrafanaUrl(analyticUnit.grafanaUrl);
+    const data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
+
+    if(analyticUnit.detectorType !== AnalyticUnit.DetectorType.ANOMALY) {
+      return data;
+    } else {
+      let cache = await AnalyticUnitCache.findById(analyticUnit.id);
+      if(
+        cache === null ||
+        cache.data.alpha !== (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).alpha ||
+        cache.data.confidence !== (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).confidence
+      ) {
+        await runLearning(analyticUnit.id, from, to);
+        cache = await AnalyticUnitCache.findById(analyticUnit.id);
+      }
+
+      cache = cache.data;
+    
+      const analyticUnitType = analyticUnit.type;
+      const detector = analyticUnit.detectorType;
+      const payload = {
+        data: data.values,
+        analyticUnitType,
+        detector,
+        cache
+      };
+
+      const processingTask = new AnalyticsTask(analyticUnit.id, AnalyticsTaskType.PROCESS, payload);
+      const result = await runTask(processingTask);
+      if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
+        throw new Error(`Data processing error: ${result.error}`);
+      }
+      return { values: result.payload.data, columns: data.columns }
+    }
+  } catch (err) {
+    const message = err.message || JSON.stringify(err);
+    await AnalyticUnit.setStatus(analyticUnit.id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
+    throw new Error(message);
+  }
 }

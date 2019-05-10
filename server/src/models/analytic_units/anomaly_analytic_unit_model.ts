@@ -35,7 +35,7 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
       error,
       labeledColor,
       deletedColor,
-      DetectorType.THRESHOLD,
+      DetectorType.ANOMALY,
       visible
     );
   }

@@ -6,30 +6,50 @@ from typing import Optional, List, Tuple
 import pandas as pd
 import math
 import logging
-from analytic_types import AnalyticUnitId
+from analytic_types import AnalyticUnitId, ModelCache
+from analytic_types.segment import Segment
 
 import utils.meta
 
-class Segment(AttrDict):
+class AnalyticSegment(Segment):
+    '''
+    Segment with specific analytics fields used by models:
+    - `labeled` / `deleted` flags
+    - `from` / `to` / `center` indices
+    - `length`
+    - `data`
+    - etc
+    '''
 
-    def __init__(self, dataframe: pd.DataFrame, segment_map: dict, center_finder = None):
-        self.update(segment_map)
-        self.start = utils.timestamp_to_index(dataframe, pd.to_datetime(self['from'], unit='ms'))
-        self.end = utils.timestamp_to_index(dataframe, pd.to_datetime(self['to'], unit='ms'))
-        self.length = abs(self.end - self.start)
+    def __init__(
+        self,
+        from_timestamp: int,
+        to_timestamp: int,
+        labeled: bool,
+        deleted: bool,
+        dataframe: pd.DataFrame,
+        center_finder = None
+    ):
+        super().__init__(from_timestamp, to_timestamp)
+        self.labeled = labeled
+        self.deleted = deleted
+
+        self.from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(self.from_timestamp, unit='ms'))
+        self.to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(self.to_timestamp, unit='ms'))
+        self.length = abs(self.to_index - self.from_index)
         self.__percent_of_nans = 0
 
         if callable(center_finder):
-            self.center_index = center_finder(dataframe, self.start, self.end)
+            self.center_index = center_finder(dataframe, self.from_index, self.to_index)
             self.pattern_timestamp = dataframe['timestamp'][self.center_index]
         else:
-            self.center_index = self.start + math.ceil(self.length / 2)
+            self.center_index = self.from_index + math.ceil(self.length / 2)
             self.pattern_timestamp = dataframe['timestamp'][self.center_index]
 
-        assert len(dataframe['value']) >= self.end + 1, \
-            'segment {}-{} out of dataframe length={}'.format(self.start, self.end+1, len(dataframe['value']))
+        assert len(dataframe['value']) >= self.to_index + 1, \
+            'segment {}-{} out of dataframe length={}'.format(self.from_index, self.to_index + 1, len(dataframe['value']))
 
-        self.data = dataframe['value'][self.start: self.end + 1]
+        self.data = dataframe['value'][self.from_index: self.to_index + 1]
 
     @property
     def percent_of_nans(self):
@@ -71,7 +91,13 @@ class Model(ABC):
     DEL_CONV_ERROR = 0.02
 
     @abstractmethod
-    def do_fit(self, dataframe: pd.DataFrame, labeled_segments: List[dict], deleted_segments: List[dict], learning_info: dict) -> None:
+    def do_fit(
+        self,
+        dataframe: pd.DataFrame,
+        labeled_segments: List[AnalyticSegment],
+        deleted_segments: List[AnalyticSegment],
+        learning_info: dict
+    ) -> None:
         pass
 
     @abstractmethod
@@ -87,7 +113,7 @@ class Model(ABC):
         pass
 
     @abstractmethod
-    def get_state(self, cache: Optional[dict] = None) -> ModelState:
+    def get_state(self, cache: Optional[ModelCache] = None) -> ModelState:
         pass
 
     def fit(self, dataframe: pd.DataFrame, segments: List[dict], id: AnalyticUnitId) -> ModelState:
@@ -98,9 +124,16 @@ class Model(ABC):
         deleted = []
         for segment_map in segments:
             if segment_map['labeled'] or segment_map['deleted']:
-                segment = Segment(dataframe, segment_map, self.find_segment_center)
+                segment = AnalyticSegment(
+                    segment_map['from'],
+                    segment_map['to'],
+                    segment_map['labeled'],
+                    segment_map['deleted'],
+                    dataframe,
+                    self.find_segment_center
+                )
                 if segment.percent_of_nans > 0.1 or len(segment.data) == 0:
-                    logging.debug(f'segment {segment.start}-{segment.end} skip because of invalid data')
+                    logging.debug(f'segment {segment.from_index}-{segment.to_index} skip because of invalid data')
                     continue
                 if segment.percent_of_nans > 0:
                     segment.convert_nan_to_zero()
@@ -113,6 +146,7 @@ class Model(ABC):
         if self.state.window_size == 0:
             self.state.window_size = math.ceil(max_length / 2) if max_length else 0
         model, model_type = self.get_model_type()
+        # TODO: learning_info: dict -> class
         learning_info = self.get_parameters_from_segments(dataframe, labeled, deleted, model, model_type)
         self.do_fit(dataframe, labeled, deleted, learning_info)
         logging.debug('fit complete successful with self.state: {} for analytic unit: {}'.format(self.state, id))
@@ -169,7 +203,7 @@ class Model(ABC):
                 learning_info['pattern_height'].append(utils.find_confidence(aligned_segment)[1])
                 learning_info['patterns_value'].append(aligned_segment.values.max())
             if model == 'jump' or model == 'drop':
-                pattern_height, pattern_length = utils.find_parameters(segment.data, segment.start, model)
+                pattern_height, pattern_length = utils.find_parameters(segment.data, segment.from_index, model)
                 learning_info['pattern_height'].append(pattern_height)
                 learning_info['pattern_width'].append(pattern_length)
                 learning_info['patterns_value'].append(aligned_segment.values[self.state.window_size])

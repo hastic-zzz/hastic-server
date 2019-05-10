@@ -1,4 +1,4 @@
-from models.model import Model, ModelState
+from models.model import Model, ModelState, AnalyticSegment
 from models.drop_model import DropModel, DropModelState
 from models.peak_model import PeakModel, PeakModelState
 from models.jump_model import JumpModel, JumpModelState

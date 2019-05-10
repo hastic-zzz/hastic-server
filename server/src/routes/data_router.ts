@@ -1,8 +1,5 @@
 import * as AnalyticUnit from '../models/analytic_units';
-import { HASTIC_API_KEY } from '../config';
-import { getGrafanaUrl } from '../utils/grafana';
-
-import { queryByMetric } from 'grafana-datasource-kit';
+import * as AnalyticsController from '../controllers/analytics_controller';
 
 import * as Router from 'koa-router';
 
@@ -46,8 +43,7 @@ async function query(ctx: Router.IRouterContext) {
     throw new Error(`can't find analytic unit ${analyticUnitId}`);
   }
 
-  const grafanaUrl = getGrafanaUrl(analyticUnit.grafanaUrl);
-  const results = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
+  const results = await AnalyticsController.getHSR(analyticUnit, from, to);
   ctx.response.body = { results };
 }
 
