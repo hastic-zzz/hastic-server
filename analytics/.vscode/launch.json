@@ -12,8 +12,8 @@
       "host": "localhost",
       "pathMappings": [
         {
-            "localRoot": "${workspaceFolder}",
-            "remoteRoot": "/var/www/analytics"
+          "localRoot": "${workspaceFolder}",
+          "remoteRoot": "/var/www/analytics"
         }
       ]
     },

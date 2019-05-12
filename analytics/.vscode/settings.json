@@ -3,21 +3,18 @@
   "editor.insertSpaces": true,
   "files.eol": "\n",
   "files.exclude": {
-    "**/__pycache__/": true
+    "**/__pycache__/": true,
+    "dist": true,
+    "build": true
   },
-
   "[python]": {
     "editor.tabSize": 4,
   },
-
   "python.pythonPath": "python",
   "python.linting.enabled": true,
-
-  "python.unitTest.unittestArgs": [
-    "-v"
-  ],
-  "python.unitTest.pyTestEnabled": false,
-  "python.unitTest.nosetestsEnabled": false,
-  "python.unitTest.unittestEnabled": true,
+  "python.testing.unittestArgs": [ "-v" ],
+  "python.testing.pyTestEnabled": false,
+  "python.testing.nosetestsEnabled": false,
+  "python.testing.unittestEnabled": true,
   "python.linting.pylintEnabled": true
 }
