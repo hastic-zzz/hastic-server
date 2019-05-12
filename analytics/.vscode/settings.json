@@ -1,18 +1,23 @@
-{
-  "python.pythonPath": "python",
-  "python.linting.enabled": true,
+{  
   "terminal.integrated.shell.windows": "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
-  "editor.tabSize": 4,
   "editor.insertSpaces": true,
   "files.eol": "\n",
   "files.exclude": {
     "**/__pycache__/": true
-},
-"python.unitTest.unittestArgs": [
+  },
+
+  "[python]": {
+    "editor.tabSize": 4,
+  },
+
+  "python.pythonPath": "python",
+  "python.linting.enabled": true,
+
+  "python.unitTest.unittestArgs": [
     "-v"
-],
-"python.unitTest.pyTestEnabled": false,
-"python.unitTest.nosetestsEnabled": false,
-"python.unitTest.unittestEnabled": true,
-"python.linting.pylintEnabled": true
+  ],
+  "python.unitTest.pyTestEnabled": false,
+  "python.unitTest.nosetestsEnabled": false,
+  "python.unitTest.unittestEnabled": true,
+  "python.linting.pylintEnabled": true
 }
