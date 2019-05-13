@@ -9,7 +9,7 @@ from analytic_types.detector_typing import DetectionResult
 from analytic_types.segment import Segment
 from detectors import Detector
 from time import time
-from utils import convert_sec_to_ms, convert_pd_timestamp_to_ms
+from utils
 
 
 logger = log.getLogger('THRESHOLD_DETECTOR')
@@ -42,7 +42,7 @@ class ThresholdDetector(Detector):
         segments = []
         for index, row in dataframe.iterrows():
             current_value = row['value']
-            current_timestamp = convert_pd_timestamp_to_ms(row['timestamp'])
+            current_timestamp = utils.convert_pd_timestamp_to_ms(row['timestamp'])
             segment = Segment(current_timestamp, current_timestamp)
             # TODO: merge segments
             if pd.isnull(current_value):
@@ -67,7 +67,7 @@ class ThresholdDetector(Detector):
                     segments.append(segment)
 
         last_entry = dataframe.iloc[-1]
-        last_detection_time = convert_pd_timestamp_to_ms(last_entry['timestamp'])
+        last_detection_time = utils.convert_pd_timestamp_to_ms(last_entry['timestamp'])
         return DetectionResult(cache, segments, last_detection_time)
 
 
@@ -77,3 +77,12 @@ class ThresholdDetector(Detector):
 
     def get_window_size(self, cache: Optional[ModelCache]) -> int:
         return self.WINDOW_SIZE
+
+    def concat_detection_results(self, detections: List[DetectionResult], time_step: int) -> DetectionResult:
+        result = DetectionResult()
+        for detection in detections:
+            result.segments.extend(detection.segments)
+            result.last_detection_time = detection.last_detection_time
+            result.cache = detection.cache
+        result.segments = utils.merge_intersecting_segments(result.segments, time_step)
+        return result
