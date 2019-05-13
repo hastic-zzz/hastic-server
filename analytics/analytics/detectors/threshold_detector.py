@@ -9,7 +9,7 @@ from analytic_types.detector_typing import DetectionResult
 from analytic_types.segment import Segment
 from detectors import Detector
 from time import time
-from utils
+import utils
 
 
 logger = log.getLogger('THRESHOLD_DETECTOR')
