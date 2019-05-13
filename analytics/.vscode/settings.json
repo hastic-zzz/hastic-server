@@ -10,11 +10,12 @@
   "[python]": {
     "editor.tabSize": 4,
   },
+  "python.envFile": "${workspaceFolder}/.vscode/.env",
   "python.pythonPath": "python",
   "python.linting.enabled": true,
   "python.testing.unittestArgs": [ "-v" ],
   "python.testing.pyTestEnabled": false,
   "python.testing.nosetestsEnabled": false,
   "python.testing.unittestEnabled": true,
-  "python.linting.pylintEnabled": true
+  "python.linting.pylintEnabled": true,
 }
