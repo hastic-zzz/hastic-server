@@ -93,8 +93,7 @@ class AnalyticUnitWorker:
             return None
         else:
             time_step = utils.get_time_step(data)
-            detection_result = self._detector.concat_detection_results(
-                detections, time_step)
+            detection_result = self._detector.concat_detection_results(detections, time_step)
             return detection_result.to_json()
 
     async def process_data(self, data: list, cache: ModelCache) -> dict:
