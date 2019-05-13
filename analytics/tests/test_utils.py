@@ -306,44 +306,58 @@ class TestUtils(unittest.TestCase):
         test_cases = [
             {
                 'index': [Segment(10, 20), Segment(30, 40)],
-                'result': [[10, 20], [30, 40]]
+                'result': [[10, 20], [30, 40]],
+                'step': 0,
             },
             {
                 'index': [Segment(10, 20), Segment(13, 23), Segment(15, 17), Segment(20, 40)],
-                'result': [[10, 40]]
+                'result': [[10, 40]],
+                'step': 0,
             },
             {
                 'index': [],
-                'result': []
+                'result': [],
+                'step': 0,
             },
             {
                 'index': [Segment(10, 20)],
-                'result': [[10, 20]]
+                'result': [[10, 20]],
+                'step': 0,
             },
             {
                 'index': [Segment(10, 20), Segment(13, 23), Segment(25, 30), Segment(35, 40)],
-                'result': [[10, 23], [25, 30], [35, 40]]
+                'result': [[10, 23], [25, 30], [35, 40]],
+                'step': 0,
             },
             {
                 'index': [Segment(10, 50), Segment(5, 40), Segment(15, 25), Segment(6, 50)],
-                'result': [[5, 50]]
+                'result': [[5, 50]],
+                'step': 0,
             },
             {
                 'index': [Segment(5, 10), Segment(10, 20), Segment(25, 50)],
-                'result': [[5, 20], [25, 50]]
+                'result': [[5, 20], [25, 50]],
+                'step': 0,
             },
             {
                 'index': [Segment(20, 40), Segment(10, 15), Segment(50, 60)],
-                'result': [[10, 15], [20, 40], [50, 60]]
+                'result': [[10, 15], [20, 40], [50, 60]],
+                'step': 0,
             },
             {
                 'index': [Segment(20, 40), Segment(10, 20), Segment(50, 60)],
-                'result': [[10, 40], [50, 60]]
+                'result': [[10, 40], [50, 60]],
+                'step': 0,
+            },
+            {
+                'index': [Segment(10, 10), Segment(20, 20), Segment(30, 30)],
+                'result': [[10, 30]],
+                'step': 10,
             },
         ]
 
         for case in test_cases:
-            utils_result = utils.merge_intersecting_segments(case['index'])
+            utils_result = utils.merge_intersecting_segments(case['index'], case['step'])
             for got, expected in zip(utils_result, case['result']):
                 self.assertEqual(got.from_timestamp, expected[0])
                 self.assertEqual(got.to_timestamp, expected[1])
