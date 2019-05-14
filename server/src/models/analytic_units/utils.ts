@@ -17,7 +17,7 @@ export function createAnalyticUnitFromObject(obj: any): AnalyticUnit {
     case DetectorType.PATTERN:
       return PatternAnalyticUnit.fromObject(obj);
     case DetectorType.ANOMALY:
-      return AnomalyAnalyticUnit.fromObject(obj)
+      return AnomalyAnalyticUnit.fromObject(obj);
     case DetectorType.THRESHOLD:
       return ThresholdAnalyticUnit.fromObject(obj);
 
