@@ -208,6 +208,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
     }
     const oldSegments = await Segment.findMany(id, { labeled: false, deleted: false });
     await Segment.removeSegments(oldSegments.map(segment => segment.id));
+    await Detection.clearSpans(id);
     let oldCache = await AnalyticUnitCache.findById(id);
     if(oldCache !== null) {
       oldCache = oldCache.data;
