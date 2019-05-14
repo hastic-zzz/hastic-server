@@ -199,7 +199,7 @@ function getQueryRangeForLearningBySegments(segments: Segment.Segment[]) {
 }
 
 export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number, to?: number) {
-  console.log('learning started...');
+  console.log(`LEARNING started for ${id}`);
   try {
 
     let analyticUnit = await AnalyticUnit.findById(id);
@@ -245,6 +245,20 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
           alpha: (analyticUnit as AnomalyAnalyticUnit).alpha,
           confidence: (analyticUnit as AnomalyAnalyticUnit).confidence
         };
+
+        const seasonality = (analyticUnit as AnomalyAnalyticUnit).seasonality;
+        if(seasonality > 0) {
+          let segments = await Segment.findMany(id, { labeled: true });
+          if(segments.length === 0) {
+            console.log('Need at least 1 labeled segment, ignore seasonality');
+            break;
+          }
+          taskPayload.anomaly.seasonality = seasonality;
+
+          let segmentObjs = segments.map(s => s.toObject());
+          taskPayload.anomaly.segments = segmentObjs;
+          taskPayload.data = await getPayloadData(analyticUnit, from, to);
+        }
         break;
       default:
         throw new Error(`Unknown type of detector: ${detector}`);
@@ -254,7 +268,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
       id, AnalyticsTaskType.LEARN, taskPayload
     );
     AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
-    console.log(`run task, id:${id}`);
+    console.log(`run ${task.type} task, id:${id}`);
     let result = await runTask(task);
     if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
       throw new Error(result.error);

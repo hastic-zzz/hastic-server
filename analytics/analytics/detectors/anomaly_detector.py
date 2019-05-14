@@ -22,11 +22,29 @@ class AnomalyDetector(ProcessingDetector):
         self.bucket = DataBucket()
 
     def train(self, dataframe: pd.DataFrame, payload: Union[list, dict], cache: Optional[ModelCache]) -> ModelCache:
+        data = dataframe['value']
+        segments = payload.get('segments')
+        prepared_segments = []
 
         new_cache = {
             'confidence': payload['confidence'],
-            'alpha': payload['alpha']
+            'alpha': payload['alpha'],
         }
+
+        if segments is not None:
+            seasonality = payload.get('seasonality')
+            assert seasonality is not None and seasonality > 0, f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
+
+            for segment in segments:
+                from_time = pd.to_datetime(segment['from'], unit='ms').time()
+                to_time = pd.to_datetime(segment['to'], unit='ms').time()
+                dataframe.index = pd.to_datetime(dataframe.index)
+                #segment_data = dataframe.between_time(from_time, to_time)
+                segment_data = dataframe[:10]
+                prepared_segments.append({'from': segment['from'], 'data': segment_data.value.tolist()})
+
+            new_cache['seasonality'] = seasonality
+            new_cache['segments'] = prepared_segments
 
         return {
             'cache': new_cache
@@ -35,11 +53,24 @@ class AnomalyDetector(ProcessingDetector):
     # TODO: ModelCache -> ModelState
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> DetectionResult:
         data = dataframe['value']
-        labeled = cache.get('segments')
+        segments = cache.get('segments')
 
         last_value = None
         if cache is not None:
             last_value = cache.get('last_value')
+
+        if segments is not None:
+
+            seasonality = cache.get('seasonality')
+            assert seasonality is not None and seasonality > 0, f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
+
+            data_start_time = int(dataframe['timestamp'][0].timestamp() * 1000)
+
+            for segment in segments:
+                seasonality_offset = seasonality - abs(segment['from'] - data_start_time) % seasonality
+                segment_data = segment['data']
+                segment_end_index = seasonality_offset + len(segment_data)
+                data = data[: seasonality_offset] + (data[seasonality_offset: segment_end_index] + segment_data) + data[segment_end_index:]
 
         smoothed_data = utils.exponential_smoothing(data, cache['alpha'], last_value)
         upper_bound = smoothed_data + cache['confidence']
@@ -108,10 +139,26 @@ class AnomalyDetector(ProcessingDetector):
         return result
 
     # TODO: ModelCache -> ModelState
-    def process_data(self, data: pd.DataFrame, cache: ModelCache) -> ProcessingResult:
+    def process_data(self, dataframe: pd.DataFrame, cache: ModelCache) -> ProcessingResult:
+        data = dataframe['value']
+
+        segments = cache.get('segments')
+        if segments is not None:
+
+            seasonality = cache.get('seasonality')
+            assert seasonality is not None and seasonality > 0, f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
+
+            data_start_time = dataframe['timestamp'][0]
+
+            for segment in segments:
+                seasonality_offset = abs(segment - data_start_time) % seasonality
+                segment_data = segment['data']
+                segment_end_index = seasonality_offset + len(segment_data)
+                data = data[: seasonality_offset] + (data[seasonality_offset: segment_end_index] + segment_data) + data[segment_end_index:]
+
         # TODO: exponential_smoothing should return dataframe with related timestamps
-        smoothed = utils.exponential_smoothing(data['value'], cache['alpha'], cache.get('lastValue'))
-        timestamps = utils.convert_series_to_timestamp_list(data.timestamp)
+        smoothed = utils.exponential_smoothing(data, cache['alpha'], cache.get('lastValue'))
+        timestamps = utils.convert_series_to_timestamp_list(dataframe.timestamp)
         smoothed_dataset = list(zip(timestamps, smoothed.values.tolist()))
         result = ProcessingResult(smoothed_dataset)
         return result
