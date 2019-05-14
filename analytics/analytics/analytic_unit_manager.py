@@ -57,7 +57,7 @@ class AnalyticUnitManager:
 
         payload = task['payload']
         worker = self.__ensure_worker(analytic_unit_id, payload['detector'], payload['analyticUnitType'])
-        data = payload['data']
+        data = payload.get('data')
         if task['type'] == 'PUSH':
             # TODO: do it a better way
             res = await worker.consume_data(data, payload['cache'])

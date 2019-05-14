@@ -232,6 +232,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
         let deletedSegmentsObjs = deletedSegments.map(s => s.toObject());
         segmentObjs = _.concat(segmentObjs, deletedSegmentsObjs);
         taskPayload.segments = segmentObjs;
+        taskPayload.data = await getPayloadData(analyticUnit, from, to);
         break;
       case AnalyticUnit.DetectorType.THRESHOLD:
         taskPayload.threshold = {
@@ -248,14 +249,6 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
       default:
         throw new Error(`Unknown type of detector: ${detector}`);
     }
-
-    let range: TimeRange;
-    if(from !== undefined && to !== undefined) {
-      range = { from, to };
-    } else {
-      range = await getQueryRange(id, detector);
-    }
-    taskPayload.data = await query(analyticUnit, range);
 
     let task = new AnalyticsTask(
       id, AnalyticsTaskType.LEARN, taskPayload
@@ -277,6 +270,8 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
 
 export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, to?: number) {
   let previousLastDetectionTime: number = undefined;
+  let range: TimeRange;
+  let intersection = null;
 
   try {
     let unit = await AnalyticUnit.findById(id);
@@ -284,7 +279,6 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     let analyticUnitType = unit.type;
     const detector = unit.detectorType;
 
-    let range: TimeRange;
     if(from !== undefined && to !== undefined) {
       range = { from, to };
     } else {
@@ -317,15 +311,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
 
     const payload = await processDetectionResult(id, result.payload);
     const cache = AnalyticUnitCache.AnalyticUnitCache.fromObject({ _id: id, data: payload.cache });
-    const intersection = cache.getIntersection();
-    await Detection.insertSpan(
-      new Detection.DetectionSpan(
-        id,
-        range.from + intersection,
-        range.to - intersection,
-        Detection.DetectionStatus.READY
-      )
-    );
+    intersection = cache.getIntersection();
 
     // TODO: uncomment it
     // It clears segments when redetecting on another timerange
@@ -336,9 +322,25 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
       AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime),
     ]);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
+    await Detection.insertSpan(
+      new Detection.DetectionSpan(
+        id,
+        range.from + intersection,
+        range.to - intersection,
+        Detection.DetectionStatus.READY
+      )
+    );
   } catch(err) {
     let message = err.message || JSON.stringify(err);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
+    await Detection.insertSpan(
+      new Detection.DetectionSpan(
+        id,
+        range.from + intersection,
+        range.to - intersection,
+        Detection.DetectionStatus.FAILED
+      )
+    );
     if(previousLastDetectionTime !== undefined) {
       await AnalyticUnit.setDetectionTime(id, previousLastDetectionTime);
     }
@@ -546,6 +548,20 @@ export async function getDetectionSpans(
   await Promise.all(runningSpansPromises);
 
   return _.concat(readySpans, alreadyRunningSpans, newRunningSpans.filter(span => span !== null));
+}
+
+async function getPayloadData(
+  analyticUnit: AnalyticUnit.AnalyticUnit,
+  from: number,
+  to:number
+) {
+  let range: TimeRange;
+  if(from !== undefined && to !== undefined) {
+    range = { from, to };
+  } else {
+    range = await getQueryRange(analyticUnit.id, analyticUnit.detectorType);
+  }
+  return await query(analyticUnit, range);
 }
 
 async function runDetectionOnExtendedSpan(

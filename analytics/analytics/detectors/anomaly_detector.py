@@ -22,16 +22,20 @@ class AnomalyDetector(ProcessingDetector):
         self.bucket = DataBucket()
 
     def train(self, dataframe: pd.DataFrame, payload: Union[list, dict], cache: Optional[ModelCache]) -> ModelCache:
+
+        new_cache = {
+            'confidence': payload['confidence'],
+            'alpha': payload['alpha']
+        }
+
         return {
-            'cache': {
-                'confidence': payload['confidence'],
-                'alpha': payload['alpha']
-            }
+            'cache': new_cache
         }
 
     # TODO: ModelCache -> ModelState
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> DetectionResult:
         data = dataframe['value']
+        labeled = cache.get('segments')
 
         last_value = None
         if cache is not None:
