@@ -65,7 +65,7 @@ async function updateUnit(ctx: Router.IRouterContext) {
 
   await AnalyticUnit.update(analyticUnitObj.id, analyticUnitObj);
 
-  if(getClassByDetectorType(analyticUnitObj.detectorType).needLearnAfterUpdate) {
+  if(getClassByDetectorType(analyticUnitObj.detectorType).learningAfterUpdateRequired) {
     await AnalyticsController.runLearning(analyticUnit.id);
   }
 

@@ -6,7 +6,7 @@ import { Metric } from 'grafana-datasource-kit';
 
 export class AnomalyAnalyticUnit extends AnalyticUnit {
 
-  public needLearnAfterUpdate = true;
+  public learningAfterUpdateRequired= true;
 
   constructor(
     name: string,
