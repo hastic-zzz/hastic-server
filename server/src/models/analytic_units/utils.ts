@@ -16,6 +16,7 @@ export function createAnalyticUnitFromObject(obj: any): AnalyticUnit {
   return getClassByDetectorType(detectorType).fromObject(obj);
 }
 
+// TODO: return type any -> class
 export function getClassByDetectorType(detectorType: DetectorType): any {
   switch (detectorType) {
     case DetectorType.PATTERN:
