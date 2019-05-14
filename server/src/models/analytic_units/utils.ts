@@ -16,7 +16,7 @@ export function createAnalyticUnitFromObject(obj: any): AnalyticUnit {
   return getClassByDetectorType(detectorType).fromObject(obj);
 }
 
-export function getClassByDetectorType(detectorType: DetectorType): AnalyticUnit {
+export function getClassByDetectorType(detectorType: DetectorType): any {
   switch (detectorType) {
     case DetectorType.PATTERN:
       return PatternAnalyticUnit;
@@ -27,4 +27,5 @@ export function getClassByDetectorType(detectorType: DetectorType): AnalyticUnit
 
     default:
       throw new Error(`Unsupported detector type "${detectorType}"`);
+  }
 }
