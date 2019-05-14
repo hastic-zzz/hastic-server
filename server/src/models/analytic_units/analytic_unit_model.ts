@@ -4,6 +4,9 @@ import { Metric } from 'grafana-datasource-kit';
 
 
 export abstract class AnalyticUnit {
+
+  public needLearnAfterUpdate = false;
+
   constructor(
     public name: string,
     public grafanaUrl: string,

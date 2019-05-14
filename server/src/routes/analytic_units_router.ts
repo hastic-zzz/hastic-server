@@ -3,6 +3,8 @@ import * as AnalyticUnit from '../models/analytic_units';
 
 import { saveAnalyticUnitFromObject } from '../controllers/analytics_controller';
 
+import { getClassByDetectorType } from '../models/analytic_units/utils';
+
 import * as Router from 'koa-router';
 import * as _ from 'lodash';
 
@@ -56,12 +58,17 @@ async function createUnit(ctx: Router.IRouterContext) {
 }
 
 async function updateUnit(ctx: Router.IRouterContext) {
-  const analyticUnit = ctx.request.body as AnalyticUnit.AnalyticUnit;
-  if(analyticUnit.id === undefined) {
+  const analyticUnitObj = ctx.request.body as AnalyticUnit.AnalyticUnit;
+  if(analyticUnitObj.id === undefined) {
     throw new Error('Cannot update undefined id');
   }
 
-  await AnalyticUnit.update(analyticUnit.id, analyticUnit);
+  await AnalyticUnit.update(analyticUnitObj.id, analyticUnitObj);
+
+  if(getClassByDetectorType(analyticUnitObj.detectorType).needLearnAfterUpdate) {
+    await AnalyticsController.runLearning(analyticUnit.id);
+  }
+
   ctx.response.body = {
     code: 200,
     message: 'Success'

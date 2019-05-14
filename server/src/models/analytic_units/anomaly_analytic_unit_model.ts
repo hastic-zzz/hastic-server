@@ -5,6 +5,9 @@ import { Metric } from 'grafana-datasource-kit';
 
 
 export class AnomalyAnalyticUnit extends AnalyticUnit {
+
+  public needLearnAfterUpdate = true;
+
   constructor(
     name: string,
     grafanaUrl: string,

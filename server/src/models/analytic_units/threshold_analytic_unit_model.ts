@@ -14,6 +14,9 @@ export enum Condition {
 };
 
 export class ThresholdAnalyticUnit extends AnalyticUnit {
+
+  public needLearnAfterUpdate = true;
+
   constructor(
     name: string,
     grafanaUrl: string,
