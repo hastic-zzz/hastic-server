@@ -315,9 +315,6 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     const result = await runTask(task);
 
     if(result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
-      await Detection.insertSpan(
-        new Detection.DetectionSpan(id, range.from, range.to, Detection.DetectionStatus.FAILED)
-      );
       throw new Error(result.error);
     }
 
@@ -333,6 +330,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
       AnalyticUnitCache.setData(id, payload.cache),
       AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime),
     ]);
+    await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
     await Detection.insertSpan(
       new Detection.DetectionSpan(
         id,
@@ -341,8 +339,11 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
         Detection.DetectionStatus.READY
       )
     );
-    await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
   } catch(err) {
+    // TODO: maybe we don't need to update detectionTime with previous value?
+    if(previousLastDetectionTime !== undefined) {
+      await AnalyticUnit.setDetectionTime(id, previousLastDetectionTime);
+    }
     let message = err.message || JSON.stringify(err);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
     await Detection.insertSpan(
@@ -353,9 +354,6 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
         Detection.DetectionStatus.FAILED
       )
     );
-    if(previousLastDetectionTime !== undefined) {
-      await AnalyticUnit.setDetectionTime(id, previousLastDetectionTime);
-    }
   }
 }
 
