@@ -206,7 +206,10 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
     if(analyticUnit.status === AnalyticUnit.AnalyticUnitStatus.LEARNING) {
       throw new Error('Can`t start learning when it`s already started [' + id + ']');
     }
-
+    const oldSegments = await Segment.findMany(id, { labeled: false, deleted: false });
+    // TODO: segments and spans are coupled. So their removing should be a transaction
+    await Segment.removeSegments(oldSegments.map(segment => segment.id));
+    await Detection.clearSpans(id);
     let oldCache = await AnalyticUnitCache.findById(id);
     if(oldCache !== null) {
       oldCache = oldCache.data;
@@ -285,7 +288,15 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
 export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, to?: number) {
   let previousLastDetectionTime: number = undefined;
   let range: TimeRange;
-  let intersection = null;
+  let intersection = 0;
+
+  let oldCache = await AnalyticUnitCache.findById(id);
+  if(oldCache !== null) {
+    intersection = oldCache.getIntersection();
+    oldCache = oldCache.data;
+  } else {
+    await AnalyticUnitCache.create(id);
+  }
 
   try {
     let unit = await AnalyticUnit.findById(id);
@@ -300,12 +311,6 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     }
     const data = await query(unit, range);
 
-    let oldCache = await AnalyticUnitCache.findById(id);
-    if(oldCache !== null) {
-      oldCache = oldCache.data;
-    } else {
-      await AnalyticUnitCache.create(id);
-    }
     let task = new AnalyticsTask(
       id,
       AnalyticsTaskType.DETECT,
@@ -317,15 +322,11 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     const result = await runTask(task);
 
     if(result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
-      await Detection.insertSpan(
-        new Detection.DetectionSpan(id, range.from, range.to, Detection.DetectionStatus.FAILED)
-      );
       throw new Error(result.error);
     }
 
     const payload = await processDetectionResult(id, result.payload);
     const cache = AnalyticUnitCache.AnalyticUnitCache.fromObject({ _id: id, data: payload.cache });
-    intersection = cache.getIntersection();
 
     // TODO: uncomment it
     // It clears segments when redetecting on another timerange
@@ -345,6 +346,10 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
       )
     );
   } catch(err) {
+    // TODO: maybe we don't need to update detectionTime with previous value?
+    if(previousLastDetectionTime !== undefined) {
+      await AnalyticUnit.setDetectionTime(id, previousLastDetectionTime);
+    }
     let message = err.message || JSON.stringify(err);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
     await Detection.insertSpan(
@@ -355,9 +360,6 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
         Detection.DetectionStatus.FAILED
       )
     );
-    if(previousLastDetectionTime !== undefined) {
-      await AnalyticUnit.setDetectionTime(id, previousLastDetectionTime);
-    }
   }
 }
 
@@ -611,35 +613,34 @@ export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: numb
 
     if(analyticUnit.detectorType !== AnalyticUnit.DetectorType.ANOMALY) {
       return data;
-    } else {
-      let cache = await AnalyticUnitCache.findById(analyticUnit.id);
-      if(
-        cache === null ||
-        cache.data.alpha !== (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).alpha ||
-        cache.data.confidence !== (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).confidence
-      ) {
-        await runLearning(analyticUnit.id, from, to);
-        cache = await AnalyticUnitCache.findById(analyticUnit.id);
-      }
-
-      cache = cache.data;
-    
-      const analyticUnitType = analyticUnit.type;
-      const detector = analyticUnit.detectorType;
-      const payload = {
-        data: data.values,
-        analyticUnitType,
-        detector,
-        cache
-      };
-
-      const processingTask = new AnalyticsTask(analyticUnit.id, AnalyticsTaskType.PROCESS, payload);
-      const result = await runTask(processingTask);
-      if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
-        throw new Error(`Data processing error: ${result.error}`);
-      }
-      return { values: result.payload.data, columns: data.columns }
     }
+    let cache = await AnalyticUnitCache.findById(analyticUnit.id);
+    if(
+      cache === null ||
+      cache.data.alpha !== (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).alpha ||
+      cache.data.confidence !== (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).confidence
+    ) {
+      await runLearning(analyticUnit.id, from, to);
+      cache = await AnalyticUnitCache.findById(analyticUnit.id);
+    }
+
+    cache = cache.data;
+  
+    const analyticUnitType = analyticUnit.type;
+    const detector = analyticUnit.detectorType;
+    const payload = {
+      data: data.values,
+      analyticUnitType,
+      detector,
+      cache
+    };
+
+    const processingTask = new AnalyticsTask(analyticUnit.id, AnalyticsTaskType.PROCESS, payload);
+    const result = await runTask(processingTask);
+    if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
+      throw new Error(`Data processing error: ${result.error}`);
+    }
+    return { values: result.payload.data, columns: data.columns };
   } catch (err) {
     const message = err.message || JSON.stringify(err);
     await AnalyticUnit.setStatus(analyticUnit.id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
