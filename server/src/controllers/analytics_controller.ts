@@ -317,6 +317,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
 
     const payload = await processDetectionResult(id, result.payload);
     const cache = AnalyticUnitCache.AnalyticUnitCache.fromObject({ _id: id, data: payload.cache });
+    // TODO: should we use intersection from new or old cache?
     intersection = cache.getIntersection();
 
     // TODO: uncomment it
