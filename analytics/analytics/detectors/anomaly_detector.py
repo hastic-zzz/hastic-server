@@ -39,8 +39,8 @@ class AnomalyDetector(ProcessingDetector):
                 from_time = pd.to_datetime(segment['from'], unit='ms').time()
                 to_time = pd.to_datetime(segment['to'], unit='ms').time()
                 dataframe.index = pd.to_datetime(dataframe.index)
-                #segment_data = dataframe.between_time(from_time, to_time)
-                segment_data = dataframe[:10]
+                #segment_data = dataframe.between_time(from_time, to_time) 
+                segment_data = dataframe[:10] # for detect debugging
                 prepared_segments.append({'from': segment['from'], 'data': segment_data.value.tolist()})
 
             new_cache['seasonality'] = seasonality
@@ -59,6 +59,10 @@ class AnomalyDetector(ProcessingDetector):
         if cache is not None:
             last_value = cache.get('last_value')
 
+        smoothed_data = utils.exponential_smoothing(data, cache['alpha'], last_value)
+        upper_bound = smoothed_data + cache['confidence']
+        lower_bound = smoothed_data - cache['confidence']
+
         if segments is not None:
 
             seasonality = cache.get('seasonality')
@@ -68,13 +72,15 @@ class AnomalyDetector(ProcessingDetector):
 
             for segment in segments:
                 seasonality_offset = seasonality - abs(segment['from'] - data_start_time) % seasonality
-                segment_data = segment['data']
-                segment_end_index = seasonality_offset + len(segment_data)
-                data = data[: seasonality_offset] + (data[seasonality_offset: segment_end_index] + segment_data) + data[segment_end_index:]
 
-        smoothed_data = utils.exponential_smoothing(data, cache['alpha'], last_value)
-        upper_bound = smoothed_data + cache['confidence']
-        lower_bound = smoothed_data - cache['confidence']
+                seasonality_curve = pd.concat([segment['data']] * len(dataframe) // seasonality).reset_index()
+                seasonality_curve = pd.concat([segment['data'][:seasonality_offset], seasonality_curve]).reset_index()
+
+                upper_bound.merge(seasonality_curve, how='outer', left_index=True, right_index=True)
+                upper_bound = upper_bound.value_x.fillna(0) + upper_bound.value_y.fillna(0)
+
+                lower_bound.merge(seasonality_curve, how='outer', left_index=True, right_index=True)
+                lower_bound = lower_bound.value_x.fillna(0) - lower_bound.value_y.fillna(0)
 
         anomaly_indexes = []
         for idx, val in enumerate(data.values):
