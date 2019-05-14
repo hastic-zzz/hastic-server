@@ -277,6 +277,13 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
 
 export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, to?: number) {
   let previousLastDetectionTime: number = undefined;
+  let range: TimeRange;
+  let intersection = 0;
+
+  const old_cache = await AnalyticUnitCache.findById(id);
+  if(old_cache !== null) {
+    intersection = old_cache.getIntersection();
+  }
 
   try {
     let unit = await AnalyticUnit.findById(id);
@@ -284,7 +291,6 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     let analyticUnitType = unit.type;
     const detector = unit.detectorType;
 
-    let range: TimeRange;
     if(from !== undefined && to !== undefined) {
       range = { from, to };
     } else {
@@ -317,15 +323,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
 
     const payload = await processDetectionResult(id, result.payload);
     const cache = AnalyticUnitCache.AnalyticUnitCache.fromObject({ _id: id, data: payload.cache });
-    const intersection = cache.getIntersection();
-    await Detection.insertSpan(
-      new Detection.DetectionSpan(
-        id,
-        range.from + intersection,
-        range.to - intersection,
-        Detection.DetectionStatus.READY
-      )
-    );
+    intersection = cache.getIntersection();
 
     // TODO: uncomment it
     // It clears segments when redetecting on another timerange
@@ -335,10 +333,26 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
       AnalyticUnitCache.setData(id, payload.cache),
       AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime),
     ]);
+    await Detection.insertSpan(
+      new Detection.DetectionSpan(
+        id,
+        range.from + intersection,
+        range.to - intersection,
+        Detection.DetectionStatus.READY
+      )
+    );
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
   } catch(err) {
     let message = err.message || JSON.stringify(err);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
+    await Detection.insertSpan(
+      new Detection.DetectionSpan(
+        id,
+        range.from + intersection,
+        range.to - intersection,
+        Detection.DetectionStatus.FAILED
+      )
+    );
     if(previousLastDetectionTime !== undefined) {
       await AnalyticUnit.setDetectionTime(id, previousLastDetectionTime);
     }
