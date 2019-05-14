@@ -13,20 +13,15 @@ export function createAnalyticUnitFromObject(obj: any): AnalyticUnit {
   }
 
   const detectorType: DetectorType = obj.detectorType;
-  return getClassByDetectorType(detectorType).fromObject(obj);
-}
-
-// TODO: return type any -> class
-export function getClassByDetectorType(detectorType: DetectorType): any {
   switch (detectorType) {
     case DetectorType.PATTERN:
-      return PatternAnalyticUnit;
+      return PatternAnalyticUnit.fromObject(obj);
     case DetectorType.ANOMALY:
-      return AnomalyAnalyticUnit;
+      return AnomalyAnalyticUnit.fromObject(obj);
     case DetectorType.THRESHOLD:
-      return ThresholdAnalyticUnit;
+      return ThresholdAnalyticUnit.fromObject(obj);
 
     default:
-      throw new Error(`Unsupported detector type "${detectorType}"`);
+      throw new Error(`Can't create analytic unit with type "${detectorType}"`);
   }
 }
