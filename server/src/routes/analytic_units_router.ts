@@ -56,12 +56,18 @@ async function createUnit(ctx: Router.IRouterContext) {
 }
 
 async function updateUnit(ctx: Router.IRouterContext) {
-  const analyticUnit = ctx.request.body as AnalyticUnit.AnalyticUnit;
-  if(analyticUnit.id === undefined) {
+  const analyticUnitObj = ctx.request.body as AnalyticUnit.AnalyticUnit;
+  if(analyticUnitObj.id === undefined) {
     throw new Error('Cannot update undefined id');
   }
 
-  await AnalyticUnit.update(analyticUnit.id, analyticUnit);
+  const updatedObj = await AnalyticUnit.update(analyticUnitObj.id, analyticUnitObj);
+  const analyticUnit = AnalyticUnit.createAnalyticUnitFromObject(updatedObj);
+
+  if(analyticUnit.learningAfterUpdateRequired) {
+    await AnalyticsController.runLearning(analyticUnitObj.id);
+  }
+
   ctx.response.body = {
     code: 200,
     message: 'Success'

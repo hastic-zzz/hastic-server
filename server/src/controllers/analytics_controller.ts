@@ -595,35 +595,34 @@ export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: numb
 
     if(analyticUnit.detectorType !== AnalyticUnit.DetectorType.ANOMALY) {
       return data;
-    } else {
-      let cache = await AnalyticUnitCache.findById(analyticUnit.id);
-      if(
-        cache === null ||
-        cache.data.alpha !== (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).alpha ||
-        cache.data.confidence !== (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).confidence
-      ) {
-        await runLearning(analyticUnit.id, from, to);
-        cache = await AnalyticUnitCache.findById(analyticUnit.id);
-      }
-
-      cache = cache.data;
-    
-      const analyticUnitType = analyticUnit.type;
-      const detector = analyticUnit.detectorType;
-      const payload = {
-        data: data.values,
-        analyticUnitType,
-        detector,
-        cache
-      };
-
-      const processingTask = new AnalyticsTask(analyticUnit.id, AnalyticsTaskType.PROCESS, payload);
-      const result = await runTask(processingTask);
-      if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
-        throw new Error(`Data processing error: ${result.error}`);
-      }
-      return { values: result.payload.data, columns: data.columns }
     }
+    let cache = await AnalyticUnitCache.findById(analyticUnit.id);
+    if(
+      cache === null ||
+      cache.data.alpha !== (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).alpha ||
+      cache.data.confidence !== (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).confidence
+    ) {
+      await runLearning(analyticUnit.id, from, to);
+      cache = await AnalyticUnitCache.findById(analyticUnit.id);
+    }
+
+    cache = cache.data;
+  
+    const analyticUnitType = analyticUnit.type;
+    const detector = analyticUnit.detectorType;
+    const payload = {
+      data: data.values,
+      analyticUnitType,
+      detector,
+      cache
+    };
+
+    const processingTask = new AnalyticsTask(analyticUnit.id, AnalyticsTaskType.PROCESS, payload);
+    const result = await runTask(processingTask);
+    if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
+      throw new Error(`Data processing error: ${result.error}`);
+    }
+    return { values: result.payload.data, columns: data.columns };
   } catch (err) {
     const message = err.message || JSON.stringify(err);
     await AnalyticUnit.setStatus(analyticUnit.id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
