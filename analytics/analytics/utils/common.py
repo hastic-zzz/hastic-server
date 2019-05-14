@@ -80,7 +80,7 @@ def timestamp_to_index(dataframe, timestamp):
     if len(idx) > 0:
         time_ind = int(idx[0])
     else:
-        raise ValueError('Dataframe has no appropriate timestamp {}'.format(timestamp))
+        raise ValueError('Dataframe doesn`t contain timestamp: {}'.format(timestamp))
     return time_ind
 
 def find_peaks(data: Generator[float, None, None], size: int) -> Generator[float, None, None]:
