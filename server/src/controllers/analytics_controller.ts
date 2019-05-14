@@ -280,9 +280,12 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
   let range: TimeRange;
   let intersection = 0;
 
-  const oldCache = await AnalyticUnitCache.findById(id);
+  let oldCache = await AnalyticUnitCache.findById(id);
   if(oldCache !== null) {
     intersection = oldCache.getIntersection();
+    oldCache = oldCache.data;
+  } else {
+    await AnalyticUnitCache.create(id);
   }
 
   try {
@@ -298,12 +301,6 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     }
     const data = await query(unit, range);
 
-    let oldCache = await AnalyticUnitCache.findById(id);
-    if(oldCache !== null) {
-      oldCache = oldCache.data;
-    } else {
-      await AnalyticUnitCache.create(id);
-    }
     let task = new AnalyticsTask(
       id,
       AnalyticsTaskType.DETECT,
