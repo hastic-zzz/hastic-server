@@ -15,7 +15,7 @@ export enum Condition {
 
 export class ThresholdAnalyticUnit extends AnalyticUnit {
 
-  public learningAfterUpdateRequired= true;
+  public learningAfterUpdateRequired = true;
 
   constructor(
     name: string,
