@@ -207,6 +207,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
       throw new Error('Can`t start learning when it`s already started [' + id + ']');
     }
     const oldSegments = await Segment.findMany(id, { labeled: false, deleted: false });
+    // TODO: segments and spans are coupled. So their removing should be a transaction
     await Segment.removeSegments(oldSegments.map(segment => segment.id));
     await Detection.clearSpans(id);
     let oldCache = await AnalyticUnitCache.findById(id);
