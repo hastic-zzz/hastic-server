@@ -88,9 +88,11 @@ class AnomalyDetector(ProcessingDetector):
                 #TODO: upper and lower bounds for segment_data
                 segment_data = utils.exponential_smoothing(pd.Series(segment['data']), BASIC_ALPHA)
                 upper_seasonality_curve = self.add_season_to_data(
-                    smoothed_data, segment_data, seasonality_offset, seasonality_index, True)
+                    smoothed_data, segment_data, seasonality_offset, seasonality_index, True
+                )
                 lower_seasonality_curve = self.add_season_to_data(
-                    smoothed_data, segment_data, seasonality_offset, seasonality_index, False)
+                    smoothed_data, segment_data, seasonality_offset, seasonality_index, False
+                )
                 assert len(smoothed_data) == len(upper_seasonality_curve), \
                     f'len smoothed {len(smoothed_data)} != len seasonality {len(upper_seasonality_curve)}'
 
@@ -164,7 +166,7 @@ class AnomalyDetector(ProcessingDetector):
         result.segments = utils.merge_intersecting_segments(result.segments)
         return result
 
-    # TODO: ModelCache -> ModelState
+    # TODO: ModelCache -> ModelState (don't use string literals)
     def process_data(self, dataframe: pd.DataFrame, cache: ModelCache) -> ProcessingResult:
         segments = cache.get('segments')
 
@@ -172,7 +174,6 @@ class AnomalyDetector(ProcessingDetector):
         smoothed = utils.exponential_smoothing(dataframe['value'], cache['alpha'], cache.get('lastValue'))
 
         if segments is not None:
-
             seasonality = cache.get('seasonality')
             assert seasonality is not None and seasonality > 0, \
                 f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
@@ -185,9 +186,11 @@ class AnomalyDetector(ProcessingDetector):
                 seasonality_index = seasonality // time_step
                 segment_data = utils.exponential_smoothing(pd.Series(segment['data']), BASIC_ALPHA)
                 upper_seasonality_curve = self.add_season_to_data(
-                    smoothed, segment_data, seasonality_offset, seasonality_index, True)
+                    smoothed, segment_data, seasonality_offset, seasonality_index, True
+                )
                 lower_seasonality_curve = self.add_season_to_data(
-                    smoothed, segment_data, seasonality_offset, seasonality_index, False)
+                    smoothed, segment_data, seasonality_offset, seasonality_index, False
+                )
                 assert len(smoothed) == len(upper_seasonality_curve), \
                     f'len smoothed {len(smoothed)} != len seasonality {len(upper_seasonality_curve)}'
                 smoothed = upper_seasonality_curve
