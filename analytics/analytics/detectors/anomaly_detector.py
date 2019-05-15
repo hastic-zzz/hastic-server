@@ -180,7 +180,8 @@ class AnomalyDetector(ProcessingDetector):
 
     def add_season_to_data(self, data: pd.Series, segment: pd.Series, offset: int, seasonality: int, addition: bool) -> pd.Series:
         #data - smoothed data to which seasonality will be added
-        #if additional == False -> segment is subtracted
+        #if addition == True -> segment is added
+        #if addition == False -> segment is subtracted
         len_smoothed_data = len(data)
         for idx, _ in enumerate(data):
             if idx - offset < 0:
