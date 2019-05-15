@@ -75,20 +75,14 @@ class AnomalyDetector(ProcessingDetector):
 
             for segment in segments:
                 seasonality_offset = (abs(segment['from'] - data_start_time) % seasonality) // time_step
-                season_data = segment['data'] + [0] * (seasonality // time_step - len(segment['data']))
-
-                seasonality_curve = season_data[seasonality_offset : min(seasonality_offset + len(smoothed_data), len(season_data))]
-                len_of_unpair_dataframe = len(smoothed_data) - len(seasonality_curve)
-                if len_of_unpair_dataframe // (seasonality // time_step) > 0:
-                    seasonality_curve += season_data * (len_of_unpair_dataframe // (seasonality // time_step))
-                len_of_unpair_dataframe = len(smoothed_data) - len(seasonality_curve)
-
-                if len_of_unpair_dataframe > 0:
-                    seasonality_curve += season_data[-len_of_unpair_dataframe:]
-
-                assert len(smoothed_data) == len(seasonality_curve), f'len smoothed {len(smoothed_data)} != len seasonality {len(seasonality_curve)}'
-                upper_bound = upper_bound + pd.Series(seasonality_curve)
-                lower_bound = lower_bound - pd.Series(seasonality_curve)
+                seasonality_index = seasonality // time_step
+                #TODO: upper and lower bounds for segment_data
+                segment_data = utils.exponential_smoothing(pd.Series(segment['data']), 0.5)
+                upper_seasonality_curve = self.add_season_to_data(smoothed_data, segment_data, seasonality_offset, seasonality_index, True)
+                lower_seasonality_curve = self.add_season_to_data(smoothed_data, segment_data, seasonality_offset, seasonality_index, False)
+                assert len(smoothed_data) == len(upper_seasonality_curve), f'len smoothed {len(smoothed_data)} != len seasonality {len(seasonality_curve)}'
+                upper_bound = upper_seasonality_curve + cache['confidence']
+                lower_bound = lower_seasonality_curve - cache['confidence']
 
         anomaly_indexes = []
         for idx, val in enumerate(data.values):
@@ -173,21 +167,27 @@ class AnomalyDetector(ProcessingDetector):
 
             for segment in segments:
                 seasonality_offset = (abs(segment['from'] - data_start_time) % seasonality) // time_step
-                season_data = segment['data'] + [0] * (seasonality // time_step - len(segment['data']))
-
-                seasonality_curve = season_data[seasonality_offset : min(seasonality_offset + len(smoothed), len(season_data))]
-                len_of_unpair_dataframe = len(smoothed) - len(seasonality_curve)
-                if len_of_unpair_dataframe // (seasonality // time_step) > 0:
-                    seasonality_curve += season_data * (len_of_unpair_dataframe // (seasonality // time_step))
-                len_of_unpair_dataframe = len(smoothed) - len(seasonality_curve)
-
-                if len_of_unpair_dataframe > 0:
-                    seasonality_curve += season_data[-len_of_unpair_dataframe:]
-
+                seasonality_index = seasonality // time_step
+                segment_data = utils.exponential_smoothing(pd.Series(segment['data']), 0.5)
+                seasonality_curve = self.add_season_to_data(smoothed, segment_data, seasonality_offset, seasonality_index, True)
                 assert len(smoothed) == len(seasonality_curve), f'len smoothed {len(smoothed)} != len seasonality {len(seasonality_curve)}'
-                smoothed = smoothed + pd.Series(seasonality_curve)
+                smoothed = seasonality_curve
 
         timestamps = utils.convert_series_to_timestamp_list(dataframe.timestamp)
         smoothed_dataset = list(zip(timestamps, smoothed.values.tolist()))
         result = ProcessingResult(smoothed_dataset)
         return result
+
+    def add_season_to_data(self, data: pd.Series, segment: pd.Series, offset: int, seasonality: int, addition: bool) -> pd.Series:
+        #data - smoothed data to which seasonality will be added
+        #if additional == False -> segment is subtracted
+        len_smoothed_data = len(data)
+        for idx, _ in enumerate(data):
+            if idx - offset < 0:
+                continue
+            if (idx - offset) % seasonality == 0:
+                if addition:
+                    data = data.add(pd.Series(segment.values, index=segment.index + idx), fill_value=0)
+                else:
+                    data = data.add(pd.Series(segment.values * -1, index=segment.index + idx), fill_value=0)
+        return data[:len_smoothed_data]
