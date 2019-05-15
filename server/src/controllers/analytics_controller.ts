@@ -612,7 +612,7 @@ export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: numb
     const data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
 
     if(analyticUnit.detectorType !== AnalyticUnit.DetectorType.ANOMALY) {
-      return data;
+      return { hsr: data };
     }
     let cache = await AnalyticUnitCache.findById(analyticUnit.id);
     if(
@@ -640,7 +640,7 @@ export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: numb
     if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
       throw new Error(`Data processing error: ${result.error}`);
     }
-    return { values: result.payload.data, columns: data.columns };
+    return { hsr: data, smoothed: { values: result.payload.data, columns: data.columns } };
   } catch (err) {
     const message = err.message || JSON.stringify(err);
     await AnalyticUnit.setStatus(analyticUnit.id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
