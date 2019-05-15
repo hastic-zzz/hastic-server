@@ -1,4 +1,4 @@
-from analytic_types import ModelCache
+from analytic_types import ModelCache, TimeSeries
 from analytic_types.segment import Segment
 
 from typing import List, Optional, Tuple
@@ -34,7 +34,7 @@ class ProcessingResult():
 
     def __init__(
         self,
-        data: Optional[List[Tuple[int, int]]] = None
+        data: Optional[TimeSeries] = None
     ):
         if data is None:
             data = []
@@ -45,8 +45,8 @@ class AnomalyProcessingResult():
 
     def __init__(
         self,
-        lower_bound: Optional[List[Tuple[int, int]]] = None,
-        upper_bound: Optional[List[Tuple[int, int]]] = None,
+        lower_bound: Optional[TimeSeries] = None,
+        upper_bound: Optional[TimeSeries] = None,
     ):
         if lower_bound is None:
             lower_bound = []

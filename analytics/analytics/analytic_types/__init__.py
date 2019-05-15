@@ -16,6 +16,9 @@ AnalyticUnitId = str
 
 ModelCache = dict
 
+# TODO: pd.Series
+TimeSeries = [List[Tuple[int, int]]]
+
 """
 Example:
 
