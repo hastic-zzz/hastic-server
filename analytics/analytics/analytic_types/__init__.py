@@ -10,7 +10,7 @@ like PatternDetectionCache, then it should not be here.
 """
 
 import pandas as pd
-from typing import Union, List
+from typing import Union, List, Tuple
 
 AnalyticUnitId = str
 
