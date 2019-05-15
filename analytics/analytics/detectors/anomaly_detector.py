@@ -12,6 +12,7 @@ import utils
 
 MAX_DEPENDENCY_LEVEL = 100
 MIN_DEPENDENCY_FACTOR = 0.1
+BASIC_ALPHA = 0.5
 logger = logging.getLogger('ANOMALY_DETECTOR')
 
 
@@ -77,7 +78,7 @@ class AnomalyDetector(ProcessingDetector):
                 seasonality_offset = (abs(segment['from'] - data_start_time) % seasonality) // time_step
                 seasonality_index = seasonality // time_step
                 #TODO: upper and lower bounds for segment_data
-                segment_data = utils.exponential_smoothing(pd.Series(segment['data']), 0.5)
+                segment_data = utils.exponential_smoothing(pd.Series(segment['data']), BASIC_ALPHA)
                 upper_seasonality_curve = self.add_season_to_data(smoothed_data, segment_data, seasonality_offset, seasonality_index, True)
                 lower_seasonality_curve = self.add_season_to_data(smoothed_data, segment_data, seasonality_offset, seasonality_index, False)
                 assert len(smoothed_data) == len(upper_seasonality_curve), f'len smoothed {len(smoothed_data)} != len seasonality {len(seasonality_curve)}'
@@ -168,7 +169,7 @@ class AnomalyDetector(ProcessingDetector):
             for segment in segments:
                 seasonality_offset = (abs(segment['from'] - data_start_time) % seasonality) // time_step
                 seasonality_index = seasonality // time_step
-                segment_data = utils.exponential_smoothing(pd.Series(segment['data']), 0.5)
+                segment_data = utils.exponential_smoothing(pd.Series(segment['data']), BASIC_ALPHA)
                 upper_seasonality_curve = self.add_season_to_data(smoothed, segment_data, seasonality_offset, seasonality_index, True)
                 lower_seasonality_curve = self.add_season_to_data(smoothed, segment_data, seasonality_offset, seasonality_index, False)
                 assert len(smoothed) == len(upper_seasonality_curve), f'len smoothed {len(smoothed)} != len seasonality {len(seasonality_curve)}'
