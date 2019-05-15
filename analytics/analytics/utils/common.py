@@ -351,10 +351,6 @@ def get_correlation(segments: list, av_model: list, data: pd.Series, window_size
             p_value_list.append(correlation[1])
     return correlation_list
 
-def get_lag_by_autocorrelation(data: pd.Series) -> int:
-    correlate_data = np.correlate(data, data, 'same') #find another func
-    return correlate_data.argmax()
-
 def get_distribution_density(segment: pd.Series) -> float:
     segment.dropna(inplace = True)
     if len(segment) < 2 or len(segment.nonzero()[0]) == 0:

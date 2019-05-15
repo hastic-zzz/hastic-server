@@ -44,7 +44,9 @@ class AnomalyDetector(ProcessingDetector):
                 segment_data = dataframe[from_index : to_index]
                 prepared_segments.append({'from': segment['from'], 'data': segment_data.value.tolist()})
 
-            time_step = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][1]) - utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])
+            data_start_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])
+            data_second_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][1])
+            time_step = data_second_time - data_start_time
             new_cache['seasonality'] = seasonality
             new_cache['segments'] = prepared_segments
             new_cache['timeStep'] = time_step
@@ -72,16 +74,20 @@ class AnomalyDetector(ProcessingDetector):
             assert seasonality is not None and seasonality > 0, f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
 
             data_start_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])
-            time_step = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][1]) - utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])
+            data_second_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][1])
+            time_step = data_second_time - data_start_time
 
             for segment in segments:
                 seasonality_offset = (abs(segment['from'] - data_start_time) % seasonality) // time_step
                 seasonality_index = seasonality // time_step
                 #TODO: upper and lower bounds for segment_data
                 segment_data = utils.exponential_smoothing(pd.Series(segment['data']), BASIC_ALPHA)
-                upper_seasonality_curve = self.add_season_to_data(smoothed_data, segment_data, seasonality_offset, seasonality_index, True)
-                lower_seasonality_curve = self.add_season_to_data(smoothed_data, segment_data, seasonality_offset, seasonality_index, False)
-                assert len(smoothed_data) == len(upper_seasonality_curve), f'len smoothed {len(smoothed_data)} != len seasonality {len(seasonality_curve)}'
+                upper_seasonality_curve = self.add_season_to_data(
+                    smoothed_data, segment_data, seasonality_offset, seasonality_index, True)
+                lower_seasonality_curve = self.add_season_to_data(
+                    smoothed_data, segment_data, seasonality_offset, seasonality_index, False)
+                assert len(smoothed_data) == len(
+                    upper_seasonality_curve), f'len smoothed {len(smoothed_data)} != len seasonality {len(seasonality_curve)}'
                 upper_bound = upper_seasonality_curve + cache['confidence']
                 lower_bound = lower_seasonality_curve - cache['confidence']
 
@@ -170,9 +176,12 @@ class AnomalyDetector(ProcessingDetector):
                 seasonality_offset = (abs(segment['from'] - data_start_time) % seasonality) // time_step
                 seasonality_index = seasonality // time_step
                 segment_data = utils.exponential_smoothing(pd.Series(segment['data']), BASIC_ALPHA)
-                upper_seasonality_curve = self.add_season_to_data(smoothed, segment_data, seasonality_offset, seasonality_index, True)
-                lower_seasonality_curve = self.add_season_to_data(smoothed, segment_data, seasonality_offset, seasonality_index, False)
-                assert len(smoothed) == len(upper_seasonality_curve), f'len smoothed {len(smoothed)} != len seasonality {len(seasonality_curve)}'
+                upper_seasonality_curve = self.add_season_to_data(
+                    smoothed, segment_data, seasonality_offset, seasonality_index, True)
+                lower_seasonality_curve = self.add_season_to_data(
+                    smoothed, segment_data, seasonality_offset, seasonality_index, False)
+                assert len(smoothed) == len(
+                    upper_seasonality_curve), f'len smoothed {len(smoothed)} != len seasonality {len(seasonality_curve)}'
                 smoothed = upper_seasonality_curve
 
         timestamps = utils.convert_series_to_timestamp_list(dataframe.timestamp)
