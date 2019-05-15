@@ -169,9 +169,10 @@ class AnomalyDetector(ProcessingDetector):
                 seasonality_offset = (abs(segment['from'] - data_start_time) % seasonality) // time_step
                 seasonality_index = seasonality // time_step
                 segment_data = utils.exponential_smoothing(pd.Series(segment['data']), 0.5)
-                seasonality_curve = self.add_season_to_data(smoothed, segment_data, seasonality_offset, seasonality_index, True)
-                assert len(smoothed) == len(seasonality_curve), f'len smoothed {len(smoothed)} != len seasonality {len(seasonality_curve)}'
-                smoothed = seasonality_curve
+                upper_seasonality_curve = self.add_season_to_data(smoothed, segment_data, seasonality_offset, seasonality_index, True)
+                lower_seasonality_curve = self.add_season_to_data(smoothed, segment_data, seasonality_offset, seasonality_index, False)
+                assert len(smoothed) == len(upper_seasonality_curve), f'len smoothed {len(smoothed)} != len seasonality {len(seasonality_curve)}'
+                smoothed = upper_seasonality_curve
 
         timestamps = utils.convert_series_to_timestamp_list(dataframe.timestamp)
         smoothed_dataset = list(zip(timestamps, smoothed.values.tolist()))
