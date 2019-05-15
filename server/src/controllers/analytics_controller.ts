@@ -619,7 +619,7 @@ export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: numb
     }
 
     cache = cache.data;
-  
+
     const analyticUnitType = analyticUnit.type;
     const detector = analyticUnit.detectorType;
     const payload = {
@@ -634,7 +634,11 @@ export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: numb
     if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
       throw new Error(`Data processing error: ${result.error}`);
     }
-    return { hsr: data, smoothed: { values: result.payload.data, columns: data.columns } };
+    return {
+      hsr: data,
+      lowerBound: { values: result.payload.lowerBound, columns: data.columns },
+      upperBound: { values: result.payload.upperBound, columns: data.columns }
+    };
   } catch (err) {
     const message = err.message || JSON.stringify(err);
     await AnalyticUnit.setStatus(analyticUnit.id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
