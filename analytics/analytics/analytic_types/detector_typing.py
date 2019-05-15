@@ -39,3 +39,19 @@ class ProcessingResult():
         if data is None:
             data = []
         self.data = data
+
+@utils.meta.JSONClass
+class AnomalyProcessingResult():
+
+    def __init__(
+        self,
+        lower_bound: Optional[List[Tuple[int, int]]] = None,
+        upper_bound: Optional[List[Tuple[int, int]]] = None,
+    ):
+        if lower_bound is None:
+            lower_bound = []
+        self.lower_bound = lower_bound
+
+        if upper_bound is None:
+            upper_bound = []
+        self.upper_bound = upper_bound
