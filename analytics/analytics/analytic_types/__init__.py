@@ -16,7 +16,7 @@ AnalyticUnitId = str
 
 ModelCache = dict
 
-# TODO: pd.Series
+# TODO: explicit timestamp / value
 TimeSeries = [List[Tuple[int, int]]]
 
 """
