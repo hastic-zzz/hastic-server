@@ -65,6 +65,8 @@ class AnomalyDetector(ProcessingDetector):
             last_value = cache.get('last_value')
 
         smoothed_data = utils.exponential_smoothing(data, cache['alpha'], last_value)
+ 
+        # TODO: use class for cache to avoid using string literals
         upper_bound = smoothed_data + cache['confidence']
         lower_bound = smoothed_data - cache['confidence']
 
@@ -87,7 +89,9 @@ class AnomalyDetector(ProcessingDetector):
                 lower_seasonality_curve = self.add_season_to_data(
                     smoothed_data, segment_data, seasonality_offset, seasonality_index, False)
                 assert len(smoothed_data) == len(
-                    upper_seasonality_curve), f'len smoothed {len(smoothed_data)} != len seasonality {len(seasonality_curve)}'
+                    upper_seasonality_curve), f'len smoothed {len(smoothed_data)} != len seasonality {len(upper_seasonality_curve)}'
+
+                # TODO: use class for cache to avoid using string literals
                 upper_bound = upper_seasonality_curve + cache['confidence']
                 lower_bound = lower_seasonality_curve - cache['confidence']
 
@@ -181,7 +185,7 @@ class AnomalyDetector(ProcessingDetector):
                 lower_seasonality_curve = self.add_season_to_data(
                     smoothed, segment_data, seasonality_offset, seasonality_index, False)
                 assert len(smoothed) == len(
-                    upper_seasonality_curve), f'len smoothed {len(smoothed)} != len seasonality {len(seasonality_curve)}'
+                    upper_seasonality_curve), f'len smoothed {len(smoothed)} != len seasonality {len(upper_seasonality_curve)}'
                 smoothed = upper_seasonality_curve
 
         timestamps = utils.convert_series_to_timestamp_list(dataframe.timestamp)
