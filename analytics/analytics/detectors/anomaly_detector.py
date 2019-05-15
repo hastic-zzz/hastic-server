@@ -195,6 +195,10 @@ class AnomalyDetector(ProcessingDetector):
                     f'len smoothed {len(smoothed)} != len seasonality {len(upper_seasonality_curve)}'
                 smoothed = upper_seasonality_curve
 
+                # TODO: support multiple segments
+                upper_bound = upper_seasonality_curve + cache['confidence']
+                lower_bound = lower_seasonality_curve - cache['confidence']
+
         timestamps = utils.convert_series_to_timestamp_list(dataframe.timestamp)
         smoothed_dataset = list(zip(timestamps, smoothed.values.tolist()))
         result = ProcessingResult(smoothed_dataset)
