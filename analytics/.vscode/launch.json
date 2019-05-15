@@ -1,32 +1,32 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Attach (Remote Debug)",
+      "type": "python",
+      "request": "attach",
+      "port": 5679,
+      "host": "localhost",
+      "pathMappings": [
         {
-            "name": "Attach (Remote Debug)",
-            "type": "python",
-            "request": "attach",
-            "port": 5679,
-            "host": "localhost",
-            "pathMappings": [
-                {
-                    "localRoot": "${workspaceFolder}",
-                    "remoteRoot": "/var/www/analytics"
-                }
-            ]
-        },
-        {
-            "name": "Python: Current File",
-            "type": "python",
-            "request": "launch",
-            "windows": {
-                "program": "${workspaceFolder}\\bin\\server"
-            },
-            "linux": {
-                "program": "${workspaceFolder}/bin/server"
-            }
+          "localRoot": "${workspaceFolder}",
+          "remoteRoot": "/var/www/analytics"
         }
-    ]
+      ]
+    },
+    {
+      "name": "Python: Current File",
+      "type": "python",
+      "request": "launch",
+      "windows": {
+        "program": "${workspaceFolder}\\bin\\server"
+      },
+      "linux": {
+        "program": "${workspaceFolder}/bin/server"
+      }
+    }
+  ]
 }
