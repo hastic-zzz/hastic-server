@@ -23,6 +23,8 @@ const SECONDS_IN_MINUTE = 60;
 
 type TaskResult = any;
 type DetectionResult = any;
+// TODO: move TableTimeSeries to grafana-datasource-kit
+type TableTimeSeries = { values: [number, number][], columns: string[] };
 // TODO: move type definitions somewhere
 type TimeRange = { from: number, to: number };
 export type TaskResolver = (taskResult: TaskResult) => void;
@@ -600,7 +602,16 @@ async function runDetectionOnExtendedSpan(
   return detection;
 }
 
-export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: number, to: number) {
+export async function getHSR(
+  analyticUnit: AnalyticUnit.AnalyticUnit,
+  from: number,
+  to: number
+): Promise<{
+  // TODO: add Metric type to grafana-datsource-kit
+  hsr: TableTimeSeries,
+  lowerBound?: TableTimeSeries,
+  upperBound?: TableTimeSeries
+}> {
   try {
     const grafanaUrl = getGrafanaUrl(analyticUnit.grafanaUrl);
     const data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
