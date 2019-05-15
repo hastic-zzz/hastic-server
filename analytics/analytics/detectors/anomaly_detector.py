@@ -40,7 +40,7 @@ class AnomalyDetector(ProcessingDetector):
 
                 from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
                 to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
-                segment_data = dataframe[from_index: to_index]
+                segment_data = dataframe[from_index : to_index]
                 prepared_segments.append({'from': segment['from'], 'data': segment_data.value.tolist()})
 
             time_step = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][1]) - utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])
