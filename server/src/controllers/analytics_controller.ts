@@ -121,7 +121,6 @@ async function getQueryRange(
     detectorType === AnalyticUnit.DetectorType.PATTERN ||
     detectorType === AnalyticUnit.DetectorType.ANOMALY
   ) {
-    // TODO: find labeled OR deleted segments to generate timerange
     const segments = await Segment.findMany(analyticUnitId, { $or: { labeled: true, deleted: true } });
     if(segments.length === 0) {
       throw new Error('Need at least 1 labeled segment');
