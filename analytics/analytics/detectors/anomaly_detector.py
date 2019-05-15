@@ -187,7 +187,7 @@ class AnomalyDetector(ProcessingDetector):
                 continue
             if (idx - offset) % seasonality == 0:
                 if addition:
-                    data = data.add(pd.Series(segment.values, index=segment.index + idx), fill_value=0)
+                    data = data.add(pd.Series(segment.values, index = segment.index + idx), fill_value = 0)
                 else:
-                    data = data.add(pd.Series(segment.values * -1, index=segment.index + idx), fill_value=0)
+                    data = data.add(pd.Series(segment.values * -1, index = segment.index + idx), fill_value = 0)
         return data[:len_smoothed_data]
