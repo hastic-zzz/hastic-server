@@ -87,18 +87,16 @@ class AnomalyDetector(ProcessingDetector):
                 seasonality_index = seasonality // time_step
                 #TODO: upper and lower bounds for segment_data
                 segment_data = utils.exponential_smoothing(pd.Series(segment['data']), BASIC_ALPHA)
-                upper_seasonality_curve = self.add_season_to_data(
-                    smoothed_data, segment_data, seasonality_offset, seasonality_index, True
+                upper_bound = self.add_season_to_data(
+                    upper_bound, segment_data, seasonality_offset, seasonality_index, True
                 )
-                lower_seasonality_curve = self.add_season_to_data(
-                    smoothed_data, segment_data, seasonality_offset, seasonality_index, False
+                lower_bound = self.add_season_to_data(
+                    lower_bound, segment_data, seasonality_offset, seasonality_index, False
                 )
-                assert len(smoothed_data) == len(upper_seasonality_curve), \
-                    f'len smoothed {len(smoothed_data)} != len seasonality {len(upper_seasonality_curve)}'
+                assert len(smoothed_data) == len(upper_bound), \
+                    f'len smoothed {len(smoothed_data)} != len seasonality {len(upper_bound)}'
 
                 # TODO: use class for cache to avoid using string literals
-                upper_bound = upper_seasonality_curve + cache['confidence']
-                lower_bound = lower_seasonality_curve - cache['confidence']
 
         anomaly_indexes = []
         for idx, val in enumerate(data.values):
@@ -172,6 +170,8 @@ class AnomalyDetector(ProcessingDetector):
 
         # TODO: exponential_smoothing should return dataframe with related timestamps
         smoothed = utils.exponential_smoothing(dataframe['value'], cache['alpha'], cache.get('lastValue'))
+        upper_bound = smoothed + cache['confidence']
+        lower_bound = smoothed - cache['confidence']
 
         # TODO: remove duplication with detect()
         if segments is not None:
