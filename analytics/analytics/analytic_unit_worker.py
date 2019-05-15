@@ -69,7 +69,7 @@ class AnalyticUnitWorker:
         if len(detections) == 0:
             raise RuntimeError(f'do_detect for {self.analytic_unit_id} got empty detection results')
 
-        time_step = utils.get_time_step(data)
+        time_step = utils.find_interval(data)
         detection_result = self._detector.concat_detection_results(detections, time_step)
         return detection_result.to_json()
 
@@ -92,7 +92,7 @@ class AnalyticUnitWorker:
         if len(detections) == 0:
             return None
         else:
-            time_step = utils.get_time_step(data)
+            time_step = utils.find_interval(data)
             detection_result = self._detector.concat_detection_results(detections, time_step)
             return detection_result.to_json()
 
