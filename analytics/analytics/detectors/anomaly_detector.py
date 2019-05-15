@@ -12,6 +12,7 @@ import utils
 
 MAX_DEPENDENCY_LEVEL = 100
 MIN_DEPENDENCY_FACTOR = 0.1
+BASIC_ALPHA = 0.5
 logger = logging.getLogger('ANOMALY_DETECTOR')
 
 
@@ -22,23 +23,82 @@ class AnomalyDetector(ProcessingDetector):
         self.bucket = DataBucket()
 
     def train(self, dataframe: pd.DataFrame, payload: Union[list, dict], cache: Optional[ModelCache]) -> ModelCache:
+        segments = payload.get('segments')
+        prepared_segments = []
+
+        new_cache = {
+            'confidence': payload['confidence'],
+            'alpha': payload['alpha']
+        }
+
+        if segments is not None:
+            seasonality = payload.get('seasonality')
+            assert seasonality is not None and seasonality > 0, \
+                f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
+
+            for segment in segments:
+                segment_len = (int(segment['to']) - int(segment['from']))
+                assert segment_len <= seasonality, \
+                    f'seasonality {seasonality} must be great then segment length {segment_len}'
+
+                from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
+                to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
+                segment_data = dataframe[from_index : to_index]
+                prepared_segments.append({'from': segment['from'], 'data': segment_data.value.tolist()})
+
+            data_start_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])
+            data_second_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][1])
+            time_step = data_second_time - data_start_time
+            new_cache['seasonality'] = seasonality
+            new_cache['segments'] = prepared_segments
+            new_cache['timeStep'] = time_step
+
         return {
-            'cache': {
-                'confidence': payload['confidence'],
-                'alpha': payload['alpha']
-            }
+            'cache': new_cache
         }
 
     # TODO: ModelCache -> ModelState
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> DetectionResult:
         data = dataframe['value']
+        segments = cache.get('segments')
+
         last_value = None
         if cache is not None:
             last_value = cache.get('last_value')
 
         smoothed_data = utils.exponential_smoothing(data, cache['alpha'], last_value)
+ 
+        # TODO: use class for cache to avoid using string literals
         upper_bound = smoothed_data + cache['confidence']
         lower_bound = smoothed_data - cache['confidence']
+
+        if segments is not None:
+
+            seasonality = cache.get('seasonality')
+            assert seasonality is not None and seasonality > 0, \
+                f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
+
+            data_start_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])
+            data_second_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][1])
+            time_step = data_second_time - data_start_time
+
+            for segment in segments:
+                seasonality_offset = (abs(segment['from'] - data_start_time) % seasonality) // time_step
+                seasonality_index = seasonality // time_step
+                #TODO: upper and lower bounds for segment_data
+                segment_data = utils.exponential_smoothing(pd.Series(segment['data']), BASIC_ALPHA)
+                upper_seasonality_curve = self.add_season_to_data(
+                    smoothed_data, segment_data, seasonality_offset, seasonality_index, True
+                )
+                lower_seasonality_curve = self.add_season_to_data(
+                    smoothed_data, segment_data, seasonality_offset, seasonality_index, False
+                )
+                assert len(smoothed_data) == len(upper_seasonality_curve), \
+                    f'len smoothed {len(smoothed_data)} != len seasonality {len(upper_seasonality_curve)}'
+
+                # TODO: use class for cache to avoid using string literals
+                upper_bound = upper_seasonality_curve + cache['confidence']
+                lower_bound = lower_seasonality_curve - cache['confidence']
 
         anomaly_indexes = []
         for idx, val in enumerate(data.values):
@@ -91,7 +151,11 @@ class AnomalyDetector(ProcessingDetector):
         for level in range(1, MAX_DEPENDENCY_LEVEL):
             if (1 - cache['alpha']) ** level < MIN_DEPENDENCY_FACTOR:
                 break
-        return level
+
+        seasonality = 0
+        if cache.get('segments') is not None and cache['seasonality'] > 0:
+            seasonality = cache['seasonality'] // cache['timeStep']
+        return max(level, seasonality)
 
     def concat_detection_results(self, detections: List[DetectionResult]) -> DetectionResult:
         result = DetectionResult()
@@ -102,15 +166,56 @@ class AnomalyDetector(ProcessingDetector):
         result.segments = utils.merge_intersecting_segments(result.segments)
         return result
 
-    # TODO: ModelCache -> ModelState
-    def process_data(self, data: pd.DataFrame, cache: ModelCache) -> ProcessingResult:
+    # TODO: ModelCache -> ModelState (don't use string literals)
+    def process_data(self, dataframe: pd.DataFrame, cache: ModelCache) -> ProcessingResult:
+        segments = cache.get('segments')
+
         # TODO: exponential_smoothing should return dataframe with related timestamps
-        smoothed = utils.exponential_smoothing(data['value'], cache['alpha'], cache.get('lastValue'))
-        timestamps = utils.convert_series_to_timestamp_list(data.timestamp)
+        smoothed = utils.exponential_smoothing(dataframe['value'], cache['alpha'], cache.get('lastValue'))
+
+        # TODO: remove duplication with detect()
+        if segments is not None:
+            seasonality = cache.get('seasonality')
+            assert seasonality is not None and seasonality > 0, \
+                f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
+
+            data_start_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])
+            time_step = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][1]) - utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])
+
+            for segment in segments:
+                seasonality_offset = (abs(segment['from'] - data_start_time) % seasonality) // time_step
+                seasonality_index = seasonality // time_step
+                segment_data = utils.exponential_smoothing(pd.Series(segment['data']), BASIC_ALPHA)
+                upper_seasonality_curve = self.add_season_to_data(
+                    smoothed, segment_data, seasonality_offset, seasonality_index, True
+                )
+                lower_seasonality_curve = self.add_season_to_data(
+                    smoothed, segment_data, seasonality_offset, seasonality_index, False
+                )
+                assert len(smoothed) == len(upper_seasonality_curve), \
+                    f'len smoothed {len(smoothed)} != len seasonality {len(upper_seasonality_curve)}'
+                smoothed = upper_seasonality_curve
+
+                # TODO: support multiple segments
+                upper_bound = upper_seasonality_curve + cache['confidence']
+                lower_bound = lower_seasonality_curve - cache['confidence']
+
+        timestamps = utils.convert_series_to_timestamp_list(dataframe.timestamp)
         smoothed_dataset = list(zip(timestamps, smoothed.values.tolist()))
         result = ProcessingResult(smoothed_dataset)
         return result
 
-    def merge_segments(self, segments: List[Segment]) -> List[Segment]:
-        segments = utils.merge_intersecting_segments(segments)
-        return segments
+    def add_season_to_data(self, data: pd.Series, segment: pd.Series, offset: int, seasonality: int, addition: bool) -> pd.Series:
+        #data - smoothed data to which seasonality will be added
+        #if addition == True -> segment is added
+        #if addition == False -> segment is subtracted
+        len_smoothed_data = len(data)
+        for idx, _ in enumerate(data):
+            if idx - offset < 0:
+                continue
+            if (idx - offset) % seasonality == 0:
+                if addition:
+                    data = data.add(pd.Series(segment.values, index = segment.index + idx), fill_value = 0)
+                else:
+                    data = data.add(pd.Series(segment.values * -1, index = segment.index + idx), fill_value = 0)
+        return data[:len_smoothed_data]

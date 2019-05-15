@@ -212,9 +212,9 @@ export class AnalyticsService {
     try {
       response = JSON.parse(text);
     } catch (e) {
-      console.error("Can`t parse response from analytics as json:");
+      console.error('Can`t parse response from analytics as json:');
       console.error(text);
-      throw new Error('Unexpected response');
+      throw new Error('Can`t parse response from analytics as json, see log');
     }
     this._onMessage(AnalyticsMessage.fromObject(response));
   }

@@ -117,9 +117,11 @@ async function getQueryRange(
   analyticUnitId: AnalyticUnit.AnalyticUnitId,
   detectorType: AnalyticUnit.DetectorType
 ): Promise<TimeRange> {
-  if(detectorType === AnalyticUnit.DetectorType.PATTERN) {
-    // TODO: find labeled OR deleted segments to generate timerange
-    const segments = await Segment.findMany(analyticUnitId, { labeled: true });
+  if(
+    detectorType === AnalyticUnit.DetectorType.PATTERN ||
+    detectorType === AnalyticUnit.DetectorType.ANOMALY
+  ) {
+    const segments = await Segment.findMany(analyticUnitId, { $or: { labeled: true, deleted: true } });
     if(segments.length === 0) {
       throw new Error('Need at least 1 labeled segment');
     }
@@ -127,10 +129,7 @@ async function getQueryRange(
     return getQueryRangeForLearningBySegments(segments);
   }
 
-  if(
-    detectorType === AnalyticUnit.DetectorType.THRESHOLD ||
-    detectorType === AnalyticUnit.DetectorType.ANOMALY
-  ) {
+  if(detectorType === AnalyticUnit.DetectorType.THRESHOLD) {
     const now = Date.now();
     return {
       from: now - 5 * SECONDS_IN_MINUTE * 1000,
@@ -199,7 +198,7 @@ function getQueryRangeForLearningBySegments(segments: Segment.Segment[]) {
 }
 
 export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number, to?: number) {
-  console.log('learning started...');
+  console.log(`LEARNING started for ${id}`);
   try {
 
     let analyticUnit = await AnalyticUnit.findById(id);
@@ -235,6 +234,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
         let deletedSegmentsObjs = deletedSegments.map(s => s.toObject());
         segmentObjs = _.concat(segmentObjs, deletedSegmentsObjs);
         taskPayload.segments = segmentObjs;
+        taskPayload.data = await getPayloadData(analyticUnit, from, to);
         break;
       case AnalyticUnit.DetectorType.THRESHOLD:
         taskPayload.threshold = {
@@ -247,24 +247,30 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
           alpha: (analyticUnit as AnomalyAnalyticUnit).alpha,
           confidence: (analyticUnit as AnomalyAnalyticUnit).confidence
         };
+
+        const seasonality = (analyticUnit as AnomalyAnalyticUnit).seasonality;
+        if(seasonality > 0) {
+          let segments = await Segment.findMany(id, { deleted: true });
+          if(segments.length === 0) {
+            console.log('Need at least 1 labeled segment, ignore seasonality');
+            break;
+          }
+          taskPayload.anomaly.seasonality = seasonality;
+
+          let segmentObjs = segments.map(s => s.toObject());
+          taskPayload.anomaly.segments = segmentObjs;
+          taskPayload.data = await getPayloadData(analyticUnit, from, to);
+        }
         break;
       default:
         throw new Error(`Unknown type of detector: ${detector}`);
     }
 
-    let range: TimeRange;
-    if(from !== undefined && to !== undefined) {
-      range = { from, to };
-    } else {
-      range = await getQueryRange(id, detector);
-    }
-    taskPayload.data = await query(analyticUnit, range);
-
     let task = new AnalyticsTask(
       id, AnalyticsTaskType.LEARN, taskPayload
     );
     AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
-    console.log(`run task, id:${id}`);
+    console.log(`run ${task.type} task, id:${id}`);
     let result = await runTask(task);
     if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
       throw new Error(result.error);
@@ -502,11 +508,6 @@ export async function runLearningWithDetection(
 ): Promise<void> {
   // TODO: move setting status somehow "inside" learning
   await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.PENDING);
-  const foundSegments = await Segment.findMany(id, { labeled: false, deleted: false });
-  if(foundSegments !== null) {
-    await Segment.removeSegments(foundSegments.map(segment => segment.id));
-  }
-  await Detection.clearSpans(id);
   runLearning(id, from, to)
     .then(() => runDetect(id, from, to))
     .catch(err => console.error(err));
@@ -557,6 +558,20 @@ export async function getDetectionSpans(
   await Promise.all(runningSpansPromises);
 
   return _.concat(readySpans, alreadyRunningSpans, newRunningSpans.filter(span => span !== null));
+}
+
+async function getPayloadData(
+  analyticUnit: AnalyticUnit.AnalyticUnit,
+  from: number,
+  to:number
+) {
+  let range: TimeRange;
+  if(from !== undefined && to !== undefined) {
+    range = { from, to };
+  } else {
+    range = await getQueryRange(analyticUnit.id, analyticUnit.detectorType);
+  }
+  return await query(analyticUnit, range);
 }
 
 async function runDetectionOnExtendedSpan(

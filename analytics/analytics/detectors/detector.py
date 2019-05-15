@@ -39,8 +39,6 @@ class Detector(ABC):
             result.cache = detection.cache
         return result
 
-    def merge_segments(self, segments: List[Segment]) -> List[Segment]:
-        return segments
 
 class ProcessingDetector(Detector):
 
