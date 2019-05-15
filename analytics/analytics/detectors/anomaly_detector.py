@@ -173,6 +173,7 @@ class AnomalyDetector(ProcessingDetector):
         # TODO: exponential_smoothing should return dataframe with related timestamps
         smoothed = utils.exponential_smoothing(dataframe['value'], cache['alpha'], cache.get('lastValue'))
 
+        # TODO: remove duplication with detect()
         if segments is not None:
             seasonality = cache.get('seasonality')
             assert seasonality is not None and seasonality > 0, \
