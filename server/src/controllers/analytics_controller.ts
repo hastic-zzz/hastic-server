@@ -251,7 +251,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
 
         const seasonality = (analyticUnit as AnomalyAnalyticUnit).seasonality;
         if(seasonality > 0) {
-          let segments = await Segment.findMany(id, { labeled: true });
+          let segments = await Segment.findMany(id, { deleted: true });
           if(segments.length === 0) {
             console.log('Need at least 1 labeled segment, ignore seasonality');
             break;

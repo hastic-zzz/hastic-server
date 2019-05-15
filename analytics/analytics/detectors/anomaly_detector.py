@@ -36,6 +36,9 @@ class AnomalyDetector(ProcessingDetector):
             assert seasonality is not None and seasonality > 0, f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
 
             for segment in segments:
+                segment_len = (int(segment['to']) - int(segment['from']))
+                assert segment_len <= seasonality, f'seasonality {seasonality} must be great then segment length {segment_len}'
+
                 from_time = pd.to_datetime(segment['from'], unit='ms').time()
                 to_time = pd.to_datetime(segment['to'], unit='ms').time()
                 dataframe.index = pd.to_datetime(dataframe.index)
@@ -73,7 +76,7 @@ class AnomalyDetector(ProcessingDetector):
             for segment in segments:
                 seasonality_offset = seasonality - abs(segment['from'] - data_start_time) % seasonality
 
-                seasonality_curve = pd.concat([segment['data']] * len(dataframe) // seasonality).reset_index()
+                seasonality_curve = pd.concat([segment['data']] * (len(dataframe) // seasonality)).reset_index()
                 seasonality_curve = pd.concat([segment['data'][:seasonality_offset], seasonality_curve]).reset_index()
 
                 upper_bound.merge(seasonality_curve, how='outer', left_index=True, right_index=True)
@@ -146,24 +149,28 @@ class AnomalyDetector(ProcessingDetector):
 
     # TODO: ModelCache -> ModelState
     def process_data(self, dataframe: pd.DataFrame, cache: ModelCache) -> ProcessingResult:
-        data = dataframe['value']
-
         segments = cache.get('segments')
         if segments is not None:
 
             seasonality = cache.get('seasonality')
             assert seasonality is not None and seasonality > 0, f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
 
-            data_start_time = dataframe['timestamp'][0]
+            data_start_time = int(dataframe['timestamp'][0].timestamp() * 1000)
 
             for segment in segments:
-                seasonality_offset = abs(segment - data_start_time) % seasonality
-                segment_data = segment['data']
-                segment_end_index = seasonality_offset + len(segment_data)
-                data = data[: seasonality_offset] + (data[seasonality_offset: segment_end_index] + segment_data) + data[segment_end_index:]
+                seasonality_offset = seasonality - abs(segment['from'] - data_start_time) % seasonality
+                segment_data = segment['data'] + [0] * (seasonality - len(segment['data']))
+
+                if len(dataframe) // seasonality > 0:
+                    seasonality_curve = [segment_data] * (len(dataframe) // seasonality)
+                    seasonality_curve = [segment_data][:seasonality_offset] + seasonality_curve
+                else:
+                    seasonality_curve = segment_data[:seasonality_offset]
+
+                dataframe['value'].add(pd.Series(seasonality_curve))
 
         # TODO: exponential_smoothing should return dataframe with related timestamps
-        smoothed = utils.exponential_smoothing(data, cache['alpha'], cache.get('lastValue'))
+        smoothed = utils.exponential_smoothing(dataframe['value'], cache['alpha'], cache.get('lastValue'))
         timestamps = utils.convert_series_to_timestamp_list(dataframe.timestamp)
         smoothed_dataset = list(zip(timestamps, smoothed.values.tolist()))
         result = ProcessingResult(smoothed_dataset)
