@@ -33,11 +33,13 @@ class AnomalyDetector(ProcessingDetector):
 
         if segments is not None:
             seasonality = payload.get('seasonality')
-            assert seasonality is not None and seasonality > 0, f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
+            assert seasonality is not None and seasonality > 0, \
+                f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
 
             for segment in segments:
                 segment_len = (int(segment['to']) - int(segment['from']))
-                assert segment_len <= seasonality, f'seasonality {seasonality} must be great then segment length {segment_len}'
+                assert segment_len <= seasonality, \
+                    f'seasonality {seasonality} must be great then segment length {segment_len}'
 
                 from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
                 to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
@@ -71,7 +73,8 @@ class AnomalyDetector(ProcessingDetector):
         if segments is not None:
 
             seasonality = cache.get('seasonality')
-            assert seasonality is not None and seasonality > 0, f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
+            assert seasonality is not None and seasonality > 0, \
+                f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
 
             data_start_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])
             data_second_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][1])
@@ -86,8 +89,8 @@ class AnomalyDetector(ProcessingDetector):
                     smoothed_data, segment_data, seasonality_offset, seasonality_index, True)
                 lower_seasonality_curve = self.add_season_to_data(
                     smoothed_data, segment_data, seasonality_offset, seasonality_index, False)
-                assert len(smoothed_data) == len(
-                    upper_seasonality_curve), f'len smoothed {len(smoothed_data)} != len seasonality {len(seasonality_curve)}'
+                assert len(smoothed_data) == len(upper_seasonality_curve), \
+                    f'len smoothed {len(smoothed_data)} != len seasonality {len(seasonality_curve)}'
                 upper_bound = upper_seasonality_curve + cache['confidence']
                 lower_bound = lower_seasonality_curve - cache['confidence']
 
@@ -167,7 +170,8 @@ class AnomalyDetector(ProcessingDetector):
         if segments is not None:
 
             seasonality = cache.get('seasonality')
-            assert seasonality is not None and seasonality > 0, f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
+            assert seasonality is not None and seasonality > 0, \
+                f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
 
             data_start_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])
             time_step = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][1]) - utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])
@@ -180,8 +184,8 @@ class AnomalyDetector(ProcessingDetector):
                     smoothed, segment_data, seasonality_offset, seasonality_index, True)
                 lower_seasonality_curve = self.add_season_to_data(
                     smoothed, segment_data, seasonality_offset, seasonality_index, False)
-                assert len(smoothed) == len(
-                    upper_seasonality_curve), f'len smoothed {len(smoothed)} != len seasonality {len(seasonality_curve)}'
+                assert len(smoothed) == len(upper_seasonality_curve), \
+                    f'len smoothed {len(smoothed)} != len seasonality {len(seasonality_curve)}'
                 smoothed = upper_seasonality_curve
 
         timestamps = utils.convert_series_to_timestamp_list(dataframe.timestamp)
