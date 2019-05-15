@@ -117,9 +117,12 @@ async function getQueryRange(
   analyticUnitId: AnalyticUnit.AnalyticUnitId,
   detectorType: AnalyticUnit.DetectorType
 ): Promise<TimeRange> {
-  if(detectorType === AnalyticUnit.DetectorType.PATTERN) {
+  if(
+    detectorType === AnalyticUnit.DetectorType.PATTERN ||
+    detectorType === AnalyticUnit.DetectorType.ANOMALY
+  ) {
     // TODO: find labeled OR deleted segments to generate timerange
-    const segments = await Segment.findMany(analyticUnitId, { labeled: true });
+    const segments = await Segment.findMany(analyticUnitId, { $or: { labeled: true, deleted: true } });
     if(segments.length === 0) {
       throw new Error('Need at least 1 labeled segment');
     }
@@ -127,10 +130,7 @@ async function getQueryRange(
     return getQueryRangeForLearningBySegments(segments);
   }
 
-  if(
-    detectorType === AnalyticUnit.DetectorType.THRESHOLD ||
-    detectorType === AnalyticUnit.DetectorType.ANOMALY
-  ) {
+  if(detectorType === AnalyticUnit.DetectorType.THRESHOLD) {
     const now = Date.now();
     return {
       from: now - 5 * SECONDS_IN_MINUTE * 1000,
@@ -509,11 +509,6 @@ export async function runLearningWithDetection(
 ): Promise<void> {
   // TODO: move setting status somehow "inside" learning
   await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.PENDING);
-  const foundSegments = await Segment.findMany(id, { labeled: false, deleted: false });
-  if(foundSegments !== null) {
-    await Segment.removeSegments(foundSegments.map(segment => segment.id));
-  }
-  await Detection.clearSpans(id);
   runLearning(id, from, to)
     .then(() => runDetect(id, from, to))
     .catch(err => console.error(err));
