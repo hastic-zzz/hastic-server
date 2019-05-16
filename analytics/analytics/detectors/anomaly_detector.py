@@ -215,11 +215,9 @@ class AnomalyDetector(ProcessingDetector):
             if (idx - offset) % seasonality == 0:
                 if addition:
                     upper_segment_bound = self.get_bounds_for_segment(segment)[0]
-                    #upper_segment_bound = upper_segment_bound - upper_segment_bound.min()
                     data = data.add(pd.Series(upper_segment_bound.values, index = segment.index + idx), fill_value = 0)
                 else:
                     lower_segment_bound = self.get_bounds_for_segment(segment)[1]
-                    #lower_segment_bound = lower_segment_bound - lower_segment_bound.min()
                     data = data.add(pd.Series(lower_segment_bound.values * -1, index = segment.index + idx), fill_value = 0)
         return data[:len_smoothed_data]
 
