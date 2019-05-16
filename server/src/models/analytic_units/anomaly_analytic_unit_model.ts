@@ -3,8 +3,14 @@ import { AnalyticUnitId, AnalyticUnitStatus, DetectorType } from './types';
 
 import { Metric } from 'grafana-datasource-kit';
 
-
+type SeasonalityPeriod = {
+  unit: string,
+  value: number
+}
 export class AnomalyAnalyticUnit extends AnalyticUnit {
+
+  public learningAfterUpdateRequired = true;
+
   constructor(
     name: string,
     grafanaUrl: string,
@@ -12,6 +18,8 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
     type: string,
     public alpha: number,
     public confidence: number,
+    public seasonality: number, //seasonality in ms
+    private seasonalityPeriod: SeasonalityPeriod,
     metric?: Metric,
     alert?: boolean,
     id?: AnalyticUnitId,
@@ -45,7 +53,9 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
     return {
       ...baseObject,
       alpha: this.alpha,
-      confidence: this.confidence
+      confidence: this.confidence,
+      seasonality: this.seasonality,
+      seasonalityPeriod: this.seasonalityPeriod
     };
   }
 
@@ -54,7 +64,9 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
     return {
       ...baseObject,
       alpha: this.alpha,
-      confidence: this.confidence
+      confidence: this.confidence,
+      seasonality: this.seasonality,
+      seasonalityPeriod: this.seasonalityPeriod
     };
   }
 
@@ -72,6 +84,8 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
       obj.type,
       obj.alpha,
       obj.confidence,
+      obj.seasonality,
+      obj.seasonalityPeriod,
       metric,
       obj.alert,
       obj._id,

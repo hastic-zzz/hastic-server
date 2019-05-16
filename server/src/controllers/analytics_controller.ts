@@ -23,6 +23,9 @@ const SECONDS_IN_MINUTE = 60;
 
 type TaskResult = any;
 type DetectionResult = any;
+// TODO: move TableTimeSeries to grafana-datasource-kit
+// TODO: TableTimeSeries is bad name
+type TableTimeSeries = { values: [number, number][], columns: string[] };
 // TODO: move type definitions somewhere
 type TimeRange = { from: number, to: number };
 export type TaskResolver = (taskResult: TaskResult) => void;
@@ -117,9 +120,11 @@ async function getQueryRange(
   analyticUnitId: AnalyticUnit.AnalyticUnitId,
   detectorType: AnalyticUnit.DetectorType
 ): Promise<TimeRange> {
-  if(detectorType === AnalyticUnit.DetectorType.PATTERN) {
-    // TODO: find labeled OR deleted segments to generate timerange
-    const segments = await Segment.findMany(analyticUnitId, { labeled: true });
+  if(
+    detectorType === AnalyticUnit.DetectorType.PATTERN ||
+    detectorType === AnalyticUnit.DetectorType.ANOMALY
+  ) {
+    const segments = await Segment.findMany(analyticUnitId, { $or: { labeled: true, deleted: true } });
     if(segments.length === 0) {
       throw new Error('Need at least 1 labeled segment');
     }
@@ -127,10 +132,7 @@ async function getQueryRange(
     return getQueryRangeForLearningBySegments(segments);
   }
 
-  if(
-    detectorType === AnalyticUnit.DetectorType.THRESHOLD ||
-    detectorType === AnalyticUnit.DetectorType.ANOMALY
-  ) {
+  if(detectorType === AnalyticUnit.DetectorType.THRESHOLD) {
     const now = Date.now();
     return {
       from: now - 5 * SECONDS_IN_MINUTE * 1000,
@@ -199,14 +201,17 @@ function getQueryRangeForLearningBySegments(segments: Segment.Segment[]) {
 }
 
 export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number, to?: number) {
-  console.log('learning started...');
+  console.log(`LEARNING started for ${id}`);
   try {
 
     let analyticUnit = await AnalyticUnit.findById(id);
     if(analyticUnit.status === AnalyticUnit.AnalyticUnitStatus.LEARNING) {
       throw new Error('Can`t start learning when it`s already started [' + id + ']');
     }
-
+    const oldSegments = await Segment.findMany(id, { labeled: false, deleted: false });
+    // TODO: segments and spans are coupled. So their removing should be a transaction
+    await Segment.removeSegments(oldSegments.map(segment => segment.id));
+    await Detection.clearSpans(id);
     let oldCache = await AnalyticUnitCache.findById(id);
     if(oldCache !== null) {
       oldCache = oldCache.data;
@@ -232,6 +237,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
         let deletedSegmentsObjs = deletedSegments.map(s => s.toObject());
         segmentObjs = _.concat(segmentObjs, deletedSegmentsObjs);
         taskPayload.segments = segmentObjs;
+        taskPayload.data = await getPayloadData(analyticUnit, from, to);
         break;
       case AnalyticUnit.DetectorType.THRESHOLD:
         taskPayload.threshold = {
@@ -244,24 +250,30 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
           alpha: (analyticUnit as AnomalyAnalyticUnit).alpha,
           confidence: (analyticUnit as AnomalyAnalyticUnit).confidence
         };
+
+        const seasonality = (analyticUnit as AnomalyAnalyticUnit).seasonality;
+        if(seasonality > 0) {
+          let segments = await Segment.findMany(id, { deleted: true });
+          if(segments.length === 0) {
+            console.log('Need at least 1 labeled segment, ignore seasonality');
+            break;
+          }
+          taskPayload.anomaly.seasonality = seasonality;
+
+          let segmentObjs = segments.map(s => s.toObject());
+          taskPayload.anomaly.segments = segmentObjs;
+          taskPayload.data = await getPayloadData(analyticUnit, from, to);
+        }
         break;
       default:
         throw new Error(`Unknown type of detector: ${detector}`);
     }
 
-    let range: TimeRange;
-    if(from !== undefined && to !== undefined) {
-      range = { from, to };
-    } else {
-      range = await getQueryRange(id, detector);
-    }
-    taskPayload.data = await query(analyticUnit, range);
-
     let task = new AnalyticsTask(
       id, AnalyticsTaskType.LEARN, taskPayload
     );
     AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
-    console.log(`run task, id:${id}`);
+    console.log(`run ${task.type} task, id:${id}`);
     let result = await runTask(task);
     if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
       throw new Error(result.error);
@@ -277,6 +289,16 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
 
 export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, to?: number) {
   let previousLastDetectionTime: number = undefined;
+  let range: TimeRange;
+  let intersection = 0;
+
+  let oldCache = await AnalyticUnitCache.findById(id);
+  if(oldCache !== null) {
+    intersection = oldCache.getIntersection();
+    oldCache = oldCache.data;
+  } else {
+    await AnalyticUnitCache.create(id);
+  }
 
   try {
     let unit = await AnalyticUnit.findById(id);
@@ -284,7 +306,6 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     let analyticUnitType = unit.type;
     const detector = unit.detectorType;
 
-    let range: TimeRange;
     if(from !== undefined && to !== undefined) {
       range = { from, to };
     } else {
@@ -292,12 +313,6 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     }
     const data = await query(unit, range);
 
-    let oldCache = await AnalyticUnitCache.findById(id);
-    if(oldCache !== null) {
-      oldCache = oldCache.data;
-    } else {
-      await AnalyticUnitCache.create(id);
-    }
     let task = new AnalyticsTask(
       id,
       AnalyticsTaskType.DETECT,
@@ -309,23 +324,11 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     const result = await runTask(task);
 
     if(result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
-      await Detection.insertSpan(
-        new Detection.DetectionSpan(id, range.from, range.to, Detection.DetectionStatus.FAILED)
-      );
       throw new Error(result.error);
     }
 
     const payload = await processDetectionResult(id, result.payload);
     const cache = AnalyticUnitCache.AnalyticUnitCache.fromObject({ _id: id, data: payload.cache });
-    const intersection = cache.getIntersection();
-    await Detection.insertSpan(
-      new Detection.DetectionSpan(
-        id,
-        range.from + intersection,
-        range.to - intersection,
-        Detection.DetectionStatus.READY
-      )
-    );
 
     // TODO: uncomment it
     // It clears segments when redetecting on another timerange
@@ -336,12 +339,29 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
       AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime),
     ]);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
+    await Detection.insertSpan(
+      new Detection.DetectionSpan(
+        id,
+        range.from + intersection,
+        range.to - intersection,
+        Detection.DetectionStatus.READY
+      )
+    );
   } catch(err) {
-    let message = err.message || JSON.stringify(err);
-    await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
+    // TODO: maybe we don't need to update detectionTime with previous value?
     if(previousLastDetectionTime !== undefined) {
       await AnalyticUnit.setDetectionTime(id, previousLastDetectionTime);
     }
+    let message = err.message || JSON.stringify(err);
+    await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
+    await Detection.insertSpan(
+      new Detection.DetectionSpan(
+        id,
+        range.from + intersection,
+        range.to - intersection,
+        Detection.DetectionStatus.FAILED
+      )
+    );
   }
 }
 
@@ -491,11 +511,6 @@ export async function runLearningWithDetection(
 ): Promise<void> {
   // TODO: move setting status somehow "inside" learning
   await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.PENDING);
-  const foundSegments = await Segment.findMany(id, { labeled: false, deleted: false });
-  if(foundSegments !== null) {
-    await Segment.removeSegments(foundSegments.map(segment => segment.id));
-  }
-  await Detection.clearSpans(id);
   runLearning(id, from, to)
     .then(() => runDetect(id, from, to))
     .catch(err => console.error(err));
@@ -548,6 +563,20 @@ export async function getDetectionSpans(
   return _.concat(readySpans, alreadyRunningSpans, newRunningSpans.filter(span => span !== null));
 }
 
+async function getPayloadData(
+  analyticUnit: AnalyticUnit.AnalyticUnit,
+  from: number,
+  to:number
+) {
+  let range: TimeRange;
+  if(from !== undefined && to !== undefined) {
+    range = { from, to };
+  } else {
+    range = await getQueryRange(analyticUnit.id, analyticUnit.detectorType);
+  }
+  return await query(analyticUnit, range);
+}
+
 async function runDetectionOnExtendedSpan(
   analyticUnitId: AnalyticUnit.AnalyticUnitId,
   from: number,
@@ -574,42 +603,53 @@ async function runDetectionOnExtendedSpan(
   return detection;
 }
 
-export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: number, to: number) {
+export async function getHSR(
+  analyticUnit: AnalyticUnit.AnalyticUnit,
+  from: number,
+  to: number
+): Promise<{
+  hsr: TableTimeSeries,
+  lowerBound?: TableTimeSeries,
+  upperBound?: TableTimeSeries
+}> {
   try {
     const grafanaUrl = getGrafanaUrl(analyticUnit.grafanaUrl);
     const data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
 
     if(analyticUnit.detectorType !== AnalyticUnit.DetectorType.ANOMALY) {
-      return data;
-    } else {
-      let cache = await AnalyticUnitCache.findById(analyticUnit.id);
-      if(
-        cache === null ||
-        cache.data.alpha !== (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).alpha ||
-        cache.data.confidence !== (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).confidence
-      ) {
-        await runLearning(analyticUnit.id, from, to);
-        cache = await AnalyticUnitCache.findById(analyticUnit.id);
-      }
-
-      cache = cache.data;
-    
-      const analyticUnitType = analyticUnit.type;
-      const detector = analyticUnit.detectorType;
-      const payload = {
-        data: data.values,
-        analyticUnitType,
-        detector,
-        cache
-      };
-
-      const processingTask = new AnalyticsTask(analyticUnit.id, AnalyticsTaskType.PROCESS, payload);
-      const result = await runTask(processingTask);
-      if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
-        throw new Error(`Data processing error: ${result.error}`);
-      }
-      return { values: result.payload.data, columns: data.columns }
+      return { hsr: data };
     }
+    let cache = await AnalyticUnitCache.findById(analyticUnit.id);
+    if(
+      cache === null ||
+      cache.data.alpha !== (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).alpha ||
+      cache.data.confidence !== (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).confidence
+    ) {
+      await runLearning(analyticUnit.id, from, to);
+      cache = await AnalyticUnitCache.findById(analyticUnit.id);
+    }
+
+    cache = cache.data;
+
+    const analyticUnitType = analyticUnit.type;
+    const detector = analyticUnit.detectorType;
+    const payload = {
+      data: data.values,
+      analyticUnitType,
+      detector,
+      cache
+    };
+
+    const processingTask = new AnalyticsTask(analyticUnit.id, AnalyticsTaskType.PROCESS, payload);
+    const result = await runTask(processingTask);
+    if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
+      throw new Error(`Data processing error: ${result.error}`);
+    }
+    return {
+      hsr: data,
+      lowerBound: { values: result.payload.lowerBound, columns: data.columns },
+      upperBound: { values: result.payload.upperBound, columns: data.columns }
+    };
   } catch (err) {
     const message = err.message || JSON.stringify(err);
     await AnalyticUnit.setStatus(analyticUnit.id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);

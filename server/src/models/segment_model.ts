@@ -68,6 +68,7 @@ export class Segment {
 }
 
 export type FindManyQuery = {
+  $or?: any,
   timeFromGTE?: number,
   timeToLTE?: number,
   intexGT?: number,
