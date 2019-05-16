@@ -11,6 +11,7 @@ import utils
 import logging
 from itertools import islice
 from collections import deque
+from analytic_types import TimeSeries
 from analytic_types.segment import Segment
 
 SHIFT_FACTOR = 0.05
@@ -145,7 +146,7 @@ def merge_intersecting_segments(segments: List[Segment], time_step: int) -> List
     segments = [x for x in segments if x is not None]
     return segments
 
-def find_interval(data: List[Tuple[int, float]]) -> int:
+def find_interval(data: TimeSeries) -> int:
     if len(data) < 2:
         raise ValueError('Can`t find interval: length of data must be at least 2')
     return int(data[1][0] - data[0][0])

@@ -8,7 +8,7 @@ import asyncio
 import utils
 from utils import get_intersected_chunks, get_chunks, prepare_data
 
-from analytic_types import ModelCache
+from analytic_types import ModelCache, TimeSeries
 from analytic_types.detector_typing import DetectionResult
 
 logger = logging.getLogger('AnalyticUnitWorker')
@@ -77,7 +77,7 @@ class AnalyticUnitWorker:
         if self._training_future is not None:
             self._training_future.cancel()
 
-    async def consume_data(self, data: list, cache: Optional[ModelCache]) -> Optional[dict]:
+    async def consume_data(self, data: TimeSeries, cache: Optional[ModelCache]) -> Optional[dict]:
         window_size = self._detector.get_window_size(cache)
 
         detections: List[DetectionResult] = []
