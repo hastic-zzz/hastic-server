@@ -9,7 +9,7 @@ import utils
 from utils import get_intersected_chunks, get_chunks, prepare_data
 
 from analytic_types import ModelCache
-from analytic_types.detector_typing import DetectionResult, ProcessingResult
+from analytic_types.detector_typing import DetectionResult
 
 logger = logging.getLogger('AnalyticUnitWorker')
 
@@ -95,20 +95,22 @@ class AnalyticUnitWorker:
             return detection_result.to_json()
 
     async def process_data(self, data: list, cache: ModelCache) -> dict:
-        assert isinstance(self._detector, detectors.ProcessingDetector), f'{self.analytic_unit_id} detector is not ProcessingDetector, can`t process data'
+        assert isinstance(self._detector, detectors.ProcessingDetector), \
+            f'{self.analytic_unit_id} detector is not ProcessingDetector, can`t process data'
         assert cache is not None, f'{self.analytic_unit_id} got empty cache for processing data'
 
-        processed_chunks: List[ProcessingResult] = []
+        processed_chunks = []
         window_size = self._detector.get_window_size(cache)
         for chunk in get_chunks(data, window_size * self.CHUNK_WINDOW_SIZE_FACTOR):
             await asyncio.sleep(0)
             chunk_dataframe = prepare_data(chunk)
-            processed: ProcessingResult = self._detector.process_data(chunk_dataframe, cache)
+            processed = self._detector.process_data(chunk_dataframe, cache)
             if processed is not None:
                 processed_chunks.append(processed)
 
         if len(processed_chunks) == 0:
             raise RuntimeError(f'process_data for {self.analytic_unit_id} got empty processing results')
 
+        # TODO: maybe we should process all chunks inside of detector?
         result = self._detector.concat_processing_results(processed_chunks)
         return result.to_json()

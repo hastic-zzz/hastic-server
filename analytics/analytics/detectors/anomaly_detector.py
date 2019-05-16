@@ -4,7 +4,7 @@ import pandas as pd
 from typing import Optional, Union, List, Tuple
 
 from analytic_types import AnalyticUnitId, ModelCache
-from analytic_types.detector_typing import DetectionResult, ProcessingResult
+from analytic_types.detector_typing import DetectionResult, AnomalyProcessingResult
 from analytic_types.data_bucket import DataBucket
 from analytic_types.segment import Segment
 from detectors import Detector, ProcessingDetector
@@ -167,13 +167,15 @@ class AnomalyDetector(ProcessingDetector):
         return result
 
     # TODO: ModelCache -> ModelState (don't use string literals)
-    def process_data(self, dataframe: pd.DataFrame, cache: ModelCache) -> ProcessingResult:
+    def process_data(self, dataframe: pd.DataFrame, cache: ModelCache) -> AnomalyProcessingResult:
         segments = cache.get('segments')
 
         # TODO: exponential_smoothing should return dataframe with related timestamps
         smoothed = utils.exponential_smoothing(dataframe['value'], cache['alpha'], cache.get('lastValue'))
 
         # TODO: remove duplication with detect()
+        upper_bound = dataframe['value'] + cache['confidence']
+        lower_bound = dataframe['value'] - cache['confidence']
         if segments is not None:
             seasonality = cache.get('seasonality')
             assert seasonality is not None and seasonality > 0, \
@@ -201,8 +203,9 @@ class AnomalyDetector(ProcessingDetector):
                 lower_bound = lower_seasonality_curve - cache['confidence']
 
         timestamps = utils.convert_series_to_timestamp_list(dataframe.timestamp)
-        smoothed_dataset = list(zip(timestamps, smoothed.values.tolist()))
-        result = ProcessingResult(smoothed_dataset)
+        upper_bound_timeseries = list(zip(timestamps, upper_bound.values.tolist()))
+        lower_bound_timeseries = list(zip(timestamps, lower_bound.values.tolist()))
+        result = AnomalyProcessingResult(upper_bound_timeseries, lower_bound_timeseries)
         return result
 
     def add_season_to_data(self, data: pd.Series, segment: pd.Series, offset: int, seasonality: int, addition: bool) -> pd.Series:
@@ -219,3 +222,14 @@ class AnomalyDetector(ProcessingDetector):
                 else:
                     data = data.add(pd.Series(segment.values * -1, index = segment.index + idx), fill_value = 0)
         return data[:len_smoothed_data]
+
+    def concat_processing_results(self, processing_results: List[AnomalyProcessingResult]) -> Optional[AnomalyProcessingResult]:
+        if len(processing_results) == 0:
+            return None
+
+        united_result = AnomalyProcessingResult()
+        for result in processing_results:
+            united_result.lower_bound.extend(result.lower_bound)
+            united_result.upper_bound.extend(result.upper_bound)
+
+        return united_result

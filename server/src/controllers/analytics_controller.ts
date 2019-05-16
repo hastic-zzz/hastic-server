@@ -23,6 +23,9 @@ const SECONDS_IN_MINUTE = 60;
 
 type TaskResult = any;
 type DetectionResult = any;
+// TODO: move TableTimeSeries to grafana-datasource-kit
+// TODO: TableTimeSeries is bad name
+type TableTimeSeries = { values: [number, number][], columns: string[] };
 // TODO: move type definitions somewhere
 type TimeRange = { from: number, to: number };
 export type TaskResolver = (taskResult: TaskResult) => void;
@@ -600,7 +603,15 @@ async function runDetectionOnExtendedSpan(
   return detection;
 }
 
-export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: number, to: number) {
+export async function getHSR(
+  analyticUnit: AnalyticUnit.AnalyticUnit,
+  from: number,
+  to: number
+): Promise<{
+  hsr: TableTimeSeries,
+  lowerBound?: TableTimeSeries,
+  upperBound?: TableTimeSeries
+}> {
   try {
     const grafanaUrl = getGrafanaUrl(analyticUnit.grafanaUrl);
     const data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
@@ -619,7 +630,7 @@ export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: numb
     }
 
     cache = cache.data;
-  
+
     const analyticUnitType = analyticUnit.type;
     const detector = analyticUnit.detectorType;
     const payload = {
@@ -634,7 +645,11 @@ export async function getHSR(analyticUnit: AnalyticUnit.AnalyticUnit, from: numb
     if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
       throw new Error(`Data processing error: ${result.error}`);
     }
-    return { hsr: data, smoothed: { values: result.payload.data, columns: data.columns } };
+    return {
+      hsr: data,
+      lowerBound: { values: result.payload.lowerBound, columns: data.columns },
+      upperBound: { values: result.payload.upperBound, columns: data.columns }
+    };
   } catch (err) {
     const message = err.message || JSON.stringify(err);
     await AnalyticUnit.setStatus(analyticUnit.id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
