@@ -86,7 +86,7 @@ class AnomalyDetector(ProcessingDetector):
                 seasonality_offset = (abs(segment['from'] - data_start_time) % seasonality) // time_step
                 seasonality_index = seasonality // time_step
                 #TODO: upper and lower bounds for segment_data
-                segment_data = utils.exponential_smoothing(pd.Series(segment['data']), BASIC_ALPHA)
+                segment_data = pd.Series(segment['data'])
                 upper_bound = self.add_season_to_data(
                     upper_bound, segment_data, seasonality_offset, seasonality_index, True
                 )
@@ -186,7 +186,7 @@ class AnomalyDetector(ProcessingDetector):
             for segment in segments:
                 seasonality_offset = (abs(segment['from'] - data_start_time) % seasonality) // time_step
                 seasonality_index = seasonality // time_step
-                segment_data = utils.exponential_smoothing(pd.Series(segment['data']), BASIC_ALPHA)
+                segment_data = pd.Series(segment['data'])
                 upper_bound = self.add_season_to_data(
                     upper_bound, segment_data, seasonality_offset, seasonality_index, True
                 )
@@ -214,9 +214,13 @@ class AnomalyDetector(ProcessingDetector):
                 continue
             if (idx - offset) % seasonality == 0:
                 if addition:
-                    data = data.add(pd.Series(segment.values, index = segment.index + idx), fill_value = 0)
+                    upper_segment_bound = self.get_bounds_for_segment(segment)[0]
+                    #upper_segment_bound = upper_segment_bound - upper_segment_bound.min()
+                    data = data.add(pd.Series(upper_segment_bound.values, index = segment.index + idx), fill_value = 0)
                 else:
-                    data = data.add(pd.Series(segment.values * -1, index = segment.index + idx), fill_value = 0)
+                    lower_segment_bound = self.get_bounds_for_segment(segment)[1]
+                    #lower_segment_bound = lower_segment_bound - lower_segment_bound.min()
+                    data = data.add(pd.Series(lower_segment_bound.values * -1, index = segment.index + idx), fill_value = 0)
         return data[:len_smoothed_data]
 
     def concat_processing_results(self, processing_results: List[AnomalyProcessingResult]) -> Optional[AnomalyProcessingResult]:
@@ -229,3 +233,42 @@ class AnomalyDetector(ProcessingDetector):
             united_result.upper_bound.extend(result.upper_bound)
 
         return united_result
+
+    def get_bounds_for_segment(self, segment: pd.Series) -> Tuple[pd.Series, pd.Series]:
+        '''
+        segment is divided by the median to determine its top and bottom parts
+        parts are smoothed and raised so the segment is between them
+        '''
+        if len(segment) < 2:
+            return segment, segment
+        segment = segment - segment.min()
+        segment_median = segment.median()
+        top_part = []
+        bottom_part = []
+        for val in segment.values:
+            if val > segment_median:
+                top_part.append(val)
+                bottom_part.append(segment_median)
+            else:
+                bottom_part.append(val)
+                top_part.append(segment_median)
+        top_part = pd.Series(top_part, index = segment.index)
+        bottom_part = pd.Series(bottom_part, index = segment.index)
+        smoothed_top_part = utils.exponential_smoothing(top_part, BASIC_ALPHA)
+        smoothed_bottom_part = utils.exponential_smoothing(bottom_part, BASIC_ALPHA)
+        top_difference = []
+        bottom_difference = []
+        for idx, val in enumerate(top_part):
+            top_difference.append(abs(val - smoothed_top_part[idx]))
+            bottom_difference.append(abs(bottom_part[idx] - smoothed_bottom_part[idx]))
+        max_diff_top = max(top_difference)
+        max_diff_bot = max(bottom_difference)
+        upper_bound = []
+        lower_bound = []
+        for val in smoothed_top_part.values:
+            upper_bound.append(val + max_diff_top)
+        for val in smoothed_bottom_part.values:
+            lower_bound.append(val + max_diff_bot)
+        upper_bound = pd.Series(upper_bound, index = segment.index)
+        lower_bound = pd.Series(lower_bound, index = segment.index)
+        return upper_bound, lower_bound
