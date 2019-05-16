@@ -155,13 +155,13 @@ class AnomalyDetector(ProcessingDetector):
             seasonality = cache['seasonality'] // cache['timeStep']
         return max(level, seasonality)
 
-    def concat_detection_results(self, detections: List[DetectionResult]) -> DetectionResult:
+    def concat_detection_results(self, detections: List[DetectionResult], time_step: int) -> DetectionResult:
         result = DetectionResult()
         for detection in detections:
             result.segments.extend(detection.segments)
             result.last_detection_time = detection.last_detection_time
             result.cache = detection.cache
-        result.segments = utils.merge_intersecting_segments(result.segments)
+        result.segments = utils.merge_intersecting_segments(result.segments, time_step)
         return result
 
     # TODO: ModelCache -> ModelState (don't use string literals)

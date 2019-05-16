@@ -11,6 +11,7 @@ import utils
 import logging
 from itertools import islice
 from collections import deque
+from analytic_types import TimeSeries
 from analytic_types.segment import Segment
 
 SHIFT_FACTOR = 0.05
@@ -128,7 +129,7 @@ def close_filtering(pattern_list: List[int], win_size: int) -> List[Tuple[int, i
             s.append([pattern_list[i]])
     return s
 
-def merge_intersecting_segments(segments: List[Segment]) -> List[Segment]:
+def merge_intersecting_segments(segments: List[Segment], time_step: int) -> List[Segment]:
     '''
     Find intersecting segments in segments list and merge it.
     '''
@@ -137,13 +138,18 @@ def merge_intersecting_segments(segments: List[Segment]) -> List[Segment]:
     segments = sorted(segments, key = lambda segment: segment.from_timestamp)
     previous_segment = segments[0]
     for i in range(1, len(segments)):
-        if segments[i].from_timestamp <= previous_segment.to_timestamp:
+        if segments[i].from_timestamp <= previous_segment.to_timestamp + time_step:
             segments[i].from_timestamp = min(previous_segment.from_timestamp, segments[i].from_timestamp)
             segments[i].to_timestamp = max(previous_segment.to_timestamp, segments[i].to_timestamp)
             segments[i - 1] = None
         previous_segment = segments[i]
     segments = [x for x in segments if x is not None]
     return segments
+
+def find_interval(data: TimeSeries) -> int:
+    if len(data) < 2:
+        raise ValueError('Can`t find interval: length of data must be at least 2')
+    return int(data[1][0] - data[0][0])
 
 def get_start_and_end_of_segments(segments: List[List[int]]) -> List[Tuple[int, int]]:
     '''
