@@ -607,7 +607,6 @@ export async function getHSR(
   from: number,
   to: number
 ): Promise<{
-  // TODO: add Metric type to grafana-datsource-kit
   hsr: TableTimeSeries,
   lowerBound?: TableTimeSeries,
   upperBound?: TableTimeSeries
