@@ -17,7 +17,7 @@ AnalyticUnitId = str
 ModelCache = dict
 
 # TODO: explicit timestamp / value
-TimeSeries = [List[Tuple[int, float]]]
+TimeSeries = List[Tuple[int, float]]
 
 """
 Example:
