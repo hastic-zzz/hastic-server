@@ -24,6 +24,7 @@ const SECONDS_IN_MINUTE = 60;
 type TaskResult = any;
 type DetectionResult = any;
 // TODO: move TableTimeSeries to grafana-datasource-kit
+// TODO: TableTimeSeries is bad name
 type TableTimeSeries = { values: [number, number][], columns: string[] };
 // TODO: move type definitions somewhere
 type TimeRange = { from: number, to: number };
