@@ -62,12 +62,8 @@ class AnomalyDetector(ProcessingDetector):
         data = dataframe['value']
         segments = cache.get('segments')
 
-        last_value = None
-        if cache is not None:
-            last_value = cache.get('last_value')
-
         time_step = utils.find_interval(dataframe)
-        smoothed_data = utils.exponential_smoothing(data, cache['alpha'], last_value)
+        smoothed_data = utils.exponential_smoothing(data, cache['alpha'])
  
         # TODO: use class for cache to avoid using string literals
         upper_bound = smoothed_data + cache['confidence']
@@ -113,8 +109,7 @@ class AnomalyDetector(ProcessingDetector):
 
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_detection_time = utils.convert_pd_timestamp_to_ms(last_dataframe_time)
-        # TODO: ['lastValue'] -> .last_value
-        cache['lastValue'] = smoothed_data.values[-1]
+
 
         return DetectionResult(cache, segments, last_detection_time, time_step)
 
@@ -171,7 +166,7 @@ class AnomalyDetector(ProcessingDetector):
         segments = cache.get('segments')
 
         # TODO: exponential_smoothing should return dataframe with related timestamps
-        smoothed = utils.exponential_smoothing(dataframe['value'], cache['alpha'], cache.get('lastValue'))
+        smoothed = utils.exponential_smoothing(dataframe['value'], cache['alpha'])
         upper_bound = smoothed + cache['confidence']
         lower_bound = smoothed - cache['confidence']
 
