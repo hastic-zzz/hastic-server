@@ -32,6 +32,8 @@ class TimeSeriesIndex(pd.DatetimeIndex):
         return pd.DatetimeIndex.__new__(cls, *args, **kwargs)
 
 # TODO: make generic type for values. See List definition for example of generic class
+# TODO: constructor from DataFrame
+# TODO: repleace TimeSeries (above) with this class: rename TimeSeries2 to TimeSeries
 class TimeSeries2(pd.Series):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
