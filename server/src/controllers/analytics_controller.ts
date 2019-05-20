@@ -121,8 +121,7 @@ async function getQueryRange(
   detectorType: AnalyticUnit.DetectorType
 ): Promise<TimeRange> {
   if(
-    detectorType === AnalyticUnit.DetectorType.PATTERN ||
-    detectorType === AnalyticUnit.DetectorType.ANOMALY
+    detectorType === AnalyticUnit.DetectorType.PATTERN
   ) {
     const segments = await Segment.findMany(analyticUnitId, { $or: { labeled: true, deleted: true } });
     if(segments.length === 0) {
@@ -138,6 +137,20 @@ async function getQueryRange(
       from: now - 5 * SECONDS_IN_MINUTE * 1000,
       to: now
     };
+  }
+
+  if (detectorType === AnalyticUnit.DetectorType.ANOMALY) {
+    const segments = await Segment.findMany(analyticUnitId, { $or: { labeled: true, deleted: true } });
+    if (segments.length === 0) {
+      const now = Date.now();
+      return {
+        from: now - 5 * SECONDS_IN_MINUTE * 1000,
+        to: now
+      };
+    }
+    else {
+      return getQueryRangeForLearningBySegments(segments);
+    }
   }
 
   throw new Error(`Cannot get query range for detector type ${detectorType}`);
