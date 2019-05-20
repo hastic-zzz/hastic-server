@@ -69,8 +69,7 @@ class AnalyticUnitWorker:
         if len(detections) == 0:
             raise RuntimeError(f'do_detect for {self.analytic_unit_id} got empty detection results')
 
-        time_step = utils.find_interval(data)
-        detection_result = self._detector.concat_detection_results(detections, time_step)
+        detection_result = self._detector.concat_detection_results(detections)
         return detection_result.to_json()
 
     def cancel(self):
@@ -92,8 +91,7 @@ class AnalyticUnitWorker:
         if len(detections) == 0:
             return None
         else:
-            time_step = utils.find_interval(data)
-            detection_result = self._detector.concat_detection_results(detections, time_step)
+            detection_result = self._detector.concat_detection_results(detections)
             return detection_result.to_json()
 
     async def process_data(self, data: list, cache: ModelCache) -> dict:

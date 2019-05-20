@@ -31,7 +31,7 @@ class Detector(ABC):
     def is_detection_intersected(self) -> bool:
         return True
 
-    def concat_detection_results(self, detections: List[DetectionResult], time_step: int) -> DetectionResult:
+    def concat_detection_results(self, detections: List[DetectionResult]) -> DetectionResult:
         result = DetectionResult()
         for detection in detections:
             result.segments.extend(detection.segments)

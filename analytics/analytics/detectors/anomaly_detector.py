@@ -66,6 +66,7 @@ class AnomalyDetector(ProcessingDetector):
         if cache is not None:
             last_value = cache.get('last_value')
 
+        time_step = utils.find_interval(dataframe)
         smoothed_data = utils.exponential_smoothing(data, cache['alpha'], last_value)
  
         # TODO: use class for cache to avoid using string literals
@@ -115,7 +116,7 @@ class AnomalyDetector(ProcessingDetector):
         # TODO: ['lastValue'] -> .last_value
         cache['lastValue'] = smoothed_data.values[-1]
 
-        return DetectionResult(cache, segments, last_detection_time)
+        return DetectionResult(cache, segments, last_detection_time, time_step)
 
     def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[DetectionResult]:
         if cache is None:
@@ -131,7 +132,7 @@ class AnomalyDetector(ProcessingDetector):
         self.bucket.receive_data(data_without_nan)
 
         if len(self.bucket.data) >= self.get_window_size(cache):
-            return self.detect(self.bucket, cache)
+            return self.detect(self.bucket.data, cache)
 
         return None
 
@@ -155,8 +156,9 @@ class AnomalyDetector(ProcessingDetector):
             seasonality = cache['seasonality'] // cache['timeStep']
         return max(level, seasonality)
 
-    def concat_detection_results(self, detections: List[DetectionResult], time_step: int) -> DetectionResult:
+    def concat_detection_results(self, detections: List[DetectionResult]) -> DetectionResult:
         result = DetectionResult()
+        time_step = detections[0].time_step
         for detection in detections:
             result.segments.extend(detection.segments)
             result.last_detection_time = detection.last_detection_time
