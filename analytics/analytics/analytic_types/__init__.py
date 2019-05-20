@@ -28,9 +28,12 @@ ts = TimeSeries([4, 5, 6], tsis)
 Timestamp = Union[str, pd.Timestamp]
 
 class TimeSeriesIndex(pd.DatetimeIndex):
-    def __init__(self, timestamps: List[Timestamp]):
-        super().__init__(timestamps, dtype='datetime64[ns]')
+    def __new__(cls, *args, **kwargs):
+        return pd.DatetimeIndex.__new__(cls, *args, **kwargs)
 
-class TimeSeries(pd.Series):
-    def __init__(self, values: List[object], tsindex: TimeSeriesIndex):
-        super().__init__(values, index=tsindex)
+# TODO: make generic type for values. See List definition for example of generic class
+# TODO: constructor from DataFrame
+# TODO: repleace TimeSeries (above) with this class: rename TimeSeries2 to TimeSeries
+class TimeSeries2(pd.Series):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)

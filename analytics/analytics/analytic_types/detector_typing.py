@@ -29,7 +29,7 @@ class DetectionResult:
             'cache': self.cache,
             'segments': list(map(lambda segment: segment.to_json(), self.segments)),
             'lastDetectionTime': self.last_detection_time,
-            'timeStep': selt.time_step
+            'timeStep': self.time_step
         }
 
 @utils.meta.JSONClass

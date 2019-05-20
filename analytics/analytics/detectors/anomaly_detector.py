@@ -110,7 +110,6 @@ class AnomalyDetector(ProcessingDetector):
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_detection_time = utils.convert_pd_timestamp_to_ms(last_dataframe_time)
 
-
         return DetectionResult(cache, segments, last_detection_time, time_step)
 
     def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[DetectionResult]:
