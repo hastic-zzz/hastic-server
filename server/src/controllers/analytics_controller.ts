@@ -152,6 +152,7 @@ async function getQueryRange(
     default:
       throw new Error(`Cannot get query range for detector type ${detectorType}`);
   }
+}
 
 async function query(
   analyticUnit: AnalyticUnit.AnalyticUnit,
