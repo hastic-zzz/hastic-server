@@ -188,6 +188,7 @@ class AnomalyDetector(ProcessingDetector):
 
             for segment in segments:
                 seasonality_index = seasonality // time_step
+                # TODO: move it to utils and add tests
                 season_count = math.ceil(abs(segment['from'] - data_start_time) / seasonality)
                 start_seasonal_segment = segment['from'] + seasonality * season_count
                 seasonality_offset = (abs(start_seasonal_segment - data_start_time) % seasonality) // time_step
