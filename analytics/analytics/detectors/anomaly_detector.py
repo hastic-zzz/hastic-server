@@ -1,6 +1,7 @@
 import logging
 import numpy as np
 import pandas as pd
+import math
 from typing import Optional, Union, List, Tuple
 
 from analytic_types import AnalyticUnitId, ModelCache
@@ -80,8 +81,10 @@ class AnomalyDetector(ProcessingDetector):
             time_step = data_second_time - data_start_time
 
             for segment in segments:
-                seasonality_offset = (abs(segment['from'] - data_start_time) % seasonality) // time_step
                 seasonality_index = seasonality // time_step
+                season_count = math.ceil(abs(segment['from'] - data_start_time) / seasonality)
+                start_seasonal_segment = segment['from'] + seasonality * season_count
+                seasonality_offset = (abs(start_seasonal_segment - data_start_time) % seasonality) // time_step
                 #TODO: upper and lower bounds for segment_data
                 segment_data = pd.Series(segment['data'])
                 upper_bound = self.add_season_to_data(
@@ -180,8 +183,11 @@ class AnomalyDetector(ProcessingDetector):
             time_step = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][1]) - utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])
 
             for segment in segments:
-                seasonality_offset = (abs(segment['from'] - data_start_time) % seasonality) // time_step
                 seasonality_index = seasonality // time_step
+                # TODO: move it to utils and add tests
+                season_count = math.ceil(abs(segment['from'] - data_start_time) / seasonality)
+                start_seasonal_segment = segment['from'] + seasonality * season_count
+                seasonality_offset = (abs(start_seasonal_segment - data_start_time) % seasonality) // time_step
                 segment_data = pd.Series(segment['data'])
                 upper_bound = self.add_season_to_data(
                     upper_bound, segment_data, seasonality_offset, seasonality_index, True
@@ -207,6 +213,7 @@ class AnomalyDetector(ProcessingDetector):
         len_smoothed_data = len(data)
         for idx, _ in enumerate(data):
             if idx - offset < 0:
+                #TODO: add seasonality for non empty parts
                 continue
             if (idx - offset) % seasonality == 0:
                 if addition:
