@@ -290,6 +290,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
     if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
       throw new Error(result.error);
     }
+    // TODO: rename SUCCESS to something better
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.SUCCESS);
     await AnalyticUnitCache.setData(id, result.payload.cache);
   } catch (err) {
