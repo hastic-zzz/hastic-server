@@ -290,6 +290,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
     if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
       throw new Error(result.error);
     }
+    await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.SUCCESS);
     await AnalyticUnitCache.setData(id, result.payload.cache);
   } catch (err) {
     const message = err.message || JSON.stringify(err);
@@ -331,8 +332,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
       { detector, analyticUnitType, lastDetectionTime: unit.lastDetectionTime, data, cache: oldCache }
     );
     console.log(`run task, id:${id}`);
-    // TODO: status: detection
-    await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
+    await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.DETECTION);
     const result = await runTask(task);
 
     if(result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
