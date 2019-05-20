@@ -120,41 +120,38 @@ async function getQueryRange(
   analyticUnitId: AnalyticUnit.AnalyticUnitId,
   detectorType: AnalyticUnit.DetectorType
 ): Promise<TimeRange> {
-  if(
-    detectorType === AnalyticUnit.DetectorType.PATTERN
-  ) {
-    const segments = await Segment.findMany(analyticUnitId, { $or: { labeled: true, deleted: true } });
-    if(segments.length === 0) {
-      throw new Error('Need at least 1 labeled segment');
-    }
+  let segments: Segment.Segment[];
+  switch(detectorType) {
+    case AnalyticUnit.DetectorType.PATTERN:
+      segments = await Segment.findMany(analyticUnitId, { $or: { labeled: true, deleted: true } });
+      if(segments.length === 0) {
+        throw new Error('Need at least 1 labeled segment');
+      }
+      return getQueryRangeForLearningBySegments(segments);
 
-    return getQueryRangeForLearningBySegments(segments);
-  }
-
-  if(detectorType === AnalyticUnit.DetectorType.THRESHOLD) {
-    const now = Date.now();
-    return {
-      from: now - 5 * SECONDS_IN_MINUTE * 1000,
-      to: now
-    };
-  }
-
-  if (detectorType === AnalyticUnit.DetectorType.ANOMALY) {
-    const segments = await Segment.findMany(analyticUnitId, { $or: { labeled: true, deleted: true } });
-    if (segments.length === 0) {
+    case AnalyticUnit.DetectorType.THRESHOLD:
       const now = Date.now();
       return {
         from: now - 5 * SECONDS_IN_MINUTE * 1000,
         to: now
       };
-    }
-    else {
-      return getQueryRangeForLearningBySegments(segments);
-    }
-  }
 
-  throw new Error(`Cannot get query range for detector type ${detectorType}`);
-}
+    case AnalyticUnit.DetectorType.ANOMALY:
+      segments = await Segment.findMany(analyticUnitId, { $or: { labeled: true, deleted: true } });
+      if(segments.length === 0) {
+        const now = Date.now();
+        return {
+          from: now - 5 * SECONDS_IN_MINUTE * 1000,
+          to: now
+        };
+      }
+      else {
+        return getQueryRangeForLearningBySegments(segments);
+      }
+    
+    default:
+      throw new Error(`Cannot get query range for detector type ${detectorType}`);
+  }
 
 async function query(
   analyticUnit: AnalyticUnit.AnalyticUnit,
