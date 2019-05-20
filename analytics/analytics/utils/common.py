@@ -146,10 +146,11 @@ def merge_intersecting_segments(segments: List[Segment], time_step: int) -> List
     segments = [x for x in segments if x is not None]
     return segments
 
-def find_interval(data: TimeSeries) -> int:
-    if len(data) < 2:
+def find_interval(dataframe: pd.DataFrame) -> int:
+    if len(dataframe) < 2:
         raise ValueError('Can`t find interval: length of data must be at least 2')
-    return int(data[1][0] - data[0][0])
+    delta = int(dataframe.timestamp[1]) - int(dataframe.timestamp[0])
+    return delta
 
 def get_start_and_end_of_segments(segments: List[List[int]]) -> List[Tuple[int, int]]:
     '''

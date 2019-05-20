@@ -38,6 +38,7 @@ class ThresholdDetector(Detector):
 
         value = cache['value']
         condition = cache['condition']
+        time_step = utils.find_interval(dataframe)
 
         segments = []
         for index, row in dataframe.iterrows():
@@ -68,7 +69,7 @@ class ThresholdDetector(Detector):
 
         last_entry = dataframe.iloc[-1]
         last_detection_time = utils.convert_pd_timestamp_to_ms(last_entry['timestamp'])
-        return DetectionResult(cache, segments, last_detection_time)
+        return DetectionResult(cache, segments, last_detection_time, time_step)
 
 
     def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[DetectionResult]:
@@ -78,8 +79,9 @@ class ThresholdDetector(Detector):
     def get_window_size(self, cache: Optional[ModelCache]) -> int:
         return self.WINDOW_SIZE
 
-    def concat_detection_results(self, detections: List[DetectionResult], time_step: int) -> DetectionResult:
+    def concat_detection_results(self, detections: List[DetectionResult]) -> DetectionResult:
         result = DetectionResult()
+        time_step = detections[0].time_step
         for detection in detections:
             result.segments.extend(detection.segments)
             result.last_detection_time = detection.last_detection_time

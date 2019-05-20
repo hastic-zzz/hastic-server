@@ -13,7 +13,7 @@ from utils import convert_pd_timestamp_to_ms
 from analytic_types import AnalyticUnitId, ModelCache
 from analytic_types.detector_typing import DetectionResult
 from analytic_types.segment import Segment
-
+import utils
 
 logger = logging.getLogger('PATTERN_DETECTOR')
 
@@ -77,13 +77,14 @@ class PatternDetector(Detector):
             logger.error(message)
             raise ValueError(message)
 
+        time_step = utils.find_interval(dataframe)
         detected = self.model.detect(dataframe, self.analytic_unit_id)
 
         segments = [Segment(segment[0], segment[1]) for segment in detected['segments']]
         new_cache = detected['cache'].to_json()
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_detection_time = convert_pd_timestamp_to_ms(last_dataframe_time)
-        return DetectionResult(new_cache, segments, last_detection_time)
+        return DetectionResult(new_cache, segments, last_detection_time, time_step)
 
     def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[DetectionResult]:
         logging.debug('Start consume_data for analytic unit {}'.format(self.analytic_unit_id))
