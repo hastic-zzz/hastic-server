@@ -6,6 +6,7 @@ export enum AnalyticUnitStatus {
   READY = 'READY',
   PENDING = 'PENDING',
   LEARNING = 'LEARNING',
+  DETECTION = 'DETECTION',
   SUCCESS = 'SUCCESS',
   FAILED = 'FAILED'
 };
