@@ -115,4 +115,5 @@ class OutlyingModel(Model):
                 delete_list.append(segment)
         for item in delete_list:
             segments.remove(item)
+        # TODO: add deduplication method because of `set` doesn't solve this problem correctly
         return set(segments)
