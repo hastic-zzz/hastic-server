@@ -1,4 +1,4 @@
-from models.outlying_model import OutlyingModel, OutlyingModelState
+from models import OutlyingModel, OutlyingModelState
 import utils
 
 import scipy.signal
@@ -19,7 +19,7 @@ class PeakModel(OutlyingModel):
         segment = data[start: end]
         return segment.idxmax()
 
-    def get_best_pattern(self, close_patterns: List[Tuple[int, int]], data: pd.Series) -> list:
+    def get_best_pattern(self, close_patterns: List[Tuple[int, int]], data: pd.Series) -> List[int]:
         pattern_list = []
         for val in close_patterns:
             max_val = data[val[0]]
@@ -31,7 +31,7 @@ class PeakModel(OutlyingModel):
             pattern_list.append(ind)
         return pattern_list
 
-    def get_extremum_indexes(self, data: pd.Series) -> list:
+    def get_extremum_indexes(self, data: pd.Series) -> np.ndarray:
         return argrelextrema(data.values, np.greater)[0]
 
     def get_smoothed_data(self, data: pd.Series, confidence: float, alpha: float) -> pd.Series:

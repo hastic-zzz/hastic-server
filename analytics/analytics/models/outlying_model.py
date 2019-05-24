@@ -2,7 +2,6 @@ from models import Model, ModelState, AnalyticSegment
 
 import scipy.signal
 from scipy.fftpack import fft
-from scipy.signal import argrelextrema
 from typing import Optional, List, Tuple
 import utils
 import utils.meta
@@ -10,7 +9,6 @@ import numpy as np
 import pandas as pd
 from analytic_types import AnalyticUnitId
 
-SMOOTHING_COEFF = 2400
 EXP_SMOOTHING_FACTOR = 0.01
 
 
@@ -43,12 +41,11 @@ class OutlyingModel(Model):
     ) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
-        window_size = self.state.window_size
         last_pattern_center = self.state.pattern_center
         self.state.pattern_center = list(set(last_pattern_center + learning_info['segment_center_list']))
         self.state.pattern_model = utils.get_av_model(learning_info['patterns_list'])
-        convolve_list = utils.get_convolve(self.state.pattern_center, self.state.pattern_model, data, window_size)
-        correlation_list = utils.get_correlation(self.state.pattern_center, self.state.pattern_model, data, window_size)
+        convolve_list = utils.get_convolve(self.state.pattern_center, self.state.pattern_model, data, self.state.window_size)
+        correlation_list = utils.get_correlation(self.state.pattern_center, self.state.pattern_model, data, self.state.window_size)
         height_list = learning_info['patterns_value']
 
         del_conv_list = []
@@ -57,7 +54,7 @@ class OutlyingModel(Model):
         delete_pattern_timestamp = []
         for segment in deleted_segments:
             delete_pattern_timestamp.append(segment.pattern_timestamp)
-            deleted = utils.get_interval(data, segment.center_index, window_size)
+            deleted = utils.get_interval(data, segment.center_index, self.state.window_size)
             deleted = utils.subtract_min_without_nan(deleted)
             del_conv = scipy.signal.fftconvolve(deleted, self.state.pattern_model)
             if len(del_conv):
