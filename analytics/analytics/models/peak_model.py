@@ -1,14 +1,11 @@
-from models import OutlyingModel, OutlyingModelState
+from models.outlying_model import OutlyingModel, OutlyingModelState
+import utils
 
 import scipy.signal
-from scipy.fftpack import fft
 from scipy.signal import argrelextrema
 from typing import Optional, List, Tuple
-import utils
-import utils.meta
 import numpy as np
 import pandas as pd
-from analytic_types import AnalyticUnitId
 
 class PeakModel(OutlyingModel):
 
@@ -36,3 +33,13 @@ class PeakModel(OutlyingModel):
 
     def get_extremum_indexes(self, data: pd.Series) -> list:
         return argrelextrema(data.values, np.greater)[0]
+
+    def get_smoothed_data(self, data: pd.Series, confidence: float, alpha: float) -> pd.Series:
+        return utils.exponential_smoothing(data + self.state.confidence, alpha)
+
+    def get_possible_segments(self, data: pd.Series, smoothed_data: pd.Series, peak_indexes: List[int]) -> List[int]:
+        segments = []
+        for idx in peak_indexes:
+            if data[idx] > smoothed_data[idx]:
+                segments.append(idx)
+        return segments

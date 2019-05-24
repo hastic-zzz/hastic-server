@@ -1,4 +1,5 @@
-from models import OutlyingModel, OutlyingModelState
+from models.outlying_model import OutlyingModel, OutlyingModelState
+import utils
 
 import scipy.signal
 from scipy.fftpack import fft
@@ -36,3 +37,13 @@ class TroughModel(OutlyingModel):
 
     def get_extremum_indexes(self, data: pd.Series) -> list:
         return argrelextrema(data.values, np.less)[0]
+
+    def get_smoothed_data(self, data: pd.Series, confidence: float, alpha: float) -> pd.Series:
+        return utils.exponential_smoothing(data - self.state.confidence, alpha)
+
+    def get_possible_segments(self, data: pd.Series, smoothed_data: pd.Series, trough_indexes: List[int]) -> List[int]:
+        segments = []
+        for idx in trough_indexes:
+            if data[idx] < smoothed_data[idx]:
+                segments.append(idx)
+        return segments

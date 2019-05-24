@@ -71,12 +71,8 @@ class OutlyingModel(Model):
         data = data['value']
 
         all_extremum_indexes = self.get_extremum_indexes(data)
-        smoothed_data = utils.exponential_smoothing(data + self.state.confidence, EXP_SMOOTHING_FACTOR)
-
-        segments = []
-        for idx in all_extremum_indexes:
-            if data[idx] > smoothed_data[idx]:
-                segments.append(idx)
+        smoothed_data = self.get_smoothed_data(data, self.state.confidence, EXP_SMOOTHING_FACTOR)
+        segments = self.get_possible_segments(data, smoothed_data, all_extremum_indexes)
         result = self.__filter_detection(segments, data)
         result = utils.get_borders_of_peaks(result, data, self.state.window_size, self.state.confidence)
         return result
@@ -85,7 +81,7 @@ class OutlyingModel(Model):
         delete_list = []
         variance_error = self.state.window_size
         close_patterns = utils.close_filtering(segments, variance_error)
-        segments = utils.get_best_pattern(close_patterns, data)
+        segments = self.get_best_pattern(close_patterns, data)
 
         if len(segments) == 0 or len(self.state.pattern_model) == 0:
             return []
