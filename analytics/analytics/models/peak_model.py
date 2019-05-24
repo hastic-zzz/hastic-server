@@ -45,95 +45,17 @@ class PeakModel(Model):
     def get_state(self, cache: Optional[dict] = None) -> PeakModelState:
         return PeakModelState.from_json(cache)
 
-    def do_fit(
-        self,
-        dataframe: pd.DataFrame,
-        labeled_segments: List[AnalyticSegment],
-        deleted_segments: List[AnalyticSegment],
-        learning_info: dict
-    ) -> None:
-        data = utils.cut_dataframe(dataframe)
-        data = data['value']
-        window_size = self.state.window_size
-        last_pattern_center = self.state.pattern_center
-        self.state.pattern_center = list(set(last_pattern_center + learning_info['segment_center_list']))
-        self.state.pattern_model = utils.get_av_model(learning_info['patterns_list'])
-        convolve_list = utils.get_convolve(self.state.pattern_center, self.state.pattern_model, data, window_size)
-        correlation_list = utils.get_correlation(self.state.pattern_center, self.state.pattern_model, data, window_size)
-        height_list = learning_info['patterns_value']
+    def get_best_pattern(self, close_patterns: List[Tuple[int, int]], data: pd.Series) -> list:
+        pattern_list = []
+        for val in close_patterns:
+            max_val = data[val[0]]
+            ind = val[0]
+            for i in val:
+                if data[i] > max_val:
+                    max_val = data[i]
+                    ind = i
+            pattern_list.append(ind)
+        return pattern_list
 
-        del_conv_list = []
-        delete_pattern_width = []
-        delete_pattern_height = []
-        delete_pattern_timestamp = []
-        for segment in deleted_segments:
-            del_max_index = segment.center_index
-            delete_pattern_timestamp.append(segment.pattern_timestamp)
-            deleted = utils.get_interval(data, del_max_index, window_size)
-            deleted = utils.subtract_min_without_nan(deleted)
-            del_conv = scipy.signal.fftconvolve(deleted, self.state.pattern_model)
-            if len(del_conv): del_conv_list.append(max(del_conv))
-            delete_pattern_height.append(utils.find_confidence(deleted)[1])
-
-        self._update_fiting_result(self.state, learning_info['confidence'], convolve_list, del_conv_list, height_list)
-
-    def do_detect(self, dataframe: pd.DataFrame) -> List[Tuple[int, int]]:
-        data = utils.cut_dataframe(dataframe)
-        data = data['value']
-        window_size = int(len(data)/SMOOTHING_COEFF) #test ws on flat data
-        all_maxs = argrelextrema(np.array(data), np.greater)[0]
-
-        extrema_list = []
-        for i in utils.exponential_smoothing(data + self.state.confidence, EXP_SMOOTHING_FACTOR):
-            extrema_list.append(i)
-
-        segments = []
-        for i in all_maxs:
-            if data[i] > extrema_list[i]:
-                segments.append(i)
-        result = self.__filter_detection(segments, data)
-        result = utils.get_borders_of_peaks(result, data, self.state.window_size, self.state.confidence)
-        return result
-
-    def __filter_detection(self, segments: list, data: list) -> list:
-        delete_list = []
-        variance_error = self.state.window_size
-        close_patterns = utils.close_filtering(segments, variance_error)
-        segments = utils.best_pattern(close_patterns, data, 'max')
-
-        if len(segments) == 0 or len(self.state.pattern_model) == 0:
-            return []
-        pattern_data = self.state.pattern_model
-        up_height = self.state.height_max * (1 + self.HEIGHT_ERROR)
-        low_height = self.state.height_min * (1 - self.HEIGHT_ERROR)
-        up_conv = self.state.convolve_max * (1 + 1.5 * self.CONV_ERROR)
-        low_conv = self.state.convolve_min * (1 - self.CONV_ERROR)
-        up_del_conv = self.state.conv_del_max * (1 + self.DEL_CONV_ERROR)
-        low_del_conv = self.state.conv_del_min * (1 - self.DEL_CONV_ERROR)
-        for segment in segments:
-            if segment > self.state.window_size:
-                convol_data = utils.get_interval(data, segment, self.state.window_size)
-                convol_data = utils.subtract_min_without_nan(convol_data)
-                percent_of_nans = convol_data.isnull().sum() / len(convol_data)
-                if percent_of_nans > 0.5:
-                    delete_list.append(segment)
-                    continue
-                elif 0 < percent_of_nans <= 0.5:
-                    nan_list = utils.find_nan_indexes(convol_data)
-                    convol_data = utils.nan_to_zero(convol_data, nan_list)
-                    pattern_data = utils.nan_to_zero(pattern_data, nan_list)
-                conv = scipy.signal.fftconvolve(convol_data, pattern_data)
-                pattern_height = convol_data.values[self.state.window_size]
-                if pattern_height > up_height or pattern_height < low_height:
-                    delete_list.append(segment)
-                    continue
-                if max(conv) > up_conv or max(conv) < low_conv:
-                    delete_list.append(segment)
-                    continue
-                if max(conv) < up_del_conv and max(conv) > low_del_conv:
-                    delete_list.append(segment)
-            else:
-                delete_list.append(segment)
-        for item in delete_list:
-            segments.remove(item)
-        return set(segments)
+    def get_get_extremum_indexes(self, data: pd.Series) -> list:
+        return argrelextrema(data.values, np.greater)[0]
