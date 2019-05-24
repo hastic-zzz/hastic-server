@@ -105,7 +105,7 @@ class OutlyingModel(Model):
                     convol_data = utils.nan_to_zero(convol_data, nan_list)
                     pattern_data = utils.nan_to_zero(pattern_data, nan_list)
                 conv = scipy.signal.fftconvolve(convol_data, pattern_data)
-                pattern_height = convol_data.values[self.state.window_size]
+                pattern_height = convol_data.values.max()
                 if pattern_height > up_height or pattern_height < low_height:
                     delete_list.append(segment)
                     continue
