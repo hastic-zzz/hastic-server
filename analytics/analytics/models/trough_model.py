@@ -1,4 +1,4 @@
-from models import TriangleModel, TriangleModelState
+from models import TriangleModel
 import utils
 
 import scipy.signal
