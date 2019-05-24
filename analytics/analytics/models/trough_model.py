@@ -1,4 +1,4 @@
-from models import OutlyingModel, OutlyingModelState
+from models import TriangleModel, TriangleModelState
 import utils
 
 import scipy.signal
@@ -7,7 +7,7 @@ from typing import Optional, List, Tuple
 import numpy as np
 import pandas as pd
 
-class TroughModel(OutlyingModel):
+class TroughModel(TriangleModel):
     
     def get_model_type(self) -> (str, bool):
         model = 'trough'

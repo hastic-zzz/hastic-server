@@ -1,5 +1,5 @@
 from models.model import Model, ModelState, AnalyticSegment
-from models.outlying_model import OutlyingModel, OutlyingModelState
+from models.triangle_model import TriangleModel, TriangleModelState
 from models.drop_model import DropModel, DropModelState
 from models.peak_model import PeakModel
 from models.jump_model import JumpModel, JumpModelState
