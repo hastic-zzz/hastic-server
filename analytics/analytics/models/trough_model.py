@@ -10,27 +10,7 @@ import numpy as np
 import pandas as pd
 from analytic_types import AnalyticUnitId
 
-SMOOTHING_COEFF = 2400
-EXP_SMOOTHING_FACTOR = 0.01
-
-
-@utils.meta.JSONClass
-class TroughModelState(ModelState):
-
-    def __init__(
-        self,
-        confidence: float = 0,
-        height_max: float = 0,
-        height_min: float = 0,
-        **kwargs
-    ):
-        super().__init__(**kwargs)
-        self.confidence = confidence
-        self.height_max = height_max
-        self.height_min = height_min
-
-
-class TroughModel(Model):
+class TroughModel(OutlyingModel):
     
     def get_model_type(self) -> (str, bool):
         model = 'trough'
@@ -57,5 +37,5 @@ class TroughModel(Model):
             pattern_list.append(ind)
         return pattern_list
 
-    def get_get_extremum_indexes(self, data: pd.Series) -> list:
+    def get_extremum_indexes(self, data: pd.Series) -> list:
         return argrelextrema(data.values, np.less)[0]

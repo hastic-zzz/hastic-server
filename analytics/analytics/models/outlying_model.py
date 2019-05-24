@@ -56,8 +56,7 @@ class OutlyingModel(Model):
             delete_pattern_timestamp.append(segment.pattern_timestamp)
             deleted = utils.get_interval(data, segment.center_index, window_size)
             deleted = utils.subtract_min_without_nan(deleted)
-            del_conv = scipy.signal.fftconvolve(
-                deleted, self.state.pattern_model)
+            del_conv = scipy.signal.fftconvolve(deleted, self.state.pattern_model)
             if len(del_conv):
                 del_conv_list.append(max(del_conv))
             delete_pattern_height.append(utils.find_confidence(deleted)[1])
