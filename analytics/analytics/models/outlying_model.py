@@ -31,6 +31,9 @@ class OutlyingModelState(ModelState):
 
 class OutlyingModel(Model):
 
+    def get_state(self, cache: Optional[dict] = None) -> OutlyingModelState:
+        return OutlyingModelState.from_json(cache)
+
     def do_fit(
         self,
         dataframe: pd.DataFrame,

@@ -1,4 +1,4 @@
-from models import Model, ModelState, AnalyticSegment
+from models import OutlyingModel, OutlyingModelState
 
 import scipy.signal
 from scipy.fftpack import fft
@@ -22,17 +22,14 @@ class TroughModel(OutlyingModel):
         segment = data[start: end]
         return segment.idxmin()
 
-    def get_state(self, cache: Optional[dict] = None) -> TroughModelState:
-        return TroughModelState.from_json(cache)
-
     def get_best_pattern(self, close_patterns: List[Tuple[int, int]], data: pd.Series) -> list:
         pattern_list = []
         for val in close_patterns:
             min_val = data[val[0]]
             ind = val[0]
             for i in val:
-                if data[i] < max_val:
-                    max_val = data[i]
+                if data[i] < min_val:
+                    min_val = data[i]
                     ind = i
             pattern_list.append(ind)
         return pattern_list

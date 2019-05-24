@@ -1,4 +1,4 @@
-from models import Model, ModelState, AnalyticSegment
+from models import OutlyingModel, OutlyingModelState
 
 import scipy.signal
 from scipy.fftpack import fft
@@ -21,9 +21,6 @@ class PeakModel(OutlyingModel):
         data = dataframe['value']
         segment = data[start: end]
         return segment.idxmax()
-
-    def get_state(self, cache: Optional[dict] = None) -> PeakModelState:
-        return PeakModelState.from_json(cache)
 
     def get_best_pattern(self, close_patterns: List[Tuple[int, int]], data: pd.Series) -> list:
         pattern_list = []
