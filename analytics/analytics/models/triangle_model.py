@@ -75,7 +75,7 @@ class TriangleModel(Model):
         result = utils.get_borders_of_peaks(result, data, self.state.window_size, self.state.confidence)
         return result
 
-    def __filter_detection(self, segments: list, data: list) -> list:
+    def __filter_detection(self, segments: List[int], data: pd.Series) -> list:
         delete_list = []
         variance_error = self.state.window_size
         close_patterns = utils.close_filtering(segments, variance_error)

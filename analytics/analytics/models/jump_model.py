@@ -83,7 +83,7 @@ class JumpModel(Model):
         result = self.__filter_detection(possible_jumps, data)
         return [(val - 1, val + 1) for val in result]
 
-    def __filter_detection(self, segments, data):
+    def __filter_detection(self, segments: List[int], data: pd.Series):
         delete_list = []
         variance_error = self.state.window_size
         close_patterns = utils.close_filtering(segments, variance_error)

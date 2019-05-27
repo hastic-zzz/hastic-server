@@ -59,7 +59,10 @@ def find_pattern(data: pd.Series, height: float, length: int, pattern_type: str)
                     pattern_list.append(i)
     return pattern_list
 
-def find_jump(data, height, lenght):
+def find_jump(data, height, lenght) -> List[int]:
+    '''
+    Find jump indexes
+    '''
     j_list = []
     for i in range(len(data)-lenght-1):
         for x in range(1, lenght):
@@ -67,7 +70,10 @@ def find_jump(data, height, lenght):
                 j_list.append(i)
     return(j_list)
 
-def find_drop(data, height, length):
+def find_drop(data, height, length) -> List[int]:
+    '''
+    Find drop indexes
+    '''
     d_list = []
     for i in range(len(data)-length-1):
         for x in range(1, length):

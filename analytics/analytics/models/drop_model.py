@@ -82,7 +82,7 @@ class DropModel(Model):
         result = self.__filter_detection(possible_drops, data)
         return [(val - 1, val + 1) for val in result]
 
-    def __filter_detection(self, segments: list, data: list):
+    def __filter_detection(self, segments: List[int], data: list):
         delete_list = []
         variance_error = self.state.window_size
         close_patterns = utils.close_filtering(segments, variance_error)
