@@ -59,7 +59,10 @@ def find_pattern(data: pd.Series, height: float, length: int, pattern_type: str)
                     pattern_list.append(i)
     return pattern_list
 
-def find_jump(data, height, lenght):
+def find_jump(data, height, lenght) -> List[int]:
+    '''
+    Find jump indexes
+    '''
     j_list = []
     for i in range(len(data)-lenght-1):
         for x in range(1, lenght):
@@ -67,7 +70,10 @@ def find_jump(data, height, lenght):
                 j_list.append(i)
     return(j_list)
 
-def find_drop(data, height, length):
+def find_drop(data, height, length) -> List[int]:
+    '''
+    Find drop indexes
+    '''
     d_list = []
     for i in range(len(data)-length-1):
         for x in range(1, length):
@@ -116,7 +122,7 @@ def get_same_length(patterns_list):
             pat.extend(added_values)
     return patterns_list
 
-def close_filtering(pattern_list: List[int], win_size: int) -> List[Tuple[int, int]]:
+def close_filtering(pattern_list: List[int], win_size: int) -> TimeSeries:
     if len(pattern_list) == 0:
         return []
     s = [[pattern_list[0]]]
@@ -152,7 +158,7 @@ def find_interval(dataframe: pd.DataFrame) -> int:
     delta = utils.convert_pd_timestamp_to_ms(dataframe.timestamp[1]) - utils.convert_pd_timestamp_to_ms(dataframe.timestamp[0])
     return delta
 
-def get_start_and_end_of_segments(segments: List[List[int]]) -> List[Tuple[int, int]]:
+def get_start_and_end_of_segments(segments: List[List[int]]) -> TimeSeries:
     '''
     find start and end of segment: [1, 2, 3, 4] -> [1, 4]
     if segment is 1 index - it will be doubled: [7] -> [7, 7]
@@ -167,7 +173,6 @@ def get_start_and_end_of_segments(segments: List[List[int]]) -> List[Tuple[int, 
             segment = [segment[0], segment[0]]
         result.append(segment)
     return result
-
 
 def best_pattern(pattern_list: list, data: pd.Series, dir: str) -> list:
     new_pattern_list = []
@@ -261,7 +266,7 @@ def get_interval(data: pd.Series, center: int, window_size: int, normalization =
         result_interval = subtract_min_without_nan(result_interval)
     return result_interval
 
-def get_borders_of_peaks(pattern_centers: List[int], data: pd.Series, window_size: int, confidence: float, max_border_factor = 1.0, inverse = False) -> List[Tuple[int, int]]:
+def get_borders_of_peaks(pattern_centers: List[int], data: pd.Series, window_size: int, confidence: float, max_border_factor = 1.0, inverse = False) -> TimeSeries:
     """
     Find start and end of patterns for peak
     max_border_factor - final border of pattern
