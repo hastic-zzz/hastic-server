@@ -174,6 +174,24 @@ def get_start_and_end_of_segments(segments: List[List[int]]) -> TimeSeries:
         result.append(segment)
     return result
 
+def best_pattern(pattern_list: list, data: pd.Series, dir: str) -> list:
+    new_pattern_list = []
+    for val in pattern_list:
+        max_val = data[val[0]]
+        min_val = data[val[0]]
+        ind = val[0]
+        for i in val:
+            if dir == 'max':
+                if data[i] > max_val:
+                    max_val = data[i]
+                    ind = i
+            else:
+                if data[i] < min_val:
+                    min_val = data[i]
+                    ind = i
+        new_pattern_list.append(ind)
+    return new_pattern_list
+
 def find_nan_indexes(segment: pd.Series) -> list:
     nan_list = pd.isnull(segment)
     nan_list = np.array(nan_list)
