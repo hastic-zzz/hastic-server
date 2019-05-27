@@ -17,6 +17,7 @@ import logging
 from typing import Optional, List, Tuple
 import math
 from analytic_types import AnalyticUnitId
+from analytic_types.learning_info import LearningInfo
 
 PEARSON_FACTOR = 0.7
 
@@ -48,13 +49,13 @@ class GeneralModel(Model):
         dataframe: pd.DataFrame,
         labeled_segments: List[AnalyticSegment],
         deleted_segments: List[AnalyticSegment],
-        learning_info: dict
+        learning_info: LearningInfo
     ) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         last_pattern_center = self.state.pattern_center
-        self.state.pattern_center = list(set(last_pattern_center + learning_info['segment_center_list']))
-        self.state.pattern_model = utils.get_av_model(learning_info['patterns_list'])
+        self.state.pattern_center = list(set(last_pattern_center + learning_info.segment_center_list))
+        self.state.pattern_model = utils.get_av_model(learning_info.patterns_list)
         convolve_list = utils.get_convolve(self.state.pattern_center, self.state.pattern_model, data, self.state.window_size)
         correlation_list = utils.get_correlation(self.state.pattern_center, self.state.pattern_model, data, self.state.window_size)
 

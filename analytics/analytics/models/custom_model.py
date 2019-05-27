@@ -1,5 +1,6 @@
 from models import Model, AnalyticSegment, ModelState
 from analytic_types import AnalyticUnitId, ModelCache
+from analytic_types.learning_info import LearningInfo
 import utils
 
 import pandas as pd
@@ -12,7 +13,7 @@ class CustomModel(Model):
         dataframe: pd.DataFrame,
         labeled_segments: List[AnalyticSegment],
         deleted_segments: List[AnalyticSegment],
-        learning_info: dict
+        learning_info: LearningInfo
     ) -> None:
         pass
 

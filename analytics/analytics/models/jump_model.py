@@ -11,6 +11,7 @@ import math
 from scipy.signal import argrelextrema
 from scipy.stats import gaussian_kde
 from analytic_types import AnalyticUnitId
+from analytic_types.learning_info import LearningInfo
 
 
 @utils.meta.JSONClass
@@ -49,17 +50,17 @@ class JumpModel(Model):
         dataframe: pd.DataFrame,
         labeled_segments: List[AnalyticSegment],
         deleted_segments: List[AnalyticSegment],
-        learning_info: dict
+        learning_info: LearningInfo
     ) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         window_size = self.state.window_size
         last_pattern_center = self.state.pattern_center
-        self.state.pattern_center = list(set(last_pattern_center + learning_info['segment_center_list']))
-        self.state.pattern_model = utils.get_av_model(learning_info['patterns_list'])
+        self.state.pattern_center = list(set(last_pattern_center + learning_info.segment_center_list))
+        self.state.pattern_model = utils.get_av_model(learning_info.patterns_list)
         convolve_list = utils.get_convolve(self.state.pattern_center, self.state.pattern_model, data, window_size)
         correlation_list = utils.get_correlation(self.state.pattern_center, self.state.pattern_model, data, window_size)
-        height_list = learning_info['patterns_value']
+        height_list = learning_info.patterns_value
 
         del_conv_list = []
         delete_pattern_timestamp = []
@@ -71,9 +72,9 @@ class JumpModel(Model):
             del_conv_jump = scipy.signal.fftconvolve(deleted_jump, self.state.pattern_model)
             if len(del_conv_jump): del_conv_list.append(max(del_conv_jump))
 
-        self._update_fiting_result(self.state, learning_info['confidence'], convolve_list, del_conv_list)
-        self.state.jump_height = float(min(learning_info['pattern_height'], default = 1))
-        self.state.jump_length = int(max(learning_info['pattern_width'], default = 1))
+        self._update_fiting_result(self.state, learning_info.confidence, convolve_list, del_conv_list)
+        self.state.jump_height = float(min(learning_info.pattern_height, default = 1))
+        self.state.jump_length = int(max(learning_info.pattern_width, default = 1))
 
     def do_detect(self, dataframe: pd.DataFrame) -> List[Tuple[int, int]]:
         data = utils.cut_dataframe(dataframe)
