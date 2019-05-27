@@ -116,7 +116,7 @@ class PatternDetector(Detector):
             excess_data = bucket_len - bucket_size
             self.bucket.drop_data(excess_data)
 
-        logging.debug('End consume_data for analytic unit: {} with res: {}'.format(self.analytic_unit_id, res))
+        logging.debug('End consume_data for analytic unit: {} with res: {}'.format(self.analytic_unit_id, str(res.to_json())))
 
         if res:
             return res
