@@ -1,7 +1,9 @@
-from models import Model, AnalyticSegment
+from models import Model, AnalyticSegment, ModelState
+from analytic_types import AnalyticUnitId, ModelCache
 import utils
+
 import pandas as pd
-from typing import List
+from typing import List, Optional
 
 
 class CustomModel(Model):
@@ -16,3 +18,12 @@ class CustomModel(Model):
 
     def do_detect(self, dataframe: pd.DataFrame) -> list:
         return []
+
+    def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
+        pass
+
+    def get_model_type(self) -> (str, bool):
+        pass
+
+    def get_state(self, cache: Optional[ModelCache] = None) -> ModelState:
+        pass
