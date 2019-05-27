@@ -16,7 +16,7 @@ import logging
 
 from typing import Optional, List, Tuple
 import math
-from analytic_types import AnalyticUnitId
+from analytic_types import AnalyticUnitId, TimeSeries
 from analytic_types.learning_info import LearningInfo
 
 PEARSON_FACTOR = 0.7
@@ -72,7 +72,7 @@ class GeneralModel(Model):
         self.state.convolve_min, self.state.convolve_max = utils.get_min_max(convolve_list, self.state.window_size / 3)
         self.state.conv_del_min, self.state.conv_del_max = utils.get_min_max(del_conv_list, self.state.window_size)
 
-    def do_detect(self, dataframe: pd.DataFrame) -> List[Tuple[int, int]]:
+    def do_detect(self, dataframe: pd.DataFrame) -> TimeSeries:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         pat_data = self.state.pattern_model

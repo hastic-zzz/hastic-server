@@ -1,4 +1,4 @@
-from analytic_types import AnalyticUnitId
+from analytic_types import AnalyticUnitId, TimeSeries
 from analytic_types.learning_info import LearningInfo
 from models import Model, ModelState, AnalyticSegment
 import utils
@@ -64,7 +64,7 @@ class TriangleModel(Model):
 
         self._update_fiting_result(self.state, learning_info.confidence, convolve_list, del_conv_list, height_list)
 
-    def do_detect(self, dataframe: pd.DataFrame) -> List[Tuple[int, int]]:
+    def do_detect(self, dataframe: pd.DataFrame) -> TimeSeries:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
 

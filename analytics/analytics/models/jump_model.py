@@ -10,7 +10,7 @@ from typing import Optional, List, Tuple
 import math
 from scipy.signal import argrelextrema
 from scipy.stats import gaussian_kde
-from analytic_types import AnalyticUnitId
+from analytic_types import AnalyticUnitId, TimeSeries
 from analytic_types.learning_info import LearningInfo
 
 
@@ -76,7 +76,7 @@ class JumpModel(Model):
         self.state.jump_height = float(min(learning_info.pattern_height, default = 1))
         self.state.jump_length = int(max(learning_info.pattern_width, default = 1))
 
-    def do_detect(self, dataframe: pd.DataFrame) -> List[Tuple[int, int]]:
+    def do_detect(self, dataframe: pd.DataFrame) -> TimeSeries:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         possible_jumps = utils.find_jump(data, self.state.jump_height, self.state.jump_length + 1)

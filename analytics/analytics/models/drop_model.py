@@ -9,7 +9,7 @@ import utils
 import utils.meta
 import numpy as np
 import pandas as pd
-from analytic_types import AnalyticUnitId
+from analytic_types import AnalyticUnitId, TimeSeries
 from analytic_types.learning_info import LearningInfo
 
 @utils.meta.JSONClass
@@ -75,7 +75,7 @@ class DropModel(Model):
         self.state.drop_height = int(min(learning_info.pattern_height, default = 1))
         self.state.drop_length = int(max(learning_info.pattern_width, default = 1))
 
-    def do_detect(self, dataframe: pd.DataFrame) -> List[Tuple[int, int]]:
+    def do_detect(self, dataframe: pd.DataFrame) -> TimeSeries:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
         possible_drops = utils.find_drop(data, self.state.drop_height, self.state.drop_length + 1)

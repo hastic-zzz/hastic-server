@@ -1,3 +1,4 @@
+from analytic_types import TimeSeries
 from models import TriangleModel
 import utils
 
@@ -19,7 +20,7 @@ class PeakModel(TriangleModel):
         segment = data[start: end]
         return segment.idxmax()
 
-    def get_best_pattern(self, close_patterns: List[Tuple[int, int]], data: pd.Series) -> List[int]:
+    def get_best_pattern(self, close_patterns: TimeSeries, data: pd.Series) -> List[int]:
         pattern_list = []
         for val in close_patterns:
             max_val = data[val[0]]

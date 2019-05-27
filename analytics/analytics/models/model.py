@@ -6,7 +6,7 @@ from typing import Optional, List, Tuple
 import pandas as pd
 import math
 import logging
-from analytic_types import AnalyticUnitId, ModelCache
+from analytic_types import AnalyticUnitId, ModelCache, TimeSeries
 from analytic_types.segment import Segment
 from analytic_types.learning_info import LearningInfo
 
@@ -102,7 +102,7 @@ class Model(ABC):
         pass
 
     @abstractmethod
-    def do_detect(self, dataframe: pd.DataFrame) -> List[Tuple[int, int]]:
+    def do_detect(self, dataframe: pd.DataFrame) -> TimeSeries:
         pass
 
     @abstractmethod
