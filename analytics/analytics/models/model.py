@@ -68,16 +68,16 @@ class ModelState():
 
     def __init__(
         self,
-        pattern_center: List[int] = [],
-        pattern_model: List[float] = [],
+        pattern_center: List[int] = None,
+        pattern_model: List[float] = None,
         convolve_max: float = 0,
         convolve_min: float = 0,
         window_size: int = 0,
         conv_del_min: float = 0,
         conv_del_max: float = 0
     ):
-        self.pattern_center = pattern_center
-        self.pattern_model = pattern_model
+        self.pattern_center = pattern_center if pattern_center is not None else []
+        self.pattern_model = pattern_model if pattern_model is not None else []
         self.convolve_max = convolve_max
         self.convolve_min = convolve_min
         self.window_size = window_size

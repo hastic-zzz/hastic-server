@@ -29,7 +29,7 @@ class AnalyticUnitWorker:
         self._training_future: asyncio.Future = None
 
     async def do_train(
-        self, payload: Union[list, dict], data: list, cache: Optional[ModelCache]
+        self, payload: Union[list, dict], data: TimeSeries, cache: Optional[ModelCache]
     ) -> Optional[ModelCache]:
 
         dataframe = prepare_data(data)
@@ -94,7 +94,7 @@ class AnalyticUnitWorker:
             detection_result = self._detector.concat_detection_results(detections)
             return detection_result.to_json()
 
-    async def process_data(self, data: list, cache: ModelCache) -> dict:
+    async def process_data(self, data: TimeSeries, cache: ModelCache) -> dict:
         assert isinstance(self._detector, detectors.ProcessingDetector), \
             f'{self.analytic_unit_id} detector is not ProcessingDetector, can`t process data'
         assert cache is not None, f'{self.analytic_unit_id} got empty cache for processing data'

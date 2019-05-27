@@ -36,16 +36,6 @@ def exponential_smoothing(series: pd.Series, alpha: float, last_smoothed_value: 
         result.append(alpha * series[n] + (1 - alpha) * result[n - 1])
     return pd.Series(result, index = series.index)
 
-def segments_box(segments):
-    max_time = 0
-    min_time = float("inf")
-    for segment in segments:
-        min_time = min(min_time, segment['from'])
-        max_time = max(max_time, segment['to'])
-    min_time = pd.to_datetime(min_time, unit='ms')
-    max_time = pd.to_datetime(max_time, unit='ms')
-    return min_time, max_time
-
 def find_pattern(data: pd.Series, height: float, length: int, pattern_type: str) -> list:
     pattern_list = []
     right_bound = len(data) - length - 1
@@ -59,7 +49,7 @@ def find_pattern(data: pd.Series, height: float, length: int, pattern_type: str)
                     pattern_list.append(i)
     return pattern_list
 
-def find_jump(data, height, lenght) -> List[int]:
+def find_jump(data, height: float, lenght: int) -> List[int]:
     '''
     Find jump indexes
     '''
@@ -70,7 +60,7 @@ def find_jump(data, height, lenght) -> List[int]:
                 j_list.append(i)
     return(j_list)
 
-def find_drop(data, height, length) -> List[int]:
+def find_drop(data, height: float, length: int) -> List[int]:
     '''
     Find drop indexes
     '''
@@ -81,7 +71,7 @@ def find_drop(data, height, length) -> List[int]:
                 d_list.append(i)
     return(d_list)
 
-def timestamp_to_index(dataframe, timestamp):
+def timestamp_to_index(dataframe: pd.DataFrame, timestamp: int):
     data = dataframe['timestamp']
     idx, = np.where(data >= timestamp)
     if len(idx) > 0:
@@ -100,16 +90,16 @@ def find_peaks(data: Generator[float, None, None], size: int) -> Generator[float
         window.append(v)
         window.popleft()
 
-def ar_mean(numbers):
+def ar_mean(numbers: List[float]):
     return float(sum(numbers)) / max(len(numbers), 1)
 
-def get_av_model(patterns_list):
+def get_av_model(patterns_list: list):
     if not patterns_list:  return []
     patterns_list = get_same_length(patterns_list)
     value_list = list(map(list, zip(*patterns_list)))
     return list(map(ar_mean, value_list))
 
-def get_same_length(patterns_list):
+def get_same_length(patterns_list: list):
     for index in range(len(patterns_list)):
         if type(patterns_list[index]) == pd.Series:
             patterns_list[index] = patterns_list[index].tolist()
@@ -223,7 +213,7 @@ def find_confidence(segment: pd.Series) -> (float, float):
     else:
         return (0, 0)
 
-def find_width(pattern: pd.Series, selector) -> int:
+def find_width(pattern: pd.Series, selector: bool) -> int:
     pattern = pattern.values
     center = utils.find_extremum_index(pattern, selector)
     pattern_left = pattern[:center]
@@ -458,6 +448,6 @@ def cut_dataframe(data: pd.DataFrame) -> pd.DataFrame:
         data['value'] = data['value'] - data_min
     return data
 
-def get_min_max(array, default):
+def get_min_max(array: list, default):
     return float(min(array, default=default)), float(max(array, default=default))
 

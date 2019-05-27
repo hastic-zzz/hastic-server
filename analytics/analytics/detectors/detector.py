@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from pandas import DataFrame
 from typing import Optional, Union, List
 
-from analytic_types import ModelCache
+from analytic_types import ModelCache, TimeSeries
 from analytic_types.detector_typing import DetectionResult, ProcessingResult
 from analytic_types.segment import Segment
 
@@ -43,7 +43,7 @@ class Detector(ABC):
 class ProcessingDetector(Detector):
 
     @abstractmethod
-    def process_data(self, data, cache: Optional[ModelCache]) -> ProcessingResult:
+    def process_data(self, data: TimeSeries, cache: Optional[ModelCache]) -> ProcessingResult:
         pass
 
     def concat_processing_results(self, processing_results: List[ProcessingResult]) -> Optional[ProcessingResult]:

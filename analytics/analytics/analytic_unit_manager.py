@@ -44,7 +44,7 @@ class AnalyticUnitManager:
         self.analytic_workers[analytic_unit_id] = worker
         return worker
 
-    async def __handle_analytic_task(self, task) -> dict:
+    async def __handle_analytic_task(self, task: object) -> dict:
         """
             returns payload or None
         """
@@ -80,7 +80,7 @@ class AnalyticUnitManager:
 
         raise ValueError('Unknown task type "%s"' % task['type'])
 
-    async def handle_analytic_task(self, task):
+    async def handle_analytic_task(self, task: object):
         try:
             log.debug('Start handle_analytic_task with analytic unit: {}'.format(task['analyticUnitId']))
             result_payload = await self.__handle_analytic_task(task)
