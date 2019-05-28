@@ -14,7 +14,7 @@ else:
     print('Config file %s doesn`t exist, using defaults' % CONFIG_FILE)
 
 
-def get_config_field(field, default_val = None):
+def get_config_field(field: str, default_val = None):
     if field in os.environ:
         return os.environ[field]
 
