@@ -39,7 +39,7 @@ async function query(ctx: Router.IRouterContext) {
 
   const analyticUnit = await AnalyticUnit.findById(analyticUnitId);
 
-  if(analyticUnit === undefined) {
+  if(analyticUnit === null) {
     throw new Error(`can't find analytic unit ${analyticUnitId}`);
   }
 
