@@ -201,9 +201,9 @@ class AnomalyDetector(ProcessingDetector):
                 # TODO: support multiple segments
 
         timestamps = utils.convert_series_to_timestamp_list(dataframe.timestamp)
-        upper_bound_timeseries = list(zip(timestamps, upper_bound.values.tolist()))
         lower_bound_timeseries = list(zip(timestamps, lower_bound.values.tolist()))
-        result = AnomalyProcessingResult(upper_bound_timeseries, lower_bound_timeseries)
+        upper_bound_timeseries = list(zip(timestamps, upper_bound.values.tolist()))
+        result = AnomalyProcessingResult(lower_bound_timeseries, upper_bound_timeseries)
         return result
 
     def add_season_to_data(self, data: pd.Series, segment: pd.Series, offset: int, seasonality: int, addition: bool) -> pd.Series:
