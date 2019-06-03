@@ -65,8 +65,10 @@ class PatternDetector(Detector):
             msg = f'{self.analytic_unit_id} detection got invalid cache, skip detection'
             logger.error(msg)
             raise ValueError(msg)
+
         self.model.state = self.model.get_state(cache)
         window_size = self.model.state.window_size
+
         if window_size is None:
             message = '{} got cache without window_size for detection'.format(self.analytic_unit_id)
             logger.error(message)
@@ -77,14 +79,13 @@ class PatternDetector(Detector):
             logger.error(message)
             raise ValueError(message)
 
-        time_step = utils.find_interval(dataframe)
         detected = self.model.detect(dataframe, self.analytic_unit_id)
 
         segments = [Segment(segment[0], segment[1]) for segment in detected['segments']]
         new_cache = detected['cache'].to_json()
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_detection_time = convert_pd_timestamp_to_ms(last_dataframe_time)
-        return DetectionResult(new_cache, segments, last_detection_time, time_step)
+        return DetectionResult(new_cache, segments, last_detection_time)
 
     def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[DetectionResult]:
         logging.debug('Start consume_data for analytic unit {}'.format(self.analytic_unit_id))

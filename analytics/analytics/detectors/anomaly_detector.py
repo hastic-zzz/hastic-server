@@ -26,10 +26,12 @@ class AnomalyDetector(ProcessingDetector):
     def train(self, dataframe: pd.DataFrame, payload: Union[list, dict], cache: Optional[ModelCache]) -> ModelCache:
         segments = payload.get('segments')
         prepared_segments = []
+        time_step = utils.find_interval(dataframe)
 
         new_cache = {
             'confidence': payload['confidence'],
-            'alpha': payload['alpha']
+            'alpha': payload['alpha'],
+            'timeStep': time_step
         }
 
         if segments is not None:
@@ -47,12 +49,8 @@ class AnomalyDetector(ProcessingDetector):
                 segment_data = dataframe[from_index : to_index]
                 prepared_segments.append({'from': segment['from'], 'data': segment_data.value.tolist()})
 
-            data_start_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])
-            data_second_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][1])
-            time_step = data_second_time - data_start_time
             new_cache['seasonality'] = seasonality
             new_cache['segments'] = prepared_segments
-            new_cache['timeStep'] = time_step
 
         return {
             'cache': new_cache
@@ -61,9 +59,9 @@ class AnomalyDetector(ProcessingDetector):
     # TODO: ModelCache -> ModelState
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> DetectionResult:
         data = dataframe['value']
+        time_step = cache['timeStep']
         segments = cache.get('segments')
 
-        time_step = utils.find_interval(dataframe)
         smoothed_data = utils.exponential_smoothing(data, cache['alpha'])
  
         # TODO: use class for cache to avoid using string literals
@@ -78,7 +76,6 @@ class AnomalyDetector(ProcessingDetector):
 
             data_start_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])
             data_second_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][1])
-            time_step = data_second_time - data_start_time
 
             for segment in segments:
                 seasonality_index = seasonality // time_step
@@ -113,7 +110,7 @@ class AnomalyDetector(ProcessingDetector):
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_detection_time = utils.convert_pd_timestamp_to_ms(last_dataframe_time)
 
-        return DetectionResult(cache, segments, last_detection_time, time_step)
+        return DetectionResult(cache, segments, last_detection_time)
 
     def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[DetectionResult]:
         if cache is None:
@@ -155,7 +152,7 @@ class AnomalyDetector(ProcessingDetector):
 
     def concat_detection_results(self, detections: List[DetectionResult]) -> DetectionResult:
         result = DetectionResult()
-        time_step = detections[0].time_step
+        time_step = detections[0].cache['timeStep']
         for detection in detections:
             result.segments.extend(detection.segments)
             result.last_detection_time = detection.last_detection_time
@@ -180,7 +177,7 @@ class AnomalyDetector(ProcessingDetector):
                 f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
 
             data_start_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])
-            time_step = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][1]) - utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])
+            time_step = cache['timeStep']
 
             for segment in segments:
                 seasonality_index = seasonality // time_step

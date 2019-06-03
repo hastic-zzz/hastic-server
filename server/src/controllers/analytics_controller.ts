@@ -256,12 +256,15 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
           value: (analyticUnit as ThresholdAnalyticUnit).value,
           condition: (analyticUnit as ThresholdAnalyticUnit).condition
         };
+        taskPayload.data = await getPayloadData(analyticUnit, from, to);
         break;
       case AnalyticUnit.DetectorType.ANOMALY:
         taskPayload.anomaly = {
           alpha: (analyticUnit as AnomalyAnalyticUnit).alpha,
           confidence: (analyticUnit as AnomalyAnalyticUnit).confidence
         };
+
+        taskPayload.data = await getPayloadData(analyticUnit, from, to);
 
         const seasonality = (analyticUnit as AnomalyAnalyticUnit).seasonality;
         if(seasonality > 0) {
@@ -274,7 +277,6 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
 
           let segmentObjs = segments.map(s => s.toObject());
           taskPayload.anomaly.segments = segmentObjs;
-          taskPayload.data = await getPayloadData(analyticUnit, from, to);
         }
         break;
       default:
