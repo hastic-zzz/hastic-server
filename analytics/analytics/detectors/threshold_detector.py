@@ -23,10 +23,12 @@ class ThresholdDetector(Detector):
         pass
 
     def train(self, dataframe: pd.DataFrame, threshold: dict, cache: Optional[ModelCache]) -> ModelCache:
+        time_step = utils.find_interval(dataframe)
         return {
             'cache': {
                 'value': threshold['value'],
-                'condition': threshold['condition']
+                'condition': threshold['condition'],
+                'timeStep': time_step
             }
         }
 
@@ -38,7 +40,6 @@ class ThresholdDetector(Detector):
 
         value = cache['value']
         condition = cache['condition']
-        time_step = utils.find_interval(dataframe)
 
         segments = []
         for index, row in dataframe.iterrows():
@@ -69,7 +70,7 @@ class ThresholdDetector(Detector):
 
         last_entry = dataframe.iloc[-1]
         last_detection_time = utils.convert_pd_timestamp_to_ms(last_entry['timestamp'])
-        return DetectionResult(cache, segments, last_detection_time, time_step)
+        return DetectionResult(cache, segments, last_detection_time)
 
 
     def consume_data(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> Optional[DetectionResult]:
@@ -81,7 +82,7 @@ class ThresholdDetector(Detector):
 
     def concat_detection_results(self, detections: List[DetectionResult]) -> DetectionResult:
         result = DetectionResult()
-        time_step = detections[0].time_step
+        time_step = detections[0].cache['timeStep']
         for detection in detections:
             result.segments.extend(detection.segments)
             result.last_detection_time = detection.last_detection_time

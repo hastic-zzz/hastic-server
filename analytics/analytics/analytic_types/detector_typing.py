@@ -11,8 +11,7 @@ class DetectionResult:
         self,
         cache: Optional[ModelCache] = None,
         segments: Optional[List[Segment]] = None,
-        last_detection_time: int = None,
-        time_step: int = None
+        last_detection_time: int = None
     ):
         if cache is None:
             cache = {}
@@ -21,15 +20,13 @@ class DetectionResult:
         self.cache = cache
         self.segments = segments
         self.last_detection_time = last_detection_time
-        self.time_step = time_step
 
     # TODO: use @utils.meta.JSONClass (now it can't serialize list of objects)
     def to_json(self):
         return {
             'cache': self.cache,
             'segments': list(map(lambda segment: segment.to_json(), self.segments)),
-            'lastDetectionTime': self.last_detection_time,
-            'timeStep': self.time_step
+            'lastDetectionTime': self.last_detection_time
         }
 
 @utils.meta.JSONClass
