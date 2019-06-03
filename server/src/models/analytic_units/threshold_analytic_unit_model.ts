@@ -32,7 +32,8 @@ export class ThresholdAnalyticUnit extends AnalyticUnit {
     error?: string,
     labeledColor?: string,
     deletedColor?: string,
-    visible?: boolean
+    visible?: boolean,
+    collapsed?: boolean
   ) {
     super(
       name,
@@ -48,7 +49,8 @@ export class ThresholdAnalyticUnit extends AnalyticUnit {
       labeledColor,
       deletedColor,
       DetectorType.THRESHOLD,
-      visible
+      visible,
+      collapsed
     );
   }
 
@@ -92,7 +94,8 @@ export class ThresholdAnalyticUnit extends AnalyticUnit {
       obj.error,
       obj.labeledColor,
       obj.deletedColor,
-      obj.visible
+      obj.visible,
+      obj.collapsed
     );
   }
 }

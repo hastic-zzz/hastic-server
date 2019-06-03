@@ -24,7 +24,8 @@ export abstract class AnalyticUnit {
     public deletedColor?: string,
     // TODO: detectorType -> type
     public detectorType?: DetectorType,
-    public visible?: boolean
+    public visible?: boolean,
+    public collapsed?: boolean
   ) {
 
     if(name === undefined) {
@@ -58,7 +59,8 @@ export abstract class AnalyticUnit {
       labeledColor: this.labeledColor,
       deletedColor: this.deletedColor,
       detectorType: this.detectorType,
-      visible: this.visible
+      visible: this.visible,
+      collapsed: this.collapsed
     };
   }
 
@@ -71,7 +73,8 @@ export abstract class AnalyticUnit {
       labeledColor: this.labeledColor,
       deletedColor: this.deletedColor,
       detectorType: this.detectorType,
-      visible: this.visible
+      visible: this.visible,
+      collapsed: this.collapsed
     };
   }
 
