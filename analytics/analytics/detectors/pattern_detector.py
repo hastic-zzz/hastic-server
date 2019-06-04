@@ -48,8 +48,9 @@ class PatternDetector(Detector):
 
     def train(self, dataframe: pd.DataFrame, segments: List[dict], cache: Optional[ModelCache]) -> ModelCache:
         # TODO: pass only part of dataframe that has segments
-        self.model.state = self.model.get_state(cache)
-        new_cache = self.model.fit(dataframe, segments, self.analytic_unit_id)
+        self.model.state: models.ModelState = self.model.get_state(cache)
+        new_cache: models.ModelState = self.model.fit(dataframe, segments, self.analytic_unit_id)
+        new_cache.time_step = utils.find_interval(dataframe)
         new_cache = new_cache.to_json()
         if len(new_cache) == 0:
             logging.warning('new_cache is empty with data: {}, segments: {}, cache: {}, analytic unit: {}'.format(dataframe, segments, cache, self.analytic_unit_id))

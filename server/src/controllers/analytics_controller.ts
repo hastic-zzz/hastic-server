@@ -18,6 +18,7 @@ import { queryByMetric, GrafanaUnavailable, DatasourceUnavailable } from 'grafan
 import * as _ from 'lodash';
 import { WebhookType } from '../services/notification_service';
 import { AnomalyAnalyticUnit } from '../models/analytic_units/anomaly_analytic_unit_model';
+import { rename } from 'fs';
 
 const SECONDS_IN_MINUTE = 60;
 
@@ -327,6 +328,11 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     } else {
       range = await getQueryRange(id, detector);
     }
+
+    if(range.to - range.from < intersection) {
+      range.from = range.to - intersection;
+    }
+
     const data = await query(unit, range);
 
     let task = new AnalyticsTask(
@@ -589,6 +595,13 @@ async function getPayloadData(
   } else {
     range = await getQueryRange(analyticUnit.id, analyticUnit.detectorType);
   }
+
+  const cache = await AnalyticUnitCache.findById(analyticUnit.id);
+  const intersection = cache.getIntersection();
+  if (range.to - range.from < intersection) {
+    range.from = range.to - intersection;
+  }
+
   return await query(analyticUnit, range);
 }
 
