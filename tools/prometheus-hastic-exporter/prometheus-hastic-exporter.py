@@ -21,16 +21,8 @@ class JsonCollector(object):
         print('got exception, skip polling loop {}'.format(e))
         return
     
-    labels_values = {
-        'commitHash': response.get('git', {}).get('commitHash'),
-        'packageVersion': response.get('packageVersion'),
-        'instanceName': response.get('instanceName1')
-    }
-
-    labels = {}
-    for k, v in labels_values.items():
-        if v is not None:
-            labels[k] = v
+    commitHash = response.get('git', {}).get('commitHash')
+    packageVersion = response.get('packageVersion')
 
     metrics = {
         'activeWebhooks': response.get('activeWebhooks'),
@@ -43,7 +35,7 @@ class JsonCollector(object):
     for name, value in metrics.items():
         if value is not None:
             metric = Metric(name, name, 'gauge')
-            metric.add_sample(name, value=value, labels=labels)
+            metric.add_sample(name, value=value, labels={'commitHash': commitHash, 'packageVersion': packageVersion})
             yield metric
         else:
             print('{} value is {}, skip metric'.format(name, value))
@@ -52,14 +44,14 @@ class JsonCollector(object):
     if lastAlive:
         lastAlive = int(dt.parse(lastAlive).timestamp()) * 1000 #ms
         metric = Metric('lastAlive', 'lastAlive', 'gauge')
-        metric.add_sample('lastAlive', value=lastAlive, labels=labels)
+        metric.add_sample('lastAlive', value=lastAlive, labels={'commitHash': commitHash, 'packageVersion': packageVersion})
         yield metric
 
     timestamp = response.get('timestamp')
     if timestamp:
         timestamp = int(dt.parse(timestamp).timestamp()) * 1000 #ms
         metric = Metric('timestamp', 'timestamp', 'gauge')
-        metric.add_sample('timestamp', value=timestamp, labels=labels)
+        metric.add_sample('timestamp', value=timestamp, labels={'commitHash': commitHash, 'packageVersion': packageVersion})
         yield metric
 
 

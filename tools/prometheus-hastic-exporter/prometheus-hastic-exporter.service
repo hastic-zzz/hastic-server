@@ -2,7 +2,7 @@
 Description=hastic-exporter
 
 [Service]
-RestartSec=1
+RestartSec=3
 Restart=always
 ExecStart=/usr/bin/hastic-exporter.py http://0.0.0.0:8000 5777
 
