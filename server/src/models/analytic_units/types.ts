@@ -54,7 +54,7 @@ export const ANALYTIC_UNIT_TYPES = {
   ],
   anomaly: [
     {
-      name: 'Anomaly',
+      name: 'Confidence Snake',
       value: 'ANOMALY'
     }
   ],
