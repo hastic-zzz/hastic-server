@@ -53,7 +53,7 @@ async def handle_data(task: object):
 
     if res['status'] == 'SUCCESS' and res['payload'] is not None:
         res['_id'] = task['_id']
-        message = services.server_service.ServerMessage('DETECT', res)
+        message = services.server_service.ServerMessage('PUSHDETECT', res)
         await server_service.send_message_to_server(message)
 
 async def handle_message(message: services.ServerMessage):

@@ -73,12 +73,14 @@ class ThresholdAlert extends Alert {
 
 export class AlertService {
 
-  private _alerts: { [id: string]: Alert; };
+  private _alerts: { [id: string]: Alert };
   private _alertingEnable: boolean;
   private _grafanaAvailableReporter: Function;
+  private _datasourceAvailableReporters: { [url: string]: Function };
 
   constructor() {
-    this._alerts = {}
+    this._alerts = {};
+    this._datasourceAvailableReporters = {};
   }
 
   public receiveAlert(analyticUnit: AnalyticUnit.AnalyticUnit, segment: Segment) {
@@ -110,8 +112,8 @@ export class AlertService {
   public getGrafanaAvailableReporter() {
     if(!this._grafanaAvailableReporter) {
       this._grafanaAvailableReporter = availableReporter(
-        ['Grafana available', WebhookType.RECOVERY],
-        ['Grafana unavailable for pulling data', WebhookType.FAILURE],
+        ['[OK] Grafana available', WebhookType.RECOVERY],
+        ['[FAILURE] Grafana unavailable for pulling data', WebhookType.FAILURE],
         this.sendMsg,
         this.sendMsg
       );
@@ -119,24 +121,24 @@ export class AlertService {
     return this._grafanaAvailableReporter;
   }
 
-  public getAvailableWebhook(recoveryMsg: string, failureMsg: string) {
-    return availableReporter(
-      [recoveryMsg, WebhookType.RECOVERY],
-      [failureMsg, WebhookType.FAILURE],
-      this.sendMsg,
-      this.sendMsg
-    );
+  public datasourceAvailableWebhook(url: string) {
+    const reporter = this._getDatasourceAvailableReporter(url);
+    reporter(true);
+  }
+
+  public datasourceUnavailableWebhook(url: string) {
+    const reporter = this._getDatasourceAvailableReporter(url);
+    reporter(false);
   }
 
   public addAnalyticUnit(analyticUnit: AnalyticUnit.AnalyticUnit) {
-    const detector = analyticUnit.detectorType;
     let alertsType = {};
 
     alertsType[AnalyticUnit.DetectorType.THRESHOLD] = ThresholdAlert;
     alertsType[AnalyticUnit.DetectorType.PATTERN] = PatternAlert;
     alertsType[AnalyticUnit.DetectorType.ANOMALY] = Alert;
 
-    this._alerts[analyticUnit.id] = new alertsType[detector](analyticUnit);
+    this._alerts[analyticUnit.id] = new alertsType[analyticUnit.detectorType](analyticUnit);
   }
 
   public removeAnalyticUnit(analyticUnitId: AnalyticUnit.AnalyticUnitId) {
@@ -145,10 +147,21 @@ export class AlertService {
 
   public stopAlerting() {
     this._alertingEnable = false;
-    this._alerts = {};
   }
 
   public startAlerting() {
     this._alertingEnable = true;
+  }
+
+  private _getDatasourceAvailableReporter(url: string) {
+    if(!_.has(this._datasourceAvailableReporters, url)) {
+      this._datasourceAvailableReporters[url] = availableReporter(
+        [`[OK] Datasource ${url} available`, WebhookType.RECOVERY],
+        [`[FAILURE] Datasource ${url} unavailable`, WebhookType.FAILURE],
+        this.sendMsg,
+        this.sendMsg
+      );
+    }
+    return this._datasourceAvailableReporters[url];
   }
 }
