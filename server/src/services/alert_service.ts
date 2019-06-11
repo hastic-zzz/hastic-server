@@ -1,4 +1,4 @@
-import { sendAnalyticWebhook, sendInfoWebhook, InfoAlert, AnalyticAlert, WebhookType } from './notification_service';
+import { sendNotification, InfoMeta, AnalyticMeta, WebhookType, Notification } from './notification_service';
 
 import * as _ from 'lodash';
 import * as AnalyticUnit from '../models/analytic_units';
@@ -12,17 +12,22 @@ export class Alert {
   constructor(protected analyticUnit: AnalyticUnit.AnalyticUnit) {};
   public receive(segment: Segment) {
     if(this.enabled) {
-      const alert = this.makeAlert(segment);
-      sendAnalyticWebhook(alert);
+      sendNotification(this.makeNotification(segment));
     }
   };
 
-  protected makeAlert(segment): AnalyticAlert {
+  protected makeNotification(segment: Segment): Notification {
+    const meta = this.makeMeta(segment);
+    const message =this.makeMessage(meta);
+    return { meta, message };
+  }
+
+  protected makeMeta(segment: Segment): AnalyticMeta {
     const datshdoardId = this.analyticUnit.panelId.split('/')[0];
     const panelId = this.analyticUnit.panelId.split('/')[1];
     const grafanaUrl = `${this.analyticUnit.grafanaUrl}/d/${datshdoardId}?\
     ${panelId}&edit=true&fullscreen=true?ordId=${ORG_ID}`;
-    const alert: AnalyticAlert = {
+    const alert: AnalyticMeta = {
       type: WebhookType.DETECT,
       analyticUnitType: this.analyticUnit.type,
       analyticUnitName: this.analyticUnit.name,
@@ -34,6 +39,17 @@ export class Alert {
 
     return alert;
   }
+
+  protected makeMessage(meta: AnalyticMeta): string {
+    return `
+    [${meta.analyticUnitType.toUpperCase()} ALERTING] ${meta.analyticUnitName}
+    URL: ${meta.grafanaUrl}
+
+    From: ${new Date(meta.from)}
+    To: ${new Date(meta.to)}
+    ID: ${meta.analyticUnitId}
+    `;
+  }
 }
 
 class PatternAlert extends Alert {
@@ -44,15 +60,27 @@ class PatternAlert extends Alert {
     if(this.lastSentSegment === undefined || !segment.equals(this.lastSentSegment) ) {
       this.lastSentSegment = segment;
       if(this.enabled) {
-        sendAnalyticWebhook(this.makeAlert(segment));
+        sendNotification(this.makeNotification(segment));
       }
     }
+  }
+
+  protected makeMessage(meta: AnalyticMeta): string {
+    return `
+    [PATTERN DETECTED] ${meta.analyticUnitName}
+    URL: ${meta.grafanaUrl}
+
+    From: ${new Date(meta.from)}
+    To: ${new Date(meta.to)}
+    ID: ${meta.analyticUnitId}
+    ${meta.params !== undefined ? meta.params.value : ''}`;
   }
 };
 
 
 class ThresholdAlert extends Alert {
   // TODO: configure threshold timing in panel like Grafana's alerts (`evaluate` time, `for` time)
+  // TODO: make events for starn and end of treshold
   EXPIRE_PERIOD_MS = 60000;
   lastOccurence = 0;
 
@@ -60,19 +88,29 @@ class ThresholdAlert extends Alert {
     if(this.lastOccurence === 0) {
       this.lastOccurence = segment.from;
       if(this.enabled) {
-        sendAnalyticWebhook(this.makeAlert(segment));
+        sendNotification(this.makeNotification(segment));
       }
     } else {
 
       if(segment.from - this.lastOccurence > this.EXPIRE_PERIOD_MS) {
         if(this.enabled) {
           console.log(`time between threshold occurences ${segment.from - this.lastOccurence}ms, send alert`);
-          sendAnalyticWebhook(this.makeAlert(segment));
+          sendNotification(this.makeNotification(segment));
         }
       }
 
       this.lastOccurence = segment.from;
     }
+  }
+
+  protected makeMessage(meta: AnalyticMeta): string {
+    return `
+    [TRESHOLD ALERTING] ${meta.analyticUnitName}
+    URL: ${meta.grafanaUrl}
+
+    Starts at: ${new Date(meta.from)}
+    ID: ${meta.analyticUnitId}
+    `;
   }
 }
 
@@ -82,11 +120,11 @@ export class AlertService {
   private _alerts: { [id: string]: Alert };
   private _alertingEnable: boolean;
   private _grafanaAvailableReporter: Function;
-  private _datasourceAvailableReporters: { [url: string]: Function };
+  private _datasourceAvailableReporters: Map<string, Function>;
 
   constructor() {
     this._alerts = {};
-    this._datasourceAvailableReporters = {};
+    this._datasourceAvailableReporters = new Map();
 
     this._grafanaAvailableReporter = availableReporter(
       ['[OK] Grafana available', WebhookType.RECOVERY],
@@ -112,14 +150,13 @@ export class AlertService {
 
   public sendMsg(message: string, type: WebhookType, optionalInfo = {}) {
     const now = Date.now();
-    const infoAlert: InfoAlert = {
-      message,
+    const infoAlert: InfoMeta = {
       params: optionalInfo,
       type,
       from: now,
       to: now
     }
-    sendInfoWebhook(infoAlert);
+    sendNotification({ message, meta: infoAlert });
   }
 
   public sendGrafanaAvailableWebhook() {
