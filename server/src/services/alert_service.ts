@@ -4,6 +4,7 @@ import * as _ from 'lodash';
 import * as AnalyticUnit from '../models/analytic_units';
 import { Segment } from '../models/segment_model';
 import { availableReporter } from '../utils/reporter';
+import { ORG_ID } from '../config';
 
 
 export class Alert {
@@ -17,12 +18,16 @@ export class Alert {
   };
 
   protected makeAlert(segment): AnalyticAlert {
+    const datshdoardId = this.analyticUnit.panelId.split('/')[0];
+    const panelId = this.analyticUnit.panelId.split('/')[1];
+    const grafanaUrl = `${this.analyticUnit.grafanaUrl}/d/${datshdoardId}?\
+    ${panelId}&edit=true&fullscreen=true?ordId=${ORG_ID}`;
     const alert: AnalyticAlert = {
       type: WebhookType.DETECT,
       analyticUnitType: this.analyticUnit.type,
       analyticUnitName: this.analyticUnit.name,
       analyticUnitId: this.analyticUnit.id,
-      grafanaUrl: this.analyticUnit.grafanaUrl,
+      grafanaUrl,
       from: segment.from,
       to: segment.to 
     };
@@ -117,25 +122,12 @@ export class AlertService {
     sendInfoWebhook(infoAlert);
   }
 
-<<<<<<< HEAD
   public sendGrafanaAvailableWebhook() {
     this._grafanaAvailableReporter(true);
   }
   
   public sendGrafanaUnavailableWebhook() {
     this._grafanaAvailableReporter(false);
-=======
-  public getGrafanaAvailableReporter() {
-    if(this._grafanaAvailableReporter === undefined) {
-      this._grafanaAvailableReporter = availableReporter(
-        ['[OK] Grafana available', WebhookType.RECOVERY],
-        ['[FAILURE] Grafana unavailable for pulling data', WebhookType.FAILURE],
-        this.sendMsg,
-        this.sendMsg
-      );
-    }
-    return this._grafanaAvailableReporter;
->>>>>>> 4504322b86f5c9555133a9dfd6951040753be650
   }
 
   public sendDatasourceAvailableWebhook(url: string) {
