@@ -117,12 +117,25 @@ export class AlertService {
     sendInfoWebhook(infoAlert);
   }
 
+<<<<<<< HEAD
   public sendGrafanaAvailableWebhook() {
     this._grafanaAvailableReporter(true);
   }
   
   public sendGrafanaUnavailableWebhook() {
     this._grafanaAvailableReporter(false);
+=======
+  public getGrafanaAvailableReporter() {
+    if(this._grafanaAvailableReporter === undefined) {
+      this._grafanaAvailableReporter = availableReporter(
+        ['[OK] Grafana available', WebhookType.RECOVERY],
+        ['[FAILURE] Grafana unavailable for pulling data', WebhookType.FAILURE],
+        this.sendMsg,
+        this.sendMsg
+      );
+    }
+    return this._grafanaAvailableReporter;
+>>>>>>> 4504322b86f5c9555133a9dfd6951040753be650
   }
 
   public sendDatasourceAvailableWebhook(url: string) {
