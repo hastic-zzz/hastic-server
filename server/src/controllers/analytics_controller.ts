@@ -34,7 +34,6 @@ const taskResolvers = new Map<AnalyticsTaskId, TaskResolver>();
 
 let analyticsService: AnalyticsService = undefined;
 let alertService: AlertService = undefined;
-let grafanaAvailableWebhok: Function = undefined;
 let dataPuller: DataPuller;
 
 let detectionsCount: number = 0;
@@ -103,7 +102,7 @@ async function onMessage(message: AnalyticsMessage) {
     methodResolved = true;
   }
 
-  if(message.method === AnalyticsMessageMethod.PUSHDETECT) {
+  if(message.method === AnalyticsMessageMethod.PUSH_DETECT) {
     await onPushDetect(message.payload.payload);
     methodResolved = true;
   }
@@ -123,10 +122,9 @@ export function init() {
   analyticsService = new AnalyticsService(onMessage);
 
   alertService = new AlertService();
-  grafanaAvailableWebhok = alertService.getGrafanaAvailableReporter();
   alertService.startAlerting();
 
-  dataPuller = new DataPuller(analyticsService);
+  dataPuller = new DataPuller(analyticsService, alertService);
   dataPuller.runPuller();
 }
 
@@ -198,16 +196,16 @@ async function query(
       HASTIC_API_KEY
     );
     data = queryResult.values;
-    grafanaAvailableWebhok(true);
-    alertService.datasourceAvailableWebhook(analyticUnit.metric.datasource.url);
+    alertService.sendGrafanaAvailableWebhook();
+    alertService.sendDatasourceAvailableWebhook(analyticUnit.metric.datasource.url);
   } catch(e) {
     if(e instanceof GrafanaUnavailable) {
       const msg = `Can't connect Grafana: ${e.message}, check GRAFANA_URL`;
-      grafanaAvailableWebhok(false);
+      alertService.sendGrafanaUnavailableWebhook();
       throw new Error(msg);
     }
     if(e instanceof DatasourceUnavailable) {
-      alertService.datasourceUnavailableWebhook(analyticUnit.metric.datasource.url);
+      alertService.sendDatasourceUnavailableWebhook(analyticUnit.metric.datasource.url);
       throw new Error(e.message);
     }
     throw e;

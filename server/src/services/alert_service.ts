@@ -47,6 +47,7 @@ class PatternAlert extends Alert {
 
 
 class ThresholdAlert extends Alert {
+  // TODO: configure threshold timing in panel like Grafana's alerts (`evaluate` time, `for` time)
   EXPIRE_PERIOD_MS = 60000;
   lastOccurence = 0;
 
@@ -81,6 +82,13 @@ export class AlertService {
   constructor() {
     this._alerts = {};
     this._datasourceAvailableReporters = {};
+
+    this._grafanaAvailableReporter = availableReporter(
+      ['[OK] Grafana available', WebhookType.RECOVERY],
+      ['[FAILURE] Grafana unavailable for pulling data', WebhookType.FAILURE],
+      this.sendMsg,
+      this.sendMsg
+    );
   }
 
   public receiveAlert(analyticUnit: AnalyticUnit.AnalyticUnit, segment: Segment) {
@@ -109,24 +117,20 @@ export class AlertService {
     sendInfoWebhook(infoAlert);
   }
 
-  public getGrafanaAvailableReporter() {
-    if(!this._grafanaAvailableReporter) {
-      this._grafanaAvailableReporter = availableReporter(
-        ['[OK] Grafana available', WebhookType.RECOVERY],
-        ['[FAILURE] Grafana unavailable for pulling data', WebhookType.FAILURE],
-        this.sendMsg,
-        this.sendMsg
-      );
-    }
-    return this._grafanaAvailableReporter;
+  public sendGrafanaAvailableWebhook() {
+    this._grafanaAvailableReporter(true);
+  }
+  
+  public sendGrafanaUnavailableWebhook() {
+    this._grafanaAvailableReporter(false);
   }
 
-  public datasourceAvailableWebhook(url: string) {
+  public sendDatasourceAvailableWebhook(url: string) {
     const reporter = this._getDatasourceAvailableReporter(url);
     reporter(true);
   }
 
-  public datasourceUnavailableWebhook(url: string) {
+  public sendDatasourceUnavailableWebhook(url: string) {
     const reporter = this._getDatasourceAvailableReporter(url);
     reporter(false);
   }

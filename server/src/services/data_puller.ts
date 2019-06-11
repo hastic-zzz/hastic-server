@@ -30,13 +30,8 @@ export class DataPuller {
   );
 
   private _unitTimes: { [analyticUnitId: string]: number } = {};
-  private _alertService: AlertService;
-  private _grafanaAvailableWebhook: Function;
 
-  constructor(private analyticsService: AnalyticsService) {
-    this._alertService = new AlertService();
-    this._grafanaAvailableWebhook = this._alertService.getGrafanaAvailableReporter();
-  };
+  constructor(private analyticsService: AnalyticsService, private alertService: AlertService) {};
 
   public addUnit(analyticUnit: AnalyticUnit.AnalyticUnit) {
     console.log(`start pulling analytic unit ${analyticUnit.id}`);
@@ -157,22 +152,21 @@ export class DataPuller {
         const now = Date.now();
         const res = await this.pullData(analyticUnit, time, now);
         this._grafanaAvailableConsoleReporter(true);
-        this._grafanaAvailableWebhook(true);
-        this._alertService.datasourceAvailableWebhook(analyticUnit.metric.datasource.url);
+        this.alertService.sendGrafanaAvailableWebhook();
+        this.alertService.sendDatasourceAvailableWebhook(analyticUnit.metric.datasource.url);
         return res;
       } catch(err) {
         let errorResolved = false;
         if(err instanceof GrafanaUnavailable) {
           errorResolved = true;
-          this._grafanaAvailableConsoleReporter(false);
-          this._grafanaAvailableWebhook(false);
+          this.alertService.sendGrafanaUnavailableWebhook();
         } else {
-          this._grafanaAvailableWebhook(true);
+          this.alertService.sendGrafanaAvailableWebhook();
         }
 
         if(err instanceof DatasourceUnavailable) {
           errorResolved = true;
-          this._alertService.datasourceUnavailableWebhook(analyticUnit.metric.datasource.url);
+          this.alertService.sendDatasourceUnavailableWebhook(analyticUnit.metric.datasource.url);
         }
 
         if(!errorResolved) {
