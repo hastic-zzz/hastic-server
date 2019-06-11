@@ -46,14 +46,13 @@ export async function sendNotification(notification: Notification) {
     throw new Error(`Can't send notification, HASTIC_WEBHOOK_URL is undefined`);
   }
 
-  let payload = { instanceName: HASTIC_INSTANCE_NAME };
-  _.assign(payload, notification);
+  notification.message += `\nInstance: ${HASTIC_INSTANCE_NAME}`;
 
   let data;
   if(HASTIC_WEBHOOK_TYPE === ContentType.JSON) {
-    data = JSON.stringify(payload);
+    data = JSON.stringify(notification);
   } else if(HASTIC_WEBHOOK_TYPE === ContentType.URLENCODED) {
-    data = querystring.stringify(payload);
+    data = querystring.stringify(notification);
   } else {
     throw new Error(`Unknown webhook type: ${HASTIC_WEBHOOK_TYPE}`);
   }

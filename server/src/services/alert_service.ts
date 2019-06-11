@@ -25,8 +25,7 @@ export class Alert {
   protected makeMeta(segment: Segment): AnalyticMeta {
     const datshdoardId = this.analyticUnit.panelId.split('/')[0];
     const panelId = this.analyticUnit.panelId.split('/')[1];
-    const grafanaUrl = `${this.analyticUnit.grafanaUrl}/d/${datshdoardId}?\
-    ${panelId}&edit=true&fullscreen=true?ordId=${ORG_ID}`;
+    const grafanaUrl = `${this.analyticUnit.grafanaUrl}/d/${datshdoardId}?panelId=${panelId}&edit=true&fullscreen=true?orgId=${ORG_ID}`;
     const alert: AnalyticMeta = {
       type: WebhookType.DETECT,
       analyticUnitType: this.analyticUnit.type,
@@ -73,7 +72,7 @@ class PatternAlert extends Alert {
     From: ${new Date(meta.from)}
     To: ${new Date(meta.to)}
     ID: ${meta.analyticUnitId}
-    ${meta.params !== undefined ? meta.params.value : ''}`;
+    `;
   }
 };
 
@@ -104,13 +103,22 @@ class ThresholdAlert extends Alert {
   }
 
   protected makeMessage(meta: AnalyticMeta): string {
-    return `
+    let message = `
     [TRESHOLD ALERTING] ${meta.analyticUnitName}
     URL: ${meta.grafanaUrl}
 
     Starts at: ${new Date(meta.from)}
     ID: ${meta.analyticUnitId}
     `;
+
+    if(meta.params !== undefined) {
+      const metrics = `
+      Metrics:
+      ${this.analyticUnit.metric.targets[0].expr}: ${meta.params.value}
+      `;
+      message += metrics;
+    }
+    return message;
   }
 }
 
