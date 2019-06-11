@@ -40,14 +40,14 @@ export class Alert {
   }
 
   protected makeMessage(meta: AnalyticMeta): string {
-    return `
-    [${meta.analyticUnitType.toUpperCase()} ALERTING] ${meta.analyticUnitName}
-    URL: ${meta.grafanaUrl}
-
-    From: ${new Date(meta.from)}
-    To: ${new Date(meta.to)}
-    ID: ${meta.analyticUnitId}
-    `;
+    return [
+    `[${meta.analyticUnitType.toUpperCase()} ALERTING] ${meta.analyticUnitName}`,
+    `URL: ${meta.grafanaUrl}`,
+    ``,
+    `From: ${new Date(meta.from)}`,
+    `To: ${new Date(meta.to)}`,
+    `ID: ${meta.analyticUnitId}`
+    ].join('\n');
   }
 }
 
@@ -65,14 +65,14 @@ class PatternAlert extends Alert {
   }
 
   protected makeMessage(meta: AnalyticMeta): string {
-    return `
-    [PATTERN DETECTED] ${meta.analyticUnitName}
-    URL: ${meta.grafanaUrl}
-
-    From: ${new Date(meta.from)}
-    To: ${new Date(meta.to)}
-    ID: ${meta.analyticUnitId}
-    `;
+    return [
+    `[PATTERN DETECTED] ${meta.analyticUnitName}`,
+    `URL: ${meta.grafanaUrl}`,
+    ``,
+    `From: ${new Date(meta.from)}`,
+    `To: ${new Date(meta.to)}`,
+    `ID: ${meta.analyticUnitId}`
+    ].join('\n');
   }
 };
 
@@ -103,13 +103,13 @@ class ThresholdAlert extends Alert {
   }
 
   protected makeMessage(meta: AnalyticMeta): string {
-    let message = `
-    [TRESHOLD ALERTING] ${meta.analyticUnitName}
-    URL: ${meta.grafanaUrl}
-
-    Starts at: ${new Date(meta.from)}
-    ID: ${meta.analyticUnitId}
-    `;
+    let message = [
+    `[TRESHOLD ALERTING] ${meta.analyticUnitName}`,
+    `URL: ${meta.grafanaUrl}`,
+    ``,
+    `Starts at: ${new Date(meta.from)}`,
+    `ID: ${meta.analyticUnitId}`
+    ].join('\n');
 
     if(meta.params !== undefined) {
       const metrics = `
