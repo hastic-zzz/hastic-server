@@ -34,7 +34,6 @@ const taskResolvers = new Map<AnalyticsTaskId, TaskResolver>();
 
 let analyticsService: AnalyticsService = undefined;
 let alertService: AlertService = undefined;
-let grafanaAvailableWebhok: Function = undefined;
 let dataPuller: DataPuller;
 
 let detectionsCount: number = 0;
@@ -68,6 +67,27 @@ async function onDetect(detectionResult: DetectionResult) {
   ]);
 }
 
+async function onPushDetect(detectionResult: DetectionResult) {
+  const analyticUnit = await AnalyticUnit.findById(detectionResult.analyticUnitId);
+  if (!_.isEmpty(detectionResult.segments) && analyticUnit.alert) {
+    try {
+      alertService.receiveAlert(analyticUnit, _.last(detectionResult.segments));
+    } catch(err) {
+      console.error(`error while sending webhook: ${err.message}`);
+    }
+  } else {
+    let reasons = [];
+    if(!analyticUnit.alert) {
+      reasons.push('alerting disabled');
+    }
+    if(_.isEmpty(detectionResult.segments)) {
+      reasons.push('segments empty');
+    }
+    console.log(`skip sending webhook for ${analyticUnit.id}, ${reasons.join(', ')}`);
+  }
+  await onDetect(detectionResult);
+}
+
 async function onMessage(message: AnalyticsMessage) {
   let responsePayload = null;
   let methodResolved = false;
@@ -79,6 +99,11 @@ async function onMessage(message: AnalyticsMessage) {
 
   if(message.method === AnalyticsMessageMethod.DETECT) {
     await onDetect(message.payload.payload);
+    methodResolved = true;
+  }
+
+  if(message.method === AnalyticsMessageMethod.PUSH_DETECT) {
+    await onPushDetect(message.payload.payload);
     methodResolved = true;
   }
 
@@ -97,10 +122,9 @@ export function init() {
   analyticsService = new AnalyticsService(onMessage);
 
   alertService = new AlertService();
-  grafanaAvailableWebhok = alertService.getGrafanaAvailableReporter();
   alertService.startAlerting();
 
-  dataPuller = new DataPuller(analyticsService);
+  dataPuller = new DataPuller(analyticsService, alertService);
   dataPuller.runPuller();
 }
 
@@ -172,15 +196,16 @@ async function query(
       HASTIC_API_KEY
     );
     data = queryResult.values;
-    grafanaAvailableWebhok(true);
+    alertService.sendGrafanaAvailableWebhook();
+    alertService.sendDatasourceAvailableWebhook(analyticUnit.metric.datasource.url);
   } catch(e) {
     if(e instanceof GrafanaUnavailable) {
       const msg = `Can't connect Grafana: ${e.message}, check GRAFANA_URL`;
-      grafanaAvailableWebhok(false);
+      alertService.sendGrafanaUnavailableWebhook();
       throw new Error(msg);
     }
     if(e instanceof DatasourceUnavailable) {
-      alertService.sendMsg(e.message, WebhookType.FAILURE);
+      alertService.sendDatasourceUnavailableWebhook(analyticUnit.metric.datasource.url);
       throw new Error(e.message);
     }
     throw e;
@@ -429,23 +454,7 @@ async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitI
   const segments = sortedSegments.map(
     segment => new Segment.Segment(analyticUnitId, segment.from, segment.to, false, false)
   );
-  const analyticUnit = await AnalyticUnit.findById(analyticUnitId);
-  if (!_.isEmpty(segments) && analyticUnit.alert) {
-    try {
-      alertService.receiveAlert(analyticUnit, _.last(segments));
-    } catch(err) {
-      console.error(`error while sending webhook: ${err.message}`);
-    }
-  } else {
-    let reasons = [];
-    if(!analyticUnit.alert) {
-      reasons.push('alerting disabled');
-    }
-    if(_.isEmpty(segments)) {
-      reasons.push('segments empty');
-    }
-    console.log(`skip sending webhook for ${analyticUnit.id}, ${reasons.join(', ')}`);
-  }
+
   return {
     lastDetectionTime: detectionResult.lastDetectionTime,
     segments,
