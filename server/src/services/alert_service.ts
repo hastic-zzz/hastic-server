@@ -18,7 +18,7 @@ export class Alert {
 
   protected makeNotification(segment: Segment): Notification {
     const meta = this.makeMeta(segment);
-    const message =this.makeMessage(meta);
+    const message = this.makeMessage(meta);
     return { meta, message };
   }
 
