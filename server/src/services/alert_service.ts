@@ -66,12 +66,12 @@ class PatternAlert extends Alert {
 
   protected makeMessage(meta: AnalyticMeta): string {
     return [
-    `[PATTERN DETECTED] ${meta.analyticUnitName}`,
-    `URL: ${meta.grafanaUrl}`,
-    ``,
-    `From: ${new Date(meta.from)}`,
-    `To: ${new Date(meta.to)}`,
-    `ID: ${meta.analyticUnitId}`
+      `[PATTERN DETECTED] ${meta.analyticUnitName}`,
+      `URL: ${meta.grafanaUrl}`,
+      ``,
+      `From: ${new Date(meta.from)}`,
+      `To: ${new Date(meta.to)}`,
+      `ID: ${meta.analyticUnitId}`
     ].join('\n');
   }
 };
