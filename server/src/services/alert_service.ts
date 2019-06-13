@@ -79,7 +79,7 @@ class PatternAlert extends Alert {
 
 class ThresholdAlert extends Alert {
   // TODO: configure threshold timing in panel like Grafana's alerts (`evaluate` time, `for` time)
-  // TODO: make events for starn and end of treshold
+  // TODO: make events for start and end of threshold
   EXPIRE_PERIOD_MS = 60000;
   lastOccurence = 0;
 
