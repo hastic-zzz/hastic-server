@@ -104,11 +104,11 @@ class ThresholdAlert extends Alert {
 
   protected makeMessage(meta: AnalyticMeta): string {
     let message = [
-    `[TRESHOLD ALERTING] ${meta.analyticUnitName}`,
-    `URL: ${meta.grafanaUrl}`,
-    ``,
-    `Starts at: ${new Date(meta.from)}`,
-    `ID: ${meta.analyticUnitId}`
+      `[THRESHOLD ALERTING] ${meta.analyticUnitName}`,
+      `URL: ${meta.grafanaUrl}`,
+      ``,
+      `Starts at: ${new Date(meta.from)}`,
+      `ID: ${meta.analyticUnitId}`
     ].join('\n');
 
     if(meta.params !== undefined) {
