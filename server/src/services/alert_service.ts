@@ -125,7 +125,7 @@ class ThresholdAlert extends Alert {
 
 export class AlertService {
 
-  TODO: object -> Map
+  // TODO: object -> Map
   private _alerts: { [id: string]: Alert };
   private _alertingEnable: boolean;
   private _grafanaAvailableReporter: Function;
