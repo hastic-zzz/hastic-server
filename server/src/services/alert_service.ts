@@ -113,8 +113,8 @@ class ThresholdAlert extends Alert {
 
     if(meta.params !== undefined) {
       const metrics = `
-      Metrics:
-      ${this.analyticUnit.metric.targets[0].expr}: ${meta.params.value}
+        Metrics:
+        ${this.analyticUnit.metric.targets[0].expr}: ${meta.params.value}
       `;
       message += metrics;
     }
