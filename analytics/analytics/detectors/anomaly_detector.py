@@ -96,9 +96,14 @@ class AnomalyDetector(ProcessingDetector):
                 # TODO: use class for cache to avoid using string literals
 
         anomaly_indexes = []
+        detection_info = []
         for idx, val in enumerate(data.values):
-            if val > upper_bound.values[idx] or val < lower_bound.values[idx]:
+            if val > upper_bound.values[idx]:
                 anomaly_indexes.append(data.index[idx])
+                detection_info.append(('Value {0} > upper_bound {1}'.format(val, upper_bound.values[idx])))
+            elif val < lower_bound.values[idx]:
+                anomaly_indexes.append(data.index[idx])
+                detection_info.append(('Value {0} < lower_bound {1}'.format(val, lower_bound.values[idx])))
         # TODO: use Segment in utils
         segments = utils.close_filtering(anomaly_indexes, 1)
         segments = utils.get_start_and_end_of_segments(segments)

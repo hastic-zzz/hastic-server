@@ -42,6 +42,7 @@ class ThresholdDetector(Detector):
         condition = cache['condition']
 
         segments = []
+        detection_info = []
         for index, row in dataframe.iterrows():
             current_value = row['value']
             current_timestamp = utils.convert_pd_timestamp_to_ms(row['timestamp'])
@@ -54,18 +55,23 @@ class ThresholdDetector(Detector):
 
             if condition == '>':
                 if current_value > value:
+                    detection_info.append('Value {0} > threshold {1}'.format(current_value, value))
                     segments.append(segment)
             elif condition == '>=':
                 if current_value >= value:
+                    detection_info.append('Value {0} >= threshold {1}'.format(current_value, value))
                     segments.append(segment)
             elif condition == '=':
                 if current_value == value:
+                    detection_info.append('Value {0} = threshold {1}'.format(current_value, value))
                     segments.append(segment)
             elif condition == '<=':
                 if current_value <= value:
+                    detection_info.append('Value {0} <= threshold {1}'.format(current_value, value))
                     segments.append(segment)
             elif condition == '<':
                 if current_value < value:
+                    detection_info.append('Value {0} < threshold {1}'.format(current_value, value))
                     segments.append(segment)
 
         last_entry = dataframe.iloc[-1]
