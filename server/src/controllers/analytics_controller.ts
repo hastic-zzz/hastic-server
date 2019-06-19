@@ -547,11 +547,11 @@ export async function getDetectionSpans(
 ): Promise<Detection.DetectionSpan[]> {
   const readySpans = await Detection.getIntersectedSpans(analyticUnitId, from, to, Detection.DetectionStatus.READY);
   const alreadyRunningSpans = await Detection.getIntersectedSpans(analyticUnitId, from, to, Detection.DetectionStatus.RUNNING);
-  const intersectedFailedSpans = await Detection.getIntersectedSpans(analyticUnitId, from, to, Detection.DetectionStatus.FAILED);
+  const failedSpans = await Detection.getIntersectedSpans(analyticUnitId, from, to, Detection.DetectionStatus.FAILED);
 
   const analyticUnitCache = await AnalyticUnitCache.findById(analyticUnitId);
 
-  if(_.isEmpty(readySpans) && _.isEmpty(intersectedFailedSpans)) {
+  if(_.isEmpty(readySpans) && _.isEmpty(failedSpans)) {
     const span = await runDetectionOnExtendedSpan(analyticUnitId, from, to, analyticUnitCache);
 
     if(span === null) {
@@ -562,17 +562,14 @@ export async function getDetectionSpans(
   }
 
   const readySpanBorders = Detection.getSpanBorders(readySpans);
-
   const newDetectionSpans = getNonIntersectedSpans(from, to, readySpanBorders);
 
   if(newDetectionSpans.length === 0) {
     return [ new Detection.DetectionSpan(analyticUnitId, from, to, Detection.DetectionStatus.READY) ];
   }
 
-  let runningSpansPromises = [];
-  let newRunningSpans: Detection.DetectionSpan[] = [];
-  let failedSpans: Detection.DetectionSpan[] = [];
-  runningSpansPromises = newDetectionSpans.map(async span => {
+  let filteredNewDetectionSpans = [];
+  const filterFailedSpanPromises = newDetectionSpans.map(async span => {
     const insideFailed = await Detection.findMany(analyticUnitId, {
       status: Detection.DetectionStatus.FAILED,
       timeFromLTE: span.from,
@@ -580,9 +577,19 @@ export async function getDetectionSpans(
     });
 
     if(!_.isEmpty(insideFailed)) {
-      failedSpans.push(new Detection.DetectionSpan(analyticUnitId, span.from, span.to, Detection.DetectionStatus.FAILED));
+      return;
     }
 
+    const intersectedFailedSpans = await Detection.getIntersectedSpans(analyticUnitId, from, to, Detection.DetectionStatus.FAILED);
+    const intersectedFailedSpansBorders = Detection.getSpanBorders(intersectedFailedSpans);
+    const filteredSpans = getNonIntersectedSpans(from, to, intersectedFailedSpansBorders);
+    _.concat(filteredNewDetectionSpans, filteredSpans);
+  });
+  Promise.all(filterFailedSpanPromises);
+
+  let runningSpansPromises = [];
+  let newRunningSpans: Detection.DetectionSpan[] = [];
+  runningSpansPromises = filteredNewDetectionSpans.map(async span => {
     const insideRunning = await Detection.findMany(analyticUnitId, {
       status: Detection.DetectionStatus.RUNNING,
       timeFromLTE: span.from,
@@ -593,9 +600,6 @@ export async function getDetectionSpans(
       const runningSpan = await runDetectionOnExtendedSpan(analyticUnitId, span.from, span.to, analyticUnitCache);
       newRunningSpans.push(runningSpan);
     }
-
-
-
   });
 
   await Promise.all(runningSpansPromises);
