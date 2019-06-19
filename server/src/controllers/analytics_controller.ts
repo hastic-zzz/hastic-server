@@ -547,10 +547,11 @@ export async function getDetectionSpans(
 ): Promise<Detection.DetectionSpan[]> {
   const readySpans = await Detection.getIntersectedSpans(analyticUnitId, from, to, Detection.DetectionStatus.READY);
   const alreadyRunningSpans = await Detection.getIntersectedSpans(analyticUnitId, from, to, Detection.DetectionStatus.RUNNING);
+  const intersectedFailedSpans = await Detection.getIntersectedSpans(analyticUnitId, from, to, Detection.DetectionStatus.FAILED);
 
   const analyticUnitCache = await AnalyticUnitCache.findById(analyticUnitId);
 
-  if(_.isEmpty(readySpans)) {
+  if(_.isEmpty(readySpans) && _.isEmpty(intersectedFailedSpans)) {
     const span = await runDetectionOnExtendedSpan(analyticUnitId, from, to, analyticUnitCache);
 
     if(span === null) {
@@ -560,16 +561,28 @@ export async function getDetectionSpans(
     }
   }
 
-  const spanBorders = Detection.getSpanBorders(readySpans);
+  const readySpanBorders = Detection.getSpanBorders(readySpans);
 
-  let newDetectionSpans = getNonIntersectedSpans(from, to, spanBorders);
+  const newDetectionSpans = getNonIntersectedSpans(from, to, readySpanBorders);
+
   if(newDetectionSpans.length === 0) {
     return [ new Detection.DetectionSpan(analyticUnitId, from, to, Detection.DetectionStatus.READY) ];
   }
 
   let runningSpansPromises = [];
   let newRunningSpans: Detection.DetectionSpan[] = [];
+  let failedSpans: Detection.DetectionSpan[] = [];
   runningSpansPromises = newDetectionSpans.map(async span => {
+    const insideFailed = await Detection.findMany(analyticUnitId, {
+      status: Detection.DetectionStatus.FAILED,
+      timeFromLTE: span.from,
+      timeToGTE: span.to
+    });
+
+    if(!_.isEmpty(insideFailed)) {
+      failedSpans.push(new Detection.DetectionSpan(analyticUnitId, span.from, span.to, Detection.DetectionStatus.FAILED));
+    }
+
     const insideRunning = await Detection.findMany(analyticUnitId, {
       status: Detection.DetectionStatus.RUNNING,
       timeFromLTE: span.from,
@@ -580,11 +593,14 @@ export async function getDetectionSpans(
       const runningSpan = await runDetectionOnExtendedSpan(analyticUnitId, span.from, span.to, analyticUnitCache);
       newRunningSpans.push(runningSpan);
     }
+
+
+
   });
 
   await Promise.all(runningSpansPromises);
 
-  return _.concat(readySpans, alreadyRunningSpans, newRunningSpans.filter(span => span !== null));
+  return _.concat(readySpans, alreadyRunningSpans, newRunningSpans.filter(span => span !== null), failedSpans);
 }
 
 async function getPayloadData(
