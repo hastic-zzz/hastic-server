@@ -585,7 +585,7 @@ export async function getDetectionSpans(
     const filteredSpans = getNonIntersectedSpans(from, to, intersectedFailedSpansBorders);
     _.concat(filteredNewDetectionSpans, filteredSpans);
   });
-  Promise.all(filterFailedSpanPromises);
+  await Promise.all(filterFailedSpanPromises);
 
   let runningSpansPromises = [];
   let newRunningSpans: Detection.DetectionSpan[] = [];
