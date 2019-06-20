@@ -587,9 +587,8 @@ export async function getDetectionSpans(
   });
   await Promise.all(filterFailedSpanPromises);
 
-  let runningSpansPromises = [];
   let newRunningSpans: Detection.DetectionSpan[] = [];
-  runningSpansPromises = filteredNewDetectionSpans.map(async span => {
+  const runningSpansPromises = filteredNewDetectionSpans.map(async span => {
     const insideRunning = await Detection.findMany(analyticUnitId, {
       status: Detection.DetectionStatus.RUNNING,
       timeFromLTE: span.from,
