@@ -6,6 +6,7 @@ import * as _ from 'lodash';
 let db = makeDBQ(Collection.DETECTION_SPANS);
 
 export enum DetectionStatus {
+  CREATED = 'CREATED',
   READY = 'READY',
   RUNNING = 'RUNNING',
   FAILED = 'FAILED'

@@ -37,6 +37,11 @@ export abstract class AnalyticUnit {
     if(type === undefined) {
       throw new Error(`Missing field "type"`);
     }
+
+    // TODO: initialize in constructor signature
+    if(status === undefined) {
+      this.status = AnalyticUnitStatus.CREATED;
+    }
   }
 
   public toObject() {

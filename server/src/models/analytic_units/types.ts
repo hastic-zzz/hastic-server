@@ -3,6 +3,7 @@ import { Metric } from 'grafana-datasource-kit';
 
 export type AnalyticUnitId = string;
 export enum AnalyticUnitStatus {
+  CREATED = 'CREATED',
   READY = 'READY',
   PENDING = 'PENDING',
   LEARNING = 'LEARNING',

@@ -548,6 +548,21 @@ export async function getDetectionSpans(
   from: number,
   to: number
 ): Promise<Detection.DetectionSpan[]> {
+
+  const analyticUnit = await AnalyticUnit.findById(analyticUnitId);
+
+  if(analyticUnit.status === AnalyticUnit.AnalyticUnitStatus.CREATED) {
+    return [
+      new Detection.DetectionSpan(
+        analyticUnitId,
+        from,
+        to,
+        Detection.DetectionStatus.CREATED
+      )
+    ];
+  }
+
+
   const readySpans = await Detection.getIntersectedSpans(analyticUnitId, from, to, Detection.DetectionStatus.READY);
   const runningSpans = await Detection.getIntersectedSpans(analyticUnitId, from, to, Detection.DetectionStatus.RUNNING);
   const failedSpans = await Detection.getIntersectedSpans(analyticUnitId, from, to, Detection.DetectionStatus.FAILED);
