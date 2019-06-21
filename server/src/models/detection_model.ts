@@ -20,6 +20,7 @@ export class DetectionSpan {
     public to: number,
     public status: DetectionStatus,
     public id?: DetectionId,
+    public errorMessage?: string
   ) {
     if(analyticUnitId === undefined) {
       throw new Error('AnalyticUnitId is undefined');
@@ -47,7 +48,8 @@ export class DetectionSpan {
       analyticUnitId: this.analyticUnitId,
       from: this.from,
       to: this.to,
-      status: this.status
+      status: this.status,
+      message: this.errorMessage
     };
   }
 
@@ -59,7 +61,8 @@ export class DetectionSpan {
       obj.analyticUnitId,
       +obj.from, +obj.to,
       obj.status,
-      obj._id
+      obj._id,
+      obj.errorMessage
     );
   }
 }

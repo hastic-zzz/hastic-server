@@ -48,6 +48,9 @@ class AnalyticUnitWorker:
 
     async def do_detect(self, data: pd.DataFrame, cache: Optional[ModelCache]) -> DetectionResult:
 
+        import random
+        if random.choice([True, False]):
+            raise ValueError('test')
         window_size = self._detector.get_window_size(cache)
         chunk_size = window_size * self.CHUNK_WINDOW_SIZE_FACTOR
         chunk_intersection = window_size * self.CHUNK_INTERSECTION_FACTOR

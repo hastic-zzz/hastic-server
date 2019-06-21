@@ -18,6 +18,7 @@ import { queryByMetric, GrafanaUnavailable, DatasourceUnavailable } from 'grafan
 import * as _ from 'lodash';
 import { WebhookType } from '../services/notification_service';
 import { AnomalyAnalyticUnit } from '../models/analytic_units/anomaly_analytic_unit_model';
+import { read } from 'fs';
 
 const SECONDS_IN_MINUTE = 60;
 
@@ -399,7 +400,9 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
         id,
         range.from + intersection,
         range.to - intersection,
-        Detection.DetectionStatus.FAILED
+        Detection.DetectionStatus.FAILED,
+        undefined,
+        message
       )
     );
   }
@@ -546,7 +549,7 @@ export async function getDetectionSpans(
   to: number
 ): Promise<Detection.DetectionSpan[]> {
   const readySpans = await Detection.getIntersectedSpans(analyticUnitId, from, to, Detection.DetectionStatus.READY);
-  const alreadyRunningSpans = await Detection.getIntersectedSpans(analyticUnitId, from, to, Detection.DetectionStatus.RUNNING);
+  const runningSpans = await Detection.getIntersectedSpans(analyticUnitId, from, to, Detection.DetectionStatus.RUNNING);
   const failedSpans = await Detection.getIntersectedSpans(analyticUnitId, from, to, Detection.DetectionStatus.FAILED);
 
   const analyticUnitCache = await AnalyticUnitCache.findById(analyticUnitId);
@@ -561,34 +564,16 @@ export async function getDetectionSpans(
     }
   }
 
-  const readySpanBorders = Detection.getSpanBorders(readySpans);
-  const newDetectionSpans = getNonIntersectedSpans(from, to, readySpanBorders);
+  const redyAndFailedSpans = _.concat(readySpans, failedSpans);
+  const readyAndFailedSpanBorders = Detection.getSpanBorders(redyAndFailedSpans);
+  const newDetectionSpans = getNonIntersectedSpans(from, to, readyAndFailedSpanBorders);
 
   if(newDetectionSpans.length === 0) {
     return [ new Detection.DetectionSpan(analyticUnitId, from, to, Detection.DetectionStatus.READY) ];
   }
 
-  let filteredNewDetectionSpans = [];
-  const filterFailedSpanPromises = newDetectionSpans.map(async span => {
-    const insideFailed = await Detection.findMany(analyticUnitId, {
-      status: Detection.DetectionStatus.FAILED,
-      timeFromLTE: span.from,
-      timeToGTE: span.to
-    });
-
-    if(!_.isEmpty(insideFailed)) {
-      return;
-    }
-
-    const intersectedFailedSpans = await Detection.getIntersectedSpans(analyticUnitId, from, to, Detection.DetectionStatus.FAILED);
-    const intersectedFailedSpansBorders = Detection.getSpanBorders(intersectedFailedSpans);
-    const filteredSpans = getNonIntersectedSpans(from, to, intersectedFailedSpansBorders);
-    _.concat(filteredNewDetectionSpans, filteredSpans);
-  });
-  await Promise.all(filterFailedSpanPromises);
-
   let newRunningSpans: Detection.DetectionSpan[] = [];
-  const runningSpansPromises = filteredNewDetectionSpans.map(async span => {
+  const runningSpansPromises = newDetectionSpans.map(async span => {
     const insideRunning = await Detection.findMany(analyticUnitId, {
       status: Detection.DetectionStatus.RUNNING,
       timeFromLTE: span.from,
@@ -603,7 +588,7 @@ export async function getDetectionSpans(
 
   await Promise.all(runningSpansPromises);
 
-  return _.concat(readySpans, alreadyRunningSpans, newRunningSpans.filter(span => span !== null), failedSpans);
+  return _.concat(readySpans, runningSpans, newRunningSpans.filter(span => span !== null), failedSpans);
 }
 
 async function getPayloadData(
