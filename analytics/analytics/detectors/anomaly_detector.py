@@ -212,10 +212,10 @@ class AnomalyDetector(ProcessingDetector):
                 # TODO: support multiple segments
 
         timestamps = utils.convert_series_to_timestamp_list(dataframe.timestamp)
-        result_bounds = []
+        result_bounds = {}
         for bound_type, bound_data in bounds.items():
-            result_bounds.append(list(zip(timestamps, bound_data.values.tolist())))
-        result = AnomalyProcessingResult(*result_bounds)
+            result_bounds[bound_type] = list(zip(timestamps, bound_data.values.tolist()))
+        result = AnomalyProcessingResult(lower_bound=result_bounds.get(Bound.LOWER.value), upper_bound=result_bounds.get(Bound.UPPER.value))
         return result
 
     def add_season_to_data(self, data: pd.Series, segment: pd.Series, offset: int, seasonality: int, bound_type: Bound) -> pd.Series:
@@ -245,8 +245,13 @@ class AnomalyDetector(ProcessingDetector):
 
         united_result = AnomalyProcessingResult()
         for result in processing_results:
-            united_result.lower_bound.extend(result.lower_bound)
-            united_result.upper_bound.extend(result.upper_bound)
+            if result.lower_bound is not None:
+                if united_result.lower_bound is None: united_result.lower_bound = []
+                united_result.lower_bound.extend(result.lower_bound)
+
+            if result.upper_bound is not None:
+                if united_result.upper_bound is None: united_result.upper_bound = []
+                united_result.upper_bound.extend(result.upper_bound)
 
         return united_result
 
