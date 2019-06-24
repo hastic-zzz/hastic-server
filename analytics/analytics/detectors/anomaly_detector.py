@@ -116,6 +116,7 @@ class AnomalyDetector(ProcessingDetector):
         segments = [Segment(
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[0]]),
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[1]]),
+            f'{data[segment[0]]} out of bound'
         ) for segment in segments]
 
         last_dataframe_time = dataframe.iloc[-1]['timestamp']

@@ -451,9 +451,9 @@ async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitI
   }
   console.log(`got detection result for ${analyticUnitId} with ${detectionResult.segments.length} segments`);
 
-  const sortedSegments: {from, to}[] = _.sortBy(detectionResult.segments, 'from');
+  const sortedSegments: {from, to, message?}[] = _.sortBy(detectionResult.segments, 'from');
   const segments = sortedSegments.map(
-    segment => new Segment.Segment(analyticUnitId, segment.from, segment.to, false, false)
+    segment => new Segment.Segment(analyticUnitId, segment.from, segment.to, false, false, undefined, segment.message)
   );
 
   return {

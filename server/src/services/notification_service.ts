@@ -25,7 +25,7 @@ export declare type AnalyticMeta = {
   grafanaUrl: string,
   from: number,
   to: number
-  params?: any,
+  message?: any,
   regionImage?: any
 }
 
