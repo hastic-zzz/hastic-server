@@ -286,7 +286,8 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
       case AnalyticUnit.DetectorType.ANOMALY:
         taskPayload.anomaly = {
           alpha: (analyticUnit as AnomalyAnalyticUnit).alpha,
-          confidence: (analyticUnit as AnomalyAnalyticUnit).confidence
+          confidence: (analyticUnit as AnomalyAnalyticUnit).confidence,
+          disableBound: (analyticUnit as AnomalyAnalyticUnit).disableBound
         };
 
         taskPayload.data = await getPayloadData(analyticUnit, from, to);
@@ -669,11 +670,20 @@ export async function getHSR(
     if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
       throw new Error(`Data processing error: ${result.error}`);
     }
-    return {
-      hsr: data,
-      lowerBound: { values: result.payload.lowerBound, columns: data.columns },
-      upperBound: { values: result.payload.upperBound, columns: data.columns }
-    };
+
+    let resultSeries = {
+      hsr: data
+    }
+
+    if(result.payload.lowerBound !== undefined) {
+      resultSeries['lowerBound'] = { values: result.payload.lowerBound, columns: data.columns };
+    }
+
+    if(result.payload.upperBound !== undefined) {
+      resultSeries['upperBound'] = { values: result.payload.upperBound, columns: data.columns };
+    }
+
+    return resultSeries;
   } catch (err) {
     const message = err.message || JSON.stringify(err);
     await AnalyticUnit.setStatus(analyticUnit.id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
