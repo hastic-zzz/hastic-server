@@ -33,7 +33,8 @@ export class Alert {
       analyticUnitId: this.analyticUnit.id,
       grafanaUrl,
       from: segment.from,
-      to: segment.to 
+      to: segment.to,
+      message: segment.message
     };
 
     return alert;
@@ -46,7 +47,8 @@ export class Alert {
     ``,
     `From: ${new Date(meta.from)}`,
     `To: ${new Date(meta.to)}`,
-    `ID: ${meta.analyticUnitId}`
+    `ID: ${meta.analyticUnitId}`,
+    `Message: ${meta.message}`
     ].join('\n');
   }
 }
@@ -108,13 +110,14 @@ class ThresholdAlert extends Alert {
       `URL: ${meta.grafanaUrl}`,
       ``,
       `Starts at: ${new Date(meta.from)}`,
-      `ID: ${meta.analyticUnitId}`
+      `ID: ${meta.analyticUnitId}`,
+      `${meta.message}`
     ].join('\n');
 
-    if(meta.params !== undefined) {
+    if(meta.message !== undefined) {
       const metrics = `
         Metrics:
-        ${this.analyticUnit.metric.targets[0].expr}: ${meta.params.value}
+        ${this.analyticUnit.metric.targets[0].expr}: ${meta.message.value}
       `;
       message += metrics;
     }
