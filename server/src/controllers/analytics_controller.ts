@@ -286,7 +286,8 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
       case AnalyticUnit.DetectorType.ANOMALY:
         taskPayload.anomaly = {
           alpha: (analyticUnit as AnomalyAnalyticUnit).alpha,
-          confidence: (analyticUnit as AnomalyAnalyticUnit).confidence
+          confidence: (analyticUnit as AnomalyAnalyticUnit).confidence,
+          disableBound: (analyticUnit as AnomalyAnalyticUnit).disableBound
         };
 
         taskPayload.data = await getPayloadData(analyticUnit, from, to);

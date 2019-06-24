@@ -31,7 +31,7 @@ class AnomalyDetector(ProcessingDetector):
 
     def train(self, dataframe: pd.DataFrame, payload: Union[list, dict], cache: Optional[ModelCache]) -> ModelCache:
         segments = payload.get('segments')
-        disable_bound: str = payload.get('disableBound')
+        disable_bound: str = payload.get('disableBound') or 'NONE'
         prepared_segments = []
         time_step = utils.find_interval(dataframe)
 
@@ -69,7 +69,7 @@ class AnomalyDetector(ProcessingDetector):
         data = dataframe['value']
         time_step = cache['timeStep']
         segments = cache.get('segments')
-        disable_bound: str = cache.get('disableBound')
+        disable_bound: str = cache.get('disableBound') or 'NONE'
 
         smoothed_data = utils.exponential_smoothing(data, cache['alpha'])
  
@@ -174,7 +174,7 @@ class AnomalyDetector(ProcessingDetector):
     # TODO: ModelCache -> ModelState (don't use string literals)
     def process_data(self, dataframe: pd.DataFrame, cache: ModelCache) -> AnomalyProcessingResult:
         segments = cache.get('segments')
-        disable_bound: str = cache.get('disableBound')
+        disable_bound: str = cache.get('disableBound') or 'NONE'
 
         # TODO: exponential_smoothing should return dataframe with related timestamps
         smoothed_data = utils.exponential_smoothing(dataframe['value'], cache['alpha'])
