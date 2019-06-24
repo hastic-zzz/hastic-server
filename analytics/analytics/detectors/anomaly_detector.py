@@ -2,6 +2,7 @@ from enum import Enum
 import logging
 import numpy as np
 import operator
+from collections import OrderedDict
 import pandas as pd
 import math
 from typing import Optional, Union, List, Tuple
@@ -74,10 +75,9 @@ class AnomalyDetector(ProcessingDetector):
         smoothed_data = utils.exponential_smoothing(data, cache['alpha'])
  
         # TODO: use class for cache to avoid using string literals and Bound.TYPE.value
-        bounds = {
-            Bound.UPPER.value: ( smoothed_data + cache['confidence'], operator.gt ),
-            Bound.LOWER.value: ( smoothed_data - cache['confidence'], operator.lt )
-        }
+        bounds = OrderedDict()
+        bounds[Bound.LOWER.value] = smoothed_data - cache['confidence']
+        bounds[Bound.UPPER.value] = smoothed_data + cache['confidence']
 
         if disable_bound != Bound.NONE.value:
             del bounds[disable_bound]
@@ -179,10 +179,9 @@ class AnomalyDetector(ProcessingDetector):
         # TODO: exponential_smoothing should return dataframe with related timestamps
         smoothed_data = utils.exponential_smoothing(dataframe['value'], cache['alpha'])
 
-        bounds = {
-            Bound.UPPER.value: smoothed_data + cache['confidence'],
-            Bound.LOWER.value: smoothed_data - cache['confidence']
-        }
+        bounds = OrderedDict()
+        bounds[Bound.LOWER.value] = smoothed_data - cache['confidence']
+        bounds[Bound.UPPER.value] = smoothed_data + cache['confidence']
 
         if disable_bound != Bound.NONE.value:
             del bounds[disable_bound]
