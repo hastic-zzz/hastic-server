@@ -76,8 +76,8 @@ class AnomalyDetector(ProcessingDetector):
  
         # TODO: use class for cache to avoid using string literals and Bound.TYPE.value
         bounds = OrderedDict()
-        bounds[Bound.LOWER.value] = smoothed_data - cache['confidence']
-        bounds[Bound.UPPER.value] = smoothed_data + cache['confidence']
+        bounds[Bound.LOWER.value] = ( smoothed_data - cache['confidence'], operator.lt )
+        bounds[Bound.UPPER.value] = ( smoothed_data + cache['confidence'], operator.gt )
 
         if disable_bound != Bound.NONE.value:
             del bounds[disable_bound]
