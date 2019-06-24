@@ -31,7 +31,7 @@ class AnomalyDetector(ProcessingDetector):
 
     def train(self, dataframe: pd.DataFrame, payload: Union[list, dict], cache: Optional[ModelCache]) -> ModelCache:
         segments = payload.get('segments')
-        disable_bound: Bound = payload.get('disableBound')
+        disable_bound: str = payload.get('disableBound')
         prepared_segments = []
         time_step = utils.find_interval(dataframe)
 
@@ -69,17 +69,17 @@ class AnomalyDetector(ProcessingDetector):
         data = dataframe['value']
         time_step = cache['timeStep']
         segments = cache.get('segments')
-        disable_bound: Bound = cache.get('disableBound')
+        disable_bound: str = cache.get('disableBound')
 
         smoothed_data = utils.exponential_smoothing(data, cache['alpha'])
  
-        # TODO: use class for cache to avoid using string literals
+        # TODO: use class for cache to avoid using string literals and Bound.TYPE.value
         bounds = {
-            Bound.UPPER: ( smoothed_data + cache['confidence'], operator.gt ),
-            Bound.LOWER: ( smoothed_data - cache['confidence'], operator.lt )
+            Bound.UPPER.value: ( smoothed_data + cache['confidence'], operator.gt ),
+            Bound.LOWER.value: ( smoothed_data - cache['confidence'], operator.lt )
         }
 
-        if disable_bound != Bound.NONE:
+        if disable_bound != Bound.NONE.value:
             del bounds[disable_bound]
 
         if segments is not None:
@@ -174,17 +174,17 @@ class AnomalyDetector(ProcessingDetector):
     # TODO: ModelCache -> ModelState (don't use string literals)
     def process_data(self, dataframe: pd.DataFrame, cache: ModelCache) -> AnomalyProcessingResult:
         segments = cache.get('segments')
-        disable_bound: Bound = cache.get('disableBound')
+        disable_bound: str = cache.get('disableBound')
 
         # TODO: exponential_smoothing should return dataframe with related timestamps
         smoothed_data = utils.exponential_smoothing(dataframe['value'], cache['alpha'])
 
         bounds = {
-            Bound.UPPER: smoothed_data + cache['confidence'],
-            Bound.LOWER: smoothed_data - cache['confidence']
+            Bound.UPPER.value: smoothed_data + cache['confidence'],
+            Bound.LOWER.value: smoothed_data - cache['confidence']
         }
 
-        if disable_bound != Bound.NONE:
+        if disable_bound != Bound.NONE.value:
             del bounds[disable_bound]
 
 
