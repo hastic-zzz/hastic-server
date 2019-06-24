@@ -228,10 +228,10 @@ class AnomalyDetector(ProcessingDetector):
                 #TODO: add seasonality for non empty parts
                 continue
             if (idx - offset) % seasonality == 0:
-                if bound_type == Bound.UPPER:
+                if bound_type == Bound.UPPER.value:
                     upper_segment_bound = self.get_bounds_for_segment(segment)[0]
                     data = data.add(pd.Series(upper_segment_bound.values, index = segment.index + idx), fill_value = 0)
-                elif bound_type == Bound.LOWER:
+                elif bound_type == Bound.LOWER.value:
                     lower_segment_bound = self.get_bounds_for_segment(segment)[1]
                     data = data.add(pd.Series(lower_segment_bound.values * -1, index = segment.index + idx), fill_value = 0)
                 else:
