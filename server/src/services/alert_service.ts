@@ -110,16 +110,11 @@ class ThresholdAlert extends Alert {
       `URL: ${meta.grafanaUrl}`,
       ``,
       `Starts at: ${new Date(meta.from)}`,
-      `ID: ${meta.analyticUnitId}`,
-      `${meta.message}`
+      `ID: ${meta.analyticUnitId}`
     ].join('\n');
 
     if(meta.message !== undefined) {
-      const metrics = `
-        Metrics:
-        ${this.analyticUnit.metric.targets[0].expr}: ${meta.message.value}
-      `;
-      message += metrics;
+      message += meta.message;
     }
     return message;
   }

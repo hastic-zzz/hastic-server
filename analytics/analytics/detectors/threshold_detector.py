@@ -43,7 +43,6 @@ class ThresholdDetector(Detector):
         condition = cache['condition']
 
         segments = []
-        detection_info = []
         for index, row in dataframe.iterrows():
             current_value = row['value']
             current_timestamp = utils.convert_pd_timestamp_to_ms(row['timestamp'])
