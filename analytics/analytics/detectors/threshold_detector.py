@@ -1,5 +1,6 @@
 import logging as log
 
+import operator
 import pandas as pd
 import numpy as np
 from typing import Optional, List
@@ -50,29 +51,23 @@ class ThresholdDetector(Detector):
             # TODO: merge segments
             if pd.isnull(current_value):
                 if condition == 'NO_DATA':
+                    segment.message = 'NO_DATA detected'
                     segments.append(segment)
                 continue
 
-            if condition == '>':
-                if current_value > value:
-                    detection_info.append('Value {0} > threshold {1}'.format(current_value, value))
-                    segments.append(segment)
-            elif condition == '>=':
-                if current_value >= value:
-                    detection_info.append('Value {0} >= threshold {1}'.format(current_value, value))
-                    segments.append(segment)
-            elif condition == '=':
-                if current_value == value:
-                    detection_info.append('Value {0} = threshold {1}'.format(current_value, value))
-                    segments.append(segment)
-            elif condition == '<=':
-                if current_value <= value:
-                    detection_info.append('Value {0} <= threshold {1}'.format(current_value, value))
-                    segments.append(segment)
-            elif condition == '<':
-                if current_value < value:
-                    detection_info.append('Value {0} < threshold {1}'.format(current_value, value))
-                    segments.append(segment)
+            comparators = {
+                '>': operator.gt,
+                '<': operator.lt,
+                '=': operator.eq,
+                '>=': operator.ge,
+                '<=': operator.le
+            }
+
+            assert condition in comparators.keys(), f'condition {condition} not allowed'
+
+            if comparators[condition](current_value, value):
+                segment.message = f"{current_value} {condition} threshold's value {value}"
+                segments.append(segment)
 
         last_entry = dataframe.iloc[-1]
         last_detection_time = utils.convert_pd_timestamp_to_ms(last_entry['timestamp'])

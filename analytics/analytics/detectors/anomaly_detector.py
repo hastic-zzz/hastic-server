@@ -100,16 +100,15 @@ class AnomalyDetector(ProcessingDetector):
         for idx, val in enumerate(data.values):
             if val > upper_bound.values[idx]:
                 anomaly_indexes.append(data.index[idx])
-                detection_info.append(('Value {0} > upper_bound {1}'.format(val, upper_bound.values[idx])))
             elif val < lower_bound.values[idx]:
                 anomaly_indexes.append(data.index[idx])
-                detection_info.append(('Value {0} < lower_bound {1}'.format(val, lower_bound.values[idx])))
         # TODO: use Segment in utils
         segments = utils.close_filtering(anomaly_indexes, 1)
         segments = utils.get_start_and_end_of_segments(segments)
         segments = [Segment(
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[0]]),
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[1]]),
+            f'{data[segment[0]]} out of bound'
         ) for segment in segments]
 
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
