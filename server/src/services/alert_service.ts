@@ -1,10 +1,12 @@
 import { sendNotification, InfoMeta, AnalyticMeta, WebhookType, Notification } from './notification_service';
 
+import axios from 'axios';
 import * as _ from 'lodash';
 import * as AnalyticUnit from '../models/analytic_units';
 import { Segment } from '../models/segment_model';
 import { availableReporter } from '../utils/reporter';
-import { ORG_ID } from '../config';
+import { ORG_ID, HASTIC_WEBHOOK_IMAGE_ENABLED, HASTIC_API_KEY } from '../config';
+import { BinaryData } from 'fs';
 
 
 export class Alert {
@@ -19,13 +21,29 @@ export class Alert {
   protected makeNotification(segment: Segment): Notification {
     const meta = this.makeMeta(segment);
     const message = this.makeMessage(meta);
+
+    if(HASTIC_WEBHOOK_IMAGE_ENABLED) {
+      const image = this.loadImage(meta);
+    }
+
     return { meta, message };
   }
 
-  protected makeMeta(segment: Segment): AnalyticMeta {
-    const datshdoardId = this.analyticUnit.panelId.split('/')[0];
+  protected async loadImage(meta: AnalyticMeta) {
+    const headers = { Authorization: `Bearer ${HASTIC_API_KEY}` };
+    const dashdoardId = this.analyticUnit.panelId.split('/')[0];
     const panelId = this.analyticUnit.panelId.split('/')[1];
-    const grafanaUrl = `${this.analyticUnit.grafanaUrl}/d/${datshdoardId}?panelId=${panelId}&edit=true&fullscreen=true?orgId=${ORG_ID}`;
+    const dashboardApiURL = `${this.analyticUnit.grafanaUrl}/api/dashboards/uid/${dashdoardId}`;
+    const dashboardInfo: any = await axios.get(dashboardApiURL, config: headers);
+    const dashboardName = _.last(dashboardInfo.meta.url.split('/'));
+    const renderUrl = `${this.analyticUnit.grafanaUrl}/render/d-solo/${dashdoardId}/${dashboardName}?panelId=${panelId}&ordId=${ORG_ID}`;
+    const image = axios.get(renderUrl);
+  }
+
+  protected makeMeta(segment: Segment): AnalyticMeta {
+    const dashdoardId = this.analyticUnit.panelId.split('/')[0];
+    const panelId = this.analyticUnit.panelId.split('/')[1];
+    const grafanaUrl = `${this.analyticUnit.grafanaUrl}/d/${dashdoardId}?panelId=${panelId}&edit=true&fullscreen=true?orgId=${ORG_ID}`;
     const alert: AnalyticMeta = {
       type: WebhookType.DETECT,
       analyticUnitType: this.analyticUnit.type,
