@@ -25,8 +25,7 @@ export declare type AnalyticMeta = {
   grafanaUrl: string,
   from: number,
   to: number
-  message?: any,
-  regionImage?: any
+  message?: any
 }
 
 export declare type InfoMeta = {
@@ -38,7 +37,8 @@ export declare type InfoMeta = {
 
 export declare type Notification = {
   message: string,
-  meta: InfoMeta | AnalyticMeta
+  meta: InfoMeta | AnalyticMeta,
+  image?: any
 }
 
 export async function sendNotification(notification: Notification) {

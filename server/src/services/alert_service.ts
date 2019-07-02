@@ -6,7 +6,6 @@ import * as AnalyticUnit from '../models/analytic_units';
 import { Segment } from '../models/segment_model';
 import { availableReporter } from '../utils/reporter';
 import { ORG_ID, HASTIC_WEBHOOK_IMAGE_ENABLED, HASTIC_API_KEY } from '../config';
-import { BinaryData } from 'fs';
 
 
 export class Alert {
@@ -14,14 +13,26 @@ export class Alert {
   constructor(protected analyticUnit: AnalyticUnit.AnalyticUnit) {};
   public receive(segment: Segment) {
     if(this.enabled) {
-      sendNotification(this.makeNotification(segment));
+      this.send(segment);
     }
   };
 
-  protected makeNotification(segment: Segment): Notification {
+  protected async send(segment) {
+    const notification = await this.makeNotification(segment);
+    sendNotification(notification);
+  }
+
+  protected async makeNotification(segment: Segment): Promise<Notification> {
     const meta = this.makeMeta(segment);
     const message = this.makeMessage(meta);
-    return { meta, message };
+    let result: Notification = { meta, message };
+
+    if(HASTIC_WEBHOOK_IMAGE_ENABLED) {
+       const image = await this.loadImage();
+       result.image = image;
+    }
+
+    return result;
   }
 
   protected async loadImage() {
@@ -30,10 +41,10 @@ export class Alert {
     const panelId = this.analyticUnit.panelId.split('/')[1];
     const dashboardApiURL = `${this.analyticUnit.grafanaUrl}/api/dashboards/uid/${dashdoardId}`;
     const dashboardInfo: any = await axios.get(dashboardApiURL, { headers });
-    const dashboardName = _.last(dashboardInfo.meta.url.split('/'));
+    const dashboardName = _.last(dashboardInfo.data.meta.url.split('/'));
     const renderUrl = `${this.analyticUnit.grafanaUrl}/render/d-solo/${dashdoardId}/${dashboardName}?panelId=${panelId}&ordId=${ORG_ID}`;
     const image = await axios.get(renderUrl, { headers });
-    return image;
+    return image.data;
   }
 
   protected makeMeta(segment: Segment): AnalyticMeta {
@@ -51,10 +62,6 @@ export class Alert {
       to: segment.to,
       message: segment.message
     };
-
-    if(HASTIC_WEBHOOK_IMAGE_ENABLED) {
-      alert.regionImage = this.loadImage();
-    }
 
     return alert;
   }
@@ -80,7 +87,7 @@ class PatternAlert extends Alert {
     if(this.lastSentSegment === undefined || !segment.equals(this.lastSentSegment) ) {
       this.lastSentSegment = segment;
       if(this.enabled) {
-        sendNotification(this.makeNotification(segment));
+        this.send(segment);
       }
     }
   }
@@ -108,14 +115,14 @@ class ThresholdAlert extends Alert {
     if(this.lastOccurence === 0) {
       this.lastOccurence = segment.from;
       if(this.enabled) {
-        sendNotification(this.makeNotification(segment));
+        this.send(segment);
       }
     } else {
 
       if(segment.from - this.lastOccurence > this.EXPIRE_PERIOD_MS) {
         if(this.enabled) {
           console.log(`time between threshold occurences ${segment.from - this.lastOccurence}ms, send alert`);
-          sendNotification(this.makeNotification(segment));
+          this.send(segment);
         }
       }
 
