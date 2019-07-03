@@ -1,5 +1,4 @@
 import { sendNotification, InfoMeta, AnalyticMeta, WebhookType, Notification } from './notification_service';
-import * as fs from 'fs';
 import axios from 'axios';
 import * as _ from 'lodash';
 import * as AnalyticUnit from '../models/analytic_units';
@@ -47,9 +46,12 @@ export class Alert {
     const dashboardInfo: any = await axios.get(dashboardApiURL, { headers });
     const dashboardName = _.last(dashboardInfo.data.meta.url.split('/'));
     const renderUrl = `${this.analyticUnit.grafanaUrl}/render/d-solo/${dashdoardId}/${dashboardName}?panelId=${panelId}&ordId=${ORG_ID}`;
-    const image = await axios.get(renderUrl, { headers });
-    fs.writeFileSync('test.png',image.data);
-    return image.data;
+    const response = await axios.get(renderUrl, {
+      headers,
+      responseType: 'arraybuffer'
+    });
+    const image = new Buffer(response.data, 'binary').toString('base64');
+    return image;
   }
 
   protected makeMeta(segment: Segment): AnalyticMeta {
