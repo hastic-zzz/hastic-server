@@ -31,7 +31,7 @@ export class Alert {
        const image = await this.loadImage();
        result.image = image;
       } catch(err) {
-         console.error(`Can't load alert image: ${err}. Check that API key has admin permissions`);
+       console.error(`Can't load alert image: ${err}. Check that API key has admin permissions`);
       }
     }
 
