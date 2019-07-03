@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import * as AnalyticUnit from '../models/analytic_units';
 import { Segment } from '../models/segment_model';
 import { availableReporter } from '../utils/reporter';
-import { ORG_ID, HASTIC_API_KEY } from '../config';
+import { ORG_ID, HASTIC_API_KEY, HASTIC_WEBHOOK_IMAGE_ENABLED } from '../config';
 
 
 export class Alert {
