@@ -27,13 +27,12 @@ export class Alert {
     let result: Notification = { meta, message };
     const HASTIC_WEBHOOK_IMAGE_ENABLED = true;
     if(HASTIC_WEBHOOK_IMAGE_ENABLED) {
-      // try {
+      try {
        const image = await this.loadImage();
-       console.log('ge')
        result.image = image;
-      // } catch(err) {
-      //   console.error(`can't load alert image: ${err}`);
-      // }
+      } catch(err) {
+         console.error(`Can't load alert image: ${err}. Check that API key has admin permissions`);
+      }
     }
 
     return result;
