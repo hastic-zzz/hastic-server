@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import * as AnalyticUnit from '../models/analytic_units';
 import { Segment } from '../models/segment_model';
 import { availableReporter } from '../utils/reporter';
-import { ORG_ID, HASTIC_WEBHOOK_IMAGE_ENABLED, HASTIC_API_KEY } from '../config';
+import { ORG_ID, HASTIC_API_KEY } from '../config';
 
 
 export class Alert {
@@ -25,14 +25,15 @@ export class Alert {
     const meta = this.makeMeta(segment);
     const message = this.makeMessage(meta);
     let result: Notification = { meta, message };
-
+    const HASTIC_WEBHOOK_IMAGE_ENABLED = true;
     if(HASTIC_WEBHOOK_IMAGE_ENABLED) {
-      try {
+      // try {
        const image = await this.loadImage();
+       console.log('ge')
        result.image = image;
-      } catch(err) {
-        console.error(`can't load alert image: ${err}`);
-      }
+      // } catch(err) {
+      //   console.error(`can't load alert image: ${err}`);
+      // }
     }
 
     return result;
@@ -45,13 +46,12 @@ export class Alert {
     const dashboardApiURL = `${this.analyticUnit.grafanaUrl}/api/dashboards/uid/${dashdoardId}`;
     const dashboardInfo: any = await axios.get(dashboardApiURL, { headers });
     const dashboardName = _.last(dashboardInfo.data.meta.url.split('/'));
-    const renderUrl = `${this.analyticUnit.grafanaUrl}/render/d-solo/${dashdoardId}/${dashboardName}?panelId=${panelId}&ordId=${ORG_ID}`;
+    const renderUrl = `${this.analyticUnit.grafanaUrl}/render/d-solo/${dashdoardId}/${dashboardName}?panelId=${panelId}&ordId=${ORG_ID}&api-rendering`;
     const response = await axios.get(renderUrl, {
       headers,
       responseType: 'arraybuffer'
     });
-    const image = new Buffer(response.data, 'binary').toString('base64');
-    return image;
+    return new Buffer(response.data, 'binary').toString('base64');
   }
 
   protected makeMeta(segment: Segment): AnalyticMeta {
