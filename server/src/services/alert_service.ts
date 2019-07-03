@@ -1,10 +1,11 @@
 import { sendNotification, InfoMeta, AnalyticMeta, WebhookType, Notification } from './notification_service';
-import axios from 'axios';
-import * as _ from 'lodash';
 import * as AnalyticUnit from '../models/analytic_units';
 import { Segment } from '../models/segment_model';
 import { availableReporter } from '../utils/reporter';
 import { ORG_ID, HASTIC_API_KEY, HASTIC_WEBHOOK_IMAGE_ENABLED } from '../config';
+
+import axios from 'axios';
+import * as _ from 'lodash';
 
 
 export class Alert {
@@ -200,7 +201,7 @@ export class AlertService {
   public sendGrafanaAvailableWebhook() {
     this._grafanaAvailableReporter(true);
   }
-  
+
   public sendGrafanaUnavailableWebhook() {
     this._grafanaAvailableReporter(false);
   }
