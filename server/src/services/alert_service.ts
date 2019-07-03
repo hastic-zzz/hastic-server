@@ -1,5 +1,5 @@
 import { sendNotification, InfoMeta, AnalyticMeta, WebhookType, Notification } from './notification_service';
-
+import * as fs from 'fs';
 import axios from 'axios';
 import * as _ from 'lodash';
 import * as AnalyticUnit from '../models/analytic_units';
@@ -28,8 +28,12 @@ export class Alert {
     let result: Notification = { meta, message };
 
     if(HASTIC_WEBHOOK_IMAGE_ENABLED) {
+      try {
        const image = await this.loadImage();
        result.image = image;
+      } catch(err) {
+        console.error(`can't load alert image: ${err}`);
+      }
     }
 
     return result;
@@ -44,6 +48,7 @@ export class Alert {
     const dashboardName = _.last(dashboardInfo.data.meta.url.split('/'));
     const renderUrl = `${this.analyticUnit.grafanaUrl}/render/d-solo/${dashdoardId}/${dashboardName}?panelId=${panelId}&ordId=${ORG_ID}`;
     const image = await axios.get(renderUrl, { headers });
+    fs.writeFileSync('test.png',image.data);
     return image.data;
   }
 
