@@ -25,7 +25,6 @@ export class Alert {
     const meta = this.makeMeta(segment);
     const message = this.makeMessage(meta);
     let result: Notification = { meta, message };
-    const HASTIC_WEBHOOK_IMAGE_ENABLED = true;
     if(HASTIC_WEBHOOK_IMAGE_ENABLED) {
       try {
        const image = await this.loadImage();
