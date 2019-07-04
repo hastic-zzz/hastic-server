@@ -29,8 +29,10 @@ export const GRAFANA_URL = normalizeUrl(getConfigField('GRAFANA_URL', null));
 // TODO: save orgId in analytic_units.db
 export const ORG_ID = getConfigField('ORG_ID', 1);
 export const HASTIC_WEBHOOK_URL = getConfigField('HASTIC_WEBHOOK_URL', null);
-export const HASTIC_WEBHOOK_TYPE = getConfigField('HASTIC_WEBHOOK_TYPE', 'application/x-www-form-urlencoded');
+export const HASTIC_WEBHOOK_TYPE = getConfigField('HASTIC_WEBHOOK_TYPE', 'application/json');
 export const HASTIC_WEBHOOK_SECRET = getConfigField('HASTIC_WEBHOOK_SECRET', null);
+export const HASTIC_WEBHOOK_IMAGE_ENABLED = getConfigField('HASTIC_WEBHOOK_IMAGE', false);
+
 export const ANLYTICS_PING_INTERVAL = 500; // ms
 export const PACKAGE_VERSION = getPackageVersion();
 export const GIT_INFO = getGitInfo();
