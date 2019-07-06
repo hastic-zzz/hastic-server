@@ -65,7 +65,7 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
       confidence: this.confidence,
       seasonality: this.seasonality,
       seasonalityPeriod: this.seasonalityPeriod,
-      disableBound: this.enableBounds
+      enableBounds: this.enableBounds
     };
   }
 
@@ -77,7 +77,7 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
       confidence: this.confidence,
       seasonality: this.seasonality,
       seasonalityPeriod: this.seasonalityPeriod,
-      disableBound: this.enableBounds
+      enableBounds: this.enableBounds
     };
   }
 
@@ -97,7 +97,7 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
       obj.confidence,
       obj.seasonality,
       obj.seasonalityPeriod,
-      obj.disableBound,
+      obj.enableBounds,
       metric,
       obj.alert,
       obj._id,
