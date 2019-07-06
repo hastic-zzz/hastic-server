@@ -9,7 +9,7 @@ type SeasonalityPeriod = {
 }
 
 enum Bound {
-  NONE = 'NONE',
+  ALL = 'ALL',
   UPPER = 'UPPER',
   LOWER = 'LOWER'
 };
@@ -26,7 +26,7 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
     public confidence: number,
     public seasonality: number, //seasonality in ms
     private seasonalityPeriod: SeasonalityPeriod,
-    public disableBound: Bound,
+    public enableBounds: Bound,
     metric?: Metric,
     alert?: boolean,
     id?: AnalyticUnitId,
@@ -65,7 +65,7 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
       confidence: this.confidence,
       seasonality: this.seasonality,
       seasonalityPeriod: this.seasonalityPeriod,
-      disableBound: this.disableBound
+      disableBound: this.enableBounds
     };
   }
 
@@ -77,7 +77,7 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
       confidence: this.confidence,
       seasonality: this.seasonality,
       seasonalityPeriod: this.seasonalityPeriod,
-      disableBound: this.disableBound
+      disableBound: this.enableBounds
     };
   }
 

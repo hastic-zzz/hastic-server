@@ -20,7 +20,7 @@ BASIC_ALPHA = 0.5
 logger = logging.getLogger('ANOMALY_DETECTOR')
 
 class Bound(Enum):
-    NONE = 'NONE'
+    ALL = 'ALL'
     UPPER = 'UPPER'
     LOWER = 'LOWER'
 
@@ -32,7 +32,7 @@ class AnomalyDetector(ProcessingDetector):
 
     def train(self, dataframe: pd.DataFrame, payload: Union[list, dict], cache: Optional[ModelCache]) -> ModelCache:
         segments = payload.get('segments')
-        disable_bound: str = payload.get('disableBound') or 'NONE'
+        enable_bounds: str = payload.get('enableBounds') or 'ALL'
         prepared_segments = []
         time_step = utils.find_interval(dataframe)
 
@@ -40,7 +40,7 @@ class AnomalyDetector(ProcessingDetector):
             'confidence': payload['confidence'],
             'alpha': payload['alpha'],
             'timeStep': time_step,
-            'disableBound': disable_bound
+            'enableBounds': enable_bounds
         }
 
         if segments is not None:
@@ -70,7 +70,7 @@ class AnomalyDetector(ProcessingDetector):
         data = dataframe['value']
         time_step = cache['timeStep']
         segments = cache.get('segments')
-        disable_bound: str = cache.get('disableBound') or 'NONE'
+        enable_bounds: str = cache.get('enableBounds') or 'ALL'
 
         smoothed_data = utils.exponential_smoothing(data, cache['alpha'])
  
@@ -79,8 +79,8 @@ class AnomalyDetector(ProcessingDetector):
         bounds[Bound.LOWER.value] = ( smoothed_data - cache['confidence'], operator.lt )
         bounds[Bound.UPPER.value] = ( smoothed_data + cache['confidence'], operator.gt )
 
-        if disable_bound != Bound.NONE.value:
-            del bounds[disable_bound]
+        if enable_bounds != Bound.ALL.value:
+            del bounds[enable_bounds]
 
         if segments is not None:
 
@@ -175,7 +175,7 @@ class AnomalyDetector(ProcessingDetector):
     # TODO: ModelCache -> ModelState (don't use string literals)
     def process_data(self, dataframe: pd.DataFrame, cache: ModelCache) -> AnomalyProcessingResult:
         segments = cache.get('segments')
-        disable_bound: str = cache.get('disableBound') or 'NONE'
+        enable_bounds: str = cache.get('enableBounds') or 'ALL'
 
         # TODO: exponential_smoothing should return dataframe with related timestamps
         smoothed_data = utils.exponential_smoothing(dataframe['value'], cache['alpha'])
@@ -184,8 +184,8 @@ class AnomalyDetector(ProcessingDetector):
         bounds[Bound.LOWER.value] = smoothed_data - cache['confidence']
         bounds[Bound.UPPER.value] = smoothed_data + cache['confidence']
 
-        if disable_bound != Bound.NONE.value:
-            del bounds[disable_bound]
+        if enable_bounds != Bound.ALL.value:
+            del bounds[enable_bounds]
 
 
         # TODO: remove duplication with detect()
