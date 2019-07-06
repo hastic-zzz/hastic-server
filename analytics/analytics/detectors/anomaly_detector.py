@@ -79,8 +79,12 @@ class AnomalyDetector(ProcessingDetector):
         bounds[Bound.LOWER.value] = ( smoothed_data - cache['confidence'], operator.lt )
         bounds[Bound.UPPER.value] = ( smoothed_data + cache['confidence'], operator.gt )
 
-        if enable_bounds != Bound.ALL.value:
-            del bounds[enable_bounds]
+        if enable_bounds == Bound.LOWER.value:
+            del bounds[Bound.UPPER.value]
+
+        if enable_bounds == Bound.UPPER.value:
+            del bounds[Bound.LOWER.value]
+
 
         if segments is not None:
 
@@ -184,8 +188,11 @@ class AnomalyDetector(ProcessingDetector):
         bounds[Bound.LOWER.value] = smoothed_data - cache['confidence']
         bounds[Bound.UPPER.value] = smoothed_data + cache['confidence']
 
-        if enable_bounds != Bound.ALL.value:
-            del bounds[enable_bounds]
+        if enable_bounds == Bound.LOWER.value:
+            del bounds[Bound.UPPER.value]
+
+        if enable_bounds == Bound.UPPER.value:
+            del bounds[Bound.LOWER.value]
 
 
         # TODO: remove duplication with detect()
