@@ -368,7 +368,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     await Promise.all([
       Segment.insertSegments(payload.segments),
       AnalyticUnitCache.setData(id, payload.cache),
-      AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime),
+      AnalyticUnit.setDetectionTime(id, range.to - intersection),
     ]);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
     await Detection.insertSpan(
