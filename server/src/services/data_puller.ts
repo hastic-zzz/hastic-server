@@ -150,6 +150,15 @@ export class DataPuller {
           throw new Error(`Analytic unit ${analyticUnit.id} is deleted from puller`);
         }
         const now = Date.now();
+
+        if(time === now) {
+          // TODO: probably we should have ability to set PULL_PERIOD_MS or got it from metric as time step between points
+          return {
+            columns: [],
+            values: []
+          };
+        }
+
         const res = await this.pullData(analyticUnit, time, now);
         this._grafanaAvailableConsoleReporter(true);
         this.alertService.sendGrafanaAvailableWebhook();
