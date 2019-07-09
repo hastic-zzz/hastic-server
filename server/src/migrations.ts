@@ -27,7 +27,8 @@ const REVISIONS = new Map<number, Function>([
   [1, convertPanelUrlToPanelId],
   [2, convertUnderscoreToCamelCase],
   [3, integrateThresholdsIntoAnalyticUnits],
-  [4, addDetectorTypes]
+  [4, addDetectorTypes],
+  [5, switchBoundsDisabling]
 ]);
 
 export async function applyDBMigrations() {
@@ -125,6 +126,25 @@ async function addDetectorTypes() {
   const promises = analyticUnits.map(analyticUnit => 
     analyticUnitsDB.updateOne(analyticUnit._id, { detectorType: getDetectorByType(analyticUnit.type) })
   );
+
+  await Promise.all(promises);
+}
+
+async function switchBoundsDisabling() {
+  const analyticUnits = await analyticUnitsDB.findMany({ disableBound: { $exists: true } });
+
+  const promises = analyticUnits.map(analyticUnit => {
+    let enableBounds;
+    if(analyticUnit.disableBound === 'NONE') {
+      enableBounds = 'ALL';
+    }
+    if(analyticUnit.disableBound === 'UPPER') {
+      enableBounds = 'LOWER';
+    } else {
+      enableBounds = 'UPPER';
+    }
+    analyticUnitsDB.updateOne(analyticUnit._id, { enableBounds })
+  });
 
   await Promise.all(promises);
 }
