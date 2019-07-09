@@ -152,7 +152,7 @@ export class DataPuller {
         const now = Date.now();
 
         if(time <= now) {
-          // TODO: probably we should have ability to set PULL_PERIOD_MS or got it from metric as time step between points
+          // TODO: probably we should have ability to set PULL_PERIOD_MS or get it from metric as time step between points
           return {
             columns: [],
             values: []
