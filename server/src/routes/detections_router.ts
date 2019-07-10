@@ -24,6 +24,10 @@ export async function getDetectionSpans(ctx: Router.IRouterContext) {
     throw new Error(`to is missing or corrupted (got ${ctx.request.query.to})`);
   }
 
+  if(from >= to) {
+    throw new Error(`'from' timestamp ${from} must be less than 'to' timestamp ${to}`);
+  }
+
   let response: DetectionSpansResponse = { spans: [] };
   // TODO: invalidate
   response.spans = await AnalyticsController.getDetectionSpans(id, from, to);

@@ -75,15 +75,6 @@ async function onPushDetect(detectionResult: DetectionResult) {
     } catch(err) {
       console.error(`error while sending webhook: ${err.message}`);
     }
-  } else {
-    let reasons = [];
-    if(!analyticUnit.alert) {
-      reasons.push('alerting disabled');
-    }
-    if(_.isEmpty(detectionResult.segments)) {
-      reasons.push('segments empty');
-    }
-    console.log(`skip sending webhook for ${analyticUnit.id}, ${reasons.join(', ')}`);
   }
   await onDetect(detectionResult);
 }
@@ -377,7 +368,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     await Promise.all([
       Segment.insertSegments(payload.segments),
       AnalyticUnitCache.setData(id, payload.cache),
-      AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime),
+      AnalyticUnit.setDetectionTime(id, range.to - intersection),
     ]);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
     await Detection.insertSpan(
