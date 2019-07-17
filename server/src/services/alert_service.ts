@@ -19,7 +19,9 @@ export class Alert {
 
   protected async send(segment) {
     const notification = await this.makeNotification(segment);
-    sendNotification(notification);
+    sendNotification(notification).catch(error => {
+      console.error(`can't send notification ${error}`);
+    });
   }
 
   protected async makeNotification(segment: Segment): Promise<Notification> {
@@ -195,7 +197,9 @@ export class AlertService {
       from: now,
       to: now
     }
-    sendNotification({ message, meta: infoAlert });
+    sendNotification({ message, meta: infoAlert }).catch(error => {
+      console.error(`can't send notification ${error}`);
+    });
   }
 
   public sendGrafanaAvailableWebhook() {
