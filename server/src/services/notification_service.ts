@@ -36,7 +36,7 @@ export declare type InfoMeta = {
 }
 
 export declare type Notification = {
-  message: string,
+  text: string,
   meta: InfoMeta | AnalyticMeta,
   image?: any
 }
@@ -46,7 +46,7 @@ export async function sendNotification(notification: Notification) {
     throw new Error(`Can't send notification, HASTIC_WEBHOOK_URL is undefined`);
   }
 
-  notification.message += `\nInstance: ${HASTIC_INSTANCE_NAME}`;
+  notification.text += `\nInstance: ${HASTIC_INSTANCE_NAME}`;
 
   let data;
   if(HASTIC_WEBHOOK_TYPE === ContentType.JSON) {

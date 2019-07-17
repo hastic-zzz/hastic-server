@@ -24,8 +24,8 @@ export class Alert {
 
   protected async makeNotification(segment: Segment): Promise<Notification> {
     const meta = this.makeMeta(segment);
-    const message = this.makeMessage(meta);
-    let result: Notification = { meta, message };
+    const text = this.makeMessage(meta);
+    let result: Notification = { meta, text };
     if(HASTIC_WEBHOOK_IMAGE_ENABLED) {
       try {
        const image = await this.loadImage();
@@ -187,7 +187,7 @@ export class AlertService {
     this._alerts[id].receive(segment);
   };
 
-  public sendMsg(message: string, type: WebhookType, optionalInfo = {}) {
+  public sendMsg(text: string, type: WebhookType, optionalInfo = {}) {
     const now = Date.now();
     const infoAlert: InfoMeta = {
       params: optionalInfo,
@@ -195,7 +195,7 @@ export class AlertService {
       from: now,
       to: now
     }
-    sendNotification({ message, meta: infoAlert });
+    sendNotification({ text, meta: infoAlert });
   }
 
   public sendGrafanaAvailableWebhook() {
