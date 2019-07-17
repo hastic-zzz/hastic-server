@@ -43,7 +43,7 @@ export declare type Notification = {
 
 export async function sendNotification(notification: Notification) {
   if(HASTIC_WEBHOOK_URL === null) {
-    throw new Error(`Can't send notification, HASTIC_WEBHOOK_URL is undefined`);
+    console.log(`Can't send notification, HASTIC_WEBHOOK_URL is undefined`);
   }
 
   notification.message += `\nInstance: ${HASTIC_INSTANCE_NAME}`;
