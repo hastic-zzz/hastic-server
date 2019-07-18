@@ -17,7 +17,7 @@ export enum WebhookType {
   MESSAGE = 'MESSAGE'
 }
 
-export declare type AnalyticMeta = {
+export declare type MetaAnalytic = {
   type: WebhookType,
   analyticUnitType: string,
   analyticUnitName: string,
@@ -28,7 +28,7 @@ export declare type AnalyticMeta = {
   message?: any
 }
 
-export declare type InfoMeta = {
+export declare type MetaInfo = {
   type: WebhookType,
   from: number,
   to: number,
@@ -37,7 +37,7 @@ export declare type InfoMeta = {
 
 export declare type Notification = {
   text: string,
-  meta: InfoMeta | AnalyticMeta,
+  meta: MetaInfo | MetaAnalytic,
   image?: any
 }
 

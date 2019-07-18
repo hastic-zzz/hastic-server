@@ -1,4 +1,4 @@
-import { sendNotification, InfoMeta, AnalyticMeta, WebhookType, Notification } from './notification_service';
+import { sendNotification, MetaInfo, MetaAnalytic, WebhookType, Notification } from './notification_service';
 import * as AnalyticUnit from '../models/analytic_units';
 import { Segment } from '../models/segment_model';
 import { availableReporter } from '../utils/reporter';
@@ -28,10 +28,10 @@ export class Alert {
     let result: Notification = { meta, text };
     if(HASTIC_WEBHOOK_IMAGE_ENABLED) {
       try {
-       const image = await this.loadImage();
-       result.image = image;
+        const image = await this.loadImage();
+        result.image = image;
       } catch(err) {
-       console.error(`Can't load alert image: ${err}. Check that API key has admin permissions`);
+        console.error(`Can't load alert image: ${err}. Check that API key has admin permissions`);
       }
     }
 
@@ -53,12 +53,12 @@ export class Alert {
     return new Buffer(response.data, 'binary').toString('base64');
   }
 
-  protected makeMeta(segment: Segment): AnalyticMeta {
+  protected makeMeta(segment: Segment): MetaAnalytic {
     const dashdoardId = this.analyticUnit.panelId.split('/')[0];
     const panelId = this.analyticUnit.panelId.split('/')[1];
     const grafanaUrl = `${this.analyticUnit.grafanaUrl}/d/${dashdoardId}?panelId=${panelId}&edit=true&fullscreen=true?orgId=${ORG_ID}`;
 
-    let alert: AnalyticMeta = {
+    let alert: MetaAnalytic = {
       type: WebhookType.DETECT,
       analyticUnitType: this.analyticUnit.type,
       analyticUnitName: this.analyticUnit.name,
@@ -72,7 +72,7 @@ export class Alert {
     return alert;
   }
 
-  protected makeMessage(meta: AnalyticMeta): string {
+  protected makeMessage(meta: MetaAnalytic): string {
     return [
     `[${meta.analyticUnitType.toUpperCase()} ALERTING] ${meta.analyticUnitName}`,
     `URL: ${meta.grafanaUrl}`,
@@ -98,7 +98,7 @@ class PatternAlert extends Alert {
     }
   }
 
-  protected makeMessage(meta: AnalyticMeta): string {
+  protected makeMessage(meta: MetaAnalytic): string {
     return [
       `[PATTERN DETECTED] ${meta.analyticUnitName}`,
       `URL: ${meta.grafanaUrl}`,
@@ -136,7 +136,7 @@ class ThresholdAlert extends Alert {
     }
   }
 
-  protected makeMessage(meta: AnalyticMeta): string {
+  protected makeMessage(meta: MetaAnalytic): string {
     let message = [
       `[THRESHOLD ALERTING] ${meta.analyticUnitName}`,
       `URL: ${meta.grafanaUrl}`,
@@ -168,8 +168,8 @@ export class AlertService {
     this._grafanaAvailableReporter = availableReporter(
       ['[OK] Grafana available', WebhookType.RECOVERY],
       ['[FAILURE] Grafana unavailable for pulling data', WebhookType.FAILURE],
-      this.sendMsg,
-      this.sendMsg
+      this.sendMessage,
+      this.sendMessage
     );
   }
 
@@ -187,9 +187,9 @@ export class AlertService {
     this._alerts[id].receive(segment);
   };
 
-  public sendMsg(text: string, type: WebhookType, optionalInfo = {}) {
+  public sendMessage(text: string, type: WebhookType, optionalInfo = {}) {
     const now = Date.now();
-    const infoAlert: InfoMeta = {
+    const infoAlert: MetaInfo = {
       params: optionalInfo,
       type,
       from: now,
@@ -243,8 +243,8 @@ export class AlertService {
       this._datasourceAvailableReporters[url] = availableReporter(
         [`[OK] Datasource ${url} available`, WebhookType.RECOVERY],
         [`[FAILURE] Datasource ${url} unavailable`, WebhookType.FAILURE],
-        this.sendMsg,
-        this.sendMsg
+        this.sendMessage,
+        this.sendMessage
       );
     }
     return this._datasourceAvailableReporters[url];
