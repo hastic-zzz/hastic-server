@@ -19,7 +19,11 @@ export class Alert {
 
   protected async send(segment) {
     const notification = await this.makeNotification(segment);
-    sendNotification(notification);
+    try {
+      await sendNotification(notification);
+    } catch(error) {
+      console.error(`can't send notification ${error}`);
+    };
   }
 
   protected async makeNotification(segment: Segment): Promise<Notification> {
