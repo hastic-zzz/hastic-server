@@ -1,4 +1,4 @@
-import { sendNotification, InfoMeta, AnalyticMeta, WebhookType, Notification } from './notification_service';
+import { sendNotification, MetaInfo, AnalyticMeta, WebhookType, Notification } from './notification_service';
 import * as AnalyticUnit from '../models/analytic_units';
 import { Segment } from '../models/segment_model';
 import { availableReporter } from '../utils/reporter';
@@ -28,14 +28,14 @@ export class Alert {
 
   protected async makeNotification(segment: Segment): Promise<Notification> {
     const meta = this.makeMeta(segment);
-    const message = this.makeMessage(meta);
-    let result: Notification = { meta, message };
+    const text = this.makeMessage(meta);
+    let result: Notification = { meta, text };
     if(HASTIC_WEBHOOK_IMAGE_ENABLED) {
       try {
-       const image = await this.loadImage();
-       result.image = image;
+        const image = await this.loadImage();
+        result.image = image;
       } catch(err) {
-       console.error(`Can't load alert image: ${err}. Check that API key has admin permissions`);
+        console.error(`Can't load alert image: ${err}. Check that API key has admin permissions`);
       }
     }
 
@@ -172,8 +172,8 @@ export class AlertService {
     this._grafanaAvailableReporter = availableReporter(
       ['[OK] Grafana available', WebhookType.RECOVERY],
       ['[FAILURE] Grafana unavailable for pulling data', WebhookType.FAILURE],
-      this.sendMsg,
-      this.sendMsg
+      this.sendMessage,
+      this.sendMessage
     );
   }
 
@@ -191,19 +191,15 @@ export class AlertService {
     this._alerts[id].receive(segment);
   };
 
-  public async sendMsg(message: string, type: WebhookType, optionalInfo = {}) {
+  public sendMessage(text: string, type: WebhookType, optionalInfo = {}) {
     const now = Date.now();
-    const infoAlert: InfoMeta = {
+    const infoAlert: MetaInfo = {
       params: optionalInfo,
       type,
       from: now,
       to: now
     }
-    try {
-      await sendNotification({ message, meta: infoAlert })
-    } catch(error) {
-      console.error(`can't send notification ${error}`);
-    };
+    sendNotification({ text, meta: infoAlert });
   }
 
   public sendGrafanaAvailableWebhook() {
@@ -251,8 +247,8 @@ export class AlertService {
       this._datasourceAvailableReporters[url] = availableReporter(
         [`[OK] Datasource ${url} available`, WebhookType.RECOVERY],
         [`[FAILURE] Datasource ${url} unavailable`, WebhookType.FAILURE],
-        this.sendMsg,
-        this.sendMsg
+        this.sendMessage,
+        this.sendMessage
       );
     }
     return this._datasourceAvailableReporters[url];

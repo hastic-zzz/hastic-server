@@ -28,7 +28,7 @@ export declare type AnalyticMeta = {
   message?: any
 }
 
-export declare type InfoMeta = {
+export declare type MetaInfo = {
   type: WebhookType,
   from: number,
   to: number,
@@ -36,18 +36,18 @@ export declare type InfoMeta = {
 }
 
 export declare type Notification = {
-  message: string,
-  meta: InfoMeta | AnalyticMeta,
+  text: string,
+  meta: MetaInfo | AnalyticMeta,
   image?: any
 }
 
 export async function sendNotification(notification: Notification) {
   if(HASTIC_WEBHOOK_URL === null) {
-    console.log(`HASTIC_WEBHOOK_URL is not set, skip sending notification: ${notification.message}`);
+    console.log(`HASTIC_WEBHOOK_URL is not set, skip sending notification: ${notification.text}`);
     return;
   }
 
-  notification.message += `\nInstance: ${HASTIC_INSTANCE_NAME}`;
+  notification.text += `\nInstance: ${HASTIC_INSTANCE_NAME}`;
 
   let data;
   if(HASTIC_WEBHOOK_TYPE === ContentType.JSON) {
