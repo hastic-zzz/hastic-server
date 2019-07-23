@@ -1,4 +1,4 @@
-import { sendNotification, MetaInfo, MetaAnalytic, WebhookType, Notification } from './notification_service';
+import { sendNotification, MetaInfo, AnalyticMeta, WebhookType, Notification } from './notification_service';
 import * as AnalyticUnit from '../models/analytic_units';
 import { Segment } from '../models/segment_model';
 import { availableReporter } from '../utils/reporter';
@@ -57,12 +57,12 @@ export class Alert {
     return new Buffer(response.data, 'binary').toString('base64');
   }
 
-  protected makeMeta(segment: Segment): MetaAnalytic {
+  protected makeMeta(segment: Segment): AnalyticMeta {
     const dashdoardId = this.analyticUnit.panelId.split('/')[0];
     const panelId = this.analyticUnit.panelId.split('/')[1];
     const grafanaUrl = `${this.analyticUnit.grafanaUrl}/d/${dashdoardId}?panelId=${panelId}&edit=true&fullscreen=true?orgId=${ORG_ID}`;
 
-    let alert: MetaAnalytic = {
+    let alert: AnalyticMeta = {
       type: WebhookType.DETECT,
       analyticUnitType: this.analyticUnit.type,
       analyticUnitName: this.analyticUnit.name,
@@ -76,7 +76,7 @@ export class Alert {
     return alert;
   }
 
-  protected makeMessage(meta: MetaAnalytic): string {
+  protected makeMessage(meta: AnalyticMeta): string {
     return [
     `[${meta.analyticUnitType.toUpperCase()} ALERTING] ${meta.analyticUnitName}`,
     `URL: ${meta.grafanaUrl}`,
@@ -102,7 +102,7 @@ class PatternAlert extends Alert {
     }
   }
 
-  protected makeMessage(meta: MetaAnalytic): string {
+  protected makeMessage(meta: AnalyticMeta): string {
     return [
       `[PATTERN DETECTED] ${meta.analyticUnitName}`,
       `URL: ${meta.grafanaUrl}`,
@@ -140,7 +140,7 @@ class ThresholdAlert extends Alert {
     }
   }
 
-  protected makeMessage(meta: MetaAnalytic): string {
+  protected makeMessage(meta: AnalyticMeta): string {
     let message = [
       `[THRESHOLD ALERTING] ${meta.analyticUnitName}`,
       `URL: ${meta.grafanaUrl}`,
