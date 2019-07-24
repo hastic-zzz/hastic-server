@@ -2,6 +2,7 @@ import unittest
 import pandas as pd
 
 from detectors import pattern_detector, threshold_detector, anomaly_detector
+from analytic_types.detector_typing import DetectionResult
 
 class TestPatternDetector(unittest.TestCase):
 
@@ -44,6 +45,8 @@ class TestAnomalyDetector(unittest.TestCase):
             'timeStep': 1
         }
         detector = anomaly_detector.AnomalyDetector('test_id')
-        detect_result = detector.detect(dataframe, cache)
+        detect_result: DetectionResult = detector.detect(dataframe, cache)
+
+        detected_segments = list(map(lambda s: {'from': s.from_timestamp, 'to': s.to_timestamp}, detect_result.segments))
         result = [{ 'from': 1523889000005.0, 'to': 1523889000005.0 }]
-        self.assertEqual(result, detect_result.to_json()['segments'])
+        self.assertEqual(result, detected_segments)

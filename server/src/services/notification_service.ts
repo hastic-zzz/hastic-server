@@ -3,6 +3,7 @@ import { HASTIC_WEBHOOK_URL, HASTIC_WEBHOOK_TYPE, HASTIC_WEBHOOK_SECRET, HASTIC_
 
 import axios from 'axios';
 import * as querystring from 'querystring';
+import * as _ from 'lodash';
 
 enum ContentType {
   JSON = 'application/json',
@@ -16,7 +17,7 @@ export enum WebhookType {
   MESSAGE = 'MESSAGE'
 }
 
-export declare type AnalyticAlert = {
+export declare type AnalyticMeta = {
   type: WebhookType,
   analyticUnitType: string,
   analyticUnitName: string,
@@ -24,48 +25,35 @@ export declare type AnalyticAlert = {
   grafanaUrl: string,
   from: number,
   to: number
-  params?: any,
-  regionImage?: any
+  message?: any
 }
 
-export declare type InfoAlert = {
+export declare type MetaInfo = {
   type: WebhookType,
-  message: string,
   from: number,
   to: number,
   params?: any
 }
 
-// TODO: send webhook with payload without dep to AnalyticUnit
-export async function sendAnalyticWebhook(alert: AnalyticAlert) {
-  const fromTime = new Date(alert.from).toLocaleTimeString();
-  const toTime = new Date(alert.to).toLocaleTimeString();
-  console.log(`Sending alert unit: ${alert.analyticUnitName} from: ${fromTime} to: ${toTime}`);
-
-  sendWebhook(alert);
+export declare type Notification = {
+  text: string,
+  meta: MetaInfo | AnalyticMeta,
+  image?: any
 }
 
-export async function sendInfoWebhook(alert: InfoAlert) {
-  if(alert && typeof alert === 'object') {
-    console.log(`Sending info webhook ${JSON.stringify(alert.message)}`);
-    sendWebhook(alert);
-  } else {
-    console.error(`skip sending Info webhook, got corrupted message ${alert}`);
-  }
-}
-
-export async function sendWebhook(payload: any) {
+export async function sendNotification(notification: Notification) {
   if(HASTIC_WEBHOOK_URL === null) {
-    throw new Error(`Can't send alert, HASTIC_WEBHOOK_URL is undefined`);
+    console.log(`HASTIC_WEBHOOK_URL is not set, skip sending notification: ${notification.text}`);
+    return;
   }
 
-  payload.instanceName = HASTIC_INSTANCE_NAME;
+  notification.text += `\nInstance: ${HASTIC_INSTANCE_NAME}`;
 
   let data;
   if(HASTIC_WEBHOOK_TYPE === ContentType.JSON) {
-    data = JSON.stringify(payload);
+    data = JSON.stringify(notification);
   } else if(HASTIC_WEBHOOK_TYPE === ContentType.URLENCODED) {
-    data = querystring.stringify(payload);
+    data = querystring.stringify(notification);
   } else {
     throw new Error(`Unknown webhook type: ${HASTIC_WEBHOOK_TYPE}`);
   }
@@ -81,6 +69,6 @@ export async function sendWebhook(payload: any) {
   try {
     await axios(options);
   } catch(err) {
-    console.error(`Can't send alert to ${HASTIC_WEBHOOK_URL}. Error: ${err.message}`);
+    console.error(`Can't send notification to ${HASTIC_WEBHOOK_URL}. Error: ${err.message}`);
   }
 }

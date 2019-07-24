@@ -7,6 +7,12 @@ type SeasonalityPeriod = {
   unit: string,
   value: number
 }
+
+enum Bound {
+  ALL = 'ALL',
+  UPPER = 'UPPER',
+  LOWER = 'LOWER'
+};
 export class AnomalyAnalyticUnit extends AnalyticUnit {
 
   public learningAfterUpdateRequired = true;
@@ -20,6 +26,7 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
     public confidence: number,
     public seasonality: number, //seasonality in ms
     private seasonalityPeriod: SeasonalityPeriod,
+    public enableBounds: Bound,
     metric?: Metric,
     alert?: boolean,
     id?: AnalyticUnitId,
@@ -57,7 +64,8 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
       alpha: this.alpha,
       confidence: this.confidence,
       seasonality: this.seasonality,
-      seasonalityPeriod: this.seasonalityPeriod
+      seasonalityPeriod: this.seasonalityPeriod,
+      enableBounds: this.enableBounds
     };
   }
 
@@ -68,7 +76,8 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
       alpha: this.alpha,
       confidence: this.confidence,
       seasonality: this.seasonality,
-      seasonalityPeriod: this.seasonalityPeriod
+      seasonalityPeriod: this.seasonalityPeriod,
+      enableBounds: this.enableBounds
     };
   }
 
@@ -88,6 +97,7 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
       obj.confidence,
       obj.seasonality,
       obj.seasonalityPeriod,
+      obj.enableBounds,
       metric,
       obj.alert,
       obj._id,

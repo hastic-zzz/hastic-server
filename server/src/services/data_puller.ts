@@ -30,33 +30,17 @@ export class DataPuller {
   );
 
   private _unitTimes: { [analyticUnitId: string]: number } = {};
-  private _alertService: AlertService;
-  private _grafanaAvailableWebhook: Function;
-  private _datasourceAvailableWebhook: { [analyticUnitId: string]: Function } = {};
 
-  constructor(private analyticsService: AnalyticsService) {
-    this._alertService = new AlertService();
-    this._grafanaAvailableWebhook = this._alertService.getGrafanaAvailableReporter();
-  };
-
-  private _makeDatasourceAvailableWebhook(analyticUnit: AnalyticUnit.AnalyticUnit) {
-    const datasourceInfo = `${analyticUnit.metric.datasource.url} (${analyticUnit.metric.datasource.type})`;
-    return this._alertService.getAvailableWebhook(
-      `datasource ${datasourceInfo} available`,
-      `datasource ${datasourceInfo} unavailable`
-    );
-  }
+  constructor(private analyticsService: AnalyticsService, private alertService: AlertService) {};
 
   public addUnit(analyticUnit: AnalyticUnit.AnalyticUnit) {
     console.log(`start pulling analytic unit ${analyticUnit.id}`);
-    this._datasourceAvailableWebhook[analyticUnit.id] = this._makeDatasourceAvailableWebhook(analyticUnit);
     this._runAnalyticUnitPuller(analyticUnit);
   }
 
   public deleteUnit(analyticUnitId: AnalyticUnit.AnalyticUnitId) {
     if(_.has(this._unitTimes, analyticUnitId)) {
       delete this._unitTimes[analyticUnitId];
-      delete this._datasourceAvailableWebhook[analyticUnitId];
       console.log(`analytic unit ${analyticUnitId} deleted from data puller`);
     }
   }
@@ -97,7 +81,6 @@ export class DataPuller {
     console.log(`starting data puller with ${JSON.stringify(analyticUnits.map(u => u.id))} analytic units`);
 
     _.each(analyticUnits, analyticUnit => {
-      this._datasourceAvailableWebhook[analyticUnit.id] = this._makeDatasourceAvailableWebhook(analyticUnit);
       this._runAnalyticUnitPuller(analyticUnit);
     });
 
@@ -111,8 +94,7 @@ export class DataPuller {
 
   private async _runAnalyticUnitPuller(analyticUnit: AnalyticUnit.AnalyticUnit) {
     console.log(`run data puller for analytic unit ${analyticUnit.id}`);
-    // TODO: lastDetectionTime can be in ns
-    const time = analyticUnit.lastDetectionTime + 1 || Date.now();
+    const time = Date.now();
     this._unitTimes[analyticUnit.id] = time;
 
     const dataGenerator = this.getDataGenerator(
@@ -167,26 +149,32 @@ export class DataPuller {
           throw new Error(`Analytic unit ${analyticUnit.id} is deleted from puller`);
         }
         const now = Date.now();
+
+        if(time >= now) {
+          // TODO: probably we should have ability to set PULL_PERIOD_MS or get it from metric as time step between points
+          return {
+            columns: [],
+            values: []
+          };
+        }
+
         const res = await this.pullData(analyticUnit, time, now);
         this._grafanaAvailableConsoleReporter(true);
-        this._grafanaAvailableWebhook(true);
-        this._datasourceAvailableWebhook[analyticUnit.id](true);
+        this.alertService.sendGrafanaAvailableWebhook();
+        this.alertService.sendDatasourceAvailableWebhook(analyticUnit.metric.datasource.url);
         return res;
       } catch(err) {
         let errorResolved = false;
         if(err instanceof GrafanaUnavailable) {
           errorResolved = true;
-          this._grafanaAvailableConsoleReporter(false);
-          this._grafanaAvailableWebhook(false);
+          this.alertService.sendGrafanaUnavailableWebhook();
         } else {
-          this._grafanaAvailableWebhook(true);
+          this.alertService.sendGrafanaAvailableWebhook();
         }
 
         if(err instanceof DatasourceUnavailable) {
           errorResolved = true;
-          if(_.has(this._datasourceAvailableWebhook, analyticUnit.id)) {
-            this._datasourceAvailableWebhook[analyticUnit.id](false);
-          }
+          this.alertService.sendDatasourceUnavailableWebhook(analyticUnit.metric.datasource.url);
         }
 
         if(!errorResolved) {

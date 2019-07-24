@@ -17,7 +17,7 @@ export class Segment {
     public labeled: boolean = false,
     public deleted: boolean = false,
     public id?: SegmentId,
-    public params?: any
+    public message?: string
   ) {
     if(analyticUnitId === undefined) {
       throw new Error('AnalyticUnitId is undefined');
@@ -43,7 +43,8 @@ export class Segment {
       from: this.from,
       to: this.to,
       labeled: this.labeled,
-      deleted: this.deleted
+      deleted: this.deleted,
+      message: this.message
     };
   }
 
@@ -54,7 +55,8 @@ export class Segment {
     return new Segment(
       obj.analyticUnitId,
       +obj.from, +obj.to,
-      obj.labeled, obj.deleted, obj._id
+      obj.labeled, obj.deleted,
+      obj._id, obj.message
     );
   }
 

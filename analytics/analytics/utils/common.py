@@ -137,6 +137,7 @@ def merge_intersecting_segments(segments: List[Segment], time_step: int) -> List
     previous_segment = segments[0]
     for i in range(1, len(segments)):
         if segments[i].from_timestamp <= previous_segment.to_timestamp + time_step:
+            segments[i].message = segments[-1].message
             segments[i].from_timestamp = min(previous_segment.from_timestamp, segments[i].from_timestamp)
             segments[i].to_timestamp = max(previous_segment.to_timestamp, segments[i].to_timestamp)
             segments[i - 1] = None

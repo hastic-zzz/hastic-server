@@ -48,10 +48,5 @@ class AnomalyProcessingResult():
         lower_bound: Optional[TimeSeries] = None,
         upper_bound: Optional[TimeSeries] = None,
     ):
-        if lower_bound is None:
-            lower_bound = []
         self.lower_bound = lower_bound
-
-        if upper_bound is None:
-            upper_bound = []
         self.upper_bound = upper_bound

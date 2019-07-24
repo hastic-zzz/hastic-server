@@ -9,6 +9,7 @@ export type AnalyticsTaskId = string;
 export enum AnalyticsTaskType { 
   LEARN = 'LEARN',
   DETECT = 'DETECT',
+  PUSH_DETECT = 'PUSH_DETECT',
   CANCEL = 'CANCEL',
   PUSH = 'PUSH',
   PROCESS = 'PROCESS'

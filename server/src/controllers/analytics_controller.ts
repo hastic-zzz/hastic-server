@@ -35,7 +35,6 @@ const taskResolvers = new Map<AnalyticsTaskId, TaskResolver>();
 
 let analyticsService: AnalyticsService = undefined;
 let alertService: AlertService = undefined;
-let grafanaAvailableWebhok: Function = undefined;
 let dataPuller: DataPuller;
 
 let detectionsCount: number = 0;
@@ -69,6 +68,18 @@ async function onDetect(detectionResult: DetectionResult) {
   ]);
 }
 
+async function onPushDetect(detectionResult: DetectionResult) {
+  const analyticUnit = await AnalyticUnit.findById(detectionResult.analyticUnitId);
+  if (!_.isEmpty(detectionResult.segments) && analyticUnit.alert) {
+    try {
+      alertService.receiveAlert(analyticUnit, _.last(detectionResult.segments));
+    } catch(err) {
+      console.error(`error while sending webhook: ${err.message}`);
+    }
+  }
+  await onDetect(detectionResult);
+}
+
 async function onMessage(message: AnalyticsMessage) {
   let responsePayload = null;
   let methodResolved = false;
@@ -80,6 +91,11 @@ async function onMessage(message: AnalyticsMessage) {
 
   if(message.method === AnalyticsMessageMethod.DETECT) {
     await onDetect(message.payload.payload);
+    methodResolved = true;
+  }
+
+  if(message.method === AnalyticsMessageMethod.PUSH_DETECT) {
+    await onPushDetect(message.payload.payload);
     methodResolved = true;
   }
 
@@ -98,10 +114,9 @@ export function init() {
   analyticsService = new AnalyticsService(onMessage);
 
   alertService = new AlertService();
-  grafanaAvailableWebhok = alertService.getGrafanaAvailableReporter();
   alertService.startAlerting();
 
-  dataPuller = new DataPuller(analyticsService);
+  dataPuller = new DataPuller(analyticsService, alertService);
   dataPuller.runPuller();
 }
 
@@ -173,15 +188,16 @@ async function query(
       HASTIC_API_KEY
     );
     data = queryResult.values;
-    grafanaAvailableWebhok(true);
+    alertService.sendGrafanaAvailableWebhook();
+    alertService.sendDatasourceAvailableWebhook(analyticUnit.metric.datasource.url);
   } catch(e) {
     if(e instanceof GrafanaUnavailable) {
       const msg = `Can't connect Grafana: ${e.message}, check GRAFANA_URL`;
-      grafanaAvailableWebhok(false);
+      alertService.sendGrafanaUnavailableWebhook();
       throw new Error(msg);
     }
     if(e instanceof DatasourceUnavailable) {
-      alertService.sendMsg(e.message, WebhookType.FAILURE);
+      alertService.sendDatasourceUnavailableWebhook(analyticUnit.metric.datasource.url);
       throw new Error(e.message);
     }
     throw e;
@@ -262,7 +278,8 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
       case AnalyticUnit.DetectorType.ANOMALY:
         taskPayload.anomaly = {
           alpha: (analyticUnit as AnomalyAnalyticUnit).alpha,
-          confidence: (analyticUnit as AnomalyAnalyticUnit).confidence
+          confidence: (analyticUnit as AnomalyAnalyticUnit).confidence,
+          enableBounds: (analyticUnit as AnomalyAnalyticUnit).enableBounds
         };
 
         taskPayload.data = await getPayloadData(analyticUnit, from, to);
@@ -357,7 +374,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     await Promise.all([
       Segment.insertSegments(payload.segments),
       AnalyticUnitCache.setData(id, payload.cache),
-      AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime),
+      AnalyticUnit.setDetectionTime(id, range.to - intersection),
     ]);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.READY);
     await Detection.insertSpan(
@@ -431,27 +448,11 @@ async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitI
   }
   console.log(`got detection result for ${analyticUnitId} with ${detectionResult.segments.length} segments`);
 
-  const sortedSegments: {from, to}[] = _.sortBy(detectionResult.segments, 'from');
+  const sortedSegments: {from, to, message?}[] = _.sortBy(detectionResult.segments, 'from');
   const segments = sortedSegments.map(
-    segment => new Segment.Segment(analyticUnitId, segment.from, segment.to, false, false)
+    segment => new Segment.Segment(analyticUnitId, segment.from, segment.to, false, false, undefined, segment.message)
   );
-  const analyticUnit = await AnalyticUnit.findById(analyticUnitId);
-  if (!_.isEmpty(segments) && analyticUnit.alert) {
-    try {
-      alertService.receiveAlert(analyticUnit, _.last(segments));
-    } catch(err) {
-      console.error(`error while sending webhook: ${err.message}`);
-    }
-  } else {
-    let reasons = [];
-    if(!analyticUnit.alert) {
-      reasons.push('alerting disabled');
-    }
-    if(_.isEmpty(segments)) {
-      reasons.push('segments empty');
-    }
-    console.log(`skip sending webhook for ${analyticUnit.id}, ${reasons.join(', ')}`);
-  }
+
   return {
     lastDetectionTime: detectionResult.lastDetectionTime,
     segments,
@@ -673,11 +674,20 @@ export async function getHSR(
     if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
       throw new Error(`Data processing error: ${result.error}`);
     }
-    return {
-      hsr: data,
-      lowerBound: { values: result.payload.lowerBound, columns: data.columns },
-      upperBound: { values: result.payload.upperBound, columns: data.columns }
-    };
+
+    let resultSeries = {
+      hsr: data
+    }
+
+    if(result.payload.lowerBound !== undefined) {
+      resultSeries['lowerBound'] = { values: result.payload.lowerBound, columns: data.columns };
+    }
+
+    if(result.payload.upperBound !== undefined) {
+      resultSeries['upperBound'] = { values: result.payload.upperBound, columns: data.columns };
+    }
+
+    return resultSeries;
   } catch (err) {
     const message = err.message || JSON.stringify(err);
     await AnalyticUnit.setStatus(analyticUnit.id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);

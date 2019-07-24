@@ -2,6 +2,7 @@ export enum AnalyticsMessageMethod {
   TASK = 'TASK',
   TASK_RESULT = 'TASK_RESULT',
   DETECT = 'DETECT',
+  PUSH_DETECT = 'PUSH_DETECT',
   DATA = 'DATA'
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "hastic-server",
-  "version": "0.3.4-beta",
+  "version": "0.3.6-beta",
   "description": "REST server for managing data for analytics",
   "scripts": {
     "start": "node dist/server.js",
@@ -38,7 +38,7 @@
     "es6-promise": "^4.2.4",
     "event-stream": "3.3.4",
     "file-loader": "^1.1.11",
-    "grafana-datasource-kit": "0.1.15",
+    "grafana-datasource-kit": "0.1.16",
     "jest": "^23.1.1",
     "koa": "^2.0.46",
     "koa-bodyparser": "^4.2.0",
