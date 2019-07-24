@@ -18,7 +18,6 @@ import { queryByMetric, GrafanaUnavailable, DatasourceUnavailable } from 'grafan
 import * as _ from 'lodash';
 import { WebhookType } from '../services/notification_service';
 import { AnomalyAnalyticUnit } from '../models/analytic_units/anomaly_analytic_unit_model';
-import { rename } from 'fs';
 
 const SECONDS_IN_MINUTE = 60;
 
