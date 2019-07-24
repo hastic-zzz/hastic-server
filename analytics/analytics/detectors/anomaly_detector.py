@@ -73,7 +73,7 @@ class AnomalyDetector(ProcessingDetector):
         enable_bounds: str = cache.get('enableBounds') or 'ALL'
 
         smoothed_data = utils.exponential_smoothing(data, cache['alpha'])
- 
+
         # TODO: use class for cache to avoid using string literals and Bound.TYPE.value
         bounds = OrderedDict()
         bounds[Bound.LOWER.value] = ( smoothed_data - cache['confidence'], operator.lt )
@@ -93,7 +93,6 @@ class AnomalyDetector(ProcessingDetector):
                 f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
 
             data_start_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])
-            data_second_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][1])
 
             for segment in segments:
                 seasonality_index = seasonality // time_step
@@ -102,16 +101,16 @@ class AnomalyDetector(ProcessingDetector):
                 seasonality_offset = (abs(start_seasonal_segment - data_start_time) % seasonality) // time_step
                 #TODO: upper and lower bounds for segment_data
                 segment_data = pd.Series(segment['data'])
-                for bound_type, bound_data in bounds.items():
-                    bound_data, _ = bound_data
-                    bounds[bound_type] = self.add_season_to_data(bound_data, segment_data, seasonality_offset, seasonality_index, bound_type)
-                    assert len(smoothed_data) == len(bounds[bound_type]), \
-                        f'len smoothed {len(smoothed_data)} != len seasonality {len(bounds[bound_type])}'
+                for bound_type, bound_data_extended in bounds.items():
+                    bound_data, comparator = bound_data_extended
+                    bound_data = self.add_season_to_data(bound_data, segment_data, seasonality_offset, seasonality_index, bound_type)
+                    assert len(smoothed_data) == len(bound_data), \
+                        f'len smoothed {len(smoothed_data)} != len seasonality {len(bound_data)}'
 
         anomaly_indexes = []
         for idx, val in enumerate(data.values):
-            for bound_type, bound_data in bounds.items():
-                bound_data, comparator = bound_data
+            for bound_type, bound_data_extended in bounds.items():
+                bound_data, comparator = bound_data_extended
                 if comparator(val, bound_data.values[idx]):
                     anomaly_indexes.append(data.index[idx])
         # TODO: use Segment in utils
