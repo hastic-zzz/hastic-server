@@ -6,9 +6,9 @@ import numpy as np
 from typing import Optional, List
 
 from analytic_types import ModelCache
-from analytic_types.detector_typing import DetectionResult
+from analytic_types.detector_typing import DetectionResult, ThresholdProcessingResult
 from analytic_types.segment import Segment
-from detectors import Detector
+from detectors import ProcessingDetector
 from time import time
 import utils
 
@@ -16,7 +16,7 @@ import utils
 logger = log.getLogger('THRESHOLD_DETECTOR')
 
 
-class ThresholdDetector(Detector):
+class ThresholdDetector(ProcessingDetector):
 
     WINDOW_SIZE = 3
 
@@ -89,3 +89,21 @@ class ThresholdDetector(Detector):
             result.cache = detection.cache
         result.segments = utils.merge_intersecting_segments(result.segments, time_step)
         return result
+
+    def process_data(self, dataframe: pd.DataFrame, cache: ModelCache) -> ThresholdProcessingResult:
+        data = dataframe['value']
+        value = cache['value']
+        data.values[:]  = value
+        timestamps = utils.convert_series_to_timestamp_list(dataframe.timestamp)
+        result_series = list(zip(timestamps, data.values.tolist()))
+        return ThresholdProcessingResult(result_series)
+
+    def concat_processing_results(self, processing_results: List[ThresholdProcessingResult]) -> Optional[ThresholdProcessingResult]:
+        if len(processing_results) == 0:
+            return None
+
+        united_result = ThresholdProcessingResult([])
+        for result in processing_results:
+            united_result.threshold.extend(result.threshold)
+
+        return united_result
