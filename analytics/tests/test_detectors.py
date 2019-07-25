@@ -22,7 +22,7 @@ class TestThresholdDetector(unittest.TestCase):
 
     def test_invalid_cache(self):
 
-        detector = threshold_detector.ThresholdDetector()
+        detector = threshold_detector.ThresholdDetector('test_id')
         
         with self.assertRaises(ValueError):
             detector.detect([], None)
