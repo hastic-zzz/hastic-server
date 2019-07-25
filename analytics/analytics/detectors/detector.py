@@ -45,7 +45,7 @@ class Detector(ABC):
     def get_value_from_cache(self, cache: ModelCache, key: str, required = False):
         value = cache.get(key)
         if value == None and required:
-            raise f'Missing required "{key}" field in cache for analytic unit {self.analytic_unit_id}'
+            raise ValueError(f'Missing required "{key}" field in cache for analytic unit {self.analytic_unit_id}')
         return value
 
 

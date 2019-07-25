@@ -1,7 +1,6 @@
 from enum import Enum
 import logging
 import numpy as np
-import operator
 from collections import OrderedDict
 import pandas as pd
 import math
@@ -32,7 +31,7 @@ class AnomalyDetector(ProcessingDetector):
 
     def train(self, dataframe: pd.DataFrame, payload: Union[list, dict], cache: Optional[ModelCache]) -> ModelCache:
         segments = payload.get('segments')
-        enable_bounds: str = payload.get('enableBounds') or 'ALL'
+        enable_bounds = Bound(payload.get('enableBounds') or 'ALL')
         prepared_segments = []
         time_step = utils.find_interval(dataframe)
 
@@ -40,7 +39,7 @@ class AnomalyDetector(ProcessingDetector):
             'confidence': payload['confidence'],
             'alpha': payload['alpha'],
             'timeStep': time_step,
-            'enableBounds': enable_bounds
+            'enableBounds': enable_bounds.value
         }
 
         if segments is not None:
@@ -70,23 +69,17 @@ class AnomalyDetector(ProcessingDetector):
         if cache == None:
             raise f'Analytic unit {self.analytic_unit_id} got empty cache'
         data = dataframe['value']
-        
+
         # TODO: use class for cache to avoid using string literals
         alpha = self.get_value_from_cache(cache, 'alpha', required = True)
         confidence = self.get_value_from_cache(cache, 'confidence', required = True)
         segments = self.get_value_from_cache(cache, 'segments')
-        enable_bounds: str = self.get_value_from_cache(cache, 'enableBounds') or 'ALL'
+        enable_bounds = Bound(self.get_value_from_cache(cache, 'enableBounds') or 'ALL')
 
         smoothed_data = utils.exponential_smoothing(data, alpha)
-        bounds = OrderedDict()
-        bounds[Bound.LOWER.value] = ( smoothed_data - confidence, operator.lt )
-        bounds[Bound.UPPER.value] = ( smoothed_data + confidence, operator.gt )
 
-        if enable_bounds == Bound.LOWER.value:
-            del bounds[Bound.UPPER.value]
-
-        if enable_bounds == Bound.UPPER.value:
-            del bounds[Bound.LOWER.value]
+        lower_bound = smoothed_data - confidence
+        upper_bound = smoothed_data + confidence
 
         if segments is not None:
 
@@ -102,20 +95,22 @@ class AnomalyDetector(ProcessingDetector):
                 season_count = math.ceil(abs(segment['from'] - data_start_time) / seasonality)
                 start_seasonal_segment = segment['from'] + seasonality * season_count
                 seasonality_offset = (abs(start_seasonal_segment - data_start_time) % seasonality) // time_step
-                #TODO: upper and lower bounds for segment_data
+
                 segment_data = pd.Series(segment['data'])
-                for bound_type, bound_data_extended in bounds.items():
-                    bound_data, comparator = bound_data_extended
-                    bound_data = self.add_season_to_data(bound_data, segment_data, seasonality_offset, seasonality_index, bound_type)
-                    assert len(smoothed_data) == len(bound_data), \
-                        f'len smoothed {len(smoothed_data)} != len seasonality {len(bound_data)}'
+
+                lower_bound = self.add_season_to_data(lower_bound, segment_data, seasonality_offset, seasonality_index, Bound.LOWER)
+                upper_bound = self.add_season_to_data(upper_bound, segment_data, seasonality_offset, seasonality_index, Bound.UPPER)
 
         anomaly_indexes = []
         for idx, val in enumerate(data.values):
-            for bound_type, bound_data_extended in bounds.items():
-                bound_data, comparator = bound_data_extended
-                if comparator(val, bound_data.values[idx]):
+            if val > upper_bound.values[idx]:
+                if enable_bounds == Bound.UPPER or enable_bounds == Bound.ALL:
                     anomaly_indexes.append(data.index[idx])
+
+            if val < lower_bound.values[idx]:
+                if enable_bounds == Bound.LOWER or enable_bounds == Bound.ALL:
+                    anomaly_indexes.append(data.index[idx])
+
         # TODO: use Segment in utils
         segments = utils.close_filtering(anomaly_indexes, 1)
         segments = utils.get_start_and_end_of_segments(segments)
@@ -180,22 +175,16 @@ class AnomalyDetector(ProcessingDetector):
 
     # TODO: ModelCache -> ModelState (don't use string literals)
     def process_data(self, dataframe: pd.DataFrame, cache: ModelCache) -> AnomalyProcessingResult:
-        segments = cache.get('segments')
-        enable_bounds: str = cache.get('enableBounds') or 'ALL'
+        segments = self.get_value_from_cache(cache, 'segments')
+        alpha = self.get_value_from_cache(cache, 'alpha', required = True)
+        confidence = self.get_value_from_cache(cache, 'confidence', required = True)
+        enable_bounds = Bound(self.get_value_from_cache(cache, 'enableBounds') or 'ALL')
 
         # TODO: exponential_smoothing should return dataframe with related timestamps
-        smoothed_data = utils.exponential_smoothing(dataframe['value'], cache['alpha'])
-
-        bounds = OrderedDict()
-        bounds[Bound.LOWER.value] = smoothed_data - cache['confidence']
-        bounds[Bound.UPPER.value] = smoothed_data + cache['confidence']
-
-        if enable_bounds == Bound.LOWER.value:
-            del bounds[Bound.UPPER.value]
-
-        if enable_bounds == Bound.UPPER.value:
-            del bounds[Bound.LOWER.value]
-
+        smoothed_data = utils.exponential_smoothing(dataframe['value'], alpha)
+                
+        lower_bound = smoothed_data - confidence
+        upper_bound = smoothed_data + confidence
 
         # TODO: remove duplication with detect()
 
@@ -214,19 +203,22 @@ class AnomalyDetector(ProcessingDetector):
                 start_seasonal_segment = segment['from'] + seasonality * season_count
                 seasonality_offset = (abs(start_seasonal_segment - data_start_time) % seasonality) // time_step
                 segment_data = pd.Series(segment['data'])
-                for bound_type, bound_data in bounds.items():
-                    bounds[bound_type] = self.add_season_to_data(bound_data, segment_data, seasonality_offset, seasonality_index, bound_type)
-                    assert len(smoothed_data) == len(bounds[bound_type]), \
-                        f'len smoothed {len(smoothed_data)} != len seasonality {len(bounds[bound_type])}'
+
+                lower_bound = self.add_season_to_data(lower_bound, segment_data, seasonality_offset, seasonality_index, Bound.LOWER)
+                upper_bound = self.add_season_to_data(upper_bound, segment_data, seasonality_offset, seasonality_index, Bound.UPPER)
 
                 # TODO: support multiple segments
 
         timestamps = utils.convert_series_to_timestamp_list(dataframe.timestamp)
-        result_bounds = {}
-        for bound_type, bound_data in bounds.items():
-            result_bounds[bound_type] = list(zip(timestamps, bound_data.values.tolist()))
-        result = AnomalyProcessingResult(lower_bound=result_bounds.get(Bound.LOWER.value), upper_bound=result_bounds.get(Bound.UPPER.value))
-        return result
+        lower_bound_timeseries = list(zip(timestamps, lower_bound.values.tolist()))
+        upper_bound_timeseries = list(zip(timestamps, upper_bound.values.tolist()))
+
+        if enable_bounds == Bound.ALL:
+            return AnomalyProcessingResult(lower_bound_timeseries, upper_bound_timeseries)
+        elif enable_bounds == Bound.UPPER:
+            return AnomalyProcessingResult(upper_bound = upper_bound_timeseries)
+        elif enable_bounds == Bound.LOWER:
+            return AnomalyProcessingResult(lower_bound = lower_bound_timeseries)
 
     def add_season_to_data(self, data: pd.Series, segment: pd.Series, offset: int, seasonality: int, bound_type: Bound) -> pd.Series:
         #data - smoothed data to which seasonality will be added
@@ -238,14 +230,14 @@ class AnomalyDetector(ProcessingDetector):
                 #TODO: add seasonality for non empty parts
                 continue
             if (idx - offset) % seasonality == 0:
-                if bound_type == Bound.UPPER.value:
+                if bound_type == Bound.UPPER:
                     upper_segment_bound = self.get_bounds_for_segment(segment)[0]
                     data = data.add(pd.Series(upper_segment_bound.values, index = segment.index + idx), fill_value = 0)
-                elif bound_type == Bound.LOWER.value:
+                elif bound_type == Bound.LOWER:
                     lower_segment_bound = self.get_bounds_for_segment(segment)[1]
                     data = data.add(pd.Series(lower_segment_bound.values * -1, index = segment.index + idx), fill_value = 0)
                 else:
-                    raise ValueError(f'unknown {bound_type}')
+                    raise ValueError(f'unknown bound type: {bound_type.value}')
 
         return data[:len_smoothed_data]
 
