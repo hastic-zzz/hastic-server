@@ -8,7 +8,7 @@ import math
 from typing import Optional, Union, List, Tuple
 
 from analytic_types import AnalyticUnitId, ModelCache
-from analytic_types.detector_typing import DetectionResult, AnomalyProcessingResult
+from analytic_types.detector_typing import DetectionResult, ProcessingResult
 from analytic_types.data_bucket import DataBucket
 from analytic_types.segment import Segment
 from detectors import Detector, ProcessingDetector
@@ -177,7 +177,7 @@ class AnomalyDetector(ProcessingDetector):
         return result
 
     # TODO: ModelCache -> ModelState (don't use string literals)
-    def process_data(self, dataframe: pd.DataFrame, cache: ModelCache) -> AnomalyProcessingResult:
+    def process_data(self, dataframe: pd.DataFrame, cache: ModelCache) -> ProcessingResult:
         segments = cache.get('segments')
         enable_bounds: str = cache.get('enableBounds') or 'ALL'
 
@@ -223,7 +223,7 @@ class AnomalyDetector(ProcessingDetector):
         result_bounds = {}
         for bound_type, bound_data in bounds.items():
             result_bounds[bound_type] = list(zip(timestamps, bound_data.values.tolist()))
-        result = AnomalyProcessingResult(lower_bound=result_bounds.get(Bound.LOWER.value), upper_bound=result_bounds.get(Bound.UPPER.value))
+        result = ProcessingResult(lower_bound=result_bounds.get(Bound.LOWER.value), upper_bound=result_bounds.get(Bound.UPPER.value))
         return result
 
     def add_season_to_data(self, data: pd.Series, segment: pd.Series, offset: int, seasonality: int, bound_type: Bound) -> pd.Series:
@@ -246,22 +246,6 @@ class AnomalyDetector(ProcessingDetector):
                     raise ValueError(f'unknown {bound_type}')
 
         return data[:len_smoothed_data]
-
-    def concat_processing_results(self, processing_results: List[AnomalyProcessingResult]) -> Optional[AnomalyProcessingResult]:
-        if len(processing_results) == 0:
-            return None
-
-        united_result = AnomalyProcessingResult()
-        for result in processing_results:
-            if result.lower_bound is not None:
-                if united_result.lower_bound is None: united_result.lower_bound = []
-                united_result.lower_bound.extend(result.lower_bound)
-
-            if result.upper_bound is not None:
-                if united_result.upper_bound is None: united_result.upper_bound = []
-                united_result.upper_bound.extend(result.upper_bound)
-
-        return united_result
 
     def get_bounds_for_segment(self, segment: pd.Series) -> Tuple[pd.Series, pd.Series]:
         '''

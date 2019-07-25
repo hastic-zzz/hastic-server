@@ -6,7 +6,7 @@ import numpy as np
 from typing import Optional, List
 
 from analytic_types import ModelCache
-from analytic_types.detector_typing import DetectionResult, ThresholdProcessingResult
+from analytic_types.detector_typing import DetectionResult, ProcessingResult
 from analytic_types.segment import Segment
 from detectors import ProcessingDetector
 from time import time
@@ -90,20 +90,22 @@ class ThresholdDetector(ProcessingDetector):
         result.segments = utils.merge_intersecting_segments(result.segments, time_step)
         return result
 
-    def process_data(self, dataframe: pd.DataFrame, cache: ModelCache) -> ThresholdProcessingResult:
+    def process_data(self, dataframe: pd.DataFrame, cache: ModelCache) -> ProcessingResult:
         data = dataframe['value']
         value = cache['value']
+        condition = cache['condition']
+
+        if condition == 'NO_DATA':
+            return ProcessingResult()
+
         data.values[:]  = value
         timestamps = utils.convert_series_to_timestamp_list(dataframe.timestamp)
         result_series = list(zip(timestamps, data.values.tolist()))
-        return ThresholdProcessingResult(result_series)
 
-    def concat_processing_results(self, processing_results: List[ThresholdProcessingResult]) -> Optional[ThresholdProcessingResult]:
-        if len(processing_results) == 0:
-            return None
+        if condition in ['>', '>=', '=']:
+            return ProcessingResult(upper_bound=result_series)
 
-        united_result = ThresholdProcessingResult([])
-        for result in processing_results:
-            united_result.threshold.extend(result.threshold)
+        if condition in ['<', '<=']:
+            return ProcessingResult(lower_bound=result_series)
 
-        return united_result
+        raise ValueError(f'{condition} condition not supported')

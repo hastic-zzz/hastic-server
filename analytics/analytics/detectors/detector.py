@@ -52,6 +52,12 @@ class ProcessingDetector(Detector):
 
         united_result = ProcessingResult()
         for result in processing_results:
-            united_result.data.extend(result.data)
+            if result.lower_bound is not None:
+                if united_result.lower_bound is None: united_result.lower_bound = []
+                united_result.lower_bound.extend(result.lower_bound)
+
+            if result.upper_bound is not None:
+                if united_result.upper_bound is None: united_result.upper_bound = []
+                united_result.upper_bound.extend(result.upper_bound)
 
         return united_result
