@@ -27,7 +27,7 @@ class Bound(Enum):
 class AnomalyDetector(ProcessingDetector):
 
     def __init__(self, analytic_unit_id: AnalyticUnitId):
-        self.analytic_unit_id = analytic_unit_id
+        super().__init__(analytic_unit_id)
         self.bucket = DataBucket()
 
     def train(self, dataframe: pd.DataFrame, payload: Union[list, dict], cache: Optional[ModelCache]) -> ModelCache:
@@ -65,19 +65,22 @@ class AnomalyDetector(ProcessingDetector):
             'cache': new_cache
         }
 
-    # TODO: ModelCache -> ModelState
+    # TODO: ModelCache -> DetectorState
     def detect(self, dataframe: pd.DataFrame, cache: Optional[ModelCache]) -> DetectionResult:
+        if cache == None:
+            raise f'Analytic unit {self.analytic_unit_id} got empty cache'
         data = dataframe['value']
-        time_step = cache['timeStep']
-        segments = cache.get('segments')
-        enable_bounds: str = cache.get('enableBounds') or 'ALL'
+        
+        # TODO: use class for cache to avoid using string literals
+        alpha = self.get_value_from_cache(cache, 'alpha', required = True)
+        confidence = self.get_value_from_cache(cache, 'confidence', required = True)
+        segments = self.get_value_from_cache(cache, 'segments')
+        enable_bounds: str = self.get_value_from_cache(cache, 'enableBounds') or 'ALL'
 
-        smoothed_data = utils.exponential_smoothing(data, cache['alpha'])
-
-        # TODO: use class for cache to avoid using string literals and Bound.TYPE.value
+        smoothed_data = utils.exponential_smoothing(data, alpha)
         bounds = OrderedDict()
-        bounds[Bound.LOWER.value] = ( smoothed_data - cache['confidence'], operator.lt )
-        bounds[Bound.UPPER.value] = ( smoothed_data + cache['confidence'], operator.gt )
+        bounds[Bound.LOWER.value] = ( smoothed_data - confidence, operator.lt )
+        bounds[Bound.UPPER.value] = ( smoothed_data + confidence, operator.gt )
 
         if enable_bounds == Bound.LOWER.value:
             del bounds[Bound.UPPER.value]
@@ -85,11 +88,11 @@ class AnomalyDetector(ProcessingDetector):
         if enable_bounds == Bound.UPPER.value:
             del bounds[Bound.LOWER.value]
 
-
         if segments is not None:
 
-            seasonality = cache.get('seasonality')
-            assert seasonality is not None and seasonality > 0, \
+            time_step = self.get_value_from_cache(cache, 'timeStep', True)
+            seasonality = self.get_value_from_cache(cache, 'seasonality', True)
+            assert seasonality > 0, \
                 f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
 
             data_start_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])

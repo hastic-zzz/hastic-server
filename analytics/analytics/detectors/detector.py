@@ -2,12 +2,15 @@ from abc import ABC, abstractmethod
 from pandas import DataFrame
 from typing import Optional, Union, List
 
-from analytic_types import ModelCache, TimeSeries
+from analytic_types import ModelCache, TimeSeries, AnalyticUnitId
 from analytic_types.detector_typing import DetectionResult, ProcessingResult
 from analytic_types.segment import Segment
 
 
 class Detector(ABC):
+
+    def __init__(self, analytic_unit_id: AnalyticUnitId):
+        self.analytic_unit_id = analytic_unit_id
 
     @abstractmethod
     def train(self, dataframe: DataFrame, payload: Union[list, dict], cache: Optional[ModelCache]) -> ModelCache:
@@ -38,6 +41,12 @@ class Detector(ABC):
             result.last_detection_time = detection.last_detection_time
             result.cache = detection.cache
         return result
+
+    def get_value_from_cache(self, cache: ModelCache, key: str, required = False):
+        value = cache.get(key)
+        if value == None and required:
+            raise f'Missing required "{key}" field in cache for analytic unit {self.analytic_unit_id}'
+        return value
 
 
 class ProcessingDetector(Detector):
