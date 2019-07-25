@@ -83,8 +83,8 @@ class AnomalyDetector(ProcessingDetector):
 
         if segments is not None:
 
-            time_step = self.get_value_from_cache(cache, 'timeStep', True)
-            seasonality = self.get_value_from_cache(cache, 'seasonality', True)
+            time_step = self.get_value_from_cache(cache, 'timeStep', required = True)
+            seasonality = self.get_value_from_cache(cache, 'seasonality', required = True)
             assert seasonality > 0, \
                 f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
 
@@ -173,7 +173,7 @@ class AnomalyDetector(ProcessingDetector):
         result.segments = utils.merge_intersecting_segments(result.segments, time_step)
         return result
 
-    # TODO: ModelCache -> ModelState (don't use string literals)
+    # TODO: remove duplication with detect()
     def process_data(self, dataframe: pd.DataFrame, cache: ModelCache) -> AnomalyProcessingResult:
         segments = self.get_value_from_cache(cache, 'segments')
         alpha = self.get_value_from_cache(cache, 'alpha', required = True)
@@ -182,19 +182,18 @@ class AnomalyDetector(ProcessingDetector):
 
         # TODO: exponential_smoothing should return dataframe with related timestamps
         smoothed_data = utils.exponential_smoothing(dataframe['value'], alpha)
-                
+
         lower_bound = smoothed_data - confidence
         upper_bound = smoothed_data + confidence
 
-        # TODO: remove duplication with detect()
-
         if segments is not None:
-            seasonality = cache.get('seasonality')
-            assert seasonality is not None and seasonality > 0, \
+            seasonality = self.get_value_from_cache(cache, 'seasonality', required = True)
+            assert seasonality > 0, \
                 f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
 
             data_start_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])
-            time_step = cache['timeStep']
+
+            time_step = self.get_value_from_cache(cache, 'timeStep', required = True)
 
             for segment in segments:
                 seasonality_index = seasonality // time_step
