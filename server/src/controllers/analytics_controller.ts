@@ -631,47 +631,78 @@ export async function getHSR(
   try {
     const grafanaUrl = getGrafanaUrl(analyticUnit.grafanaUrl);
     const data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
-
-    if(analyticUnit.detectorType !== AnalyticUnit.DetectorType.ANOMALY) {
-      return { hsr: data };
-    }
-    let cache = await AnalyticUnitCache.findById(analyticUnit.id);
-    if(
-      cache === null ||
-      cache.data.alpha !== (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).alpha ||
-      cache.data.confidence !== (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).confidence
-    ) {
-      await runLearning(analyticUnit.id, from, to);
-      cache = await AnalyticUnitCache.findById(analyticUnit.id);
-    }
-
-    cache = cache.data;
-
-    const analyticUnitType = analyticUnit.type;
-    const detector = analyticUnit.detectorType;
-    const payload = {
-      data: data.values,
-      analyticUnitType,
-      detector,
-      cache
-    };
-
-    const processingTask = new AnalyticsTask(analyticUnit.id, AnalyticsTaskType.PROCESS, payload);
-    const result = await runTask(processingTask);
-    if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
-      throw new Error(`Data processing error: ${result.error}`);
-    }
-
     let resultSeries = {
       hsr: data
     }
 
-    if(result.payload.lowerBound !== undefined) {
-      resultSeries['lowerBound'] = { values: result.payload.lowerBound, columns: data.columns };
+    if(analyticUnit.detectorType === AnalyticUnit.DetectorType.THRESHOLD) {
+      let cache = await AnalyticUnitCache.findById(analyticUnit.id);
+      if(
+        cache === null ||
+        cache.data.alpha !== (analyticUnit as AnalyticUnit.ThresholdAnalyticUnit).value ||
+        cache.data.confidence !== (analyticUnit as AnalyticUnit.ThresholdAnalyticUnit).condition
+      ) {
+        await runLearning(analyticUnit.id, from, to);
+        cache = await AnalyticUnitCache.findById(analyticUnit.id);
+      }
+
+      cache = cache.data;
+
+      const analyticUnitType = analyticUnit.type;
+      const detector = analyticUnit.detectorType;
+      const payload = {
+        data: data.values,
+        analyticUnitType,
+        detector,
+        cache
+      };
+
+      const processingTask = new AnalyticsTask(analyticUnit.id, AnalyticsTaskType.PROCESS, payload);
+      const result = await runTask(processingTask);
+      if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
+        throw new Error(`Data processing error: ${result.error}`);
+      }
+
+      if(result.payload.threshold !== undefined) {
+        resultSeries['threshold'] = { values: result.payload.threshold, columns: data.columns };
+      }
     }
 
-    if(result.payload.upperBound !== undefined) {
-      resultSeries['upperBound'] = { values: result.payload.upperBound, columns: data.columns };
+    if(analyticUnit.detectorType === AnalyticUnit.DetectorType.ANOMALY) {
+      let cache = await AnalyticUnitCache.findById(analyticUnit.id);
+      if(
+        cache === null ||
+        cache.data.alpha !== (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).alpha ||
+        cache.data.confidence !== (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).confidence
+      ) {
+        await runLearning(analyticUnit.id, from, to);
+        cache = await AnalyticUnitCache.findById(analyticUnit.id);
+      }
+
+      cache = cache.data;
+
+      const analyticUnitType = analyticUnit.type;
+      const detector = analyticUnit.detectorType;
+      const payload = {
+        data: data.values,
+        analyticUnitType,
+        detector,
+        cache
+      };
+
+      const processingTask = new AnalyticsTask(analyticUnit.id, AnalyticsTaskType.PROCESS, payload);
+      const result = await runTask(processingTask);
+      if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
+        throw new Error(`Data processing error: ${result.error}`);
+      }
+
+      if(result.payload.lowerBound !== undefined) {
+        resultSeries['lowerBound'] = { values: result.payload.lowerBound, columns: data.columns };
+      }
+
+      if(result.payload.upperBound !== undefined) {
+        resultSeries['upperBound'] = { values: result.payload.upperBound, columns: data.columns };
+      }
     }
 
     return resultSeries;

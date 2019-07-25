@@ -50,3 +50,11 @@ class AnomalyProcessingResult():
     ):
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
+@utils.meta.JSONClass
+class ThresholdProcessingResult():
+
+    def __init__(
+        self,
+        threshold: Optional[TimeSeries] = None,
+    ):
+        self.threshold = threshold
