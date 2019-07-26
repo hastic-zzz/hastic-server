@@ -61,7 +61,7 @@ class ProcessingDetector(Detector):
     def concat_processing_results(self, processing_results: List[ProcessingResult]) -> Optional[ProcessingResult]:
         '''
         Concatenate sequential ProcessingResults that received via
-        split pervious dataset to chunks in analytic worker
+        splitting dataset to chunks in analytic worker
         '''
 
         if len(processing_results) == 0:
