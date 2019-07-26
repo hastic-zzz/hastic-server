@@ -635,8 +635,8 @@ export async function getHSR(
     let data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
     if (data.values != undefined && data.values.length > 1) {
       timestep = data.values[1][0] - data.values[0][0];
+      data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to + timestep, HASTIC_API_KEY);
     }
-    data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to + timestep, HASTIC_API_KEY);
     if(analyticUnit.detectorType !== AnalyticUnit.DetectorType.ANOMALY) {
       return { hsr: data };
     }
