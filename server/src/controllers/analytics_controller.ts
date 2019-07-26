@@ -630,7 +630,7 @@ export async function getHSR(
 }> {
   try {
     //TODO: Use aggregation time instead of 2nd query when it's supported by grafana-datasource-kit
-    let timestep = 86400000;
+    let timestep = 0;
     const grafanaUrl = getGrafanaUrl(analyticUnit.grafanaUrl);
     let data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
     if (data.values != undefined && data.values.length > 1) {
