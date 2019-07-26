@@ -53,9 +53,17 @@ class ProcessingDetector(Detector):
 
     @abstractmethod
     def process_data(self, data: TimeSeries, cache: Optional[ModelCache]) -> ProcessingResult:
+        '''
+        Data processing to receive additional time series that represents detector's settings
+        '''
         pass
 
     def concat_processing_results(self, processing_results: List[ProcessingResult]) -> Optional[ProcessingResult]:
+        '''
+        Concatenate sequential ProcessingResults that received via
+        split pervious dataset to chunks in analytic worker
+        '''
+
         if len(processing_results) == 0:
             return None
 
