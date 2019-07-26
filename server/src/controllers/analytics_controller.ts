@@ -30,6 +30,12 @@ type TableTimeSeries = { values: [number, number][], columns: string[] };
 type TimeRange = { from: number, to: number };
 export type TaskResolver = (taskResult: TaskResult) => void;
 
+type HSRResult = {
+  hsr: TableTimeSeries,
+  lowerBound?: TableTimeSeries
+  upperBound?: TableTimeSeries
+}
+
 const taskResolvers = new Map<AnalyticsTaskId, TaskResolver>();
 
 let analyticsService: AnalyticsService = undefined;
@@ -631,10 +637,14 @@ export async function getHSR(
   try {
     const grafanaUrl = getGrafanaUrl(analyticUnit.grafanaUrl);
     const data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
-
-    if(analyticUnit.detectorType !== AnalyticUnit.DetectorType.ANOMALY) {
-      return { hsr: data };
+    let resultSeries: HSRResult = {
+      hsr: data
     }
+
+    if(analyticUnit.detectorType === AnalyticUnit.DetectorType.PATTERN) {
+      return resultSeries;
+    }
+
     let cache = await AnalyticUnitCache.findById(analyticUnit.id);
     if(
       cache === null ||
@@ -662,16 +672,12 @@ export async function getHSR(
       throw new Error(`Data processing error: ${result.error}`);
     }
 
-    let resultSeries = {
-      hsr: data
-    }
-
     if(result.payload.lowerBound !== undefined) {
-      resultSeries['lowerBound'] = { values: result.payload.lowerBound, columns: data.columns };
+      resultSeries.lowerBound = { values: result.payload.lowerBound, columns: data.columns };
     }
 
     if(result.payload.upperBound !== undefined) {
-      resultSeries['upperBound'] = { values: result.payload.upperBound, columns: data.columns };
+      resultSeries.upperBound = { values: result.payload.upperBound, columns: data.columns };
     }
 
     return resultSeries;

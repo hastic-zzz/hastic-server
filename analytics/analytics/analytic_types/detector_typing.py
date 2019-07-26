@@ -34,17 +34,6 @@ class ProcessingResult():
 
     def __init__(
         self,
-        data: Optional[TimeSeries] = None
-    ):
-        if data is None:
-            data = []
-        self.data = data
-
-@utils.meta.JSONClass
-class AnomalyProcessingResult():
-
-    def __init__(
-        self,
         lower_bound: Optional[TimeSeries] = None,
         upper_bound: Optional[TimeSeries] = None,
     ):

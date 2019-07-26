@@ -6,9 +6,9 @@ import numpy as np
 from typing import Optional, List
 
 from analytic_types import ModelCache, AnalyticUnitId
-from analytic_types.detector_typing import DetectionResult
+from analytic_types.detector_typing import DetectionResult, ProcessingResult
 from analytic_types.segment import Segment
-from detectors import Detector
+from detectors import ProcessingDetector
 from time import time
 import utils
 
@@ -16,7 +16,7 @@ import utils
 logger = log.getLogger('THRESHOLD_DETECTOR')
 
 
-class ThresholdDetector(Detector):
+class ThresholdDetector(ProcessingDetector):
 
     WINDOW_SIZE = 3
 
@@ -89,3 +89,23 @@ class ThresholdDetector(Detector):
             result.cache = detection.cache
         result.segments = utils.merge_intersecting_segments(result.segments, time_step)
         return result
+
+    def process_data(self, dataframe: pd.DataFrame, cache: ModelCache) -> ProcessingResult:
+        data = dataframe['value']
+        value = self.get_value_from_cache(cache, 'value', required = True)
+        condition = self.get_value_from_cache(cache, 'condition', required = True)
+
+        if condition == 'NO_DATA':
+            return ProcessingResult()
+
+        data.values[:] = value
+        timestamps = utils.convert_series_to_timestamp_list(dataframe.timestamp)
+        result_series = list(zip(timestamps, data.values.tolist()))
+
+        if condition in ['>', '>=', '=']:
+            return ProcessingResult(upper_bound = result_series)
+
+        if condition in ['<', '<=']:
+            return ProcessingResult(lower_bound = result_series)
+
+        raise ValueError(f'{condition} condition not supported')

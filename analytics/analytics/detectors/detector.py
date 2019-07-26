@@ -53,14 +53,28 @@ class ProcessingDetector(Detector):
 
     @abstractmethod
     def process_data(self, data: TimeSeries, cache: Optional[ModelCache]) -> ProcessingResult:
+        '''
+        Data processing to receive additional time series that represents detector's settings
+        '''
         pass
 
     def concat_processing_results(self, processing_results: List[ProcessingResult]) -> Optional[ProcessingResult]:
+        '''
+        Concatenate sequential ProcessingResults that received via
+        splitting dataset to chunks in analytic worker
+        '''
+
         if len(processing_results) == 0:
             return None
 
         united_result = ProcessingResult()
         for result in processing_results:
-            united_result.data.extend(result.data)
+            if result.lower_bound is not None:
+                if united_result.lower_bound is None: united_result.lower_bound = []
+                united_result.lower_bound.extend(result.lower_bound)
+
+            if result.upper_bound is not None:
+                if united_result.upper_bound is None: united_result.upper_bound = []
+                united_result.upper_bound.extend(result.upper_bound)
 
         return united_result
