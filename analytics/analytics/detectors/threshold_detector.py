@@ -92,8 +92,8 @@ class ThresholdDetector(ProcessingDetector):
 
     def process_data(self, dataframe: pd.DataFrame, cache: ModelCache) -> ProcessingResult:
         data = dataframe['value']
-        value = cache['value']
-        condition = cache['condition']
+        value = self.get_value_from_cache(cache, 'value', required = True)
+        condition = self.get_value_from_cache(cache, 'condition', required = True)
 
         if condition == 'NO_DATA':
             return ProcessingResult()
