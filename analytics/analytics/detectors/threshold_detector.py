@@ -98,7 +98,7 @@ class ThresholdDetector(ProcessingDetector):
         if condition == 'NO_DATA':
             return ProcessingResult()
 
-        data.values[:]  = value
+        data.values[:] = value
         timestamps = utils.convert_series_to_timestamp_list(dataframe.timestamp)
         result_series = list(zip(timestamps, data.values.tolist()))
 
