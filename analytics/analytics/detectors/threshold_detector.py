@@ -103,9 +103,9 @@ class ThresholdDetector(ProcessingDetector):
         result_series = list(zip(timestamps, data.values.tolist()))
 
         if condition in ['>', '>=', '=']:
-            return ProcessingResult(upper_bound=result_series)
+            return ProcessingResult(upper_bound = result_series)
 
         if condition in ['<', '<=']:
-            return ProcessingResult(lower_bound=result_series)
+            return ProcessingResult(lower_bound = result_series)
 
         raise ValueError(f'{condition} condition not supported')
