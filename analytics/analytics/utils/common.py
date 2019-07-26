@@ -36,6 +36,9 @@ def exponential_smoothing(series: pd.Series, alpha: float, last_smoothed_value: 
             series.values[n] = result[n]
         else:
             result.append(alpha * series[n] + (1 - alpha) * result[n - 1])
+    
+    assert len(result) == len(series), \
+        f'len of smoothed data {len(result)} != len of original dataset {len(series)}'
     return pd.Series(result, index = series.index)
 
 def find_pattern(data: pd.Series, height: float, length: int, pattern_type: str) -> list:

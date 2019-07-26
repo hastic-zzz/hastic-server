@@ -30,7 +30,7 @@ type TableTimeSeries = { values: [number, number][], columns: string[] };
 type TimeRange = { from: number, to: number };
 export type TaskResolver = (taskResult: TaskResult) => void;
 
-type hsrResult = {
+type HSRResult = {
   hsr: TableTimeSeries,
   lowerBound?: TableTimeSeries
   upperBound?: TableTimeSeries
@@ -637,7 +637,7 @@ export async function getHSR(
   try {
     const grafanaUrl = getGrafanaUrl(analyticUnit.grafanaUrl);
     const data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
-    let resultSeries: hsrResult = {
+    let resultSeries: HSRResult = {
       hsr: data
     }
 

@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 from typing import Optional, List
 
-from analytic_types import ModelCache
+from analytic_types import ModelCache, AnalyticUnitId
 from analytic_types.detector_typing import DetectionResult, ProcessingResult
 from analytic_types.segment import Segment
 from detectors import ProcessingDetector
@@ -20,8 +20,8 @@ class ThresholdDetector(ProcessingDetector):
 
     WINDOW_SIZE = 3
 
-    def __init__(self):
-        pass
+    def __init__(self, analytic_unit_id: AnalyticUnitId):
+        super().__init__(analytic_unit_id)
 
     def train(self, dataframe: pd.DataFrame, threshold: dict, cache: Optional[ModelCache]) -> ModelCache:
         time_step = utils.find_interval(dataframe)
