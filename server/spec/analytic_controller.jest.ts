@@ -1,6 +1,17 @@
+import { queryByMetric } from 'grafana-datasource-kit';
+
+jest.mock('grafana-datasource-kit', () => (
+    {
+        ...(jest.requireActual('grafana-datasource-kit')),
+        queryByMetric: jest.fn((metric, url, from, to, apiKey) => {})
+    }
+));
+
 import { saveAnalyticUnitFromObject, runDetect } from '../src/controllers/analytics_controller';
 import * as AnalyticUnit from '../src/models/analytic_units';
 import * as AnalyticUnitCache from '../src/models/analytic_unit_cache_model';
+
+import { HASTIC_API_KEY } from '../src/config';
 
 describe('Check detection range', function() {
     const analyticUnitObj = {
@@ -50,22 +61,27 @@ describe('Check detection range', function() {
         updatedAt: {"$$date":1564476040880}
     }
 
+    const windowSize = 10;
+    const timeStep = 1000;
+
     async function prepare(): Promise<string> {
         const analyticUnitId = await saveAnalyticUnitFromObject(analyticUnitObj);
         await AnalyticUnit.update(analyticUnitId, {lastDetectionTime: 1000});
         await AnalyticUnitCache.create(analyticUnitId);
         await AnalyticUnitCache.setData(analyticUnitId, {
-            windowSize: 1000,
-            timeStep: 100
+            windowSize,
+            timeStep
         });
         return analyticUnitId;
     };
 
-    var query = jest.fn();
+    it('check range >= 2 * window size * timeStep', async () => {
+        const from = 1500000000000;
+        const to = 1500000000001;
+        const expectedFrom = to - windowSize * timeStep * 2;
 
-    it('check range >= 2 * window size', async () => {
         const id = await prepare();
-        await runDetect(id, 2000, 3000);
-        expect(query).toBeCalledWith(id, {from: 2000, to: 4000});
+        await runDetect(id, from, to);
+        expect(queryByMetric).toBeCalledWith(analyticUnitObj.metric, undefined, expectedFrom, to, HASTIC_API_KEY);
     });
 });
