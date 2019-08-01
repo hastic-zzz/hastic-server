@@ -13,6 +13,7 @@ import * as AnalyticUnitCache from '../src/models/analytic_unit_cache_model';
 
 import { HASTIC_API_KEY } from '../src/config';
 
+
 describe('Check detection range', function() {
   const analyticUnitObj = {
     _id: 'test',
