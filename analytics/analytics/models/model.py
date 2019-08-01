@@ -68,6 +68,7 @@ class ModelState():
 
     def __init__(
         self,
+        time_step: int = 0,
         pattern_center: List[int] = None,
         pattern_model: List[float] = None,
         convolve_max: float = 0,
@@ -76,6 +77,7 @@ class ModelState():
         conv_del_min: float = 0,
         conv_del_max: float = 0
     ):
+        self.time_step = time_step
         self.pattern_center = pattern_center if pattern_center is not None else []
         self.pattern_model = pattern_model if pattern_model is not None else []
         self.convolve_max = convolve_max

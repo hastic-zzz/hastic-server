@@ -48,8 +48,13 @@ class PatternDetector(Detector):
 
     def train(self, dataframe: pd.DataFrame, segments: List[dict], cache: Optional[ModelCache]) -> ModelCache:
         # TODO: pass only part of dataframe that has segments
-        self.model.state = self.model.get_state(cache)
-        new_cache = self.model.fit(dataframe, segments, self.analytic_unit_id)
+        self.model.state: models.ModelState = self.model.get_state(cache)
+        new_cache: models.ModelState = self.model.fit(dataframe, segments, self.analytic_unit_id)
+
+        # time step is optional
+        if len(dataframe) > 1:
+            new_cache.time_step = utils.find_interval(dataframe)
+
         new_cache = new_cache.to_json()
         if len(new_cache) == 0:
             logging.warning('new_cache is empty with data: {}, segments: {}, cache: {}, analytic unit: {}'.format(dataframe, segments, cache, self.analytic_unit_id))
@@ -75,7 +80,7 @@ class PatternDetector(Detector):
             raise ValueError(message)
 
         if len(dataframe) < window_size * 2:
-            message = f'{self.analytic_unit_id} skip detection: data length: {len(dataframe)} less than window_size: {window_size}'
+            message = f'{self.analytic_unit_id} skip detection: dataset length {len(dataframe)} points less than minimal length {window_size * 2} points'
             logger.error(message)
             raise ValueError(message)
 

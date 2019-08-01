@@ -350,6 +350,11 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     } else {
       range = await getQueryRange(id, detector);
     }
+
+    if(range.to - range.from < intersection) {
+      range.from = range.to - intersection;
+    }
+
     const data = await query(unit, range);
 
     let task = new AnalyticsTask(
@@ -596,6 +601,13 @@ async function getPayloadData(
   } else {
     range = await getQueryRange(analyticUnit.id, analyticUnit.detectorType);
   }
+
+  const cache = await AnalyticUnitCache.findById(analyticUnit.id);
+  const intersection = cache.getIntersection();
+  if(range.to - range.from < intersection) {
+    range.from = range.to - intersection;
+  }
+
   return await query(analyticUnit, range);
 }
 
