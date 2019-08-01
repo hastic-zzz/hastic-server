@@ -42,8 +42,7 @@ class PatternDetector(Detector):
 
     def __init__(self, pattern_type: str, analytic_unit_id: AnalyticUnitId):
         self.analytic_unit_id = analytic_unit_id
-        self.pattern_type = pattern_type
-        self.model = resolve_model_by_pattern(self.pattern_type)
+        self.model = resolve_model_by_pattern(pattern_type)
         self.bucket = DataBucket()
 
     def train(self, dataframe: pd.DataFrame, segments: List[dict], cache: Optional[ModelCache]) -> ModelCache:
