@@ -33,9 +33,9 @@ export class AnalyticUnitCache {
   }
 
   public getIntersection(): number {
-    if(_.has(this.data, 'windowSize')) {
+    if(this.data.windowSize !== undefined) {
       //TODO: return one window size after resolving https://github.com/hastic/hastic-server/issues/508
-      if(_.has(this.data, 'timeStep')) {
+      if(this.data.timeStep !== undefined) {
         return this.data.windowSize * 2 * this.data.timeStep;
       } else {
         return this.data.windowSize * 2 * MILLISECONDS_IN_INDEX;

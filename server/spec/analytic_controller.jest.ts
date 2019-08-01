@@ -66,7 +66,7 @@ describe('Check detection range', function() {
   const WINDOW_SIZE = 10;
   const TIME_STEP = 1000;
 
-  async function prepare(): Promise<string> {
+  async function addTestUnitToDB(): Promise<string> {
     const analyticUnitId = await saveAnalyticUnitFromObject(analyticUnitObj);
     await AnalyticUnit.update(analyticUnitId, {lastDetectionTime: 1000});
     await AnalyticUnitCache.create(analyticUnitId);
@@ -82,7 +82,7 @@ describe('Check detection range', function() {
     const to = 1500000000001;
     const expectedFrom = to - WINDOW_SIZE * TIME_STEP * 2;
 
-    const id = await prepare();
+    const id = await addTestUnitToDB();
     await runDetect(id, from, to);
     expect(queryByMetric).toBeCalledWith(analyticUnitObj.metric, undefined, expectedFrom, to, HASTIC_API_KEY);
   });
