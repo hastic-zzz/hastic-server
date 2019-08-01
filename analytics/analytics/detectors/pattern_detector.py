@@ -50,7 +50,7 @@ class PatternDetector(Detector):
         self.model.state: models.ModelState = self.model.get_state(cache)
         new_cache: models.ModelState = self.model.fit(dataframe, segments, self.analytic_unit_id)
 
-        #time step isn't mandatory
+        # time step is optional
         if len(dataframe) > 1:
             new_cache.time_step = utils.find_interval(dataframe)
 
