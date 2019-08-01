@@ -41,7 +41,7 @@ class PatternDetector(Detector):
     DEFAULT_WINDOW_SIZE = 1
 
     def __init__(self, pattern_type: str, analytic_unit_id: AnalyticUnitId):
-        self.analytic_unit_id = analytic_unit_id
+        super().__init__(analytic_unit_id)
         self.model = resolve_model_by_pattern(pattern_type)
         self.bucket = DataBucket()
 
