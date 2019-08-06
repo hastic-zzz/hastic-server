@@ -2,7 +2,6 @@ import { AnalyticUnitId, AnalyticUnitStatus, DetectorType } from './types';
 
 import { Metric } from 'grafana-datasource-kit';
 
-
 export abstract class AnalyticUnit {
 
   public learningAfterUpdateRequired = false;
@@ -77,5 +76,7 @@ export abstract class AnalyticUnit {
       collapsed: this.collapsed
     };
   }
+
+  public getAnalyticFields(): any {};
 
 }

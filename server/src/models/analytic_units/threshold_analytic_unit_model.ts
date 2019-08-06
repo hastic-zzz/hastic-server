@@ -56,19 +56,19 @@ export class ThresholdAnalyticUnit extends AnalyticUnit {
 
   toObject() {
     const baseObject = super.toObject();
+    const analyticFilds = this.getAnalyticFields();
     return {
       ...baseObject,
-      value: this.value,
-      condition: this.condition
+      ...analyticFilds
     };
   }
 
   toPanelObject() {
     const baseObject = super.toPanelObject();
+    const analyticFilds = this.getAnalyticFields();
     return {
       ...baseObject,
-      value: this.value,
-      condition: this.condition
+      ...analyticFilds
     };
   }
 
@@ -97,5 +97,12 @@ export class ThresholdAnalyticUnit extends AnalyticUnit {
       obj.visible,
       obj.collapsed
     );
+  }
+
+  public getAnalyticFields(): any {
+    return {
+      value: this.value,
+      condition: this.condition
+    }
   }
 }

@@ -59,25 +59,19 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
 
   toObject() {
     const baseObject = super.toObject();
+    const analyticFilds = this.getAnalyticFields();
     return {
       ...baseObject,
-      alpha: this.alpha,
-      confidence: this.confidence,
-      seasonality: this.seasonality,
-      seasonalityPeriod: this.seasonalityPeriod,
-      enableBounds: this.enableBounds
+      ...analyticFilds
     };
   }
 
   toPanelObject() {
     const baseObject = super.toPanelObject();
+    const analyticFilds = this.getAnalyticFields();
     return {
       ...baseObject,
-      alpha: this.alpha,
-      confidence: this.confidence,
-      seasonality: this.seasonality,
-      seasonalityPeriod: this.seasonalityPeriod,
-      enableBounds: this.enableBounds
+      ...analyticFilds
     };
   }
 
@@ -109,5 +103,15 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
       obj.visible,
       obj.collapsed
     );
+  }
+
+  public getAnalyticFields(): any {
+    return {
+      alpha: this.alpha,
+      confidence: this.confidence,
+      seasonality: this.seasonality,
+      seasonalityPeriod: this.seasonalityPeriod,
+      enableBounds: this.enableBounds
+    }
   }
 }
