@@ -4,7 +4,6 @@ import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import * as Segment from '../models/segment_model';
 import * as AnalyticUnit from '../models/analytic_units';
 import * as Detection from '../models/detection_model';
-import { ThresholdAnalyticUnit } from '../models/analytic_units/threshold_analytic_unit_model';
 import { AnalyticsService } from '../services/analytics_service';
 import { AlertService } from '../services/alert_service';
 import { HASTIC_API_KEY } from '../config';
@@ -14,10 +13,7 @@ import { getNonIntersectedSpans } from '../utils/spans';
 
 import { queryByMetric, GrafanaUnavailable, DatasourceUnavailable } from 'grafana-datasource-kit';
 
-
 import * as _ from 'lodash';
-import { WebhookType } from '../services/notification_service';
-import { AnomalyAnalyticUnit } from '../models/analytic_units/anomaly_analytic_unit_model';
 
 const SECONDS_IN_MINUTE = 60;
 
@@ -275,21 +271,21 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
         break;
       case AnalyticUnit.DetectorType.THRESHOLD:
         taskPayload.threshold = {
-          value: (analyticUnit as ThresholdAnalyticUnit).value,
-          condition: (analyticUnit as ThresholdAnalyticUnit).condition
+          value: (analyticUnit as AnalyticUnit.ThresholdAnalyticUnit).value,
+          condition: (analyticUnit as AnalyticUnit.ThresholdAnalyticUnit).condition
         };
         taskPayload.data = await getPayloadData(analyticUnit, from, to);
         break;
       case AnalyticUnit.DetectorType.ANOMALY:
         taskPayload.anomaly = {
-          alpha: (analyticUnit as AnomalyAnalyticUnit).alpha,
-          confidence: (analyticUnit as AnomalyAnalyticUnit).confidence,
-          enableBounds: (analyticUnit as AnomalyAnalyticUnit).enableBounds
+          alpha: (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).alpha,
+          confidence: (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).confidence,
+          enableBounds: (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).enableBounds
         };
 
         taskPayload.data = await getPayloadData(analyticUnit, from, to);
 
-        const seasonality = (analyticUnit as AnomalyAnalyticUnit).seasonality;
+        const seasonality = (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).seasonality;
         if(seasonality > 0) {
           let segments = await Segment.findMany(id, { deleted: true });
           if(segments.length === 0) {
