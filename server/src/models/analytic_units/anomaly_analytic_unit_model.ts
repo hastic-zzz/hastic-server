@@ -8,7 +8,7 @@ type SeasonalityPeriod = {
   value: number
 }
 
-enum Bound {
+export enum Bound {
   ALL = 'ALL',
   UPPER = 'UPPER',
   LOWER = 'LOWER'
@@ -103,13 +103,12 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
     );
   }
 
-
   get analyticProps() {
     return {
       alpha: this.alpha,
       confidence: this.confidence,
       seasonality: this.seasonality,
-      seasonalityPeriod: this.seasonalityPeriod,
+      seasonalityPeriod: this.seasonalityPeriod,  
       enableBounds: this.enableBounds
     };
   }

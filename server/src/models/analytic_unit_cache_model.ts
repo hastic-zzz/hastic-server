@@ -1,4 +1,4 @@
-import { AnalyticUnitId } from './analytic_units';
+import { AnalyticUnitId, AnalyticUnit } from './analytic_units';
 import { Collection, makeDBQ } from '../services/data_service';
 
 import * as _ from 'lodash';
@@ -49,6 +49,11 @@ export class AnalyticUnitCache {
     return 3 * MILLISECONDS_IN_INDEX;
   }
 
+  public isCacheOutdated(analyticUnit: AnalyticUnit) {
+    return !_.every(
+      _.keys(analyticUnit.analyticProps).map(k => _.isEqual(analyticUnit.analyticProps[k], this.data[k]))
+    );
+  }
 }
 
 export async function findById(id: AnalyticUnitId): Promise<AnalyticUnitCache> {

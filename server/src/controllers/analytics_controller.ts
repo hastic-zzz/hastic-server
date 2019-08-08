@@ -655,7 +655,7 @@ export async function getHSR(
     }
 
     let cache = await AnalyticUnitCache.findById(analyticUnit.id);
-    if(cache === null || analyticCacheOutdated(analyticUnit, cache)) {
+    if(cache === null || cache.isCacheOutdated(analyticUnit)) {
       await runLearning(analyticUnit.id, from, to);
       cache = await AnalyticUnitCache.findById(analyticUnit.id);
     }
@@ -691,10 +691,4 @@ export async function getHSR(
     await AnalyticUnit.setStatus(analyticUnit.id, AnalyticUnit.AnalyticUnitStatus.FAILED, message);
     throw new Error(message);
   }
-}
-
-function analyticCacheOutdated(analyticUnit: AnalyticUnit.AnalyticUnit, cache: AnalyticUnitCache.AnalyticUnitCache) {
-  return !_.every(
-    _.keys(analyticUnit.analyticProps).map(k => _.isEqual(analyticUnit.analyticProps[k], cache.data[k]))
-  );
 }
