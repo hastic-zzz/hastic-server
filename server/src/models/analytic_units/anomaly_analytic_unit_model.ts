@@ -59,19 +59,17 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
 
   toObject() {
     const baseObject = super.toObject();
-    const analyticFilds = this.getAnalyticFields();
     return {
       ...baseObject,
-      ...analyticFilds
+      ...this.analyticProps
     };
   }
 
   toPanelObject() {
     const baseObject = super.toPanelObject();
-    const analyticFilds = this.getAnalyticFields();
     return {
       ...baseObject,
-      ...analyticFilds
+      ...this.analyticProps
     };
   }
 
@@ -105,13 +103,14 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
     );
   }
 
-  public getAnalyticFields(): any {
+
+  get analyticProps() {
     return {
       alpha: this.alpha,
       confidence: this.confidence,
       seasonality: this.seasonality,
       seasonalityPeriod: this.seasonalityPeriod,
       enableBounds: this.enableBounds
-    }
+    };
   }
 }

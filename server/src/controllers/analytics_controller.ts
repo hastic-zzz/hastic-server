@@ -658,8 +658,7 @@ export async function getHSR(
     }
 
     let cache = await AnalyticUnitCache.findById(analyticUnit.id);
-    const analyticFields = analyticUnit.getAnalyticFields();
-    if(cache === null || !_.every(_.keys(analyticFields).map(k => analyticFields[k] === cache.data[k]))) {
+    if(cache === null || !_.every(_.keys(analyticUnit.analyticProps).map(k => _.isEqual(analyticUnit.analyticProps[k], cache.data[k])))) {
       await runLearning(analyticUnit.id, from, to);
       cache = await AnalyticUnitCache.findById(analyticUnit.id);
     }

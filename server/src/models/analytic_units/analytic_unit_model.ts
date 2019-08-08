@@ -77,6 +77,8 @@ export abstract class AnalyticUnit {
     };
   }
 
-  public getAnalyticFields(): any {};
+  get analyticProps () {
+    return {};
+  }
 
 }
