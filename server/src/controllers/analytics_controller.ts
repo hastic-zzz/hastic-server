@@ -3,8 +3,8 @@ import { AnalyticsTask, AnalyticsTaskType, AnalyticsTaskId } from '../models/ana
 import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import * as Segment from '../models/segment_model';
 import * as AnalyticUnit from '../models/analytic_units';
+import { ThresholdAnalyticUnit, AnomalyAnalyticUnit} from '../models/analytic_units';
 import * as Detection from '../models/detection_model';
-import { ThresholdAnalyticUnit } from '../models/analytic_units/threshold_analytic_unit_model';
 import { AnalyticsService } from '../services/analytics_service';
 import { AlertService } from '../services/alert_service';
 import { HASTIC_API_KEY } from '../config';
@@ -14,10 +14,7 @@ import { getNonIntersectedSpans } from '../utils/spans';
 
 import { queryByMetric, GrafanaUnavailable, DatasourceUnavailable } from 'grafana-datasource-kit';
 
-
 import * as _ from 'lodash';
-import { WebhookType } from '../services/notification_service';
-import { AnomalyAnalyticUnit } from '../models/analytic_units/anomaly_analytic_unit_model';
 
 const SECONDS_IN_MINUTE = 60;
 
@@ -658,11 +655,7 @@ export async function getHSR(
     }
 
     let cache = await AnalyticUnitCache.findById(analyticUnit.id);
-    if(
-      cache === null ||
-      cache.data.alpha !== (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).alpha ||
-      cache.data.confidence !== (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).confidence
-    ) {
+    if(cache === null || cache.isCacheOutdated(analyticUnit)) {
       await runLearning(analyticUnit.id, from, to);
       cache = await AnalyticUnitCache.findById(analyticUnit.id);
     }

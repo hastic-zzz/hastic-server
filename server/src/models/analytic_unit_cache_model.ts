@@ -1,4 +1,4 @@
-import { AnalyticUnitId } from './analytic_units';
+import { AnalyticUnitId, AnalyticUnit } from './analytic_units';
 import { Collection, makeDBQ } from '../services/data_service';
 
 import * as _ from 'lodash';
@@ -33,7 +33,11 @@ export class AnalyticUnitCache {
   }
 
   public getIntersection(): number {
-    if(this.data.windowSize !== undefined) {
+    if(
+        this.data !== undefined &&
+        this.data !== null &&
+        this.data.windowSize !== undefined
+    ) {
       //TODO: return one window size after resolving https://github.com/hastic/hastic-server/issues/508
       if(this.data.timeStep !== undefined) {
         return this.data.windowSize * 2 * this.data.timeStep;
@@ -45,6 +49,11 @@ export class AnalyticUnitCache {
     return 3 * MILLISECONDS_IN_INDEX;
   }
 
+  public isCacheOutdated(analyticUnit: AnalyticUnit) {
+    return !_.every(
+      _.keys(analyticUnit.analyticProps).map(k => _.isEqual(analyticUnit.analyticProps[k], this.data[k]))
+    );
+  }
 }
 
 export async function findById(id: AnalyticUnitId): Promise<AnalyticUnitCache> {

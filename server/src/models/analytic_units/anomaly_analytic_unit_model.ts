@@ -8,7 +8,7 @@ type SeasonalityPeriod = {
   value: number
 }
 
-enum Bound {
+export enum Bound {
   ALL = 'ALL',
   UPPER = 'UPPER',
   LOWER = 'LOWER'
@@ -61,11 +61,7 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
     const baseObject = super.toObject();
     return {
       ...baseObject,
-      alpha: this.alpha,
-      confidence: this.confidence,
-      seasonality: this.seasonality,
-      seasonalityPeriod: this.seasonalityPeriod,
-      enableBounds: this.enableBounds
+      ...this.analyticProps
     };
   }
 
@@ -73,11 +69,7 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
     const baseObject = super.toPanelObject();
     return {
       ...baseObject,
-      alpha: this.alpha,
-      confidence: this.confidence,
-      seasonality: this.seasonality,
-      seasonalityPeriod: this.seasonalityPeriod,
-      enableBounds: this.enableBounds
+      ...this.analyticProps
     };
   }
 
@@ -109,5 +101,15 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
       obj.visible,
       obj.collapsed
     );
+  }
+
+  get analyticProps() {
+    return {
+      alpha: this.alpha,
+      confidence: this.confidence,
+      seasonality: this.seasonality,
+      seasonalityPeriod: this.seasonalityPeriod,  
+      enableBounds: this.enableBounds
+    };
   }
 }
