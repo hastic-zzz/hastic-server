@@ -3,6 +3,7 @@ import { AnalyticsTask, AnalyticsTaskType, AnalyticsTaskId } from '../models/ana
 import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import * as Segment from '../models/segment_model';
 import * as AnalyticUnit from '../models/analytic_units';
+import { ThresholdAnalyticUnit, AnomalyAnalyticUnit} from '../models/analytic_units';
 import * as Detection from '../models/detection_model';
 import { AnalyticsService } from '../services/analytics_service';
 import { AlertService } from '../services/alert_service';
@@ -271,21 +272,21 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
         break;
       case AnalyticUnit.DetectorType.THRESHOLD:
         taskPayload.threshold = {
-          value: (analyticUnit as AnalyticUnit.ThresholdAnalyticUnit).value,
-          condition: (analyticUnit as AnalyticUnit.ThresholdAnalyticUnit).condition
+          value: (analyticUnit as ThresholdAnalyticUnit).value,
+          condition: (analyticUnit as ThresholdAnalyticUnit).condition
         };
         taskPayload.data = await getPayloadData(analyticUnit, from, to);
         break;
       case AnalyticUnit.DetectorType.ANOMALY:
         taskPayload.anomaly = {
-          alpha: (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).alpha,
-          confidence: (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).confidence,
-          enableBounds: (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).enableBounds
+          alpha: (analyticUnit as AnomalyAnalyticUnit).alpha,
+          confidence: (analyticUnit as AnomalyAnalyticUnit).confidence,
+          enableBounds: (analyticUnit as AnomalyAnalyticUnit).enableBounds
         };
 
         taskPayload.data = await getPayloadData(analyticUnit, from, to);
 
-        const seasonality = (analyticUnit as AnalyticUnit.AnomalyAnalyticUnit).seasonality;
+        const seasonality = (analyticUnit as AnomalyAnalyticUnit).seasonality;
         if(seasonality > 0) {
           let segments = await Segment.findMany(id, { deleted: true });
           if(segments.length === 0) {
