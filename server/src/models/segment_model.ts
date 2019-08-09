@@ -163,6 +163,7 @@ export async function insertSegments(segments: Segment[]) {
         console.info(intersectedWithLeftBound);
         let leftSegment = intersectedWithLeftBound[0];
         segment.from = leftSegment.from;
+        segmentIdsToRemove = segmentIdsToRemove.concat(intersectedWithLeftBound[0]._id);
       } else {
         console.info('intersectedWithLeftBound.length == 0');
       }
@@ -178,6 +179,7 @@ export async function insertSegments(segments: Segment[]) {
         console.info(intersectedWithRightBound);
         let rightSegment = intersectedWithRightBound[0];
         segment.to = rightSegment.to;
+        segmentIdsToRemove = segmentIdsToRemove.concat(intersectedWithRightBound[0]._id);
       } else {
         console.info('intersectedWithRightBound.length == 0');
       }
