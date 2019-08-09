@@ -49,6 +49,10 @@ export class AnalyticUnitCache {
     return 3 * MILLISECONDS_IN_INDEX;
   }
 
+  public getTimeStep() {
+    return this.data.timeStep;
+  }
+
   public isCacheOutdated(analyticUnit: AnalyticUnit) {
     return !_.every(
       _.keys(analyticUnit.analyticProps).map(k => _.isEqual(analyticUnit.analyticProps[k], this.data[k]))

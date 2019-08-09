@@ -1,5 +1,6 @@
 import { AnalyticUnitId } from './analytic_units';
-
+import * as AnalyticUnit from '../models/analytic_units';
+import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import { Collection, makeDBQ } from '../services/data_service';
 
 import * as _ from 'lodash';
@@ -142,6 +143,41 @@ export async function insertSegments(segments: Segment[]) {
       labeled: segment.labeled,
       deleted: segment.deleted
     });
+
+    let cache = await AnalyticUnitCache.findById(analyticUnitId);
+    const timeStep = cache.getTimeStep();
+    let unit = await AnalyticUnit.findById(analyticUnitId);
+    const detector = unit.detectorType;
+    console.info(detector);
+    console.info('from: ', segment.from, 'to: ', segment.to, 'timestep: ', timeStep );
+
+    if(detector != 'pattern') {
+      const intersectedWithLeftBound = await db.findMany({
+        analyticUnitId,
+        to: { $gte: segment.from - timeStep, $lte: segment.from },
+        labeled: false,
+        deleted: false
+      });
+
+      if (intersectedWithLeftBound.length > 0) {
+        console.info(intersectedWithLeftBound);
+      } else {
+        console.info('intersectedWithLeftBound.length == 0');
+      }
+
+      const intersectedWithRightBound = await db.findMany({
+        analyticUnitId,
+        from: { $gte: segment.to, $lte: segment.to + timeStep },
+        labeled: false,
+        deleted: false
+      });
+
+      if (intersectedWithRightBound.length > 0) {
+        console.info(intersectedWithRightBound);
+      } else {
+        console.info('intersectedWithRightBound.length == 0');
+      }
+    }
 
     if(intersectedSegments.length > 0) {
       let from = _.minBy(intersectedSegments, 'from').from;
