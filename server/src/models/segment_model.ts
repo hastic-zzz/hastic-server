@@ -161,6 +161,8 @@ export async function insertSegments(segments: Segment[]) {
 
       if (intersectedWithLeftBound.length > 0) {
         console.info(intersectedWithLeftBound);
+        let leftSegment = intersectedWithLeftBound[0];
+        segment.from = leftSegment.from;
       } else {
         console.info('intersectedWithLeftBound.length == 0');
       }
@@ -174,6 +176,8 @@ export async function insertSegments(segments: Segment[]) {
 
       if (intersectedWithRightBound.length > 0) {
         console.info(intersectedWithRightBound);
+        let rightSegment = intersectedWithRightBound[0];
+        segment.to = rightSegment.to;
       } else {
         console.info('intersectedWithRightBound.length == 0');
       }
