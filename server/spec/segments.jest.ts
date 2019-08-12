@@ -52,17 +52,14 @@ describe('Check deleted segments', function () {
 });
 
 async function getDeletedSegments(id, payload): Promise<Segment.Segment[]> {
-  let preSegments = await Segment.findMany(id, { labeled: false, deleted: false });
-  console.log(preSegments)
+  const preSegments = await Segment.findMany(id, { labeled: false, deleted: false });
   await deleteNonDetectedSegments(id, payload);
-  let postSegments = await Segment.findMany(id, { labeled: false, deleted: false });
-  console.log(postSegments)
-  let deleted = setDifference(preSegments, postSegments);
-  deleted = deleted.map(s => {
+  const postSegments = await Segment.findMany(id, { labeled: false, deleted: false });
+  const deleted = setDifference(preSegments, postSegments);
+  return deleted.map(s => {
     s.id = undefined;
     return s;
   });
-  return deleted;
 }
 
 function setDifference(a, b: Segment.Segment[]): Segment.Segment[] {
