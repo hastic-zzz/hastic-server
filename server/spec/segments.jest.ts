@@ -32,19 +32,19 @@ afterEach(async () => {
   clearDB();
 });
 
-describe('Check deleted segments', function () {
+describe('Check deleted segments', function() {
   let payload = {
     lastDetectionTime: 0,
     segments: [],
     cache: null
   };
 
-  it('previous segments not found', async function () {
+  it('previous segments not found', async function() {
     payload.segments = segmentBuilder([[0, 1], [4, 5]]);
     expect(await getDeletedSegments(TEST_ID, payload)).toEqual(segmentBuilder([[2, 3]]));
   });
 
-  it('all previous segments found', async function () {
+  it('all previous segments found', async function() {
     payload.segments = segmentBuilder([[0, 1], [2, 3], [4, 5]]);
     expect(await getDeletedSegments(TEST_ID, payload)).toEqual([]);
   });
