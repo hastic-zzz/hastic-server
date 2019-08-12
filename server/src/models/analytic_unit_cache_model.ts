@@ -49,7 +49,7 @@ export class AnalyticUnitCache {
     return 3 * MILLISECONDS_IN_INDEX;
   }
 
-  public getTimeStep() {
+  public getTimeStep(): number {
     return this.data.timeStep;
   }
 
