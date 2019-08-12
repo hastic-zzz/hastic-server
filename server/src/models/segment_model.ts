@@ -140,7 +140,7 @@ export async function insertSegments(segments: Segment[]) {
       });
 
       if(intersectedWithLeftBound.length > 0) {
-        const leftSegment = _.minBy(intersectedWithLeftBound, 'from');
+        const leftSegment = _.minBy(intersectedWithLeftBound, s => s.from);
         segment.from = leftSegment.from;
         segmentIdsToRemove.push(leftSegment.id);
       }
@@ -152,7 +152,7 @@ export async function insertSegments(segments: Segment[]) {
       });
 
       if(intersectedWithRightBound.length > 0) {
-        const rightSegment = _.maxBy(intersectedWithRightBound, 'to');
+        const rightSegment = _.maxBy(intersectedWithRightBound, s => s.to);
         segment.to = rightSegment.to;
         segmentIdsToRemove.push(rightSegment.id);
       }
