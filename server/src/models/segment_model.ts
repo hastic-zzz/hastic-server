@@ -140,9 +140,9 @@ export async function insertSegments(segments: Segment[]) {
       });
 
       if(intersectedWithLeftBound.length > 0) {
-        let leftSegment = intersectedWithLeftBound[0];
+        const leftSegment = _.minBy(intersectedWithLeftBound, 'from');
         segment.from = leftSegment.from;
-        segmentIdsToRemove.push(intersectedWithLeftBound[0].id);
+        segmentIdsToRemove.push(leftSegment.id);
       }
 
       const intersectedWithRightBound = await findMany(analyticUnitId, {
@@ -152,9 +152,9 @@ export async function insertSegments(segments: Segment[]) {
       });
 
       if(intersectedWithRightBound.length > 0) {
-        let rightSegment = intersectedWithRightBound[0];
+        const rightSegment = _.maxBy(intersectedWithRightBound, 'to');
         segment.to = rightSegment.to;
-        segmentIdsToRemove.push(intersectedWithRightBound[0].id);
+        segmentIdsToRemove.push(rightSegment.id);
       }
     }
 
