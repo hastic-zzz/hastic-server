@@ -72,21 +72,14 @@ export class Segment {
 
 export type FindManyQuery = {
   $or?: any,
-  timeFromGTE?: number,
-  timeToLTE?: number,
-  intexGT?: number,
+  from?: { $gte?: number, $lte?: number },
+  to?: { $gte?: number, $lte?: number },
   labeled?: boolean,
-  deleted?: boolean
+  deleted?: boolean,
 }
 
 export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promise<Segment[]> {
   var dbQuery: any = { analyticUnitId: id };
-  if(query.timeFromGTE !== undefined) {
-    dbQuery.from = { $gte: query.timeFromGTE };
-  }
-  if(query.timeToLTE !== undefined) {
-    dbQuery.to = { $lte: query.timeToLTE };
-  }
   if(query.labeled !== undefined) {
     dbQuery.labeled = query.labeled;
   }
@@ -105,8 +98,7 @@ export async function insertSegments(segments: Segment[]) {
     return [];
   }
   const analyticUnitId: AnalyticUnitId = segments[0].analyticUnitId;
-  const learningSegments: Segment[] = await db.findMany({
-    analyticUnitId,
+  const learningSegments = await findMany(analyticUnitId, {
     labeled: true,
     deleted: false
   });
@@ -123,8 +115,7 @@ export async function insertSegments(segments: Segment[]) {
     }
 
     if(!segment.deleted && !segment.labeled) {
-      const intersectedWithDeletedSegments = await db.findMany({
-        analyticUnitId,
+      const intersectedWithDeletedSegments = await findMany(analyticUnitId, {
         to: { $gte: segment.from },
         from: { $lte: segment.to },
         labeled: false,
@@ -136,54 +127,43 @@ export async function insertSegments(segments: Segment[]) {
       }
     }
 
-    const intersectedSegments = await db.findMany({
-      analyticUnitId,
-      to: { $gte: segment.from },
-      from: { $lte: segment.to },
-      labeled: segment.labeled,
-      deleted: segment.deleted
-    });
-
     let cache = await AnalyticUnitCache.findById(analyticUnitId);
     const timeStep = cache.getTimeStep();
     let unit = await AnalyticUnit.findById(analyticUnitId);
     const detector = unit.detectorType;
-    console.info(detector);
-    console.info('from: ', segment.from, 'to: ', segment.to, 'timestep: ', timeStep );
 
-    if(detector != 'pattern') {
-      const intersectedWithLeftBound = await db.findMany({
-        analyticUnitId,
+    if(detector !== AnalyticUnit.DetectorType.PATTERN) {
+      const intersectedWithLeftBound = await findMany(analyticUnitId, {
         to: { $gte: segment.from - timeStep, $lte: segment.from },
         labeled: false,
         deleted: false
       });
 
-      if (intersectedWithLeftBound.length > 0) {
-        console.info(intersectedWithLeftBound);
+      if(intersectedWithLeftBound.length > 0) {
         let leftSegment = intersectedWithLeftBound[0];
         segment.from = leftSegment.from;
-        segmentIdsToRemove = segmentIdsToRemove.concat(intersectedWithLeftBound[0]._id);
-      } else {
-        console.info('intersectedWithLeftBound.length == 0');
+        segmentIdsToRemove.push(intersectedWithLeftBound[0].id);
       }
 
-      const intersectedWithRightBound = await db.findMany({
-        analyticUnitId,
+      const intersectedWithRightBound = await findMany(analyticUnitId, {
         from: { $gte: segment.to, $lte: segment.to + timeStep },
         labeled: false,
         deleted: false
       });
 
-      if (intersectedWithRightBound.length > 0) {
-        console.info(intersectedWithRightBound);
+      if(intersectedWithRightBound.length > 0) {
         let rightSegment = intersectedWithRightBound[0];
         segment.to = rightSegment.to;
-        segmentIdsToRemove = segmentIdsToRemove.concat(intersectedWithRightBound[0]._id);
-      } else {
-        console.info('intersectedWithRightBound.length == 0');
+        segmentIdsToRemove.push(intersectedWithRightBound[0].id);
       }
     }
+
+    const intersectedSegments = await findMany(analyticUnitId, {
+      to: { $gte: segment.from },
+      from: { $lte: segment.to },
+      labeled: segment.labeled,
+      deleted: segment.deleted
+    });
 
     if(intersectedSegments.length > 0) {
       let from = _.minBy(intersectedSegments, 'from').from;
@@ -191,7 +171,7 @@ export async function insertSegments(segments: Segment[]) {
       let newSegment = Segment.fromObject(segment.toObject());
       newSegment.from = from;
       newSegment.to = to;
-      segmentIdsToRemove = segmentIdsToRemove.concat(intersectedSegments.map(s => s._id));
+      segmentIdsToRemove = segmentIdsToRemove.concat(intersectedSegments.map(s => s.id));
       segmentsToInsert.push(newSegment);
     } else {
       segmentsToInsert.push(segment);
