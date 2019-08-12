@@ -66,6 +66,9 @@ export class DetectionSpan {
 
 export type FindManyQuery = {
   status?: DetectionStatus,
+  // TODO: 
+  // from?: { $gte?: number, $lte?: number }
+  // to?: { $gte?: number, $lte?: number }
   timeFromLTE?: number,
   timeToGTE?: number,
   timeFromGTE?: number,

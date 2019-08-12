@@ -13,14 +13,11 @@ async function getSegments(ctx: Router.IRouterContext) {
   }
   let query: Segment.FindManyQuery = {};
 
-  if(!isNaN(+ctx.request.query.lastSegmentId)) {
-    query.intexGT = +ctx.request.query.lastSegmentId;
-  }
   if(!isNaN(+ctx.request.query.from)) {
-    query.timeFromGTE = +ctx.request.query.from;
+    query.from = { $gte: +ctx.request.query.from };
   }
   if(!isNaN(+ctx.request.query.to)) {
-    query.timeToLTE = +ctx.request.query.to;
+    query.to = { $lte: +ctx.request.query.to };
   }
   let segments = await Segment.findMany(id, query);
   ctx.response.body = { segments };

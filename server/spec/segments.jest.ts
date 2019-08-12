@@ -1,18 +1,31 @@
 import { deleteNonDetectedSegments } from '../src/controllers/analytics_controller';
 import * as AnalyticUnit from '../src/models/analytic_units';
 import * as Segment from '../src/models/segment_model';
+import * as AnalyticUnitCache from '../src/models/analytic_unit_cache_model';
 
 import * as _ from 'lodash';
 
-let id: AnalyticUnit.AnalyticUnitId = 'testid';
-let baseSegments = segmentBuilder([[0,1], [2,3], [4,5]]);
+const TEST_ID: AnalyticUnit.AnalyticUnitId = 'testid';
+const INITIAL_SEGMENTS = segmentBuilder([[0, 1], [2, 3], [4, 5]]);
 
 beforeAll(async () => {
   clearDB();
+  await AnalyticUnit.create(
+    AnalyticUnit.createAnalyticUnitFromObject({
+      _id: TEST_ID,
+      name: 'name',
+      grafanaUrl: 'grafanaUrl',
+      panelId: 'panelId',
+      type: 'type',
+      detectorType: AnalyticUnit.DetectorType.ANOMALY
+    })
+  );
+  await AnalyticUnitCache.create(TEST_ID);
+  await AnalyticUnitCache.setData(TEST_ID, { timeStep: 1 });
 });
 
-beforeEach(async ()=> {
-  await Segment.insertSegments(baseSegments);
+beforeEach(async () => {
+  await Segment.insertSegments(INITIAL_SEGMENTS);
 });
 
 afterEach(async () => {
@@ -27,27 +40,26 @@ describe('Check deleted segments', function() {
   };
 
   it('previous segments not found', async function() {
-    payload.segments = segmentBuilder([[0,1], [4,5]]);
-    expect(await getDeletedSegments(id, payload)).toEqual(segmentBuilder([[2,3]]));
+    payload.segments = segmentBuilder([[0, 1], [4, 5]]);
+    expect(await getDeletedSegments(TEST_ID, payload)).toEqual(segmentBuilder([[2, 3]]));
   });
 
   it('all previous segments found', async function() {
-    payload.segments = segmentBuilder([[0,1], [2,3], [4,5]]);
-    expect(await getDeletedSegments(id, payload)).toEqual([]);
+    payload.segments = segmentBuilder([[0, 1], [2, 3], [4, 5]]);
+    expect(await getDeletedSegments(TEST_ID, payload)).toEqual([]);
   });
 
 });
 
-async function getDeletedSegments(id, payload): Promise<Segment.Segment[]> {
-  let preSegments = await Segment.findMany(id, {labeled: false, deleted:false});
-  await deleteNonDetectedSegments(id, payload);
-  let postSegments = await Segment.findMany(id, {labeled: false, deleted:false});
-  let deleted = setDifference(preSegments, postSegments);
-  deleted = deleted.map(s => {
+async function getDeletedSegments(TEST_ID, payload): Promise<Segment.Segment[]> {
+  const preSegments = await Segment.findMany(TEST_ID, { labeled: false, deleted: false });
+  await deleteNonDetectedSegments(TEST_ID, payload);
+  const postSegments = await Segment.findMany(TEST_ID, { labeled: false, deleted: false });
+  const deleted = setDifference(preSegments, postSegments);
+  return deleted.map(s => {
     s.id = undefined;
     return s;
   });
-  return deleted;
 }
 
 function setDifference(a, b: Segment.Segment[]): Segment.Segment[] {
@@ -56,11 +68,11 @@ function setDifference(a, b: Segment.Segment[]): Segment.Segment[] {
 
 function segmentBuilder(times) {
   return times.map(t => {
-    return new Segment.Segment(id, t[0], t[1], false, false, undefined);
+    return new Segment.Segment(TEST_ID, t[0], t[1], false, false, undefined);
   });
 }
 
 async function clearDB() {
-  let segments = await Segment.findMany(id, {labeled: false, deleted: false});
+  const segments = await Segment.findMany(TEST_ID, { labeled: false, deleted: false });
   await Segment.removeSegments(segments.map(s => s.id));
 }
