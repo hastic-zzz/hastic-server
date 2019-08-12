@@ -75,7 +75,7 @@ export type FindManyQuery = {
   from?: { $gte?: number, $lte?: number },
   to?: { $gte?: number, $lte?: number },
   labeled?: boolean,
-  deleted?: boolean,
+  deleted?: boolean
 }
 
 export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promise<Segment[]> {
