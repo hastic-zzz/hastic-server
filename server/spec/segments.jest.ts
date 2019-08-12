@@ -21,7 +21,7 @@ beforeAll(async () => {
     })
   );
   await AnalyticUnitCache.create(id);
-  await AnalyticUnitCache.setData(id, { timeStep: 0 });
+  await AnalyticUnitCache.setData(id, { timeStep: 1 });
 });
 
 beforeEach(async () => {
