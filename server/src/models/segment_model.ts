@@ -90,6 +90,15 @@ export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promis
   if(query.deleted !== undefined) {
     dbQuery.deleted = query.deleted;
   }
+  if(query.from !== undefined) {
+    dbQuery.from = query.from;
+  }
+  if(query.to !== undefined) {
+    dbQuery.to = query.to;
+  }
+  if(query.$or !== undefined) {
+    dbQuery.$or = query.$or;
+  }
   let segs = await db.findMany(dbQuery);
   if(segs === null) {
     return [];
