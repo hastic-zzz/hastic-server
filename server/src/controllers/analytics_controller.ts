@@ -63,12 +63,11 @@ async function onDetect(detectionResult: DetectionResult): Promise<Segment.Segme
   detectionsCount++;
   let id = detectionResult.analyticUnitId;
   let payload = await processDetectionResult(id, detectionResult);
-  const segments = await Segment.mergeAndInsertSegments(payload.segments);
   await Promise.all([
     AnalyticUnitCache.setData(id, payload.cache),
     AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime),
   ]);
-  return segments;
+  return Segment.mergeAndInsertSegments(payload.segments);
 }
 
 async function onPushDetect(detectionResult: DetectionResult) {
@@ -168,7 +167,7 @@ async function getQueryRange(
       else {
         return getQueryRangeForLearningBySegments(segments);
       }
-    
+
     default:
       throw new Error(`Cannot get query range for detector type ${detectorType}`);
   }
@@ -375,7 +374,6 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     // It clears segments when redetecting on another timerange
     // await deleteNonDetectedSegments(id, payload);
     await Promise.all([
-      Segment.mergeAndInsertSegments(payload.segments),
       AnalyticUnitCache.setData(id, payload.cache),
       AnalyticUnit.setDetectionTime(id, range.to - intersection),
     ]);
@@ -388,6 +386,8 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
         Detection.DetectionStatus.READY
       )
     );
+
+    await Segment.mergeAndInsertSegments(payload.segments);
   } catch(err) {
     // TODO: maybe we don't need to update detectionTime with previous value?
     if(previousLastDetectionTime !== undefined) {
