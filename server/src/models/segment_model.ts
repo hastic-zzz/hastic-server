@@ -78,7 +78,7 @@ export type FindManyQuery = {
   deleted?: boolean
 }
 
-export async function findOne(segmentId: SegmentId): Promise<Segment[]> {
+export async function findOne(segmentId: SegmentId): Promise<Segment> {
   return db.findOne({ _id: segmentId });
 }
 
