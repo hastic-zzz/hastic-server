@@ -375,9 +375,6 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
 
     const payload = await processDetectionResult(id, result.payload);
 
-    // TODO: uncomment it
-    // It clears segments when redetecting on another timerange
-    // await deleteNonDetectedSegments(id, payload);
     await Segment.mergeAndInsertSegments(payload.segments);
     await Promise.all([
       AnalyticUnitCache.setData(id, payload.cache),
@@ -430,13 +427,6 @@ async function cancelAnalyticsTask(analyticUnitId: AnalyticUnit.AnalyticUnitId) 
   } catch(e) {
     console.log(`Can't cancel analytics task for "${analyticUnitId}": ${e.message}`);
   }
-}
-
-export async function deleteNonDetectedSegments(id, payload) {
-  let lastDetectedSegments = await Segment.findMany(id, { labeled: false, deleted: false });
-  let segmentsToRemove: Segment.Segment[];
-  segmentsToRemove = _.differenceWith(lastDetectedSegments, payload.segments, (a, b: Segment.Segment) => a.equals(b));
-  Segment.removeSegments(segmentsToRemove.map(s => s.id));
 }
 
 async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitId, detectionResult: DetectionResult):
