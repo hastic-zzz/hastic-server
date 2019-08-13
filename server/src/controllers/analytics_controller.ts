@@ -374,6 +374,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     // TODO: uncomment it
     // It clears segments when redetecting on another timerange
     // await deleteNonDetectedSegments(id, payload);
+    await Segment.mergeAndInsertSegments(payload.segments);
     await Promise.all([
       AnalyticUnitCache.setData(id, payload.cache),
       AnalyticUnit.setDetectionTime(id, range.to - intersection),
@@ -387,8 +388,6 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
         Detection.DetectionStatus.READY
       )
     );
-
-    await Segment.mergeAndInsertSegments(payload.segments);
   } catch(err) {
     // TODO: maybe we don't need to update detectionTime with previous value?
     if(previousLastDetectionTime !== undefined) {
