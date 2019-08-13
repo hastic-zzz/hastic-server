@@ -61,9 +61,9 @@ function onTaskResult(taskResult: TaskResult) {
 
 /**
  * Processes detection result from analytics` DETECT message
- * Returns IDs of segments inserted into DB
+ * Returns IDs of segments inserted into DB if there were no merge
  */
-async function onDetect(detectionResult: DetectionResult): Promise<Segment.SegmentId[]> {
+export async function onDetect(detectionResult: DetectionResult): Promise<Segment.SegmentId[]> {
   detectionsCount++;
   let id = detectionResult.analyticUnitId;
   let payload = await processDetectionResult(id, detectionResult);
@@ -72,7 +72,11 @@ async function onDetect(detectionResult: DetectionResult): Promise<Segment.Segme
     AnalyticUnitCache.setData(id, payload.cache),
     AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime),
   ]);
-  return segments;
+  if(segments.removedIds.length > 0) {
+    return [];
+  }
+
+  return segments.addedIds;
 }
 
 /**
@@ -520,11 +524,11 @@ export async function updateSegments(
   id: AnalyticUnit.AnalyticUnitId,
   segmentsToInsert: Segment.Segment[],
   removedIds: Segment.SegmentId[]
-) {
+): Promise<{ addedIds: Segment.SegmentId[] }> {
   await Segment.removeSegments(removedIds);
-  const addedIds = await Segment.mergeAndInsertSegments(segmentsToInsert);
+  const insertionResult = await Segment.mergeAndInsertSegments(segmentsToInsert);
 
-  return { addedIds };
+  return { addedIds: insertionResult.addedIds };
 }
 
 export async function runLearningWithDetection(

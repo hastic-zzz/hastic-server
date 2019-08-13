@@ -7,9 +7,11 @@ jest.mock('grafana-datasource-kit', () => (
   }
 ));
 
-import { saveAnalyticUnitFromObject, runDetect } from '../src/controllers/analytics_controller';
+import { saveAnalyticUnitFromObject, runDetect, onDetect } from '../src/controllers/analytics_controller';
 import * as AnalyticUnit from '../src/models/analytic_units';
 import * as AnalyticUnitCache from '../src/models/analytic_unit_cache_model';
+import * as Segment from '../src/models/segment_model';
+import { buildSegments, clearDB, TEST_ANALYTIC_UNIT_ID } from './utils_for_tests/segments';
 
 import { HASTIC_API_KEY } from '../src/config';
 
@@ -86,5 +88,48 @@ describe('Check detection range', function() {
     const id = await addTestUnitToDB();
     await runDetect(id, from, to);
     expect(queryByMetric).toBeCalledWith(analyticUnitObj.metric, undefined, expectedFrom, to, HASTIC_API_KEY);
+  });
+});
+
+describe('onDetect', () => {
+  const INITIAL_SEGMENTS = buildSegments([[0, 1], [2, 3], [4, 5]]);
+
+  beforeAll(async () => {
+    clearDB();
+    await AnalyticUnit.create(
+      AnalyticUnit.createAnalyticUnitFromObject({
+        _id: TEST_ANALYTIC_UNIT_ID,
+        name: 'name',
+        grafanaUrl: 'grafanaUrl',
+        panelId: 'panelId',
+        type: 'type',
+        detectorType: AnalyticUnit.DetectorType.ANOMALY
+      })
+    );
+    await AnalyticUnitCache.create(TEST_ANALYTIC_UNIT_ID);
+    await AnalyticUnitCache.setData(TEST_ANALYTIC_UNIT_ID, { timeStep: 1 });
+  });
+
+  beforeEach(async () => {
+    await Segment.mergeAndInsertSegments(INITIAL_SEGMENTS);
+  });
+
+  afterEach(async () => {
+    clearDB();
+  });
+
+  it('should not send a webhook after merging', async () => {
+    const detectedSegmentIds = await onDetect({
+      analyticUnitId: TEST_ANALYTIC_UNIT_ID,
+      segments: buildSegments([[5, 6]]),
+      lastDetectionTime: 0
+    });
+    let detectedSegments = await Promise.all(
+      detectedSegmentIds.map(id => Segment.findOne(id))
+    );
+
+    expect(
+      detectedSegments.map(segment => [segment.from, segment.to])
+    ).toEqual([]);
   });
 });

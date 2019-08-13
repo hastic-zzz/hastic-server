@@ -112,9 +112,12 @@ export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promis
  * @param segments segments to be inserted
  * Returns IDs of segments inserted into DB
  */
-export async function mergeAndInsertSegments(segments: Segment[]): Promise<SegmentId[]> {
+export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
+  addedIds: SegmentId[],
+  removedIds: SegmentId[]
+}> {
   if(_.isEmpty(segments)) {
-    return [];
+    return { addedIds: [], removedIds: [] };
   }
   const analyticUnitId: AnalyticUnitId = segments[0].analyticUnitId;
   let segmentIdsToRemove: SegmentId[] = [];
@@ -154,8 +157,8 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<Segme
     }
 
     if(intersectedSegments.length > 0) {
-      let from = _.minBy(intersectedSegments, s => s.from).from;
-      let to = _.maxBy(intersectedSegments, s => s.to).to;
+      let from = _.minBy(intersectedSegments.concat(segment), s => s.from).from;
+      let to = _.maxBy(intersectedSegments.concat(segment), s => s.to).to;
       let newSegment = Segment.fromObject(segment.toObject());
       newSegment.from = from;
       newSegment.to = to;
@@ -167,7 +170,11 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<Segme
   }
 
   await db.removeMany(segmentIdsToRemove);
-  return db.insertMany(segmentsToInsert.map(s => s.toObject()));
+  const addedIds = await db.insertMany(segmentsToInsert.map(s => s.toObject()));
+  return {
+    addedIds,
+    removedIds: segmentIdsToRemove
+  };
 }
 
 export async function setSegmentsDeleted(ids: SegmentId[]) {
