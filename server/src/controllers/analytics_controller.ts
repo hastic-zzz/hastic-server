@@ -63,11 +63,12 @@ async function onDetect(detectionResult: DetectionResult): Promise<Segment.Segme
   detectionsCount++;
   let id = detectionResult.analyticUnitId;
   let payload = await processDetectionResult(id, detectionResult);
+  const segments = Segment.mergeAndInsertSegments(payload.segments)
   await Promise.all([
     AnalyticUnitCache.setData(id, payload.cache),
     AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime),
   ]);
-  return Segment.mergeAndInsertSegments(payload.segments);
+  return segments;
 }
 
 async function onPushDetect(detectionResult: DetectionResult) {
