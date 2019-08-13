@@ -25,7 +25,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await Segment.insertSegments(INITIAL_SEGMENTS);
+  await Segment.mergeAndInsertSegments(INITIAL_SEGMENTS);
 });
 
 afterEach(async () => {
