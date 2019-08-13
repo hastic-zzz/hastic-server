@@ -59,6 +59,10 @@ function onTaskResult(taskResult: TaskResult) {
   }
 }
 
+/**
+ * Processes detection result from analytics` message
+ * Returns IDs of segments inserted into DB
+ */
 async function onDetect(detectionResult: DetectionResult): Promise<Segment.SegmentId[]> {
   detectionsCount++;
   let id = detectionResult.analyticUnitId;

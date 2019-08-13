@@ -97,6 +97,12 @@ export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promis
   return segs.map(Segment.fromObject);
 }
 
+/**
+ * Merges an array of segments with ones existing in the DB
+ * Inserts resulting segments into DB
+ * @param segments segments to be inserted
+ * Returns IDs of segments inserted into DB
+ */
 export async function mergeAndInsertSegments(segments: Segment[]): Promise<SegmentId[]> {
   if(_.isEmpty(segments)) {
     return [];
