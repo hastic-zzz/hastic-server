@@ -60,7 +60,7 @@ function onTaskResult(taskResult: TaskResult) {
 }
 
 /**
- * Processes detection result from analytics` message
+ * Processes detection result from analytics` DETECT message
  * Returns IDs of segments inserted into DB
  */
 async function onDetect(detectionResult: DetectionResult): Promise<Segment.SegmentId[]> {
@@ -75,7 +75,11 @@ async function onDetect(detectionResult: DetectionResult): Promise<Segment.Segme
   return segments;
 }
 
-async function onPushDetect(detectionResult: DetectionResult) {
+/**
+ * Processes detection result from analytics` PUSH_DETECT message
+ * Sends a webhook if it's needed
+ */
+async function onPushDetect(detectionResult: DetectionResult): Promise<void> {
   const analyticUnit = await AnalyticUnit.findById(detectionResult.analyticUnitId);
   const segments = await onDetect(detectionResult);
   if(!_.isEmpty(segments) && analyticUnit.alert) {
