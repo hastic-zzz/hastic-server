@@ -122,7 +122,12 @@ describe('onDetect', () => {
     const detectedSegmentIds = await onDetect({
       analyticUnitId: TEST_ANALYTIC_UNIT_ID,
       segments: buildSegments([[5, 6]]),
-      lastDetectionTime: 0
+      lastDetectionTime: 0,
+      cache: {
+        data: {
+          timeStep: 1
+        }
+      }
     });
     let detectedSegments = await Promise.all(
       detectedSegmentIds.map(id => Segment.findOne(id))
@@ -131,5 +136,20 @@ describe('onDetect', () => {
     expect(
       detectedSegments.map(segment => [segment.from, segment.to])
     ).toEqual([]);
+  });
+
+  it('should send a webhook when there was no merging', async () => {
+    const detectedSegmentIds = await onDetect({
+      analyticUnitId: TEST_ANALYTIC_UNIT_ID,
+      segments: buildSegments([[7, 8]]),
+      lastDetectionTime: 0
+    });
+    let detectedSegments = await Promise.all(
+      detectedSegmentIds.map(id => Segment.findOne(id))
+    );
+
+    expect(
+      detectedSegments.map(segment => [segment.from, segment.to])
+    ).toEqual([[7, 8]]);
   });
 });

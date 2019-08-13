@@ -61,7 +61,7 @@ function onTaskResult(taskResult: TaskResult) {
 
 /**
  * Processes detection result from analytics` DETECT message
- * Returns IDs of segments inserted into DB if there were no merge
+ * Returns IDs of segments inserted into DB if there was no merging
  */
 export async function onDetect(detectionResult: DetectionResult): Promise<Segment.SegmentId[]> {
   detectionsCount++;
