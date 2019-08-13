@@ -4,14 +4,14 @@ import * as AnalyticUnitCache from '../src/models/analytic_unit_cache_model';
 
 import * as _ from 'lodash';
 
-const TEST_ID: AnalyticUnit.AnalyticUnitId = 'testid';
-const INITIAL_SEGMENTS = segmentBuilder([[0, 1], [2, 3], [4, 5]]);
+const TEST_ANALYTIC_UNIT_ID: AnalyticUnit.AnalyticUnitId = 'testid';
+const INITIAL_SEGMENTS = buildSegments([[0, 1], [2, 3], [4, 5]]);
 
 beforeAll(async () => {
   clearDB();
   await AnalyticUnit.create(
     AnalyticUnit.createAnalyticUnitFromObject({
-      _id: TEST_ID,
+      _id: TEST_ANALYTIC_UNIT_ID,
       name: 'name',
       grafanaUrl: 'grafanaUrl',
       panelId: 'panelId',
@@ -19,8 +19,8 @@ beforeAll(async () => {
       detectorType: AnalyticUnit.DetectorType.ANOMALY
     })
   );
-  await AnalyticUnitCache.create(TEST_ID);
-  await AnalyticUnitCache.setData(TEST_ID, { timeStep: 1 });
+  await AnalyticUnitCache.create(TEST_ANALYTIC_UNIT_ID);
+  await AnalyticUnitCache.setData(TEST_ANALYTIC_UNIT_ID, { timeStep: 1 });
 });
 
 beforeEach(async () => {
@@ -31,13 +31,25 @@ afterEach(async () => {
   clearDB();
 });
 
-function segmentBuilder(times) {
+describe('mergeAndInsertSegments', function() {
+  it('Should be merged before insertion', async function() {
+    const segmentsToInsert = buildSegments([[1, 2]]);
+    await Segment.mergeAndInsertSegments(segmentsToInsert);
+
+    let actualSegments = await Segment.findMany(TEST_ANALYTIC_UNIT_ID, {});
+    actualSegments.forEach(s => { s.id = undefined });
+    actualSegments = _.sortBy(actualSegments, s => s.from);
+    expect(actualSegments).toEqual(buildSegments([[0, 3], [4, 5]]));
+  });
+});
+
+function buildSegments(times: number[][]): Segment.Segment[] {
   return times.map(t => {
-    return new Segment.Segment(TEST_ID, t[0], t[1], false, false, undefined);
+    return new Segment.Segment(TEST_ANALYTIC_UNIT_ID, t[0], t[1], false, false, undefined);
   });
 }
 
-async function clearDB() {
-  const segments = await Segment.findMany(TEST_ID, { labeled: false, deleted: false });
+async function clearDB(): Promise<void> {
+  const segments = await Segment.findMany(TEST_ANALYTIC_UNIT_ID, { labeled: false, deleted: false });
   await Segment.removeSegments(segments.map(s => s.id));
 }
