@@ -106,12 +106,12 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<Segme
   let segmentsToInsert: Segment[] = [];
 
   for(let segment of segments) {
-    if(await isIntersectedWithLabeled(segment)) {
+    if(await isIntersectedWithExistingLabeled(segment)) {
       continue;
     }
 
     if(!segment.deleted && !segment.labeled) {
-      if(await isIntersectedWithDeleted(segment)) {
+      if(await isIntersectedWithExistingDeleted(segment)) {
         continue;
       }
     }
@@ -163,7 +163,7 @@ export function removeSegments(idsToRemove: SegmentId[]) {
   return db.removeMany(idsToRemove);
 }
 
-async function isIntersectedWithLabeled(segment: Segment) {
+async function isIntersectedWithExistingLabeled(segment: Segment): Promise<boolean> {
   const intersected = await findMany(segment.analyticUnitId, {
     labeled: true,
     deleted: false,
@@ -174,7 +174,7 @@ async function isIntersectedWithLabeled(segment: Segment) {
   return intersected.length > 0;
 }
 
-async function isIntersectedWithDeleted(segment: Segment) {
+async function isIntersectedWithExistingDeleted(segment: Segment): Promise<boolean> {
   const intersected = await findMany(segment.analyticUnitId, {
     labeled: false,
     deleted: true,
