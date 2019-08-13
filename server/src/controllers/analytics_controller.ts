@@ -59,27 +59,29 @@ function onTaskResult(taskResult: TaskResult) {
   }
 }
 
-async function onDetect(detectionResult: DetectionResult) {
+async function onDetect(detectionResult: DetectionResult): Promise<Segment.SegmentId[]> {
   detectionsCount++;
   let id = detectionResult.analyticUnitId;
   let payload = await processDetectionResult(id, detectionResult);
+  const segments = await Segment.mergeAndInsertSegments(payload.segments);
   await Promise.all([
-    Segment.insertSegments(payload.segments),
     AnalyticUnitCache.setData(id, payload.cache),
     AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime),
   ]);
+  return segments;
 }
 
 async function onPushDetect(detectionResult: DetectionResult) {
   const analyticUnit = await AnalyticUnit.findById(detectionResult.analyticUnitId);
-  if (!_.isEmpty(detectionResult.segments) && analyticUnit.alert) {
+  const segments = await onDetect(detectionResult);
+  if(!_.isEmpty(segments) && analyticUnit.alert) {
     try {
-      alertService.receiveAlert(analyticUnit, _.last(detectionResult.segments));
+      const segment = await Segment.findOne(_.last(segments))
+      alertService.receiveAlert(analyticUnit, segment);
     } catch(err) {
       console.error(`error while sending webhook: ${err.message}`);
     }
   }
-  await onDetect(detectionResult);
 }
 
 async function onMessage(message: AnalyticsMessage) {
@@ -368,13 +370,12 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     }
 
     const payload = await processDetectionResult(id, result.payload);
-    const cache = AnalyticUnitCache.AnalyticUnitCache.fromObject({ _id: id, data: payload.cache });
 
     // TODO: uncomment it
     // It clears segments when redetecting on another timerange
     // await deleteNonDetectedSegments(id, payload);
     await Promise.all([
-      Segment.insertSegments(payload.segments),
+      Segment.mergeAndInsertSegments(payload.segments),
       AnalyticUnitCache.setData(id, payload.cache),
       AnalyticUnit.setDetectionTime(id, range.to - intersection),
     ]);
@@ -523,7 +524,7 @@ export async function updateSegments(
   removedIds: Segment.SegmentId[]
 ) {
   await Segment.removeSegments(removedIds);
-  const addedIds = await Segment.insertSegments(segmentsToInsert);
+  const addedIds = await Segment.mergeAndInsertSegments(segmentsToInsert);
 
   return { addedIds };
 }
