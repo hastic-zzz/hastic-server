@@ -72,6 +72,7 @@ export async function onDetect(detectionResult: DetectionResult): Promise<Segmen
     AnalyticUnitCache.setData(id, payload.cache),
     AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime),
   ]);
+  // removedIds.length > 0 means that there was at least 1 merge
   if(insertionResult.removedIds.length > 0) {
     return [];
   }
