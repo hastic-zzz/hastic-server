@@ -11,13 +11,13 @@ export async function getSegments(ctx: Router.IRouterContext) {
   if(id === undefined || id === '') {
     throw new Error('analyticUnitId (id) is missing');
   }
-  const from = +ctx.request.query.from;
+  let from = +ctx.request.query.from;
   if(isNaN(from)) {
-    throw new Error(`from is not a number: ${ctx.request.query.from}`);
+    from = undefined;
   }
-  const to = +ctx.request.query.to;
+  let to = +ctx.request.query.to;
   if(isNaN(to)) {
-    throw new Error(`to is not a number: ${ctx.request.query.to}`);
+    to = undefined;
   }
 
   const segments = await Segment.findIntersectedSegments(id, from, to);

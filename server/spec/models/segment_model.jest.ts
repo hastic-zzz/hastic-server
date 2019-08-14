@@ -37,7 +37,10 @@ describe('findIntersectedSegments', () => {
       { from: 1, to: 4, expected: [[0, 3]] },
       { from: 11, to: 12, expected: [[10, 13]] },
       { from: 6, to: 10, expected: [[5, 6], [10, 13]] },
-      { from: 16, to: 17, expected: [] }
+      { from: 16, to: 17, expected: [] },
+      { from: 5, expected: [[5, 6], [10, 13]] },
+      { to: 5, expected: [[0, 3], [5, 6]] },
+      { expected: [[0, 3], [5, 6], [10, 13]] }
     ];
 
     for(let testCase of testCases) {
