@@ -44,7 +44,9 @@ describe('findIntersectedSegments', () => {
     ];
 
     for(let testCase of testCases) {
-      const foundSegments = await Segment.findIntersectedSegments(TEST_ANALYTIC_UNIT_ID, testCase.from, testCase.to);
+      const foundSegments = await Segment.findIntersectedSegments(
+        TEST_ANALYTIC_UNIT_ID, testCase.from, testCase.to
+      );
       const foundRanges = convertSegmentsToTimeRanges(foundSegments);
       expect(foundRanges).toEqual(testCase.expected);
     }
