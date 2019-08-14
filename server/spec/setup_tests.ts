@@ -6,7 +6,15 @@ import { clearSegmentsDB } from './utils_for_tests/segments';
 console.log = jest.fn();
 console.error = jest.fn();
 
-(async () => {
+jest.mock('../src/config.ts', () => ({
+  HASTIC_API_KEY: 'fake-key',
+  DATA_PATH: 'fake-data-path',
+  ZMQ_IPC_PATH: 'fake-zmq-path'
+}));
+
+createTestDB();
+
+async function createTestDB() {
   await clearSegmentsDB();
   await AnalyticUnit.create(
     AnalyticUnit.createAnalyticUnitFromObject({
@@ -20,10 +28,4 @@ console.error = jest.fn();
   );
   await AnalyticUnitCache.create(TEST_ANALYTIC_UNIT_ID);
   await AnalyticUnitCache.setData(TEST_ANALYTIC_UNIT_ID, { timeStep: 1 });
-})();
-
-jest.mock('../src/config.ts', () => ({
-  HASTIC_API_KEY: 'fake-key',
-  DATA_PATH: 'fake-data-path',
-  ZMQ_IPC_PATH: 'fake-zmq-path'
-}));
+}
