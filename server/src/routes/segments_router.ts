@@ -6,7 +6,7 @@ import * as Segment from '../models/segment_model';
 import * as Router from 'koa-router';
 
 
-async function getSegments(ctx: Router.IRouterContext) {
+export async function getSegments(ctx: Router.IRouterContext) {
   let id: AnalyticUnitId = ctx.request.query.id;
   if(id === undefined || id === '') {
     throw new Error('analyticUnitId (id) is missing');
@@ -14,10 +14,10 @@ async function getSegments(ctx: Router.IRouterContext) {
   let query: Segment.FindManyQuery = {};
 
   if(!isNaN(+ctx.request.query.from)) {
-    query.from = { $gte: +ctx.request.query.from };
+    query.from = { $lte: +ctx.request.query.to };
   }
   if(!isNaN(+ctx.request.query.to)) {
-    query.to = { $lte: +ctx.request.query.to };
+    query.to = { $gte: +ctx.request.query.from };
   }
   let segments = await Segment.findMany(id, query);
   ctx.response.body = { segments };
