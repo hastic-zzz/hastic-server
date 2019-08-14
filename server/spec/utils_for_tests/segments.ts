@@ -10,8 +10,8 @@ export function buildSegments(times: number[][]): Segment.Segment[] {
 }
 
 export function convertSegmentsToTimeRanges(segments: Segment.Segment[]): number[][] {
-  let result = segments.map(segment => [segment.from, segment.to]);
-  return _.sortBy(result, segment => segment[0]);
+  const ranges = segments.map(segment => [segment.from, segment.to]);
+  return _.sortBy(ranges, range => range[0]);
 }
 
 export async function clearSegmentsDB(): Promise<void> {
