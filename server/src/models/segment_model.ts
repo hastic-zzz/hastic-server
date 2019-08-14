@@ -106,6 +106,14 @@ export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promis
   return segs.map(Segment.fromObject);
 }
 
+export async function findIntersectedSegments(
+  analyticUnitId: AnalyticUnit.AnalyticUnitId, 
+  from: number, 
+  to: number
+): Promise<Segment[]> {
+  return findMany(analyticUnitId, { from: { $lte: to }, to: { $gte: from } });
+}
+
 /**
  * Merges an array of segments with ones existing in the DB
  * Inserts resulting segments into DB
