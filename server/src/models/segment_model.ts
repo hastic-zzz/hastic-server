@@ -78,6 +78,10 @@ export type FindManyQuery = {
   deleted?: boolean
 }
 
+export async function findOne(segmentId: SegmentId): Promise<Segment> {
+  return db.findOne({ _id: segmentId });
+}
+
 export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promise<Segment[]> {
   var dbQuery: any = { analyticUnitId: id };
   if(query.labeled !== undefined) {
@@ -86,6 +90,15 @@ export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promis
   if(query.deleted !== undefined) {
     dbQuery.deleted = query.deleted;
   }
+  if(query.from !== undefined) {
+    dbQuery.from = query.from;
+  }
+  if(query.to !== undefined) {
+    dbQuery.to = query.to;
+  }
+  if(query.$or !== undefined) {
+    dbQuery.$or = query.$or;
+  }
   let segs = await db.findMany(dbQuery);
   if(segs === null) {
     return [];
@@ -93,81 +106,59 @@ export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promis
   return segs.map(Segment.fromObject);
 }
 
-export async function insertSegments(segments: Segment[]) {
+/**
+ * Merges an array of segments with ones existing in the DB
+ * Inserts resulting segments into DB
+ * @param segments segments to be inserted
+ * @returns IDs of added and removed segments
+ */
+export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
+  addedIds: SegmentId[],
+  removedIds: SegmentId[]
+}> {
   if(_.isEmpty(segments)) {
-    return [];
+    return { addedIds: [], removedIds: [] };
   }
   const analyticUnitId: AnalyticUnitId = segments[0].analyticUnitId;
-  const learningSegments = await findMany(analyticUnitId, {
-    labeled: true,
-    deleted: false
-  });
-
   let segmentIdsToRemove: SegmentId[] = [];
   let segmentsToInsert: Segment[] = [];
 
   for(let segment of segments) {
-    const intersectedLearning = learningSegments.filter(s => {
-      return segment.from <= s.to && segment.to >= s.from;
-    });
-    if(intersectedLearning.length > 0) {
+    if(await isIntersectedWithExistingLabeled(segment)) {
       continue;
     }
 
     if(!segment.deleted && !segment.labeled) {
-      const intersectedWithDeletedSegments = await findMany(analyticUnitId, {
-        to: { $gte: segment.from },
-        from: { $lte: segment.to },
-        labeled: false,
-        deleted: true
-      });
-
-      if(intersectedWithDeletedSegments.length > 0) {
+      if(await isIntersectedWithExistingDeleted(segment)) {
         continue;
       }
     }
 
     let cache = await AnalyticUnitCache.findById(analyticUnitId);
-    const timeStep = cache.getTimeStep();
     let unit = await AnalyticUnit.findById(analyticUnitId);
     const detector = unit.detectorType;
 
-    if(detector !== AnalyticUnit.DetectorType.PATTERN) {
-      const intersectedWithLeftBound = await findMany(analyticUnitId, {
-        to: { $gte: segment.from - timeStep, $lte: segment.from },
-        labeled: false,
-        deleted: false
+    let intersectedSegments: Segment[];
+    if(detector === AnalyticUnit.DetectorType.PATTERN) {
+      intersectedSegments = await findMany(analyticUnitId, {
+        to: { $gte: segment.from },
+        from: { $lte: segment.to },
+        labeled: segment.labeled,
+        deleted: segment.deleted
       });
-
-      if(intersectedWithLeftBound.length > 0) {
-        const leftSegment = _.minBy(intersectedWithLeftBound, s => s.from);
-        segment.from = leftSegment.from;
-        segmentIdsToRemove.push(leftSegment.id);
-      }
-
-      const intersectedWithRightBound = await findMany(analyticUnitId, {
-        from: { $gte: segment.to, $lte: segment.to + timeStep },
-        labeled: false,
-        deleted: false
+    } else {
+      const timeStep = cache.getTimeStep();
+      intersectedSegments = await findMany(analyticUnitId, {
+        to: { $gte: segment.from - timeStep },
+        from: { $lte: segment.to + timeStep },
+        labeled: segment.labeled,
+        deleted: segment.deleted
       });
-
-      if(intersectedWithRightBound.length > 0) {
-        const rightSegment = _.maxBy(intersectedWithRightBound, s => s.to);
-        segment.to = rightSegment.to;
-        segmentIdsToRemove.push(rightSegment.id);
-      }
     }
 
-    const intersectedSegments = await findMany(analyticUnitId, {
-      to: { $gte: segment.from },
-      from: { $lte: segment.to },
-      labeled: segment.labeled,
-      deleted: segment.deleted
-    });
-
     if(intersectedSegments.length > 0) {
-      let from = _.minBy(intersectedSegments, 'from').from;
-      let to = _.maxBy(intersectedSegments, 'to').to;
+      let from = _.minBy(intersectedSegments.concat(segment), s => s.from).from;
+      let to = _.maxBy(intersectedSegments.concat(segment), s => s.to).to;
       let newSegment = Segment.fromObject(segment.toObject());
       newSegment.from = from;
       newSegment.to = to;
@@ -179,7 +170,11 @@ export async function insertSegments(segments: Segment[]) {
   }
 
   await db.removeMany(segmentIdsToRemove);
-  return db.insertMany(segmentsToInsert.map(s => s.toObject()));
+  const addedIds = await db.insertMany(segmentsToInsert.map(s => s.toObject()));
+  return {
+    addedIds,
+    removedIds: segmentIdsToRemove
+  };
 }
 
 export async function setSegmentsDeleted(ids: SegmentId[]) {
@@ -188,4 +183,26 @@ export async function setSegmentsDeleted(ids: SegmentId[]) {
 
 export function removeSegments(idsToRemove: SegmentId[]) {
   return db.removeMany(idsToRemove);
+}
+
+async function isIntersectedWithExistingLabeled(segment: Segment): Promise<boolean> {
+  const intersected = await findMany(segment.analyticUnitId, {
+    labeled: true,
+    deleted: false,
+    from: { $lte: segment.to },
+    to: { $gte: segment.from }
+  });
+
+  return intersected.length > 0;
+}
+
+async function isIntersectedWithExistingDeleted(segment: Segment): Promise<boolean> {
+  const intersected = await findMany(segment.analyticUnitId, {
+    labeled: false,
+    deleted: true,
+    from: { $lte: segment.to },
+    to: { $gte: segment.from }
+  });
+
+  return intersected.length > 0;
 }

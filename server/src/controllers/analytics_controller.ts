@@ -59,27 +59,42 @@ function onTaskResult(taskResult: TaskResult) {
   }
 }
 
-async function onDetect(detectionResult: DetectionResult) {
+/**
+ * Processes detection result from analytics` DETECT message
+ * @returns IDs of segments inserted into DB if there was no merging
+ */
+export async function onDetect(detectionResult: DetectionResult): Promise<Segment.SegmentId[]> {
   detectionsCount++;
   let id = detectionResult.analyticUnitId;
   let payload = await processDetectionResult(id, detectionResult);
+  const insertionResult = await Segment.mergeAndInsertSegments(payload.segments)
   await Promise.all([
-    Segment.insertSegments(payload.segments),
     AnalyticUnitCache.setData(id, payload.cache),
     AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime),
   ]);
+  // removedIds.length > 0 means that there was at least 1 merge
+  if(insertionResult.removedIds.length > 0) {
+    return [];
+  }
+
+  return insertionResult.addedIds;
 }
 
-async function onPushDetect(detectionResult: DetectionResult) {
+/**
+ * Processes detection result from analytics` PUSH_DETECT message
+ * Sends a webhook if it's needed
+ */
+async function onPushDetect(detectionResult: DetectionResult): Promise<void> {
   const analyticUnit = await AnalyticUnit.findById(detectionResult.analyticUnitId);
-  if (!_.isEmpty(detectionResult.segments) && analyticUnit.alert) {
+  const segments = await onDetect(detectionResult);
+  if(!_.isEmpty(segments) && analyticUnit.alert) {
     try {
-      alertService.receiveAlert(analyticUnit, _.last(detectionResult.segments));
+      const segment = await Segment.findOne(_.last(segments))
+      alertService.receiveAlert(analyticUnit, segment);
     } catch(err) {
       console.error(`error while sending webhook: ${err.message}`);
     }
   }
-  await onDetect(detectionResult);
 }
 
 async function onMessage(message: AnalyticsMessage) {
@@ -166,7 +181,7 @@ async function getQueryRange(
       else {
         return getQueryRangeForLearningBySegments(segments);
       }
-    
+
     default:
       throw new Error(`Cannot get query range for detector type ${detectorType}`);
   }
@@ -368,13 +383,9 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     }
 
     const payload = await processDetectionResult(id, result.payload);
-    const cache = AnalyticUnitCache.AnalyticUnitCache.fromObject({ _id: id, data: payload.cache });
 
-    // TODO: uncomment it
-    // It clears segments when redetecting on another timerange
-    // await deleteNonDetectedSegments(id, payload);
+    await Segment.mergeAndInsertSegments(payload.segments);
     await Promise.all([
-      Segment.insertSegments(payload.segments),
       AnalyticUnitCache.setData(id, payload.cache),
       AnalyticUnit.setDetectionTime(id, range.to - intersection),
     ]);
@@ -425,13 +436,6 @@ async function cancelAnalyticsTask(analyticUnitId: AnalyticUnit.AnalyticUnitId) 
   } catch(e) {
     console.log(`Can't cancel analytics task for "${analyticUnitId}": ${e.message}`);
   }
-}
-
-export async function deleteNonDetectedSegments(id, payload) {
-  let lastDetectedSegments = await Segment.findMany(id, { labeled: false, deleted: false });
-  let segmentsToRemove: Segment.Segment[];
-  segmentsToRemove = _.differenceWith(lastDetectedSegments, payload.segments, (a, b: Segment.Segment) => a.equals(b));
-  Segment.removeSegments(segmentsToRemove.map(s => s.id));
 }
 
 async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitId, detectionResult: DetectionResult):
@@ -521,11 +525,11 @@ export async function updateSegments(
   id: AnalyticUnit.AnalyticUnitId,
   segmentsToInsert: Segment.Segment[],
   removedIds: Segment.SegmentId[]
-) {
+): Promise<{ addedIds: Segment.SegmentId[] }> {
   await Segment.removeSegments(removedIds);
-  const addedIds = await Segment.insertSegments(segmentsToInsert);
+  const insertionResult = await Segment.mergeAndInsertSegments(segmentsToInsert);
 
-  return { addedIds };
+  return { addedIds: insertionResult.addedIds };
 }
 
 export async function runLearningWithDetection(
