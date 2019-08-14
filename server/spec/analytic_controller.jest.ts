@@ -94,28 +94,12 @@ describe('Check detection range', function() {
 describe('onDetect', () => {
   const INITIAL_SEGMENTS = buildSegments([[0, 1], [2, 3], [4, 5]]);
 
-  beforeAll(async () => {
-    clearDB();
-    await AnalyticUnit.create(
-      AnalyticUnit.createAnalyticUnitFromObject({
-        _id: TEST_ANALYTIC_UNIT_ID,
-        name: 'name',
-        grafanaUrl: 'grafanaUrl',
-        panelId: 'panelId',
-        type: 'type',
-        detectorType: AnalyticUnit.DetectorType.ANOMALY
-      })
-    );
-    await AnalyticUnitCache.create(TEST_ANALYTIC_UNIT_ID);
-    await AnalyticUnitCache.setData(TEST_ANALYTIC_UNIT_ID, { timeStep: 1 });
-  });
-
   beforeEach(async () => {
     await Segment.mergeAndInsertSegments(INITIAL_SEGMENTS);
   });
 
   afterEach(async () => {
-    clearDB();
+    await clearDB();
   });
 
   it('should not send a webhook after merging', async () => {
