@@ -12,7 +12,7 @@ import * as AnalyticUnit from '../src/models/analytic_units';
 import * as AnalyticUnitCache from '../src/models/analytic_unit_cache_model';
 import * as Segment from '../src/models/segment_model';
 import { TEST_ANALYTIC_UNIT_ID } from './utils_for_tests/analytic_units';
-import { buildSegments, clearSegmentsDB, convertSegmentsToRanges } from './utils_for_tests/segments';
+import { buildSegments, clearSegmentsDB, convertSegmentsToTimeRanges } from './utils_for_tests/segments';
 
 import { HASTIC_API_KEY } from '../src/config';
 
@@ -119,7 +119,7 @@ describe('onDetect', () => {
     );
 
     expect(
-      convertSegmentsToRanges(detectedSegments)
+      convertSegmentsToTimeRanges(detectedSegments)
     ).toEqual([]);
   });
 
@@ -134,7 +134,7 @@ describe('onDetect', () => {
     );
 
     expect(
-      convertSegmentsToRanges(detectedSegments)
+      convertSegmentsToTimeRanges(detectedSegments)
     ).toEqual([[7, 8]]);
   });
 });

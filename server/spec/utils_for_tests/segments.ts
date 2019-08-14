@@ -9,7 +9,7 @@ export function buildSegments(times: number[][]): Segment.Segment[] {
   });
 }
 
-export function convertSegmentsToRanges(segments: Segment.Segment[]): number[][] {
+export function convertSegmentsToTimeRanges(segments: Segment.Segment[]): number[][] {
   let result = segments.map(segment => [segment.from, segment.to]);
   return _.sortBy(result, segment => segment[0]);
 }

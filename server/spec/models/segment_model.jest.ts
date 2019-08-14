@@ -1,5 +1,5 @@
 import { TEST_ANALYTIC_UNIT_ID } from '../utils_for_tests/analytic_units';
-import { buildSegments, clearSegmentsDB, convertSegmentsToRanges } from '../utils_for_tests/segments';
+import { buildSegments, clearSegmentsDB, convertSegmentsToTimeRanges } from '../utils_for_tests/segments';
 
 import * as Segment from '../../src/models/segment_model';
 
@@ -21,7 +21,7 @@ describe('mergeAndInsertSegments', function() {
     let actualSegments = await Segment.findMany(TEST_ANALYTIC_UNIT_ID, {});
     
     expect(
-      convertSegmentsToRanges(actualSegments)
+      convertSegmentsToTimeRanges(actualSegments)
     ).toEqual([[0, 3], [4, 5]]);
   });
 });
