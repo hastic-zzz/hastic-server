@@ -1,6 +1,6 @@
-import { buildSegments, clearSegmentsDB, TEST_ANALYTIC_UNIT_ID } from '../utils_for_tests/segments';
+import { buildSegments, clearSegmentsDB, TEST_ANALYTIC_UNIT_ID } from './utils_for_tests/segments';
 
-import * as Segment from '../../src/models/segment_model';
+import * as Segment from '../src/models/segment_model';
 
 import * as _ from 'lodash';
 

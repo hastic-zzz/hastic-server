@@ -1,5 +1,5 @@
 import * as Segment from '../../src/models/segment_model';
-import { buildSegments, clearDB, TEST_ANALYTIC_UNIT_ID } from '../utils_for_tests/segments';
+import { buildSegments, clearSegmentsDB, TEST_ANALYTIC_UNIT_ID } from '../utils_for_tests/segments';
 import { getSegments } from '../../src/routes/segments_router';
 import { IRouterContext } from 'koa-router';
 
@@ -10,7 +10,7 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  await clearDB();
+  await clearSegmentsDB();
 });
 
 describe('getSegments', () => {

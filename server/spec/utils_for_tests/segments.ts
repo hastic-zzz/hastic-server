@@ -9,7 +9,7 @@ export function buildSegments(times: number[][]): Segment.Segment[] {
   });
 }
 
-export async function clearDB(): Promise<void> {
+export async function clearSegmentsDB(): Promise<void> {
   const segments = await Segment.findMany(TEST_ANALYTIC_UNIT_ID, { labeled: false, deleted: false });
   await Segment.removeSegments(segments.map(s => s.id));
 }

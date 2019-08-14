@@ -11,7 +11,7 @@ import { saveAnalyticUnitFromObject, runDetect, onDetect } from '../src/controll
 import * as AnalyticUnit from '../src/models/analytic_units';
 import * as AnalyticUnitCache from '../src/models/analytic_unit_cache_model';
 import * as Segment from '../src/models/segment_model';
-import { buildSegments, clearDB, TEST_ANALYTIC_UNIT_ID } from './utils_for_tests/segments';
+import { buildSegments, clearSegmentsDB, TEST_ANALYTIC_UNIT_ID } from './utils_for_tests/segments';
 
 import { HASTIC_API_KEY } from '../src/config';
 
@@ -99,7 +99,7 @@ describe('onDetect', () => {
   });
 
   afterEach(async () => {
-    await clearDB();
+    await clearSegmentsDB();
   });
 
   it('should not send a webhook after merging', async () => {
