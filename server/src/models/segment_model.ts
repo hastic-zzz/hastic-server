@@ -110,7 +110,7 @@ export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promis
  * Merges an array of segments with ones existing in the DB
  * Inserts resulting segments into DB
  * @param segments segments to be inserted
- * Returns IDs of segments inserted into DB
+ * @returns IDs of segments inserted into DB
  */
 export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
   addedIds: SegmentId[],
