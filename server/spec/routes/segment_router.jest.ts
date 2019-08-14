@@ -44,9 +44,8 @@ describe('getSegments', () => {
       let ctx = generateTimeRangeQuery(testCase.from, testCase.to);
       await getSegments(ctx);
 
-      expect(
-        convertSegmentsToTimeRanges(ctx.response.body.segments)
-      ).toEqual(testCase.expected);
+      const gotSegments = convertSegmentsToTimeRanges(ctx.response.body.segments);
+      expect(gotSegments).toEqual(testCase.expected);
     }
   });
 });

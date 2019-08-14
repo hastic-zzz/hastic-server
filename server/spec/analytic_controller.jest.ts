@@ -118,9 +118,8 @@ describe('onDetect', () => {
       detectedSegmentIds.map(id => Segment.findOne(id))
     );
 
-    expect(
-      convertSegmentsToTimeRanges(detectedSegments)
-    ).toEqual([]);
+    const detectedRanges = convertSegmentsToTimeRanges(detectedSegments);
+    expect(detectedRanges).toEqual([]);
   });
 
   it('should send a webhook when there was no merging', async () => {
@@ -133,8 +132,7 @@ describe('onDetect', () => {
       detectedSegmentIds.map(id => Segment.findOne(id))
     );
 
-    expect(
-      convertSegmentsToTimeRanges(detectedSegments)
-    ).toEqual([[7, 8]]);
+    const detectedRanges = convertSegmentsToTimeRanges(detectedSegments);
+    expect(detectedRanges).toEqual([[7, 8]]);
   });
 });

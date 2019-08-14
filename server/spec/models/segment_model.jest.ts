@@ -18,11 +18,10 @@ describe('mergeAndInsertSegments', function() {
     const segmentsToInsert = buildSegments([[1, 2]]);
     await Segment.mergeAndInsertSegments(segmentsToInsert);
 
-    let actualSegments = await Segment.findMany(TEST_ANALYTIC_UNIT_ID, {});
-    
-    expect(
-      convertSegmentsToTimeRanges(actualSegments)
-    ).toEqual([[0, 3], [4, 5]]);
+    const actualSegments = await Segment.findMany(TEST_ANALYTIC_UNIT_ID, {});
+    const actualRanges = convertSegmentsToTimeRanges(actualSegments);
+
+    expect(actualRanges).toEqual([[0, 3], [4, 5]]);
   });
 });
 
