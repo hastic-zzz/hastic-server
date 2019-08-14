@@ -6,20 +6,21 @@ import * as Segment from '../models/segment_model';
 import * as Router from 'koa-router';
 
 
-async function getSegments(ctx: Router.IRouterContext) {
+export async function getSegments(ctx: Router.IRouterContext) {
   let id: AnalyticUnitId = ctx.request.query.id;
   if(id === undefined || id === '') {
     throw new Error('analyticUnitId (id) is missing');
   }
-  let query: Segment.FindManyQuery = {};
+  let from = +ctx.request.query.from;
+  if(isNaN(from)) {
+    from = undefined;
+  }
+  let to = +ctx.request.query.to;
+  if(isNaN(to)) {
+    to = undefined;
+  }
 
-  if(!isNaN(+ctx.request.query.from)) {
-    query.from = { $gte: +ctx.request.query.from };
-  }
-  if(!isNaN(+ctx.request.query.to)) {
-    query.to = { $lte: +ctx.request.query.to };
-  }
-  let segments = await Segment.findMany(id, query);
+  const segments = await Segment.findIntersectedSegments(id, from, to);
   ctx.response.body = { segments };
 }
 

@@ -106,6 +106,28 @@ export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promis
   return segs.map(Segment.fromObject);
 }
 
+
+/**
+ * If `from` and `to` are defined: @returns segments intersected with `[from; to]`
+ * If `to` is `undefined`: @returns segments intersected with `[-inf; from]`
+ * If `from` is `undefined`: @returns segments intersected with `[to: +inf]`
+ * If `from` and `to` are undefined: @returns all segments
+ */
+export async function findIntersectedSegments(
+  analyticUnitId: AnalyticUnit.AnalyticUnitId, 
+  from?: number, 
+  to?: number
+): Promise<Segment[]> {
+  let query: FindManyQuery = {};
+  if(from !== undefined) {
+    query.to = { $gte: from };
+  }
+  if(to !== undefined) {
+    query.from = { $lte: to };
+  }
+  return findMany(analyticUnitId, query);
+}
+
 /**
  * Merges an array of segments with ones existing in the DB
  * Inserts resulting segments into DB

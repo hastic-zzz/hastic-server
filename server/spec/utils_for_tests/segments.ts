@@ -1,7 +1,7 @@
-import * as AnalyticUnit from '../../src/models/analytic_units';
+import { TEST_ANALYTIC_UNIT_ID } from './analytic_units';
 import * as Segment from '../../src/models/segment_model';
 
-export const TEST_ANALYTIC_UNIT_ID: AnalyticUnit.AnalyticUnitId = 'testid';
+import * as _ from 'lodash';
 
 export function buildSegments(times: number[][]): Segment.Segment[] {
   return times.map(t => {
@@ -9,7 +9,12 @@ export function buildSegments(times: number[][]): Segment.Segment[] {
   });
 }
 
-export async function clearDB(): Promise<void> {
+export function convertSegmentsToTimeRanges(segments: Segment.Segment[]): number[][] {
+  const ranges = segments.map(segment => [segment.from, segment.to]);
+  return _.sortBy(ranges, range => range[0]);
+}
+
+export async function clearSegmentsDB(): Promise<void> {
   const segments = await Segment.findMany(TEST_ANALYTIC_UNIT_ID, { labeled: false, deleted: false });
   await Segment.removeSegments(segments.map(s => s.id));
 }
