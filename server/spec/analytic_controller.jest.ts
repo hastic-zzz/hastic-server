@@ -11,7 +11,8 @@ import { saveAnalyticUnitFromObject, runDetect, onDetect } from '../src/controll
 import * as AnalyticUnit from '../src/models/analytic_units';
 import * as AnalyticUnitCache from '../src/models/analytic_unit_cache_model';
 import * as Segment from '../src/models/segment_model';
-import { buildSegments, clearSegmentsDB, TEST_ANALYTIC_UNIT_ID } from './utils_for_tests/segments';
+import { TEST_ANALYTIC_UNIT_ID } from './utils_for_tests/analytic_units';
+import { buildSegments, clearSegmentsDB, convertSegmentsToRanges } from './utils_for_tests/segments';
 
 import { HASTIC_API_KEY } from '../src/config';
 
@@ -113,12 +114,12 @@ describe('onDetect', () => {
         }
       }
     });
-    let detectedSegments = await Promise.all(
+    const detectedSegments = await Promise.all(
       detectedSegmentIds.map(id => Segment.findOne(id))
     );
 
     expect(
-      detectedSegments.map(segment => [segment.from, segment.to])
+      convertSegmentsToRanges(detectedSegments)
     ).toEqual([]);
   });
 
@@ -128,12 +129,12 @@ describe('onDetect', () => {
       segments: buildSegments([[7, 8]]),
       lastDetectionTime: 0
     });
-    let detectedSegments = await Promise.all(
+    const detectedSegments = await Promise.all(
       detectedSegmentIds.map(id => Segment.findOne(id))
     );
 
     expect(
-      detectedSegments.map(segment => [segment.from, segment.to])
+      convertSegmentsToRanges(detectedSegments)
     ).toEqual([[7, 8]]);
   });
 });

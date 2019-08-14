@@ -1,12 +1,17 @@
-import * as AnalyticUnit from '../../src/models/analytic_units';
+import { TEST_ANALYTIC_UNIT_ID } from './analytic_units';
 import * as Segment from '../../src/models/segment_model';
 
-export const TEST_ANALYTIC_UNIT_ID: AnalyticUnit.AnalyticUnitId = 'testid';
+import * as _ from 'lodash';
 
 export function buildSegments(times: number[][]): Segment.Segment[] {
   return times.map(t => {
     return new Segment.Segment(TEST_ANALYTIC_UNIT_ID, t[0], t[1], false, false, undefined);
   });
+}
+
+export function convertSegmentsToRanges(segments: Segment.Segment[]): number[][] {
+  let result = segments.map(segment => [segment.from, segment.to]);
+  return _.sortBy(result, segment => segment[0]);
 }
 
 export async function clearSegmentsDB(): Promise<void> {

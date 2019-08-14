@@ -1,5 +1,6 @@
 import * as Segment from '../../src/models/segment_model';
-import { buildSegments, clearSegmentsDB, TEST_ANALYTIC_UNIT_ID } from '../utils_for_tests/segments';
+import { TEST_ANALYTIC_UNIT_ID } from '../utils_for_tests/analytic_units';
+import { buildSegments, clearSegmentsDB, convertSegmentsToRanges } from '../utils_for_tests/segments';
 import { getSegments } from '../../src/routes/segments_router';
 
 import { IRouterContext } from 'koa-router';
@@ -43,9 +44,9 @@ describe('getSegments', () => {
       let ctx = generateTimeRangeQuery(testCase.from, testCase.to);
       await getSegments(ctx);
 
-      let gotSegments = ctx.response.body.segments.map(segment => [segment.from, segment.to]);
-      gotSegments = _.sortBy(gotSegments, segment => segment.from);
-      expect(gotSegments).toEqual(testCase.expected);
+      expect(
+        convertSegmentsToRanges(ctx.response.body.segments)
+      ).toEqual(testCase.expected);
     }
   });
 });

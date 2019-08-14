@@ -1,4 +1,5 @@
-import { buildSegments, clearSegmentsDB, TEST_ANALYTIC_UNIT_ID } from './utils_for_tests/segments';
+import { TEST_ANALYTIC_UNIT_ID } from './utils_for_tests/analytic_units';
+import { buildSegments, clearSegmentsDB, convertSegmentsToRanges } from './utils_for_tests/segments';
 
 import * as Segment from '../src/models/segment_model';
 
