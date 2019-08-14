@@ -1,7 +1,9 @@
 import * as Segment from '../../src/models/segment_model';
 import { buildSegments, clearSegmentsDB, TEST_ANALYTIC_UNIT_ID } from '../utils_for_tests/segments';
 import { getSegments } from '../../src/routes/segments_router';
+
 import { IRouterContext } from 'koa-router';
+import * as _ from 'lodash';
 
 const INITIAL_SEGMENTS = buildSegments([[0, 3], [5, 6], [10, 13]]);
 
@@ -41,7 +43,8 @@ describe('getSegments', () => {
       let ctx = generateTimeRangeQuery(testCase.from, testCase.to);
       await getSegments(ctx);
 
-      const gotSegments = ctx.response.body.segments.map(segment => [segment.from, segment.to]);
+      let gotSegments = ctx.response.body.segments.map(segment => [segment.from, segment.to]);
+      gotSegments = _.sortBy(gotSegments, segment => segment.from);
       expect(gotSegments).toEqual(testCase.expected);
     }
   });
