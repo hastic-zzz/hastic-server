@@ -8,47 +8,41 @@ export declare type Span = {
 }
 
 // TODO: move from utils and refactor
-export function getNonIntersectedSpans(from: number, to: number, spanBorders: number[]): Span[] {
-  // spanBorders array must be sorted ascending
-  let isFromProcessed = false;
-  let alreadyDetected = false;
-  let startDetectionRange = null;
-  let result: Span[] = [];
-
-  for(var border of spanBorders) {
-    if(!isFromProcessed && border >= from) {
-      isFromProcessed = true;
-      if(border === from) {
-        if(alreadyDetected) {
-          startDetectionRange = from;
-        }
-      } else {
-          if(!alreadyDetected) {
-          startDetectionRange = from;
-        }
-      }
-    }
-
-    if(border >= to) {
-      if(!alreadyDetected) {
-        result.push({ from: startDetectionRange, to });
-      }
-      break;
-    }
-
-    if(alreadyDetected) { //end of already detected region, start point for new detection
-      startDetectionRange = border;
-    } else { //end of new detection region
-      if(startDetectionRange !== null) {
-        result.push({ from: startDetectionRange, to: border});
-      }
-    }
-    alreadyDetected = !alreadyDetected;
+/**
+ *
+ * @param inputSpan a big span which we will cut
+ * @param cutSpans spans which to cut the fromSpan
+ *
+ * @returns array of spans which are holes
+ */
+export function cutSpanWithSpans(inputSpan: Span, cutSpans: Span[]): Span[] {
+  if(cutSpans.length === 0) {
+    return [inputSpan];
   }
 
-  if(border < to) {
-    result.push({ from: startDetectionRange, to });
+  var mergedSortedCuts =_(cutSpans)
+    .sortBy(s => s.from)
+    .takeWhile(s => s.from < inputSpan.to)
+    .reduce((acc: Span[], s: Span) => {
+      if(acc === []) return [s];
+      if(s.to < acc[acc.length - 1].to) return acc;
+      acc.push(s);
+      return acc;
+    }, []);
+  
+  var result = [inputSpan];
+
+  for(let i in mergedSortedCuts) {
+    var span = mergedSortedCuts[i];
+    var last = result[result.length - 1];
+    if(span.to < last.from) continue;
+    
+
+    
   }
+
 
   return result;
+
+
 }
