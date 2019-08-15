@@ -15,9 +15,7 @@ beforeEach(async () => {
   await Promise.all(insertPromises);
 });
 
-afterEach(async () => {
-  await clearSpansDB();
-});
+afterEach(clearSpansDB);
 
 describe('insertSpan', () => {
   it('should merge spans correctly', async () => {
