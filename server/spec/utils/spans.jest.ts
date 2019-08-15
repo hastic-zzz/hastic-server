@@ -2,6 +2,7 @@ import { getNonIntersectedSpans } from '../../src/utils/spans';
 
 import 'jest';
 
+
 describe('getNonIntersectedSpans', function() {
 
   let spanBorders = [3, 5, 6, 8, 10, 20];

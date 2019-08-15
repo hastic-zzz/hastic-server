@@ -2,7 +2,6 @@ import { AnalyticUnitId } from './analytic_units';
 import { Collection, makeDBQ } from '../services/data_service';
 
 import * as _ from 'lodash';
-import { getNonIntersectedSpans } from '../utils/spans';
 
 let db = makeDBQ(Collection.DETECTION_SPANS);
 
