@@ -68,7 +68,7 @@ describe('getIntersectedSpans', () => {
 });
 
 describe('getSpanBorders', () => {
-  it('should find span borders correctly', () => {
+  it('should sort and find span borders', () => {
     const borders = Detection.getSpanBorders(buildSpans(INITIAL_SPANS_CONFIGS));
     expect(borders).toEqual([1, 3, 3, 4]);
   });
