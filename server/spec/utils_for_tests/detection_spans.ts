@@ -12,6 +12,12 @@ export function buildSpans(options: DetectionSpanOptions[]): Detection.Detection
   });
 }
 
+export async function insertSpans(options: DetectionSpanOptions[]): Promise<void> {
+  const spansToInsert = buildSpans(options);
+  const insertPromises = spansToInsert.map(async span => Detection.insertSpan(span));
+  await Promise.all(insertPromises);
+}
+
 export function convertSpansToOptions(spans: Detection.DetectionSpan[]): DetectionSpanOptions[] {
   const spansOptions = spans.map(span => ({ from: span.from, to: span.to, status: span.status }));
   return _.sortBy(spansOptions, spanOptions => spanOptions.from);

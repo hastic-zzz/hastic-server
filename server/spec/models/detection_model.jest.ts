@@ -1,35 +1,45 @@
 import { TEST_ANALYTIC_UNIT_ID } from '../utils_for_tests/analytic_units';
-import { buildSpans, clearSpansDB, convertSpansToOptions } from '../utils_for_tests/detection_spans';
+import { buildSpans, insertSpans, clearSpansDB, convertSpansToOptions } from '../utils_for_tests/detection_spans';
 
 import * as Detection from '../../src/models/detection_model';
 
 import * as _ from 'lodash';
 
-const INITIAL_SPANS = buildSpans([
+const INITIAL_SPANS = [
   { from: 1, to: 3, status: Detection.DetectionStatus.READY },
-  { from: 3, to: 4, status: Detection.DetectionStatus.RUNNING }
-]);
+  { from: 4, to: 5, status: Detection.DetectionStatus.RUNNING }
+];
 
 beforeEach(async () => {
-  const insertPromises = INITIAL_SPANS.map(async span => Detection.insertSpan(span));
-  await Promise.all(insertPromises);
+  await insertSpans(INITIAL_SPANS);
 });
 
 afterEach(clearSpansDB);
 
 describe('insertSpan', () => {
-  it('should merge spans correctly', async () => {
-    const spansToInsert = buildSpans([
-      { from: 3, to: 4, status: Detection.DetectionStatus.READY },
-      { from: 1, to: 5, status: Detection.DetectionStatus.RUNNING }
+  it('should merge spans with the same status', async () => {
+    await insertSpans([
+      { from: 3, to: 5, status: Detection.DetectionStatus.READY }
     ]);
-    const insertPromises = spansToInsert.map(async span => Detection.insertSpan(span));
-    await Promise.all(insertPromises);
 
     const expectedSpans = [
-      { from: 1, to: 4, status: Detection.DetectionStatus.READY }
+      { from: 1, to: 5, status: Detection.DetectionStatus.READY }
     ];
     const spansInDB = await Detection.findMany(TEST_ANALYTIC_UNIT_ID, { });
+    const spansOptions = convertSpansToOptions(spansInDB);
+    expect(spansOptions).toEqual(expectedSpans);
+  });
+
+
+  it('should merge spans if existing span is inside the one we`re trying to insert', async () => {
+    await insertSpans([
+      { from: 1, to: 6, status: Detection.DetectionStatus.RUNNING }
+    ]);
+
+    const expectedSpans = [
+      { from: 1, to: 6, status: Detection.DetectionStatus.RUNNING }
+    ];
+    const spansInDB = await Detection.findMany(TEST_ANALYTIC_UNIT_ID, {});
     const spansOptions = convertSpansToOptions(spansInDB);
     expect(spansOptions).toEqual(expectedSpans);
   });
@@ -59,7 +69,7 @@ describe('getIntersectedSpans', () => {
 
 describe('getSpanBorders', () => {
   it('should find span borders correctly', () => {
-    const borders = Detection.getSpanBorders(INITIAL_SPANS);
+    const borders = Detection.getSpanBorders(buildSpans(INITIAL_SPANS));
     expect(borders).toEqual([1, 3, 3, 4]);
   });
 });
