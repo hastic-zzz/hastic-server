@@ -5,13 +5,13 @@ import * as Detection from '../../src/models/detection_model';
 
 import * as _ from 'lodash';
 
-const INITIAL_SPANS = [
+const INITIAL_SPANS_CONFIGS = [
   { from: 1, to: 3, status: Detection.DetectionStatus.READY },
   { from: 4, to: 5, status: Detection.DetectionStatus.RUNNING }
 ];
 
 beforeEach(async () => {
-  await insertSpans(INITIAL_SPANS);
+  await insertSpans(INITIAL_SPANS_CONFIGS);
 });
 
 afterEach(clearSpansDB);
@@ -69,7 +69,7 @@ describe('getIntersectedSpans', () => {
 
 describe('getSpanBorders', () => {
   it('should find span borders correctly', () => {
-    const borders = Detection.getSpanBorders(buildSpans(INITIAL_SPANS));
+    const borders = Detection.getSpanBorders(buildSpans(INITIAL_SPANS_CONFIGS));
     expect(borders).toEqual([1, 3, 3, 4]);
   });
 });
