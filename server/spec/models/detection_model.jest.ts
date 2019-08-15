@@ -46,7 +46,7 @@ describe('insertSpan', () => {
 });
 
 describe('getIntersectedSpans', () => {
-  it('should find intersections correctly', async () => {
+  it('should find all intersections with the inserted span', async () => {
     const testCases = [
       {
         from: 1, to: 5,
