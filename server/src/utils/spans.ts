@@ -7,6 +7,7 @@ export declare type Span = {
   to: number
 }
 
+// TODO: move from utils and refactor
 export function getNonIntersectedSpans(from: number, to: number, spanBorders: number[]): Span[] {
   // spanBorders array must be sorted ascending
   let isFromProcessed = false;
