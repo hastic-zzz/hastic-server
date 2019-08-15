@@ -31,7 +31,7 @@ describe('insertSpan', () => {
   });
 
 
-  it('should merge spans if existing span is inside the one we`re trying to insert', async () => {
+  it('should merge spans if existing span is inside the one being inserted', async () => {
     await insertSpans([
       { from: 1, to: 6, status: Detection.DetectionStatus.RUNNING }
     ]);
