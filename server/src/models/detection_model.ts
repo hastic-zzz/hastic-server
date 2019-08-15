@@ -13,6 +13,12 @@ export enum DetectionStatus {
 
 export type DetectionId = string;
 
+/**
+ * Detection-span represents the state of dataset segment:
+ * - READY: detection is done
+ * - RUNNING: detection is running
+ * - FAILED: detection failed
+ */
 export class DetectionSpan {
   constructor(
     public analyticUnitId: AnalyticUnitId,
