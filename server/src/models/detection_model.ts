@@ -2,6 +2,7 @@ import { AnalyticUnitId } from './analytic_units';
 import { Collection, makeDBQ } from '../services/data_service';
 
 import * as _ from 'lodash';
+import { getNonIntersectedSpans } from '../utils/spans';
 
 let db = makeDBQ(Collection.DETECTION_SPANS);
 
@@ -13,6 +14,12 @@ export enum DetectionStatus {
 
 export type DetectionId = string;
 
+/**
+ * Detection-span represents the state of dataset segment:
+ * - READY: detection is done
+ * - RUNNING: detection is running
+ * - FAILED: detection failed
+ */
 export class DetectionSpan {
   constructor(
     public analyticUnitId: AnalyticUnitId,
@@ -130,6 +137,10 @@ export async function insertSpan(span: DetectionSpan) {
   return db.insertOne(spanToInsert);
 }
 
+/**
+ * Sorts spans by `from` field and @returns an array of their borders 
+ */
+// TODO: remove after getNonIntersectedSpans refactoring
 export function getSpanBorders(spans: DetectionSpan[]): number[] {
   let spanBorders: number[] = [];
 
