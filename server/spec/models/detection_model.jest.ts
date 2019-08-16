@@ -5,18 +5,15 @@ import * as Detection from '../../src/models/detection_model';
 
 import * as _ from 'lodash';
 
-const INITIAL_SPANS_CONFIGS = [
-  { from: 1, to: 3, status: Detection.DetectionStatus.READY },
-  { from: 4, to: 5, status: Detection.DetectionStatus.RUNNING }
-];
-
-beforeEach(async () => {
-  await insertSpans(INITIAL_SPANS_CONFIGS);
-});
-
 afterEach(clearSpansDB);
 
 describe('insertSpan', () => {
+  beforeEach(async () => {
+    await insertSpans([
+      { from: 1, to: 3, status: Detection.DetectionStatus.READY },
+      { from: 4, to: 5, status: Detection.DetectionStatus.RUNNING }
+    ]);
+  })
   it('should merge spans with the same status', async () => {
     const insertSteps = [
       { 
@@ -60,6 +57,11 @@ describe('insertSpan', () => {
 
 describe('getIntersectedSpans', () => {
   it('should find all intersections with the inserted span', async () => {
+    await insertSpans([
+      { from: 1, to: 3, status: Detection.DetectionStatus.READY },
+      { from: 4, to: 5, status: Detection.DetectionStatus.RUNNING }
+    ]);
+
     const testCases = [
       {
         from: 1, to: 5,
