@@ -136,22 +136,6 @@ export async function insertSpan(span: DetectionSpan) {
   return db.insertOne(spanToInsert);
 }
 
-/**
- * Sorts spans by `from` field and @returns an array of their borders 
- */
-// TODO: remove after getNonIntersectedSpans refactoring
-export function getSpanBorders(spans: DetectionSpan[]): number[] {
-  let spanBorders: number[] = [];
-
-  _.sortBy(spans.map(span => span.toObject()), 'from')
-    .forEach(span => {
-      spanBorders.push(span.from);
-      spanBorders.push(span.to);
-    });
-
-  return spanBorders;
-}
-
 export function clearSpans(analyticUnitId: AnalyticUnitId) {
   return db.removeMany({ analyticUnitId });
 }

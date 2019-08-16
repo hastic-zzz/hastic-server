@@ -1,5 +1,5 @@
 import { TEST_ANALYTIC_UNIT_ID } from '../utils_for_tests/analytic_units';
-import { buildSpans, insertSpans, clearSpansDB, convertSpansToOptions } from '../utils_for_tests/detection_spans';
+import { insertSpans, clearSpansDB, convertSpansToOptions } from '../utils_for_tests/detection_spans';
 
 import * as Detection from '../../src/models/detection_model';
 
@@ -67,9 +67,3 @@ describe('getIntersectedSpans', () => {
   });
 });
 
-describe('getSpanBorders', () => {
-  it('should sort and find span borders', () => {
-    const borders = Detection.getSpanBorders(buildSpans(INITIAL_SPANS_CONFIGS));
-    expect(borders).toEqual([1, 3, 3, 4]);
-  });
-});
