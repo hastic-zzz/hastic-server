@@ -8,24 +8,29 @@ import * as _ from 'lodash';
 afterEach(clearSpansDB);
 
 describe('insertSpan', () => {
-  beforeEach(async () => {
-    await insertSpans([
-      { from: 1, to: 3, status: Detection.DetectionStatus.READY },
-      { from: 4, to: 5, status: Detection.DetectionStatus.RUNNING }
-    ]);
-  })
   it('should merge spans with the same status', async () => {
+    // Each test step affects the next one because result of insertion stays in the DB
     const insertSteps = [
+      {
+        insert: [
+          { from: 1, to: 3, status: Detection.DetectionStatus.READY },
+          { from: 4, to: 5, status: Detection.DetectionStatus.RUNNING }
+        ],
+        expectedAfterInsertion: [
+          { from: 1, to: 3, status: Detection.DetectionStatus.READY },
+          { from: 4, to: 5, status: Detection.DetectionStatus.RUNNING }
+        ]
+      },
       { 
         insert: [ { from: 5, to: 9, status: Detection.DetectionStatus.RUNNING } ],
-        expected: [
+        expectedAfterInsertion: [
           { from: 1, to: 3, status: Detection.DetectionStatus.READY },
           { from: 4, to: 9, status: Detection.DetectionStatus.RUNNING }
         ] 
       },
       {
         insert: [ { from: 2, to: 5, status: Detection.DetectionStatus.READY } ],
-        expected: [
+        expectedAfterInsertion: [
           { from: 1, to: 5, status: Detection.DetectionStatus.READY },
           { from: 4, to: 9, status: Detection.DetectionStatus.RUNNING }
         ]
@@ -36,7 +41,7 @@ describe('insertSpan', () => {
       await insertSpans(step.insert);
       const spansInDB = await Detection.findMany(TEST_ANALYTIC_UNIT_ID, {});
       const spansOptions = convertSpansToOptions(spansInDB);
-      expect(spansOptions).toEqual(step.expected);
+      expect(spansOptions).toEqual(step.expectedAfterInsertion);
     }
   });
 
