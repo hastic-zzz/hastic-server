@@ -3,11 +3,11 @@ import { cutSpanWithSpans } from '../../src/utils/spans';
 import 'jest';
 
 
-function cutSpan(from: number, to: number, cuts: [number, number][]): number[][] {
+function cutSpan(from: number, to: number, cuts: [number, number][]): [number, number][] {
   return cutSpanWithSpans(
     { from: from, to: to },
     cuts.map(([from, to]) => ({ from, to }))
-  ).map(({ from, to }) => [from, to]);
+  ).map<[number, number]>(({ from, to }) => [from, to]);
 }
 
 describe('cutSpanWithSpans', function() {
