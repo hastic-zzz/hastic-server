@@ -7,7 +7,7 @@ function cutSpan(from: number, to: number, cuts: [number, number][]): [number, n
   return cutSpanWithSpans(
     { from: from, to: to },
     cuts.map(([from, to]) => ({ from, to }))
-  ).map(({ from, to }) => [from, to]);
+  ).map(({ from, to }) => [from, to] as [number, number]);
 }
 
 describe('cutSpanWithSpans', function() {
