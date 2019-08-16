@@ -8,7 +8,7 @@ export declare type Span = {
   to: number
 }
 
-// TODO: move from utils and refactor
+// TODO: move from utils and use generator
 /**
  *
  * @param inputSpan a big span which we will cut
