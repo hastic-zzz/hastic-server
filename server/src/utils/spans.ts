@@ -21,6 +21,7 @@ export function cutSpanWithSpans(inputSpan: Span, cutSpans: Span[]): Span[] {
     return [inputSpan];
   }
 
+  // we sort and merge out cuts to normalize it
   var mergedSortedCuts =_(cutSpans)
     .sortBy(s => s.from)
     .takeWhile(s => s.from < inputSpan.to)
@@ -36,6 +37,11 @@ export function cutSpanWithSpans(inputSpan: Span, cutSpans: Span[]): Span[] {
       return acc;
     }, []);
 
+  console.log('mergedSortedCuts')
+  console.log(mergedSortedCuts)
+
+
+  // this is what we get if we cut `mergedSortedCuts` from (-Infinity, Infinity)
   var holes = mergedSortedCuts.map((cut, i) => {
     var from = -Infinity;
     var to = cutSpans[0].from;

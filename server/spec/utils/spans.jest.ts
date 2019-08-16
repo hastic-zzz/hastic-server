@@ -25,8 +25,12 @@ describe('cutSpanWithSpans', function() {
     expect(getCuts(2, 21, cutSpans)).toEqual([[2, 3], [5, 6], [8, 10], [20, 21]]);
     expect(getCuts(3, 11, cutSpans)).toEqual([[5, 6], [8, 10]]);
     expect(getCuts(3, 20, cutSpans)).toEqual([[5, 6], [8, 10]]);
-    expect(getCuts(3, 20, cutSpans)).toEqual([[5, 6], [8, 10]]);
     expect(getCuts(4, 7, [[3, 5], [6, 8]])).toEqual([[5, 6]]);
+  });
+
+  it('should be ready to get not-sorted cuts', function() {
+    let cutSpans = [[3, 5], [1, 2]] as [number, number][];
+    expect(getCuts(0, 20, cutSpans)).toEqual([[0, 1], [2, 3], [5, 20]]);
   });
 
   it('should handle empty input spans list case', function() {
