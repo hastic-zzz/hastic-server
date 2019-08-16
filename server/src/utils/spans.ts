@@ -2,6 +2,7 @@
 
 import * as _ from 'lodash';
 
+
 export declare type Span = {
   from: number,
   to: number
@@ -24,25 +25,37 @@ export function cutSpanWithSpans(inputSpan: Span, cutSpans: Span[]): Span[] {
     .sortBy(s => s.from)
     .takeWhile(s => s.from < inputSpan.to)
     .reduce((acc: Span[], s: Span) => {
-      if(acc === []) return [s];
-      if(s.to < acc[acc.length - 1].to) return acc;
+      if(acc.length === 0) return [s];
+      var last = acc[acc.length - 1];
+      if(s.to <= last.to) return acc;
+      if(s.from <= last.to) {
+        last.to = s.to;
+        return acc;
+      }
       acc.push(s);
       return acc;
     }, []);
-  
-  var result = [inputSpan];
 
-  for(let i in mergedSortedCuts) {
-    var span = mergedSortedCuts[i];
-    var last = result[result.length - 1];
-    if(span.to < last.from) continue;
-    
+  var holes = mergedSortedCuts.map((cut, i) => {
+    var from = -Infinity;
+    var to = cutSpans[0].from;
+    if(i > 0) {
+      from = mergedSortedCuts[i - 1].to;
+      to = cut.from;
+    }
+    return { from, to }
+  }).concat({
+    from: mergedSortedCuts[mergedSortedCuts.length - 1].to,
+    to: Infinity
+  });
 
-    
-  }
-
-
-  return result;
-
+  return _(holes).map(c => {
+    if(c.to <= inputSpan.from) return undefined;
+    if(inputSpan.to <= c.from) return undefined;
+    return {
+      from: Math.max(c.from, inputSpan.from),
+      to: Math.min(c.to, inputSpan.to),
+    }
+  }).compact().value();
 
 }

@@ -10,7 +10,7 @@ function getCuts(from: number, to: number, xs: [number, number][]): [number, num
 }
 
 
-describe('getNonIntersectedSpans', function() {
+describe('cutSpanWithSpans', function() {
 
   it('should find spans in simple non-intersected borders', function() {
     let cutSpans = [[3, 5], [6, 8], [10, 20]] as [number, number][];
@@ -30,7 +30,7 @@ describe('getNonIntersectedSpans', function() {
   });
 
   it('should handle empty input spans list case', function() {
-    expect(getCuts(4, 10, [])).toEqual([]);
+    expect(getCuts(4, 10, [])).toEqual([[4, 10]]);
   });
 
   it('should handle case when from and to are inside of one big span', function() {
