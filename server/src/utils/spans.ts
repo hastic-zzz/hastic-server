@@ -12,7 +12,7 @@ export declare type Span = {
 /**
  *
  * @param inputSpan a big span which we will cut
- * @param cutSpans spans which to cut the fromSpan
+ * @param cutSpans spans which to cut the inputSpan. Spans can overlay.
  *
  * @returns array of spans which are holes
  */
@@ -22,12 +22,11 @@ export function cutSpanWithSpans(inputSpan: Span, cutSpans: Span[]): Span[] {
   }
 
   // we sort and merge out cuts to normalize it
-  var mergedSortedCuts =_(cutSpans)
-    .sortBy(s => s.from)
-    .takeWhile(s => s.from < inputSpan.to)
-    .reduce((acc: Span[], s: Span) => {
+  cutSpans = _.sortBy(cutSpans, s => s.from);
+  var mergedSortedCuts =_.reduce(cutSpans, 
+    ((acc: Span[], s: Span) => {
       if(acc.length === 0) return [s];
-      var last = acc[acc.length - 1];
+      let last = acc[acc.length - 1];
       if(s.to <= last.to) return acc;
       if(s.from <= last.to) {
         last.to = s.to;
@@ -35,16 +34,13 @@ export function cutSpanWithSpans(inputSpan: Span, cutSpans: Span[]): Span[] {
       }
       acc.push(s);
       return acc;
-    }, []);
-
-  console.log('mergedSortedCuts')
-  console.log(mergedSortedCuts)
-
+    }), []
+  );
 
   // this is what we get if we cut `mergedSortedCuts` from (-Infinity, Infinity)
   var holes = mergedSortedCuts.map((cut, i) => {
-    var from = -Infinity;
-    var to = cutSpans[0].from;
+    let from = -Infinity;
+    let to = cutSpans[0].from;
     if(i > 0) {
       from = mergedSortedCuts[i - 1].to;
       to = cut.from;

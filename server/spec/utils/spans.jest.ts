@@ -5,10 +5,10 @@ import 'jest';
 
 function cutSpan(from: number, to: number, cuts: [number, number][]): [number, number][] {
   return cutSpanWithSpans(
-    { from, to }, cuts.map(([from, to]) => ({from, to}))
+    { from: from, to: to },
+    cuts.map(([from, to]) => ({ from, to }))
   ).map(({ from, to }) => [from, to]);
 }
-
 
 describe('cutSpanWithSpans', function() {
 
@@ -28,11 +28,6 @@ describe('cutSpanWithSpans', function() {
     expect(cutSpan(4, 7, [[3, 5], [6, 8]])).toEqual([[5, 6]]);
   });
 
-  it('should be ready to get not-sorted cuts', function() {
-    let cutSpans = [[3, 5], [1, 2]] as [number, number][];
-    expect(cutSpan(0, 20, cutSpans)).toEqual([[0, 1], [2, 3], [5, 20]]);
-  });
-
   it('should handle empty input spans list case', function() {
     expect(cutSpan(4, 10, [])).toEqual([[4, 10]]);
   });
@@ -42,6 +37,15 @@ describe('cutSpanWithSpans', function() {
     expect(cutSpan(4, 10, [[1, 10]])).toEqual([]);
     expect(cutSpan(4, 10, [[4, 20]])).toEqual([]);
     expect(cutSpan(4, 10, [[4, 10]])).toEqual([]);
+  });
+
+  it('should be ready to get not-sorted cuts', function() {
+    expect(cutSpan(0, 20, [[3, 5], [1, 2]])).toEqual([[0, 1], [2, 3], [5, 20]]);
+    expect(cutSpan(0, 20, [[3, 5], [1, 2], [0.1, 0.5]])).toEqual([[0, 0.1], [0.5, 1], [2, 3], [5, 20]]);
+  });
+
+  it('should be ready to get overlayed cuts', function() {
+    expect(cutSpan(0, 20, [[3, 5], [4, 10]])).toEqual([[0,3], [10, 20]]);
   });
 
 });
