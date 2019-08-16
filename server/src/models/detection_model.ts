@@ -73,7 +73,7 @@ export class DetectionSpan {
 
 export type FindManyQuery = {
   status?: DetectionStatus,
-  // TODO: 
+  // TODO:
   // from?: { $gte?: number, $lte?: number }
   // to?: { $gte?: number, $lte?: number }
   timeFromLTE?: number,
@@ -119,26 +119,40 @@ export async function getIntersectedSpans(
 export async function insertSpan(span: DetectionSpan) {
   let spanToInsert = span.toObject();
 
-  const intersections = await getIntersectedSpans(span.analyticUnitId, span.from, span.to, span.status);
-  if(!_.isEmpty(intersections) && span.status === DetectionStatus.READY) {
-    let minFrom: number = _.minBy(intersections, 'from').from;
-    minFrom = Math.min(span.from, minFrom);
+  const intersections = await getIntersectedSpans(span.analyticUnitId, span.from, span.to);
+  if(!_.isEmpty(intersections)) {
+    const spansWithSameStatus = intersections.filter(
+      intersectedSpan => intersectedSpan.status === span.status
+    );
 
-    let maxTo: number = _.maxBy(intersections, 'to').to;
-    maxTo = Math.max(span.to, maxTo);
+    let from = span.from;
+    let to = span.to;
 
-    const spansInside = await findMany(span.analyticUnitId, { timeFromGTE: minFrom, timeToLTE: maxTo });
-    const toRemove = _.concat(intersections.map(span => span.id), spansInside.map(span => span.id));
+    if(!_.isEmpty(spansWithSameStatus)) {
+      let minFrom = _.minBy(spansWithSameStatus, s => s.from).from;
+      from = Math.min(from, minFrom);
 
-    await db.removeMany(toRemove);
+      let maxTo = _.maxBy(spansWithSameStatus, s => s.to).to;
+      to = Math.max(to, maxTo);
+    }
 
-    spanToInsert = new DetectionSpan(span.analyticUnitId, minFrom, maxTo, span.status).toObject();
+    const spansInside = intersections.filter(
+      intersectedSpan => intersectedSpan.from >= span.from && intersectedSpan.to <= span.to
+    );
+    const spanIdsToRemove = _.concat(
+      spansWithSameStatus.map(s => s.id),
+      spansInside.map(s => s.id)
+    );
+
+    await db.removeMany(spanIdsToRemove);
+
+    spanToInsert = new DetectionSpan(span.analyticUnitId, from, to, span.status).toObject();
   }
   return db.insertOne(spanToInsert);
 }
 
 /**
- * Sorts spans by `from` field and @returns an array of their borders 
+ * Sorts spans by `from` field and @returns an array of their borders
  */
 // TODO: remove after getNonIntersectedSpans refactoring
 export function getSpanBorders(spans: DetectionSpan[]): number[] {
