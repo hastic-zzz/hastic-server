@@ -10,7 +10,7 @@ import { AlertService } from '../services/alert_service';
 import { HASTIC_API_KEY } from '../config';
 import { DataPuller } from '../services/data_puller';
 import { getGrafanaUrl } from '../utils/grafana';
-import { getNonIntersectedSpans } from '../utils/spans';
+import { cutSpanWithSpans } from '../utils/spans';
 
 import { queryByMetric, GrafanaUnavailable, DatasourceUnavailable } from 'grafana-datasource-kit';
 
@@ -564,9 +564,7 @@ export async function getDetectionSpans(
     }
   }
 
-  const spanBorders = Detection.getSpanBorders(readySpans);
-
-  let newDetectionSpans = getNonIntersectedSpans(from, to, spanBorders);
+  let newDetectionSpans = cutSpanWithSpans({ from, to }, readySpans);
   if(newDetectionSpans.length === 0) {
     return [ new Detection.DetectionSpan(analyticUnitId, from, to, Detection.DetectionStatus.READY) ];
   }
