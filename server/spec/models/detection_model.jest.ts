@@ -55,7 +55,7 @@ describe('getIntersectedSpans', () => {
           { from: 4, to: 5, status: Detection.DetectionStatus.RUNNING }
         ]
       },
-      { from: 4, to: 5, expected: [{ from: 3, to: 4, status: Detection.DetectionStatus.RUNNING }] },
+      { from: 4, to: 5, expected: [{ from: 4, to: 5, status: Detection.DetectionStatus.RUNNING }] },
       { from: 6, to: 7, expected: [] }
     ]
 
