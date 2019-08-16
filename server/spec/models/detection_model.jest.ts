@@ -5,29 +5,48 @@ import * as Detection from '../../src/models/detection_model';
 
 import * as _ from 'lodash';
 
-const INITIAL_SPANS_CONFIGS = [
-  { from: 1, to: 3, status: Detection.DetectionStatus.READY },
-  { from: 4, to: 5, status: Detection.DetectionStatus.RUNNING }
-];
-
-beforeEach(async () => {
-  await insertSpans(INITIAL_SPANS_CONFIGS);
-});
-
 afterEach(clearSpansDB);
 
 describe('insertSpan', () => {
   it('should merge spans with the same status', async () => {
-    await insertSpans([
-      { from: 3, to: 5, status: Detection.DetectionStatus.READY }
-    ]);
-
-    const expectedSpans = [
-      { from: 1, to: 5, status: Detection.DetectionStatus.READY }
+    /* 
+     * Config for test
+     * insert -- what we want to insert in our test database
+     * expectedAfterInsertion -- expected database state after insertion
+     */
+    const insertSteps = [
+      {
+        insert: [
+          { from: 1, to: 3, status: Detection.DetectionStatus.READY },
+          { from: 4, to: 5, status: Detection.DetectionStatus.RUNNING }
+        ],
+        expectedAfterInsertion: [
+          { from: 1, to: 3, status: Detection.DetectionStatus.READY },
+          { from: 4, to: 5, status: Detection.DetectionStatus.RUNNING }
+        ]
+      },
+      { 
+        insert: [ { from: 5, to: 9, status: Detection.DetectionStatus.RUNNING } ],
+        expectedAfterInsertion: [
+          { from: 1, to: 3, status: Detection.DetectionStatus.READY },
+          { from: 4, to: 9, status: Detection.DetectionStatus.RUNNING }
+        ] 
+      },
+      {
+        insert: [ { from: 2, to: 5, status: Detection.DetectionStatus.READY } ],
+        expectedAfterInsertion: [
+          { from: 1, to: 5, status: Detection.DetectionStatus.READY },
+          { from: 4, to: 9, status: Detection.DetectionStatus.RUNNING }
+        ]
+      },
     ];
-    const spansInDB = await Detection.findMany(TEST_ANALYTIC_UNIT_ID, { });
-    const spansOptions = convertSpansToOptions(spansInDB);
-    expect(spansOptions).toEqual(expectedSpans);
+
+    for(let step of insertSteps) {
+      await insertSpans(step.insert);
+      const spansInDB = await Detection.findMany(TEST_ANALYTIC_UNIT_ID, {});
+      const spansOptions = convertSpansToOptions(spansInDB);
+      expect(spansOptions).toEqual(step.expectedAfterInsertion);
+    }
   });
 
 
@@ -47,15 +66,20 @@ describe('insertSpan', () => {
 
 describe('getIntersectedSpans', () => {
   it('should find all intersections with the inserted span', async () => {
+    await insertSpans([
+      { from: 1, to: 3, status: Detection.DetectionStatus.READY },
+      { from: 4, to: 5, status: Detection.DetectionStatus.RUNNING }
+    ]);
+
     const testCases = [
       {
         from: 1, to: 5,
         expected: [
           { from: 1, to: 3, status: Detection.DetectionStatus.READY },
-          { from: 3, to: 4, status: Detection.DetectionStatus.RUNNING }
+          { from: 4, to: 5, status: Detection.DetectionStatus.RUNNING }
         ]
       },
-      { from: 4, to: 5, expected: [{ from: 3, to: 4, status: Detection.DetectionStatus.RUNNING }] },
+      { from: 4, to: 5, expected: [{ from: 4, to: 5, status: Detection.DetectionStatus.RUNNING }] },
       { from: 6, to: 7, expected: [] }
     ]
 

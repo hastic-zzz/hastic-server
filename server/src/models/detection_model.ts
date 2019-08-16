@@ -11,7 +11,7 @@ export enum DetectionStatus {
   FAILED = 'FAILED'
 }
 
-export type DetectionId = string;
+export type SpanId = string;
 
 /**
  * Detection-span represents the state of dataset segment:
@@ -25,7 +25,7 @@ export class DetectionSpan {
     public from: number,
     public to: number,
     public status: DetectionStatus,
-    public id?: DetectionId,
+    public id?: SpanId,
   ) {
     if(analyticUnitId === undefined) {
       throw new Error('AnalyticUnitId is undefined');
@@ -72,7 +72,7 @@ export class DetectionSpan {
 
 export type FindManyQuery = {
   status?: DetectionStatus,
-  // TODO: 
+  // TODO:
   // from?: { $gte?: number, $lte?: number }
   // to?: { $gte?: number, $lte?: number }
   timeFromLTE?: number,
@@ -115,24 +115,40 @@ export async function getIntersectedSpans(
   return findMany(analyticUnitId, { status, timeFromLTE: to, timeToGTE: from });
 }
 
-export async function insertSpan(span: DetectionSpan) {
+export async function insertSpan(span: DetectionSpan): Promise<SpanId> {
   let spanToInsert = span.toObject();
 
-  const intersections = await getIntersectedSpans(span.analyticUnitId, span.from, span.to, span.status);
-  if(!_.isEmpty(intersections) && span.status === DetectionStatus.READY) {
-    let minFrom: number = _.minBy(intersections, 'from').from;
-    minFrom = Math.min(span.from, minFrom);
-
-    let maxTo: number = _.maxBy(intersections, 'to').to;
-    maxTo = Math.max(span.to, maxTo);
-
-    const spansInside = await findMany(span.analyticUnitId, { timeFromGTE: minFrom, timeToLTE: maxTo });
-    const toRemove = _.concat(intersections.map(span => span.id), spansInside.map(span => span.id));
-
-    await db.removeMany(toRemove);
-
-    spanToInsert = new DetectionSpan(span.analyticUnitId, minFrom, maxTo, span.status).toObject();
+  const intersections = await getIntersectedSpans(span.analyticUnitId, span.from, span.to);
+  if(_.isEmpty(intersections)) {
+    return db.insertOne(spanToInsert);
   }
+  const spansWithSameStatus = intersections.filter(
+    intersectedSpan => intersectedSpan.status === span.status
+  );
+
+  let from = span.from;
+  let to = span.to;
+
+  if(!_.isEmpty(spansWithSameStatus)) {
+    let minFrom = _.minBy(spansWithSameStatus, s => s.from).from;
+    from = Math.min(from, minFrom);
+
+    let maxTo = _.maxBy(spansWithSameStatus, s => s.to).to;
+    to = Math.max(to, maxTo);
+  }
+
+  const spansInside = intersections.filter(
+    intersectedSpan => intersectedSpan.from >= span.from && intersectedSpan.to <= span.to
+  );
+  const spanIdsToRemove = _.concat(
+    spansWithSameStatus.map(s => s.id),
+    spansInside.map(s => s.id)
+  );
+
+  await db.removeMany(spanIdsToRemove);
+
+  spanToInsert = new DetectionSpan(span.analyticUnitId, from, to, span.status).toObject();
+
   return db.insertOne(spanToInsert);
 }
 
