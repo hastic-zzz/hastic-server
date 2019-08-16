@@ -18,7 +18,7 @@ afterEach(clearSpansDB);
 
 describe('insertSpan', () => {
   it('should merge spans with the same status', async () => {
-    const testSteps = [
+    const insertSteps = [
       { 
         insert: [ { from: 5, to: 9, status: Detection.DetectionStatus.RUNNING } ],
         expected: [
@@ -27,7 +27,7 @@ describe('insertSpan', () => {
         ] 
       },
       {
-        insert: [{ from: 2, to: 5, status: Detection.DetectionStatus.READY }],
+        insert: [ { from: 2, to: 5, status: Detection.DetectionStatus.READY } ],
         expected: [
           { from: 1, to: 5, status: Detection.DetectionStatus.READY },
           { from: 4, to: 9, status: Detection.DetectionStatus.RUNNING }
@@ -35,7 +35,7 @@ describe('insertSpan', () => {
       },
     ];
 
-    for(let step of testSteps) {
+    for(let step of insertSteps) {
       await insertSpans(step.insert);
       const spansInDB = await Detection.findMany(TEST_ANALYTIC_UNIT_ID, {});
       const spansOptions = convertSpansToOptions(spansInDB);

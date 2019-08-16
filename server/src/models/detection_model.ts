@@ -119,34 +119,36 @@ export async function insertSpan(span: DetectionSpan) {
   let spanToInsert = span.toObject();
 
   const intersections = await getIntersectedSpans(span.analyticUnitId, span.from, span.to);
-  if(!_.isEmpty(intersections)) {
-    const spansWithSameStatus = intersections.filter(
-      intersectedSpan => intersectedSpan.status === span.status
-    );
-
-    let from = span.from;
-    let to = span.to;
-
-    if(!_.isEmpty(spansWithSameStatus)) {
-      let minFrom = _.minBy(spansWithSameStatus, s => s.from).from;
-      from = Math.min(from, minFrom);
-
-      let maxTo = _.maxBy(spansWithSameStatus, s => s.to).to;
-      to = Math.max(to, maxTo);
-    }
-
-    const spansInside = intersections.filter(
-      intersectedSpan => intersectedSpan.from >= span.from && intersectedSpan.to <= span.to
-    );
-    const spanIdsToRemove = _.concat(
-      spansWithSameStatus.map(s => s.id),
-      spansInside.map(s => s.id)
-    );
-
-    await db.removeMany(spanIdsToRemove);
-
-    spanToInsert = new DetectionSpan(span.analyticUnitId, from, to, span.status).toObject();
+  if(_.isEmpty(intersections)) {
+    return db.insertOne(spanToInsert);
   }
+  const spansWithSameStatus = intersections.filter(
+    intersectedSpan => intersectedSpan.status === span.status
+  );
+
+  let from = span.from;
+  let to = span.to;
+
+  if(!_.isEmpty(spansWithSameStatus)) {
+    let minFrom = _.minBy(spansWithSameStatus, s => s.from).from;
+    from = Math.min(from, minFrom);
+
+    let maxTo = _.maxBy(spansWithSameStatus, s => s.to).to;
+    to = Math.max(to, maxTo);
+  }
+
+  const spansInside = intersections.filter(
+    intersectedSpan => intersectedSpan.from >= span.from && intersectedSpan.to <= span.to
+  );
+  const spanIdsToRemove = _.concat(
+    spansWithSameStatus.map(s => s.id),
+    spansInside.map(s => s.id)
+  );
+
+  await db.removeMany(spanIdsToRemove);
+
+  spanToInsert = new DetectionSpan(span.analyticUnitId, from, to, span.status).toObject();
+
   return db.insertOne(spanToInsert);
 }
 
