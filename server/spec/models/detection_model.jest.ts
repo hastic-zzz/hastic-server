@@ -52,7 +52,7 @@ describe('getIntersectedSpans', () => {
         from: 1, to: 5,
         expected: [
           { from: 1, to: 3, status: Detection.DetectionStatus.READY },
-          { from: 3, to: 4, status: Detection.DetectionStatus.RUNNING }
+          { from: 4, to: 5, status: Detection.DetectionStatus.RUNNING }
         ]
       },
       { from: 4, to: 5, expected: [{ from: 3, to: 4, status: Detection.DetectionStatus.RUNNING }] },
