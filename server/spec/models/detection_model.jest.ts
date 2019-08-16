@@ -9,7 +9,11 @@ afterEach(clearSpansDB);
 
 describe('insertSpan', () => {
   it('should merge spans with the same status', async () => {
-    // Each test step affects the next one because result of insertion stays in the DB
+    /* 
+     * Config for test
+     * insert -- what we want to insert in our test database
+     * expectedAfterInsertion -- expected database state after insertion
+     */
     const insertSteps = [
       {
         insert: [
