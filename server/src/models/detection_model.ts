@@ -11,7 +11,7 @@ export enum DetectionStatus {
   FAILED = 'FAILED'
 }
 
-export type DetectionId = string;
+export type SpanId = string;
 
 /**
  * Detection-span represents the state of dataset segment:
@@ -25,7 +25,7 @@ export class DetectionSpan {
     public from: number,
     public to: number,
     public status: DetectionStatus,
-    public id?: DetectionId,
+    public id?: SpanId,
   ) {
     if(analyticUnitId === undefined) {
       throw new Error('AnalyticUnitId is undefined');
@@ -115,7 +115,7 @@ export async function getIntersectedSpans(
   return findMany(analyticUnitId, { status, timeFromLTE: to, timeToGTE: from });
 }
 
-export async function insertSpan(span: DetectionSpan) {
+export async function insertSpan(span: DetectionSpan): Promise<SpanId> {
   let spanToInsert = span.toObject();
 
   const intersections = await getIntersectedSpans(span.analyticUnitId, span.from, span.to);
