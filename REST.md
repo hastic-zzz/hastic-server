@@ -1,3 +1,6 @@
+# -----------OUTDATED-------------
+# -------------------------------------
+
 # Hastic server REST API
 
 ## /anomalies
