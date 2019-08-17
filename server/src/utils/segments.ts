@@ -16,7 +16,7 @@ export declare type Segment = {
  *
  * @returns array of segments remain after cut
  */
-export function cutSpanWithSpans(inputSegment: Segment, cutSegments: Segment[]): Segment[] {
+export function cutSegmentWithSegments(inputSegment: Segment, cutSegments: Segment[]): Segment[] {
   if(cutSegments.length === 0) {
     return [inputSegment];
   }
@@ -40,14 +40,14 @@ export function cutSpanWithSpans(inputSegment: Segment, cutSegments: Segment[]):
   // this is what we get if we cut `mergedSortedCuts` from (-Infinity, Infinity)
   const holes = mergedSortedCuts.map((cut, i) => {
     let from = -Infinity;
-    let to = cutSegments[0].from;
+    let to = cutSegments[0].from - 1;
     if(i > 0) {
-      from = mergedSortedCuts[i - 1].to;
-      to = cut.from;
+      from = mergedSortedCuts[i - 1].to + 1;
+      to = cut.from - 1;
     }
     return { from, to };
   }).concat({
-    from: mergedSortedCuts[mergedSortedCuts.length - 1].to,
+    from: mergedSortedCuts[mergedSortedCuts.length - 1].to + 1,
     to: Infinity
   });
 

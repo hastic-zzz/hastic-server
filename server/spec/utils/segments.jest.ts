@@ -1,10 +1,10 @@
-import { cutSpanWithSpans } from '../../src/utils/segments';
+import { cutSegmentWithSegments } from '../../src/utils/segments';
 
 import 'jest';
 
 
 function cutSpan(from: number, to: number, cuts: [number, number][]): [number, number][] {
-  return cutSpanWithSpans(
+  return cutSegmentWithSegments(
     { from: from, to: to },
     cuts.map(([from, to]) => ({ from, to }))
   ).map(({ from, to }) => [from, to] as [number, number]);
@@ -63,10 +63,10 @@ describe('cutSpanWithSpans', function() {
   });
 
   it('should be ready to get overlayed cuts', function() {
-    expect(cutSpan(0, 20, [[3, 5], [4, 10]])).toEqual([[0, 3], [10, 20]]);
-    expect(cutSpan(0, 20, [[3, 10], [4, 10]])).toEqual([[0, 3], [10, 20]]);
-    expect(cutSpan(0, 20, [[3, 11], [4, 10]])).toEqual([[0, 3], [11, 20]]);
-    expect(cutSpan(0, 20, [[3, 11], [3, 12]])).toEqual([[0, 3], [12, 20]]);
+    expect(cutSpan(0, 20, [[3, 5], [4, 10]])).toEqual([[0, 2], [11, 20]]);
+    expect(cutSpan(0, 20, [[3, 9], [4, 9]])).toEqual([[0, 2], [10, 20]]);
+    expect(cutSpan(0, 20, [[3, 11], [4, 10]])).toEqual([[0, 2], [11, 20]]);
+    expect(cutSpan(0, 20, [[3, 11], [3, 12]])).toEqual([[0, 2], [12, 20]]);
     expect(cutSpan(0, 20, [[3, 11], [3, 12], [3, 10], [3, 15], [3, 14]])).toEqual([[0, 3], [15, 20]]);
     expect(cutSpan(0, 20, [[2, 11], [3, 12]])).toEqual([[0, 2], [12, 20]]);
     expect(cutSpan(0, 20, [[2, 15], [3, 12]])).toEqual([[0, 2], [15, 20]]);
@@ -81,11 +81,10 @@ describe('cutSpanWithSpans', function() {
 
 
   it('should handle cuts from point span', function() {
-    expect(cutSpan(1, 1, [[5, 5]])).toThrowError()
-    expect(cutSpan(1, 1, [[1, 1]])).toEqual([[]]);
-    expect(cutSpan(1, 1, [[0, 2]])).toEqual([[]]);
-    expect(cutSpan(1, 1, [[0, 1]])).toEqual([[]]);
-    expect(cutSpan(1, 1, [[1, 0]])).toEqual([[]]);
+    expect(cutSpan(1, 1, [[1, 1]])).toEqual([]);
+    expect(cutSpan(1, 1, [[0, 2]])).toEqual([]);
+    expect(cutSpan(1, 1, [[0, 1]])).toEqual([]);
+    expect(cutSpan(1, 1, [[1, 0]])).toEqual([]);
   });
 
 });
