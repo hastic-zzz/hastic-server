@@ -44,9 +44,9 @@ describe('cutSpanWithSpans', function() {
   });
 
   it('should handle infitie span and infinite cuts', function() {
-    expect(cutSpan(0, Infinity, [[5, 10]])).toEqual([[0, 5], [10, Infinity]]);
+    expect(cutSpan(0, Infinity, [[5, 10]])).toEqual([[0, 4], [11, Infinity]]);
     expect(cutSpan(0, 6, [[0, Infinity]])).toEqual([]);
-    expect(cutSpan(0, 6, [[1, Infinity]])).toEqual([[0, 1]]);
+    expect(cutSpan(0, 6, [[2, Infinity]])).toEqual([[0, 1]]);
     expect(cutSpan(-Infinity, Infinity, [[-Infinity, Infinity]])).toEqual([]);
   });
 
