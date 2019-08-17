@@ -40,6 +40,14 @@ describe('cutSpanWithSpans', function() {
     expect(cutSpan(1, 10, [[0.9, 0.0]])).toEqual([[1, 10]]);
   });
 
+  it('should handle cuts from point span', function() {
+    expect(cutSpan(1, 1, [[5, 5]])).toEqual([[]]);
+    expect(cutSpan(1, 1, [[1, 1]])).toEqual([[]]);
+    expect(cutSpan(1, 1, [[0, 2]])).toEqual([[]]);
+    expect(cutSpan(1, 1, [[0, 1]])).toEqual([[]]);
+    expect(cutSpan(1, 1, [[1, 0]])).toEqual([[]]);
+  });
+
   it('should handle infitie span and infinite cuts', function() {
     expect(cutSpan(0, Infinity, [[5, 10]])).toEqual([[0, 5], [10, Infinity]]);
     expect(cutSpan(0, 6, [[0, Infinity]])).toEqual([]);
