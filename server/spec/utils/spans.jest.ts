@@ -32,6 +32,14 @@ describe('cutSpanWithSpans', function() {
     expect(cutSpan(4, 10, [])).toEqual([[4, 10]]);
   });
 
+  it('should handle empty one-point cuts', function() {
+    expect(cutSpan(1, 10, [[5, 5]])).toEqual([[1, 5], [5, 10]]);
+    expect(cutSpan(1, 10, [[1, 1]])).toEqual([[1, 10]]);
+    expect(cutSpan(1, 10, [[10, 10]])).toEqual([[1, 10]]);
+    expect(cutSpan(1, 10, [[11, 11]])).toEqual([[1, 10]]);
+    expect(cutSpan(1, 10, [[0.9, 0.0]])).toEqual([[1, 10]]);
+  });
+
   it('should handle case when from and to are inside of one big span', function() {
     expect(cutSpan(4, 10, [[1, 20]])).toEqual([]);
     expect(cutSpan(4, 10, [[1, 10]])).toEqual([]);
