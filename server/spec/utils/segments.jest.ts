@@ -1,4 +1,4 @@
-import { cutSpanWithSpans } from '../../src/utils/spans';
+import { cutSpanWithSpans } from '../../src/utils/segments';
 
 import 'jest';
 

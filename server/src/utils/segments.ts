@@ -3,7 +3,7 @@
 import * as _ from 'lodash';
 
 
-export declare type Span = {
+export declare type Segment = {
   from: number,
   to: number
 }
@@ -11,20 +11,20 @@ export declare type Span = {
 // TODO: move from utils and use generator
 /**
  *
- * @param inputSpan a big span which we will cut
- * @param cutSpans spans which to cut the inputSpan. Spans can overlay.
+ * @param inputSegment a big span which we will cut
+ * @param cutSegments spans which to cut the inputSpan. Spans can overlay.
  *
- * @returns array of spans which are holes
+ * @returns array of segments remain after cut
  */
-export function cutSpanWithSpans(inputSpan: Span, cutSpans: Span[]): Span[] {
-  if(cutSpans.length === 0) {
-    return [inputSpan];
+export function cutSpanWithSpans(inputSegment: Segment, cutSegments: Segment[]): Segment[] {
+  if(cutSegments.length === 0) {
+    return [inputSegment];
   }
 
   // we sort and merge out cuts to normalize it
-  cutSpans = _.sortBy(cutSpans, s => s.from);
-  const mergedSortedCuts =_.reduce(cutSpans, 
-    ((acc: Span[], s: Span) => {
+  cutSegments = _.sortBy(cutSegments, s => s.from);
+  const mergedSortedCuts =_.reduce(cutSegments, 
+    ((acc: Segment[], s: Segment) => {
       if(acc.length === 0) return [s];
       let last = acc[acc.length - 1];
       if(s.to <= last.to) return acc;
@@ -40,7 +40,7 @@ export function cutSpanWithSpans(inputSpan: Span, cutSpans: Span[]): Span[] {
   // this is what we get if we cut `mergedSortedCuts` from (-Infinity, Infinity)
   const holes = mergedSortedCuts.map((cut, i) => {
     let from = -Infinity;
-    let to = cutSpans[0].from;
+    let to = cutSegments[0].from;
     if(i > 0) {
       from = mergedSortedCuts[i - 1].to;
       to = cut.from;
@@ -52,11 +52,11 @@ export function cutSpanWithSpans(inputSpan: Span, cutSpans: Span[]): Span[] {
   });
 
   const holesInsideInputSpan = _(holes).map(c => {
-    if(c.to <= inputSpan.from) return undefined;
-    if(inputSpan.to <= c.from) return undefined;
+    if(c.to <= inputSegment.from) return undefined;
+    if(inputSegment.to <= c.from) return undefined;
     return {
-      from: Math.max(c.from, inputSpan.from),
-      to: Math.min(c.to, inputSpan.to),
+      from: Math.max(c.from, inputSegment.from),
+      to: Math.min(c.to, inputSegment.to),
     }
   }).compact().value();
 

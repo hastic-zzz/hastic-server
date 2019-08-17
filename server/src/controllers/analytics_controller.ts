@@ -10,7 +10,7 @@ import { AlertService } from '../services/alert_service';
 import { HASTIC_API_KEY } from '../config';
 import { DataPuller } from '../services/data_puller';
 import { getGrafanaUrl } from '../utils/grafana';
-import { cutSpanWithSpans } from '../utils/spans';
+import { cutSpanWithSpans } from '../utils/segments';
 
 import { queryByMetric, GrafanaUnavailable, DatasourceUnavailable } from 'grafana-datasource-kit';
 
