@@ -65,20 +65,19 @@ describe('cutSpanWithSpans', function() {
   it('should be ready to get overlayed cuts', function() {
     expect(cutSpan(0, 20, [[3, 5], [4, 10]])).toEqual([[0, 2], [11, 20]]);
     expect(cutSpan(0, 20, [[3, 9], [4, 9]])).toEqual([[0, 2], [10, 20]]);
-    expect(cutSpan(0, 20, [[3, 11], [4, 10]])).toEqual([[0, 2], [11, 20]]);
-    expect(cutSpan(0, 20, [[3, 11], [3, 12]])).toEqual([[0, 2], [12, 20]]);
-    expect(cutSpan(0, 20, [[3, 11], [3, 12], [3, 10], [3, 15], [3, 14]])).toEqual([[0, 3], [15, 20]]);
-    expect(cutSpan(0, 20, [[2, 11], [3, 12]])).toEqual([[0, 2], [12, 20]]);
-    expect(cutSpan(0, 20, [[2, 15], [3, 12]])).toEqual([[0, 2], [15, 20]]);
-    expect(cutSpan(0, 20, [[2, 15], [3, 12], [1, 18]])).toEqual([[0, 1], [18, 20]]);
-    expect(cutSpan(0, 20, [[2, 15], [3, Infinity], [1, 18]])).toEqual([[0, 1]]);
-    expect(cutSpan(0, 20, [[3, 3], [3, Infinity]])).toEqual([[0, 3]]);
-    expect(cutSpan(0, 20, [[3, 3], [3, Infinity], [3, 3]])).toEqual([[0, 3]]);
-    expect(cutSpan(0, 20, [[3, 3], [3, Infinity], [3, 3], [4, 4]])).toEqual([[0, 3]]);
-    expect(cutSpan(0, 20, [[3, 3], [3, Infinity], [3, 3], [4, 4], [3, 5]])).toEqual([[0, 3]]);
-    expect(cutSpan(-Infinity, Infinity, [[3, 3], [3, Infinity], [3, 3], [4, 4], [3, 5]])).toEqual([[-Infinity, 3]]);
+    expect(cutSpan(0, 20, [[3, 11], [4, 10]])).toEqual([[0, 2], [12, 20]]);
+    expect(cutSpan(0, 20, [[3, 11], [3, 12]])).toEqual([[0, 2], [13, 20]]);
+    expect(cutSpan(0, 20, [[3, 11], [3, 12], [3, 10], [3, 15], [3, 14]])).toEqual([[0, 2], [16, 20]]);
+    expect(cutSpan(0, 20, [[2, 11], [3, 12]])).toEqual([[0, 1], [13, 20]]);
+    expect(cutSpan(0, 20, [[2, 15], [3, 12]])).toEqual([[0, 1], [16, 20]]);
+    expect(cutSpan(0, 20, [[2, 15], [3, 12], [1, 18]])).toEqual([[0, 0], [19, 20]]);
+    expect(cutSpan(0, 20, [[2, 15], [3, Infinity], [1, 18]])).toEqual([[0, 0]]);
+    expect(cutSpan(0, 20, [[3, 3], [3, Infinity]])).toEqual([[0, 2]]);
+    expect(cutSpan(0, 20, [[3, 3], [3, Infinity], [3, 3]])).toEqual([[0, 2]]);
+    expect(cutSpan(0, 20, [[3, 3], [3, Infinity], [3, 3], [4, 4]])).toEqual([[0, 2]]);
+    expect(cutSpan(0, 20, [[3, 3], [3, Infinity], [3, 3], [4, 4], [3, 5]])).toEqual([[0, 2]]);
+    expect(cutSpan(-Infinity, Infinity, [[3, 3], [3, Infinity], [3, 3], [4, 4], [3, 5]])).toEqual([[-Infinity, 2]]);
   });
-
 
   it('should handle cuts from point span', function() {
     expect(cutSpan(1, 1, [[1, 1]])).toEqual([]);
