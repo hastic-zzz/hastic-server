@@ -13,7 +13,7 @@ function cutSpan(from: number, to: number, cuts: [number, number][]): [number, n
 describe('cutSpanWithSpans', function() {
 
   it('should find spans in simple non-intersected borders', function() {
-    let cutSpans = [[3, 5], [6, 8], [10, 20]] as [number, number][];
+    let cutSpans = [[3, 4], [6, 8], [11, 20]] as [number, number][];
 
     expect(cutSpan(4, 11, cutSpans)).toEqual([[5, 6], [8, 10]]);
     expect(cutSpan(5, 11, cutSpans)).toEqual([[5, 6], [8, 10]]);
@@ -32,12 +32,15 @@ describe('cutSpanWithSpans', function() {
     expect(cutSpan(4, 10, [])).toEqual([[4, 10]]);
   });
 
+  it('should throw error is cut contains float border', function() {
+    expect(cutSpan(1, 10, [[0.9, 0.0]])).toThrow();
+  });
+
   it('should handle one-point cuts', function() {
-    expect(cutSpan(1, 10, [[5, 5]])).toEqual([[1, 5], [5, 10]]);
-    expect(cutSpan(1, 10, [[1, 1]])).toEqual([[1, 10]]);
-    expect(cutSpan(1, 10, [[10, 10]])).toEqual([[1, 10]]);
+    expect(cutSpan(1, 10, [[5, 5]])).toEqual([[1, 4], [6, 10]]);
+    expect(cutSpan(1, 10, [[1, 1]])).toEqual([[2, 10]]);
+    expect(cutSpan(1, 10, [[10, 10]])).toEqual([[1, 9]]);
     expect(cutSpan(1, 10, [[11, 11]])).toEqual([[1, 10]]);
-    expect(cutSpan(1, 10, [[0.9, 0.0]])).toEqual([[1, 10]]);
   });
 
   it('should handle infitie span and infinite cuts', function() {
