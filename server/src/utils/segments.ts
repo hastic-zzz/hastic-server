@@ -8,6 +8,14 @@ export declare type Segment = {
   to: number
 }
 
+export function isInteger(s: Segment): boolean {
+  return Number.isInteger(s.from) && Number.isInteger(s.to);
+}
+
+export function toString(s: Segment): string {
+  return `[${s.from}, ${s.to}]`;
+}
+
 // TODO: move from utils and use generator
 /**
  *
@@ -17,8 +25,20 @@ export declare type Segment = {
  * @returns array of segments remain after cut
  */
 export function cutSegmentWithSegments(inputSegment: Segment, cutSegments: Segment[]): Segment[] {
+
+  if(!isInteger(inputSegment)) {
+    throw new Error('Input segment isn`t integer: ' + toString(inputSegment));
+  }
+
   if(cutSegments.length === 0) {
     return [inputSegment];
+  }
+
+  {
+    let badCut = _.find(cutSegments, s => !isInteger(s));
+    if(badCut !== undefined) {
+      throw new Error('Found not integer cut: ' + toString(badCut));
+    }
   }
 
   // we sort and merge out cuts to normalize it
