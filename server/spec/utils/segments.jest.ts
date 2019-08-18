@@ -1,12 +1,12 @@
-import { cutSegmentWithSegments } from '../../src/utils/segments';
+import { cutSegmentWithSegments, IntegerSegment } from '../../src/utils/segments';
 
 import 'jest';
 
 
 function cutSpan(from: number, to: number, cuts: [number, number][]): [number, number][] {
   return cutSegmentWithSegments(
-    { from: from, to: to },
-    cuts.map(([from, to]) => ({ from, to }))
+    new IntegerSegment(from, to),
+    cuts.map(([from, to]) => new IntegerSegment(from, to))
   ).map(({ from, to }) => [from, to] as [number, number]);
 }
 

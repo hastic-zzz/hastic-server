@@ -4,17 +4,155 @@ import * as _ from 'lodash';
 
 
 export declare type Segment = {
-  from: number,
-  to: number
+  readonly from: number,
+  readonly to: number
 }
 
-export function isInteger(s: Segment): boolean {
-  return (Number.isInteger(s.from) || !Number.isFinite(s.from)) &&
-         (Number.isInteger(s.to) || !Number.isFinite(s.to))
+
+export class IntegerSegment {
+  readonly from: number;
+  readonly to: number;
+
+  constructor(from: number, to: number) {
+    if((Number.isInteger(from) || !Number.isFinite(from))) {
+      throw new Error(`From should be an Integer or Infinity, but got ${from}`);
+    }
+    if((Number.isInteger(to) || !Number.isFinite(to))) {
+      throw new Error(`To should be an Integer or Infinity, but got ${from}`);
+    }
+
+    let l = IntegerSegment.lengthBetweenPoints(from, to);
+    if(l < 1) {
+      throw new Error(
+        `Length of segment is less than 1: [${from}, ${to}]. 
+        It's not possible for IntegerSegment`
+      );
+    }
+    this.from = from;
+    this.to = to;
+  }
+
+  get length(): number {
+    return IntegerSegment.lengthBetweenPoints(this.from, this.to);
+  }
+
+  insersect(segment: IntegerSegment): IntegerSegment | undefined {
+    let from = Math.max(this.from, segment.from);
+    let to = Math.min(this.to, segment.to);
+    if(IntegerSegment.lengthBetweenPoints(from, to) >= 1) {
+      return new IntegerSegment(from, to);
+    }
+    return undefined;
+  }
+
+  toString(): string {
+    return `[${this.from}, ${this.to}]`;
+  }
+
+  static lengthBetweenPoints(from: number, to: number): number {
+    let l = to - from + 1; // because [x, x] has length 1
+    if(isNaN(l)) { // when [Infinity, Infinity] or [-Infinity, -Infinity]
+      return 0;
+    } else {
+      return Math.max(l, 0); // becase [x, x - 1] we consider as zero length
+    }
+  }
 }
 
-export function toString(s: Segment): string {
-  return `[${s.from}, ${s.to}]`;
+export class IntegerSegmentsSet {
+
+  private _segments: IntegerSegment[];
+
+  constructor(segments: IntegerSegment[], noramlized: boolean = false) {
+    this._segments = segments;
+    if(noramlized !== true) {
+      this._normalize();
+    }
+  }
+
+  private _normalize() {
+    let sortedSegments = _.sortBy(this._segments, s => s.from);
+    let lastFrom = this._segments[0].from;
+    let lastTo = this._segments[0].to;
+    let mergedSegments: IntegerSegment[] = [];
+    for(let i = 1; i < sortedSegments.length; i++) {
+      let currentSegment = mergedSegments[i];
+      if(lastTo + 1 >= currentSegment.from) { // because [a, x], [x + 1, b] is [a, b]
+        lastTo = currentSegment.to;
+        continue;
+      }
+      mergedSegments.push(new IntegerSegment(lastFrom, lastTo));
+      lastFrom = currentSegment.from;
+      lastTo = currentSegment.to;
+    }
+    mergedSegments.push(new IntegerSegment(lastFrom, lastTo));
+    this._segments = mergedSegments;
+  }
+
+  get segments(): readonly IntegerSegment[] {
+    return this._segments;
+  }
+
+  inversed(): IntegerSegmentsSet {
+    var invertedSegments: IntegerSegment[] = [];
+    if(this._segments.length === 0) {
+      invertedSegments = [new IntegerSegment(-Infinity, Infinity)];
+    } else {
+      let push = (f: number, t: number) => {
+        if(IntegerSegment.lengthBetweenPoints(f, t) > 0) {
+          invertedSegments.push(new IntegerSegment(f, t));
+        }
+      }
+      _.reduce(this._segments, (prev: IntegerSegment | null, s: IntegerSegment) => {
+        if(prev === null) {
+          push(-Infinity, s.from)
+        } else {
+          push(prev.to + 1, s.from - 1)
+        }
+        return s;
+      }, null);
+      push(_.last(this._segments).to + 1, Infinity);
+    }
+    return new IntegerSegmentsSet(invertedSegments, true);
+  }
+
+  intersected(other: IntegerSegmentsSet): IntegerSegmentsSet {
+    let result: IntegerSegment[] = [];
+
+    let currentSegmentIndex = 0;
+    let withSegmentIndex = 0;
+
+    do {
+      let currentSegemet = this.segments[currentSegmentIndex];
+      let withSegment = this.segments[withSegmentIndex];
+      if(currentSegemet.to < withSegment.from) {
+        currentSegmentIndex++;
+        continue;
+      }
+      if(withSegment.to < currentSegemet.from) {
+        withSegmentIndex++;
+        continue;
+      }
+      let segmentsIntersection = currentSegemet.insersect(withSegment);
+      if(segmentsIntersection === undefined) {
+        throw new Error(
+          `Impossible condition, segments ${currentSegemet} and ${withSegment} don't interset`
+        )
+      }
+      result.push(segmentsIntersection);
+    } while(
+      currentSegmentIndex <= this._segments.length &&
+      withSegmentIndex <= other.segments.length
+    )
+
+    return new IntegerSegmentsSet(result, true);
+  }
+
+  sub(other: IntegerSegmentsSet): IntegerSegmentsSet {
+    let inversed = other.inversed();
+    return this.intersected(inversed);
+  }
+
 }
 
 // TODO: move from utils and use generator
@@ -26,63 +164,10 @@ export function toString(s: Segment): string {
  * @returns array of segments remain after cut
  */
 export function cutSegmentWithSegments(inputSegment: Segment, cutSegments: Segment[]): Segment[] {
-
-  if(!isInteger(inputSegment)) {
-    throw new Error('Input segment isn`t integer: ' + toString(inputSegment));
-  }
-
-  if(cutSegments.length === 0) {
-    return [inputSegment];
-  }
-
-  {
-    let badCut = _.find(cutSegments, s => !isInteger(s));
-    if(badCut !== undefined) {
-      throw new Error('Found non-integer cut: ' + toString(badCut));
-    }
-  }
-
-  // we sort and merge out cuts to normalize it
-  cutSegments = _.sortBy(cutSegments, s => s.from);
-  const mergedSortedCuts =_.reduce(cutSegments,
-    ((acc: Segment[], s: Segment) => {
-      if(acc.length === 0) return [s];
-      let last = acc[acc.length - 1];
-      if(s.to <= last.to) return acc;
-      if(s.from <= last.to) {
-        last.to = s.to;
-        return acc;
-      }
-      acc.push(s);
-      return acc;
-    }), []
-  );
-
-  // this is what we get if we cut `mergedSortedCuts` from (-Infinity, Infinity)
-  const holes = mergedSortedCuts.map((cut, i) => {
-    let from = -Infinity;
-    let to = cutSegments[0].from - 1;
-    if(i > 0) {
-      from = mergedSortedCuts[i - 1].to + 1;
-      to = cut.from - 1;
-    }
-    return { from, to };
-  }).concat({
-    from: mergedSortedCuts[mergedSortedCuts.length - 1].to + 1,
-    to: Infinity
-  });
-
-  const holesInsideInputSpan = _(holes).map(h => {
-    let from = Math.max(h.from, inputSegment.from);
-    let to = Math.min(h.to, inputSegment.to);
-    if(from + 1 >= to) { // it is a small hack:
-                         // we want to say here from > to, but
-                         // it doesn't work in case when from and to both Infinity,
-                         // Infinity doesn't change when we add 1
-      return undefined;
-    }
-    return { from, to }
-  }).compact().value();
-
-  return Array.from(holesInsideInputSpan);
+  let setA = new IntegerSegmentsSet([new IntegerSegment(inputSegment.from, inputSegment.to)]);
+  let setB = new IntegerSegmentsSet(cutSegments.map(
+    s => new IntegerSegment(s.from, s.to)
+  ));
+  let setResult = setA.sub(setB);
+  return setResult.segments.map(s => ({ from: s.from, to: s.to }));
 }
