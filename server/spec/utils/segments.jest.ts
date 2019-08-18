@@ -33,7 +33,9 @@ describe('cutSpanWithSpans', function() {
   });
 
   it('should throw error is cut contains float border', function() {
+    expect(cutSpan(0, 10, [[0.1, 5]])).toThrow();
     expect(cutSpan(1, 10, [[0.9, 0.0]])).toThrow();
+    expect(cutSpan(0.5, 10, [[1, 5]])).toThrow();
   });
 
   it('should handle one-point cuts', function() {
@@ -41,6 +43,7 @@ describe('cutSpanWithSpans', function() {
     expect(cutSpan(1, 10, [[1, 1]])).toEqual([[2, 10]]);
     expect(cutSpan(1, 10, [[10, 10]])).toEqual([[1, 9]]);
     expect(cutSpan(1, 10, [[11, 11]])).toEqual([[1, 10]]);
+    expect(cutSpan(1, 15, [[11, 11], [12, 12]])).toEqual([[1, 10], [13, 15]]);
   });
 
   it('should handle infitie span and infinite cuts', function() {
