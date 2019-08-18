@@ -9,7 +9,8 @@ export declare type Segment = {
 }
 
 export function isInteger(s: Segment): boolean {
-  return Number.isInteger(s.from) && Number.isInteger(s.to);
+  return (Number.isInteger(s.from) || !Number.isFinite(s.from)) &&
+         (Number.isInteger(s.to) || !Number.isFinite(s.to))
 }
 
 export function toString(s: Segment): string {
@@ -37,13 +38,13 @@ export function cutSegmentWithSegments(inputSegment: Segment, cutSegments: Segme
   {
     let badCut = _.find(cutSegments, s => !isInteger(s));
     if(badCut !== undefined) {
-      throw new Error('Found not integer cut: ' + toString(badCut));
+      throw new Error('Found non-integer cut: ' + toString(badCut));
     }
   }
 
   // we sort and merge out cuts to normalize it
   cutSegments = _.sortBy(cutSegments, s => s.from);
-  const mergedSortedCuts =_.reduce(cutSegments, 
+  const mergedSortedCuts =_.reduce(cutSegments,
     ((acc: Segment[], s: Segment) => {
       if(acc.length === 0) return [s];
       let last = acc[acc.length - 1];
@@ -71,13 +72,16 @@ export function cutSegmentWithSegments(inputSegment: Segment, cutSegments: Segme
     to: Infinity
   });
 
-  const holesInsideInputSpan = _(holes).map(c => {
-    if(c.to <= inputSegment.from) return undefined;
-    if(inputSegment.to <= c.from) return undefined;
-    return {
-      from: Math.max(c.from, inputSegment.from),
-      to: Math.min(c.to, inputSegment.to),
+  const holesInsideInputSpan = _(holes).map(h => {
+    let from = Math.max(h.from, inputSegment.from);
+    let to = Math.min(h.to, inputSegment.to);
+    if(from + 1 >= to) { // it is a small hack:
+                         // we want to say here from > to, but
+                         // it doesn't work in case when from and to both Infinity,
+                         // Infinity doesn't change when we add 1
+      return undefined;
     }
+    return { from, to }
   }).compact().value();
 
   return Array.from(holesInsideInputSpan);

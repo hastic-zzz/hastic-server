@@ -26,7 +26,7 @@ describe('cutSpanWithSpans', function() {
   });
 
   it('should throw error is cut contains float border', function() {
-    expect(cutSpan(0, 10, [[0.1, 5]])).toThrow();
+    expect(cutSpan(0, 10, [[0.1, 5]])).toThrow()
     expect(cutSpan(1, 10, [[0.9, 0.0]])).toThrow();
     expect(cutSpan(0.5, 10, [[1, 5]])).toThrow();
   });
@@ -95,7 +95,7 @@ describe('cutSpanWithSpans', function() {
     expect(cutSpan(1, 1, [[1, 1]])).toEqual([]);
     expect(cutSpan(1, 1, [[0, 2]])).toEqual([]);
     expect(cutSpan(1, 1, [[0, 1]])).toEqual([]);
-    expect(cutSpan(1, 1, [[1, 0]])).toEqual([]);
+    expect(cutSpan(1, 1, [[1, 2]])).toEqual([]);
   });
 
 });
