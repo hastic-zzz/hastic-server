@@ -54,6 +54,7 @@ describe('IntegerSegmentSet constructor', function() {
     expect(ISS([[5, 10], [7, 20]]).segments).toEqual([IS(5, 20)]);
     expect(ISS([[5, 10], [10, 20]]).segments).toEqual([IS(5, 20)]);
     expect(ISS([[5, 10], [11, 20]]).segments).toEqual([IS(5, 20)]);
+    expect(ISS([[3, 11], [4, 10]]).segments).toEqual([IS(3, 11)]);
   });
 });
 
@@ -149,10 +150,10 @@ describe('cutSpanWithSpans', function() {
     expect(cutSpan(5, 11, cutSpans)).toEqual([[5, 5], [9, 10]]);
     expect(cutSpan(4, 10, cutSpans)).toEqual([[5, 5], [9, 10]]);
     expect(cutSpan(5, 10, cutSpans)).toEqual([[5, 5], [9, 10]]);
-    expect(cutSpan(4, 20, cutSpans)).toEqual([[5, 6], [9, 10]]);
-    expect(cutSpan(4, 21, cutSpans)).toEqual([[5, 6], [8, 10], [21, 21]]);
-    expect(cutSpan(2, 20, cutSpans)).toEqual([[2, 2], [5, 6], [8, 10]]);
-    expect(cutSpan(2, 21, cutSpans)).toEqual([[2, 2], [5, 6], [8, 10], [21, 21]]);
+    expect(cutSpan(4, 20, cutSpans)).toEqual([[5, 5], [9, 10]]);
+    expect(cutSpan(4, 21, cutSpans)).toEqual([[5, 5], [9, 10], [21, 21]]);
+    expect(cutSpan(2, 20, cutSpans)).toEqual([[2, 2], [5, 5], [9, 10]]);
+    expect(cutSpan(2, 21, cutSpans)).toEqual([[2, 2], [5, 5], [9, 10], [21, 21]]);
     expect(cutSpan(3, 11, cutSpans)).toEqual([[5, 5], [9, 10]]);
     expect(cutSpan(3, 20, cutSpans)).toEqual([[5, 5], [9, 10]]);
     expect(cutSpan(4, 7, [[3, 5], [6, 8]])).toEqual([]);
@@ -173,8 +174,8 @@ describe('cutSpanWithSpans', function() {
   });
 
   it('should be ready to get not-sorted cuts', function() {
-    expect(cutSpan(0, 20, [[3, 5], [1, 2]])).toEqual([[0, 1], [2, 3], [5, 20]]);
-    expect(cutSpan(0, 20, [[3, 5], [1, 2], [0, 0]])).toEqual([[1, 3], [5, 20]]);
+    expect(cutSpan(0, 20, [[3, 5], [1, 2]])).toEqual([[0, 0], [6, 20]]);
+    expect(cutSpan(0, 20, [[3, 5], [1, 2], [0, 0]])).toEqual([[6, 20]]);
   });
 
   it('should be ready to get overlayed cuts', function() {

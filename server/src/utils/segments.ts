@@ -81,7 +81,7 @@ export class IntegerSegmentsSet {
     for(let i = 1; i < sortedSegments.length; i++) {
       let currentSegment = sortedSegments[i];
       if(lastTo + 1 >= currentSegment.from) { // because [a, x], [x + 1, b] is [a, b]
-        lastTo = currentSegment.to;
+        lastTo = Math.max(currentSegment.to, lastTo); // we can be inside previous
         continue;
       }
       mergedSegments.push(new IntegerSegment(lastFrom, lastTo));
