@@ -24,6 +24,18 @@ describe('IntegerSegment', function() {
     expect(() => IS(0.1, 0)).toThrow();
     expect(() => IS(1, 5.04)).toThrow();
     expect(() => IS(1, 5)).not.toThrow();
+  });  
+});
+
+describe('IntegerSegment.intersect', function() {
+  it('return undefined if segments don`t intersect', function() {
+    expect(IS(4, 5).insersect(IS(6, 10))).toEqual(undefined);
+    expect(IS(7, 10).insersect(IS(1, 3))).toEqual(undefined);
+  });
+
+  it('return a point when borders intersect', function() {
+    expect(IS(4, 5).insersect(IS(5, 6))).toEqual(IS(5, 5));
+    expect(IS(4, 5).insersect(IS(4, 4))).toEqual(IS(4, 4));
   });
 });
 
@@ -79,6 +91,12 @@ describe('IntegerSegmentSet.intersected', function() {
     expect(setA.intersected(setB).segments).toEqual([]);
     expect(setB.intersected(setA).segments).toEqual([]);
   });
+
+  // it('should intersect two segments', function() {
+  //   let setA = ISS([[2, 5]]);
+  //   let setB = ISS([[1, 4]]);
+  //   expect(setA.intersected(setB)).toEqual(ISS([[2, 4]]));
+  // });
 });
 
 describe('cutSpanWithSpans', function() {
