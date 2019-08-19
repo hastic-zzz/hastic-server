@@ -170,7 +170,7 @@ export class IntegerSegmentsSet {
 // TODO: move from utils and use generator
 /**
  *
- * @param inputSegment a big span which we will cut
+ * @param inputSegment a big segment which we will cut
  * @param cutSegments segments to cut the inputSegment. Segments can overlay.
  *
  * @returns array of segments remain after cut
