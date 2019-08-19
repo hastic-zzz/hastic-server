@@ -3,6 +3,15 @@ import { cutSegmentWithSegments, IntegerSegment, IntegerSegmentsSet } from '../.
 import 'jest';
 
 
+function IS(from: number, to: number) {
+  return new IntegerSegment(from, to);
+}
+
+function ISS(xs: [number, number][]) {
+  return new IntegerSegmentsSet(xs.map(x => IS(x[0], x[1])));
+}
+
+
 function cutSpan(from: number, to: number, cuts: [number, number][]): [number, number][] {
   return cutSegmentWithSegments(
     new IntegerSegment(from, to),
@@ -12,23 +21,36 @@ function cutSpan(from: number, to: number, cuts: [number, number][]): [number, n
 
 describe('IntegerSegment', function() {
   it('should throw an error on float from or to', function() {
-    expect(() => new IntegerSegment(0.1, 0)).toThrow();
-    expect(() => new IntegerSegment(1, 5.04)).toThrow();
-    expect(() => new IntegerSegment(1, 5)).not.toThrow()
+    expect(() => IS(0.1, 0)).toThrow();
+    expect(() => IS(1, 5.04)).toThrow();
+    expect(() => IS(1, 5)).not.toThrow()
   });
 });
 
 describe('IntegerSegmentSet constructor', function() {
   it('can construct from empty segments list', function() {
-    expect(() => new IntegerSegmentsSet([])).not.toThrow();
+    expect(() => ISS([])).not.toThrow();
+  });
+});
+
+describe('IntegerSegmentSet.inversed', function() {
+  it('should return Infinite segment whes set is empty', function() {
+    let setA = ISS([]);
+    expect(setA.inversed()).toEqual(ISS([[-Infinity, Infinity]]));
+  });
+
+  it('should return empty segment whes set is infinite', function() {
+    let setA = ISS([[-Infinity, Infinity]]);
+    expect(setA.inversed()).toEqual(ISS([]));
   });
 });
 
 describe('IntegerSegmentSet.intersected', function() {
   it('should return empty set if one of intersection is empty', function() {
-    let setA = new IntegerSegmentsSet([]);
-    let setB = new IntegerSegmentsSet([new IntegerSegment(1, 5)]);
+    let setA = ISS([]);
+    let setB = ISS([[1, 5]]);
     expect(setA.intersected(setB).segments).toEqual([]);
+    expect(setB.intersected(setA).segments).toEqual([]);
   });
 });
 
