@@ -11,7 +11,6 @@ function ISS(xs: [number, number][]) {
   return new IntegerSegmentsSet(xs.map(x => IS(x[0], x[1])));
 }
 
-
 function cutSpan(from: number, to: number, cuts: [number, number][]): [number, number][] {
   return cutSegmentWithSegments(
     new IntegerSegment(from, to),
