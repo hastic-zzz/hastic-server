@@ -31,6 +31,10 @@ describe('IntegerSegmentSet constructor', function() {
   it('can construct from empty segments list', function() {
     expect(() => ISS([])).not.toThrow();
   });
+
+  it('can sould sort segments', function() {
+    expect(ISS([[10, 15], [5, 8]]).segments).toEqual([IS(5, 8), IS(10, 15)]);
+  });
 });
 
 describe('IntegerSegmentSet.inversed', function() {
@@ -56,7 +60,6 @@ describe('IntegerSegmentSet.inversed', function() {
   it('should inverse infinites', function() {
     expect(ISS([[3, Infinity]]).inversed()).toEqual(ISS([[-Infinity, 2]]));
     expect(ISS([[-Infinity, 3]]).inversed()).toEqual(ISS([[4, Infinity]]));
-    expect(ISS([[3, 10], [15, 20]]).inversed()).toEqual(ISS([[-Infinity, 2], [11, 14] , [21, Infinity]]));
   });
 
 });
