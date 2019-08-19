@@ -8,7 +8,6 @@ export declare type Segment = {
   readonly to: number
 }
 
-
 export class IntegerSegment {
   readonly from: number;
   readonly to: number;
