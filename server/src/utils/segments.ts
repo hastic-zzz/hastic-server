@@ -182,5 +182,4 @@ export function cutSegmentWithSegments(inputSegment: Segment, cutSegments: Segme
   ));
   let setResult = setA.sub(setB);
   return setResult.segments.map(s => ({ from: s.from, to: s.to }));
-  return []
 }
