@@ -75,8 +75,8 @@ export class IntegerSegmentsSet {
       return;
     }
     let sortedSegments = _.sortBy(this._segments, s => s.from);
-    let lastFrom = this._segments[0].from;
-    let lastTo = this._segments[0].to;
+    let lastFrom = sortedSegments[0].from;
+    let lastTo = sortedSegments[0].to;
     let mergedSegments: IntegerSegment[] = [];
     for(let i = 1; i < sortedSegments.length; i++) {
       let currentSegment = sortedSegments[i];

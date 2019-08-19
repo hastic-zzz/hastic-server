@@ -32,8 +32,16 @@ describe('IntegerSegmentSet constructor', function() {
     expect(() => ISS([])).not.toThrow();
   });
 
-  it('can sould sort segments', function() {
+  it('should sort segments', function() {
     expect(ISS([[10, 15], [5, 8]]).segments).toEqual([IS(5, 8), IS(10, 15)]);
+    expect(ISS([[10, 15], [-Infinity, 8]]).segments).toEqual([IS(-Infinity, 8), IS(10, 15)]);
+    expect(ISS([[10, Infinity], [-Infinity, 8]]).segments).toEqual([IS(-Infinity, 8), IS(10, Infinity)]);
+  });
+
+  it('should merge segments', function() {
+    expect(ISS([[5, 10], [7, 20]]).segments).toEqual([IS(5, 20)]);
+    expect(ISS([[5, 10], [10, 20]]).segments).toEqual([IS(5, 20)]);
+    expect(ISS([[5, 10], [11, 20]]).segments).toEqual([IS(5, 20)]);
   });
 });
 
