@@ -142,20 +142,20 @@ describe('cutSpanWithSpans', function() {
     expect(cutSpan(1, 15, [[11, 11], [12, 12]])).toEqual([[1, 10], [13, 15]]);
   });
 
-  it('should find spans in simple non-intersected borders', function() {
+  it('should handle basic cases', function() {
     let cutSpans = [[3, 4], [6, 8], [11, 20]] as [number, number][];
 
     expect(cutSpan(0, 11, cutSpans)).toEqual([[0, 2], [5, 5], [9, 10]]);
-    expect(cutSpan(5, 11, cutSpans)).toEqual([[5, 6], [8, 10]]);
-    expect(cutSpan(4, 10, cutSpans)).toEqual([[5, 6], [8, 10]]);
-    expect(cutSpan(5, 10, cutSpans)).toEqual([[5, 6], [8, 10]]);
-    expect(cutSpan(4, 20, cutSpans)).toEqual([[5, 6], [8, 10]]);
-    expect(cutSpan(4, 21, cutSpans)).toEqual([[5, 6], [8, 10], [20, 21]]);
-    expect(cutSpan(2, 20, cutSpans)).toEqual([[2, 3], [5, 6], [8, 10]]);
-    expect(cutSpan(2, 21, cutSpans)).toEqual([[2, 3], [5, 6], [8, 10], [20, 21]]);
-    expect(cutSpan(3, 11, cutSpans)).toEqual([[5, 6], [8, 10]]);
-    expect(cutSpan(3, 20, cutSpans)).toEqual([[5, 6], [8, 10]]);
-    expect(cutSpan(4, 7, [[3, 5], [6, 8]])).toEqual([[5, 6]]);
+    expect(cutSpan(5, 11, cutSpans)).toEqual([[5, 5], [9, 10]]);
+    expect(cutSpan(4, 10, cutSpans)).toEqual([[5, 5], [9, 10]]);
+    expect(cutSpan(5, 10, cutSpans)).toEqual([[5, 5], [9, 10]]);
+    expect(cutSpan(4, 20, cutSpans)).toEqual([[5, 6], [9, 10]]);
+    expect(cutSpan(4, 21, cutSpans)).toEqual([[5, 6], [8, 10], [21, 21]]);
+    expect(cutSpan(2, 20, cutSpans)).toEqual([[2, 2], [5, 6], [8, 10]]);
+    expect(cutSpan(2, 21, cutSpans)).toEqual([[2, 2], [5, 6], [8, 10], [21, 21]]);
+    expect(cutSpan(3, 11, cutSpans)).toEqual([[5, 5], [9, 10]]);
+    expect(cutSpan(3, 20, cutSpans)).toEqual([[5, 5], [9, 10]]);
+    expect(cutSpan(4, 7, [[3, 5], [6, 8]])).toEqual([]);
   });
 
   it('should handle infitie span and infinite cuts', function() {
