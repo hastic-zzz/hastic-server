@@ -23,7 +23,7 @@ describe('IntegerSegment', function() {
   it('should throw an error on float from or to', function() {
     expect(() => IS(0.1, 0)).toThrow();
     expect(() => IS(1, 5.04)).toThrow();
-    expect(() => IS(1, 5)).not.toThrow()
+    expect(() => IS(1, 5)).not.toThrow();
   });
 });
 
@@ -43,6 +43,22 @@ describe('IntegerSegmentSet.inversed', function() {
     let setA = ISS([[-Infinity, Infinity]]);
     expect(setA.inversed()).toEqual(ISS([]));
   });
+
+  it('should inverse a point', function() {
+    expect(ISS([[4, 4]]).inversed()).toEqual(ISS([[-Infinity, 3], [5, Infinity]]));
+  });
+
+  it('should inverse basic cases', function() {
+    expect(ISS([[3, 10]]).inversed()).toEqual(ISS([[-Infinity, 2], [11, Infinity]]));
+    expect(ISS([[3, 10], [15, 20]]).inversed()).toEqual(ISS([[-Infinity, 2], [11, 14] , [21, Infinity]]));
+  });
+
+  it('should inverse infinites', function() {
+    expect(ISS([[3, Infinity]]).inversed()).toEqual(ISS([[-Infinity, 2]]));
+    expect(ISS([[-Infinity, 3]]).inversed()).toEqual(ISS([[4, Infinity]]));
+    expect(ISS([[3, 10], [15, 20]]).inversed()).toEqual(ISS([[-Infinity, 2], [11, 14] , [21, Infinity]]));
+  });
+
 });
 
 describe('IntegerSegmentSet.intersected', function() {

@@ -108,9 +108,9 @@ export class IntegerSegmentsSet {
       }
       _.reduce(this._segments, (prev: IntegerSegment | null, s: IntegerSegment) => {
         if(prev === null) {
-          push(-Infinity, s.from)
+          push(-Infinity, s.from - 1);
         } else {
-          push(prev.to + 1, s.from - 1)
+          push(prev.to + 1, s.from - 1);
         }
         return s;
       }, null);
