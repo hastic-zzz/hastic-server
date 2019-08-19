@@ -50,9 +50,10 @@ describe('IntegerSegmentSet constructor', function() {
   });
 
   it('should merge segments', function() {
-    expect(ISS([[5, 10], [7, 20]]).segments).toEqual([IS(5, 20)]);
+    expect(ISS([[5, 10], [7, 20]]).segments).toEqual([IS(5, 20)]); // it's because 7 <= 10
     expect(ISS([[5, 10], [10, 20]]).segments).toEqual([IS(5, 20)]);
-    expect(ISS([[5, 10], [11, 20]]).segments).toEqual([IS(5, 20)]);
+    expect(ISS([[5, 10], [11, 20]]).segments).toEqual([IS(5, 20)]); // it's because [..., 10], [11, ...], 
+                                                                    // there is nothing between 10 and 11
     expect(ISS([[3, 11], [4, 10]]).segments).toEqual([IS(3, 11)]);
   });
 });
@@ -88,14 +89,14 @@ describe('IntegerSegmentSet.intersected', function() {
   it('should return empty set if one of intersection is empty', function() {
     let setA = ISS([]);
     let setB = ISS([[1, 5]]);
-    expect(setA.intersected(setB).segments).toEqual([]);
-    expect(setB.intersected(setA).segments).toEqual([]);
+    expect(setA.intersect(setB).segments).toEqual([]);
+    expect(setB.intersect(setA).segments).toEqual([]);
   });
 
   it('should intersect two segments', function() {
     let setA = ISS([[2, 5]]);
     let setB = ISS([[1, 4]]);
-    expect(setA.intersected(setB)).toEqual(ISS([[2, 4]]));
+    expect(setA.intersect(setB)).toEqual(ISS([[2, 4]]));
   });
 
   it('should intersect basic cases', function() {
@@ -104,11 +105,11 @@ describe('IntegerSegmentSet.intersected', function() {
     let setC = ISS([[2, 5], [6, 10]]);
     let setD = ISS([[4, 4], [10, 10]]);
     let setE = ISS([[4, 4], [10, 10], [12, 15]]);
-    expect(setA.intersected(setB)).toEqual(ISS([[2, 5], [6, 9]]));
-    expect(setA.intersected(setC)).toEqual(ISS([[2, 5], [6, 10]]));
-    expect(setA.intersected(setD)).toEqual(ISS([[4, 4], [10, 10]]));
-    expect(setA.intersected(setE)).toEqual(ISS([[4, 4], [10, 10]]));
-    expect(setE.intersected(setA)).toEqual(ISS([[4, 4], [10, 10]]));
+    expect(setA.intersect(setB)).toEqual(ISS([[2, 5], [6, 9]]));
+    expect(setA.intersect(setC)).toEqual(ISS([[2, 5], [6, 10]]));
+    expect(setA.intersect(setD)).toEqual(ISS([[4, 4], [10, 10]]));
+    expect(setA.intersect(setE)).toEqual(ISS([[4, 4], [10, 10]]));
+    expect(setE.intersect(setA)).toEqual(ISS([[4, 4], [10, 10]]));
   });
   
 });

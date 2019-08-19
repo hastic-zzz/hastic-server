@@ -118,7 +118,7 @@ export class IntegerSegmentsSet {
     return new IntegerSegmentsSet(invertedSegments, true);
   }
 
-  intersected(other: IntegerSegmentsSet): IntegerSegmentsSet {
+  intersect(other: IntegerSegmentsSet): IntegerSegmentsSet {
     let result: IntegerSegment[] = [];
 
     if(this._segments.length === 0 || other.segments.length === 0) {
@@ -162,7 +162,7 @@ export class IntegerSegmentsSet {
 
   sub(other: IntegerSegmentsSet): IntegerSegmentsSet {
     let inversed = other.inversed();
-    return this.intersected(inversed);
+    return this.intersect(inversed);
   }
 
 }
