@@ -92,11 +92,25 @@ describe('IntegerSegmentSet.intersected', function() {
     expect(setB.intersected(setA).segments).toEqual([]);
   });
 
-  // it('should intersect two segments', function() {
-  //   let setA = ISS([[2, 5]]);
-  //   let setB = ISS([[1, 4]]);
-  //   expect(setA.intersected(setB)).toEqual(ISS([[2, 4]]));
-  // });
+  it('should intersect two segments', function() {
+    let setA = ISS([[2, 5]]);
+    let setB = ISS([[1, 4]]);
+    expect(setA.intersected(setB)).toEqual(ISS([[2, 4]]));
+  });
+
+  it('should intersect basic cases', function() {
+    let setA = ISS([[2, 5], [6, 10]]);
+    let setB = ISS([[1, 9]]);
+    let setC = ISS([[2, 5], [6, 10]]);
+    let setD = ISS([[4, 4], [10, 10]]);
+    let setE = ISS([[4, 4], [10, 10], [12, 15]]);
+    expect(setA.intersected(setB)).toEqual(ISS([[2, 5], [6, 9]]));
+    expect(setA.intersected(setC)).toEqual(ISS([[2, 5], [6, 10]]));
+    expect(setA.intersected(setD)).toEqual(ISS([[4, 4], [10, 10]]));
+    expect(setA.intersected(setE)).toEqual(ISS([[4, 4], [10, 10]]));
+    expect(setE.intersected(setA)).toEqual(ISS([[4, 4], [10, 10]]));
+  });
+  
 });
 
 describe('cutSpanWithSpans', function() {

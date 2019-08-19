@@ -131,7 +131,7 @@ export class IntegerSegmentsSet {
 
     do {
       let currentSegemet = this.segments[currentSegmentIndex];
-      let withSegment = this.segments[withSegmentIndex];
+      let withSegment = other.segments[withSegmentIndex];
       if(currentSegemet.to < withSegment.from) {
         currentSegmentIndex++;
         continue;
@@ -147,6 +147,12 @@ export class IntegerSegmentsSet {
         )
       }
       result.push(segmentsIntersection);
+
+      if(currentSegemet.to < withSegment.to) {
+        currentSegmentIndex++;
+      } else {
+        withSegmentIndex++;
+      }
     } while (
       currentSegmentIndex < this._segments.length &&
       withSegmentIndex < other.segments.length
