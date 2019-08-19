@@ -14,10 +14,10 @@ export class IntegerSegment {
   readonly to: number;
 
   constructor(from: number, to: number) {
-    if((Number.isInteger(from) || !Number.isFinite(from))) {
+    if(!(Number.isInteger(from) || !Number.isFinite(from))) {
       throw new Error(`From should be an Integer or Infinity, but got ${from}`);
     }
-    if((Number.isInteger(to) || !Number.isFinite(to))) {
+    if(!(Number.isInteger(to) || !Number.isFinite(to))) {
       throw new Error(`To should be an Integer or Infinity, but got ${from}`);
     }
 
@@ -71,12 +71,15 @@ export class IntegerSegmentsSet {
   }
 
   private _normalize() {
+    if(this._segments.length === 0) {
+      return;
+    }
     let sortedSegments = _.sortBy(this._segments, s => s.from);
     let lastFrom = this._segments[0].from;
     let lastTo = this._segments[0].to;
     let mergedSegments: IntegerSegment[] = [];
     for(let i = 1; i < sortedSegments.length; i++) {
-      let currentSegment = mergedSegments[i];
+      let currentSegment = sortedSegments[i];
       if(lastTo + 1 >= currentSegment.from) { // because [a, x], [x + 1, b] is [a, b]
         lastTo = currentSegment.to;
         continue;
@@ -89,7 +92,7 @@ export class IntegerSegmentsSet {
     this._segments = mergedSegments;
   }
 
-  get segments(): readonly IntegerSegment[] {
+  get segments(): IntegerSegment[] {
     return this._segments;
   }
 
@@ -119,6 +122,10 @@ export class IntegerSegmentsSet {
   intersected(other: IntegerSegmentsSet): IntegerSegmentsSet {
     let result: IntegerSegment[] = [];
 
+    if(this._segments.length === 0 || other.segments.length === 0) {
+      return new IntegerSegmentsSet([], true);
+    }
+
     let currentSegmentIndex = 0;
     let withSegmentIndex = 0;
 
@@ -140,9 +147,9 @@ export class IntegerSegmentsSet {
         )
       }
       result.push(segmentsIntersection);
-    } while(
-      currentSegmentIndex <= this._segments.length &&
-      withSegmentIndex <= other.segments.length
+    } while (
+      currentSegmentIndex < this._segments.length &&
+      withSegmentIndex < other.segments.length
     )
 
     return new IntegerSegmentsSet(result, true);
@@ -170,4 +177,5 @@ export function cutSegmentWithSegments(inputSegment: Segment, cutSegments: Segme
   ));
   let setResult = setA.sub(setB);
   return setResult.segments.map(s => ({ from: s.from, to: s.to }));
+  return []
 }

@@ -1,0 +1,441 @@
+
+{
+  "header": {
+    "event": "Allocation failed - JavaScript heap out of memory",
+    "trigger": "FatalError",
+    "filename": "report.20190819.031310.5467.0.001.json",
+    "dumpEventTime": "2019-08-19T03:13:10Z",
+    "dumpEventTimeStamp": "1566173590876",
+    "processId": 5467,
+    "cwd": "/mnt/c/Projects/hastic-server/server",
+    "commandLine": [
+      "/usr/bin/node",
+      "/mnt/c/Projects/hastic-server/server/node_modules/jest-worker/build/child.js"
+    ],
+    "nodejsVersion": "v11.15.0",
+    "glibcVersionRuntime": "2.23",
+    "glibcVersionCompiler": "2.12",
+    "wordSize": 64,
+    "arch": "x64",
+    "platform": "linux",
+    "componentVersions": {
+      "node": "11.15.0",
+      "v8": "7.0.276.38-node.19",
+      "uv": "1.27.0",
+      "zlib": "1.2.11",
+      "brotli": "1.0.7",
+      "ares": "1.15.0",
+      "modules": "67",
+      "nghttp2": "1.37.0",
+      "napi": "4",
+      "llhttp": "1.1.1",
+      "http_parser": "2.8.0",
+      "openssl": "1.1.1b",
+      "cldr": "34.0",
+      "icu": "63.1",
+      "tz": "2018e",
+      "unicode": "11.0"
+    },
+    "release": {
+      "name": "node",
+      "headersUrl": "https://nodejs.org/download/release/v11.15.0/node-v11.15.0-headers.tar.gz",
+      "sourceUrl": "https://nodejs.org/download/release/v11.15.0/node-v11.15.0.tar.gz"
+    },
+    "osName": "Linux",
+    "osRelease": "4.4.0-18362-Microsoft",
+    "osVersion": "#1-Microsoft Mon Mar 18 12:02:00 PST 2019",
+    "osMachine": "x86_64",
+    "host": "DESKTOP-8LIHMRG"
+  },
+  "javascriptStack": {
+    "message": "No stack.",
+    "stack": [
+      "Unavailable."
+    ]
+  },
+  "nativeStack": [
+    {
+      "pc": "0x0000000000a702fd",
+      "symbol": "report::TriggerNodeReport(v8::Isolate*, node::Environment*, char const*, char const*, std::string const&, v8::Local<v8::String>) [/usr/bin/node]"
+    },
+    {
+      "pc": "0x000000000095ccb3",
+      "symbol": "node::OnFatalError(char const*, char const*) [/usr/bin/node]"
+    },
+    {
+      "pc": "0x0000000000b3dbde",
+      "symbol": "v8::Utils::ReportOOMFailure(v8::internal::Isolate*, char const*, bool) [/usr/bin/node]"
+    },
+    {
+      "pc": "0x0000000000b3de14",
+      "symbol": "v8::internal::V8::FatalProcessOutOfMemory(v8::internal::Isolate*, char const*, bool) [/usr/bin/node]"
+    },
+    {
+      "pc": "0x0000000000f3ce52",
+      "symbol": " [/usr/bin/node]"
+    },
+    {
+      "pc": "0x0000000000f3cf58",
+      "symbol": "v8::internal::Heap::CheckIneffectiveMarkCompact(unsigned long, double) [/usr/bin/node]"
+    },
+    {
+      "pc": "0x0000000000f49678",
+      "symbol": "v8::internal::Heap::PerformGarbageCollection(v8::internal::GarbageCollector, v8::GCCallbackFlags) [/usr/bin/node]"
+    },
+    {
+      "pc": "0x0000000000f4a18b",
+      "symbol": "v8::internal::Heap::CollectGarbage(v8::internal::AllocationSpace, v8::internal::GarbageCollectionReason, v8::GCCallbackFlags) [/usr/bin/node]"
+    },
+    {
+      "pc": "0x0000000000f4cec1",
+      "symbol": "v8::internal::Heap::AllocateRawWithRetryOrFail(int, v8::internal::AllocationSpace, v8::internal::AllocationAlignment) [/usr/bin/node]"
+    },
+    {
+      "pc": "0x0000000000f170f4",
+      "symbol": "v8::internal::Factory::NewFillerObject(int, bool, v8::internal::AllocationSpace) [/usr/bin/node]"
+    },
+    {
+      "pc": "0x00000000011cd3fe",
+      "symbol": "v8::internal::Runtime_AllocateInNewSpace(int, v8::internal::Object**, v8::internal::Isolate*) [/usr/bin/node]"
+    },
+    {
+      "pc": "0x00001810350cfc5d",
+      "symbol": ""
+    }
+  ],
+  "javascriptHeap": {
+    "totalMemory": 1508188160,
+    "totalCommittedMemory": 1499828816,
+    "usedMemory": 1472743992,
+    "availableMemory": 24965376,
+    "memoryLimit": 1526909922,
+    "heapSpaces": {
+      "read_only_space": {
+        "memorySize": 524288,
+        "committedMemory": 42224,
+        "capacity": 515584,
+        "used": 33520,
+        "available": 482064
+      },
+      "new_space": {
+        "memorySize": 10485760,
+        "committedMemory": 3988440,
+        "capacity": 5155840,
+        "used": 1332768,
+        "available": 3823072
+      },
+      "old_space": {
+        "memorySize": 1208160256,
+        "committedMemory": 1207586088,
+        "capacity": 1187561408,
+        "used": 1185430960,
+        "available": 2130448
+      },
+      "code_space": {
+        "memorySize": 1572864,
+        "committedMemory": 1117536,
+        "capacity": 925888,
+        "used": 925888,
+        "available": 0
+      },
+      "map_space": {
+        "memorySize": 2633728,
+        "committedMemory": 2283264,
+        "capacity": 1584720,
+        "used": 1584720,
+        "available": 0
+      },
+      "large_object_space": {
+        "memorySize": 284811264,
+        "committedMemory": 284811264,
+        "capacity": 301965928,
+        "used": 283436136,
+        "available": 18529792
+      },
+      "new_large_object_space": {
+        "memorySize": 0,
+        "committedMemory": 0,
+        "capacity": 0,
+        "used": 0,
+        "available": 0
+      }
+    }
+  },
+  "resourceUsage": {
+    "userCpuSeconds": 249.297,
+    "kernelCpuSeconds": 22.8438,
+    "cpuConsumptionPercent": 140.279,
+    "maxRss": 2012405760,
+    "pageFaults": {
+      "IORequired": 0,
+      "IONotRequired": 876032
+    },
+    "fsActivity": {
+      "reads": 0,
+      "writes": 0
+    }
+  },
+  "uvthreadResourceUsage": {
+    "userCpuSeconds": 165.516,
+    "kernelCpuSeconds": 9.40625,
+    "cpuConsumptionPercent": 90.1659,
+    "fsActivity": {
+      "reads": 0,
+      "writes": 0
+    }
+  },
+  "libuv": [
+  ],
+  "environmentVariables": {
+    "LC_WINDOWS10": "0",
+    "npm_package_devDependencies_zeromq": "^4.6.0",
+    "npm_config_cache_lock_stale": "60000",
+    "npm_config_ham_it_up": "",
+    "npm_package_devDependencies_babel_core": "^6.26.3",
+    "npm_config_legacy_bundling": "",
+    "npm_config_sign_git_tag": "",
+    "USER": "alex",
+    "npm_package_devDependencies_jest": "^23.1.1",
+    "npm_package_devDependencies_webpack_cli": "^3.0.8",
+    "npm_config_user_agent": "npm/6.7.0 node/v11.15.0 linux x64",
+    "npm_config_always_auth": "",
+    "npm_package_bugs_url": "https://github.com/hastic/hastic-server/issues",
+    "npm_config_bin_links": "true",
+    "npm_config_key": "",
+    "npm_package_devDependencies_file_loader": "^1.1.11",
+    "npm_package_devDependencies_koa_bodyparser": "^4.2.0",
+    "npm_package_devDependencies_lodash": "^4.17.10",
+    "npm_package_devDependencies_nodemon": "^1.17.5",
+    "npm_config_allow_same_version": "",
+    "npm_config_description": "true",
+    "npm_config_fetch_retries": "2",
+    "npm_config_heading": "npm",
+    "npm_config_if_present": "",
+    "npm_config_init_version": "1.0.0",
+    "npm_config_user": "",
+    "npm_node_execpath": "/usr/bin/node",
+    "SHLVL": "2",
+    "npm_package_devDependencies_babel_preset_es2015": "^6.24.1",
+    "npm_config_prefer_online": "",
+    "npm_config_noproxy": "",
+    "HOME": "/home/alex",
+    "OLDPWD": "/home/alex/Projects/hastic-server",
+    "npm_config_force": "",
+    "npm_config_only": "",
+    "npm_config_read_only": "",
+    "npm_config_cache_min": "10",
+    "npm_config_init_license": "ISC",
+    "npm_config_editor": "vi",
+    "npm_config_rollback": "true",
+    "npm_config_tag_version_prefix": "v",
+    "npm_package_devDependencies__types_koa": "^2.0.46",
+    "npm_package_devDependencies_node_loader": "^0.6.0",
+    "npm_config_cache_max": "Infinity",
+    "npm_config_timing": "",
+    "npm_config_userconfig": "/home/alex/.npmrc",
+    "npm_config_engine_strict": "",
+    "npm_config_init_author_name": "",
+    "npm_config_init_author_url": "",
+    "npm_config_preid": "",
+    "npm_config_tmp": "/tmp",
+    "WSL_DISTRO_NAME": "Ubuntu",
+    "npm_package_description": "REST server for managing data for analytics",
+    "npm_package_devDependencies_babel_loader": "^7.1.4",
+    "npm_package_devDependencies_nedb": "^1.8.0",
+    "npm_package_devDependencies_typescript": "^2.8.3",
+    "npm_config_depth": "Infinity",
+    "npm_config_package_lock_only": "",
+    "npm_config_save_dev": "",
+    "npm_config_usage": "",
+    "npm_package_homepage": "https://github.com/hastic/hastic-server#readme",
+    "npm_package_readmeFilename": "README.md",
+    "npm_config_metrics_registry": "https://registry.npmjs.org/",
+    "npm_config_cafile": "",
+    "npm_config_otp": "",
+    "npm_config_package_lock": "true",
+    "npm_config_progress": "true",
+    "npm_config_https_proxy": "",
+    "npm_config_save_prod": "",
+    "npm_package_scripts_dev": "NODE_ENV=development node build/dev-server.js",
+    "npm_package_scripts_build_prod": "npm rebuild zeromq && webpack --config build/webpack.prod.conf.js",
+    "npm_package_devDependencies__types_zeromq": "^4.6.0",
+    "npm_package_devDependencies_babel_jest": "^23.4.2",
+    "npm_package_devDependencies_ts_loader": "^4.4.1",
+    "npm_config_audit": "true",
+    "npm_config_cidr": "",
+    "npm_config_onload_script": "",
+    "npm_config_sso_type": "oauth",
+    "LOGNAME": "alex",
+    "npm_config_rebuild_bundle": "true",
+    "npm_config_save_bundle": "",
+    "npm_config_shell": "/bin/bash",
+    "NAME": "DESKTOP-8LIHMRG",
+    "WINDOWS10": "0",
+    "_": "/usr/bin/npm",
+    "npm_package_devDependencies__types_jest": "^23.1.1",
+    "npm_package_devDependencies_ts_jest": "^23.1.1",
+    "npm_config_dry_run": "",
+    "npm_config_prefix": "/usr",
+    "npm_config_scope": "",
+    "npm_config_browser": "",
+    "npm_config_cache_lock_wait": "10000",
+    "npm_config_ignore_prepublish": "",
+    "npm_config_registry": "https://registry.npmjs.org/",
+    "npm_config_save_optional": "",
+    "npm_config_searchopts": "",
+    "npm_config_versions": "",
+    "TERM": "xterm-256color",
+    "npm_package_devDependencies__types_koa_bodyparser": "^4.2.0",
+    "npm_package_devDependencies__types_lodash": "^4.14.116",
+    "npm_config_cache": "/home/alex/.npm",
+    "npm_config_proxy": "",
+    "npm_config_send_metrics": "",
+    "npm_package_scripts_start": "node dist/server.js",
+    "npm_config_global_style": "",
+    "npm_config_ignore_scripts": "",
+    "npm_config_version": "",
+    "npm_package_devDependencies_url": "^0.11.0",
+    "npm_config_local_address": "",
+    "npm_config_viewer": "man",
+    "npm_config_node_gyp": "/usr/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js",
+    "PATH": "/usr/lib/node_modules/npm/node_modules/npm-lifecycle/node-gyp-bin:/mnt/c/Projects/hastic-server/server/node_modules/.bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/mnt/c/Users/gmpot/Documents/ConEmu/ConEmu/Scripts:/mnt/c/Users/gmpot/Documents/ConEmu:/mnt/c/Users/gmpot/Documents/ConEmu/ConEmu:/mnt/c/ProgramData/Oracle/Java/javapath:/mnt/c/Program Files (x86)/Intel/iCLS Client/:/mnt/c/Program Files/Intel/iCLS Client/:/mnt/c/Windows/system32:/mnt/c/Windows:/mnt/c/Windows/System32/Wbem:/mnt/c/Windows/System32/WindowsPowerShell/v1.0/:/mnt/c/Program Files (x86)/Intel/Intel(R) Management Engine Components/DAL:/mnt/c/Program Files/Intel/Intel(R) Management Engine Components/DAL:/mnt/c/Program Files (x86)/Intel/Intel(R) Management Engine Components/IPT:/mnt/c/Program Files/Intel/Intel(R) Management Engine Components/IPT:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/Program Files/TortoiseHg/:/mnt/c/Program Files/Microsoft SQL Server/130/Tools/Binn/:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/Program Files/nodejs/:/mnt/c/Program Files/Microsoft SQL Server/Client SDK/ODBC/130/Tools/Binn/:/mnt/c/Program Files (x86)/Microsoft SQL Server/140/Tools/Binn/:/mnt/c/Program Files/Microsoft SQL Server/140/Tools/Binn/:/mnt/c/Program Files/Microsoft SQL Server/140/DTS/Binn/:/mnt/c/Program Files (x86)/Microsoft SQL Server/Client SDK/ODBC/130/Tools/Binn/:/mnt/c/Program Files (x86)/Microsoft SQL Server/140/DTS/Binn/:/mnt/c/Program Files (x86)/Microsoft SQL Server/140/Tools/Binn/ManagementStudio/:/mnt/c/Program Files/PuTTY/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/Microsoft VS Code/bin:/mnt/c/Program Files/Intel/WiFi/bin/:/mnt/c/Program Files/Common Files/Intel/WirelessCommon/:/mnt/c/Users/gmpot/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/gmpot/AppData/Roaming/npm:/mnt/c/Program Files/Microsoft VS Code/bin:/mnt/c/Users/gmpot/AppData/Local/Programs/Python/Python36-32:/snap/bin:/home/alex/.gem/ruby/2.3.0/bin",
+    "npm_package_name": "hastic-server",
+    "npm_package_repository_type": "git",
+    "npm_config_audit_level": "low",
+    "npm_config_prefer_offline": "",
+    "NODE": "/usr/bin/node",
+    "npm_package_devDependencies_babel_polyfill": "^6.26.0",
+    "npm_config_color": "true",
+    "npm_config_sign_git_commit": "",
+    "npm_package_devDependencies_koa_router": "^7.0.31",
+    "npm_config_fetch_retry_mintimeout": "10000",
+    "npm_config_maxsockets": "50",
+    "npm_config_offline": "",
+    "npm_config_sso_poll_frequency": "500",
+    "LANG": "en_US.UTF-8",
+    "npm_package_devDependencies_webpack": "^4.12.0",
+    "npm_config_umask": "0000",
+    "npm_config_fetch_retry_maxtimeout": "60000",
+    "npm_config_loglevel": "notice",
+    "npm_config_logs_max": "10",
+    "npm_config_message": "%s",
+    "npm_lifecycle_script": "jest --config jest.config.js",
+    "npm_package_scripts_test": "jest --config jest.config.js",
+    "npm_package_devDependencies__types_nedb": "^1.8.0",
+    "npm_config_ca": "",
+    "npm_config_cert": "",
+    "npm_config_global": "",
+    "npm_config_link": "",
+    "SHELL": "/bin/bash",
+    "GOPATH": "/home/alex/Projects/go",
+    "npm_package_version": "0.3.6-beta",
+    "npm_package_repository_url": "git+https://github.com/hastic/hastic-server.git",
+    "npm_config_access": "",
+    "npm_config_also": "",
+    "npm_config_save": "true",
+    "npm_config_unicode": "true",
+    "npm_lifecycle_event": "test",
+    "npm_package_scripts_build": "npm run build-prod && webpack --config build/webpack.614.prod.conf.js",
+    "npm_config_argv": "{\"remain\":[],\"cooked\":[\"run\",\"test\"],\"original\":[\"run\",\"test\"]}",
+    "npm_config_long": "",
+    "npm_config_production": "",
+    "npm_config_searchlimit": "20",
+    "npm_config_unsafe_perm": "true",
+    "npm_config_update_notifier": "true",
+    "npm_config_auth_type": "legacy",
+    "npm_config_node_version": "11.15.0",
+    "npm_config_tag": "latest",
+    "npm_config_git_tag_version": "true",
+    "npm_config_commit_hooks": "true",
+    "npm_config_script_shell": "",
+    "npm_config_shrinkwrap": "true",
+    "npm_package_license": "Apache-2.0",
+    "npm_config_fetch_retry_factor": "10",
+    "npm_config_save_exact": "",
+    "npm_config_strict_ssl": "true",
+    "npm_config_dev": "",
+    "npm_config_globalconfig": "/usr/etc/npmrc",
+    "npm_config_init_module": "/home/alex/.npm-init.js",
+    "npm_config_parseable": "",
+    "PWD": "/home/alex/Projects/hastic-server/server",
+    "npm_package_devDependencies_es6_promise": "^4.2.4",
+    "npm_config_globalignorefile": "/usr/etc/npmignore",
+    "npm_execpath": "/usr/lib/node_modules/npm/bin/npm-cli.js",
+    "XDG_DATA_DIRS": "/usr/local/share:/usr/share:/var/lib/snapd/desktop",
+    "npm_package_author_name": "CorpGlory Inc.",
+    "npm_package_devDependencies_axios": "^0.18.0",
+    "npm_config_cache_lock_retries": "10",
+    "npm_config_searchstaleness": "900",
+    "npm_package_devDependencies_babel_preset_env": "^1.7.0",
+    "npm_package_devDependencies_koa": "^2.0.46",
+    "npm_config_node_options": "",
+    "npm_config_save_prefix": "^",
+    "npm_config_scripts_prepend_node_path": "warn-only",
+    "npm_package_devDependencies_grafana_datasource_kit": "0.1.17",
+    "npm_config_group": "1000",
+    "npm_config_init_author_email": "",
+    "npm_config_searchexclude": "",
+    "HOSTTYPE": "x86_64",
+    "npm_package_devDependencies__types_koa_router": "^7.0.31",
+    "npm_config_git": "git",
+    "npm_config_optional": "true",
+    "WSLENV": "",
+    "npm_package_devDependencies_event_stream": "3.3.4",
+    "npm_config_json": "",
+    "INIT_CWD": "/mnt/c/Projects/hastic-server/server",
+    "NODE_ENV": "test",
+    "JEST_WORKER_ID": "1"
+  },
+  "userLimits": {
+    "core_file_size_blocks": {
+      "soft": 0,
+      "hard": "unlimited"
+    },
+    "data_seg_size_kbytes": {
+      "soft": "unlimited",
+      "hard": "unlimited"
+    },
+    "file_size_blocks": {
+      "soft": "unlimited",
+      "hard": "unlimited"
+    },
+    "max_locked_memory_bytes": {
+      "soft": 65536,
+      "hard": 65536
+    },
+    "max_memory_size_kbytes": {
+      "soft": "unlimited",
+      "hard": "unlimited"
+    },
+    "open_files": {
+      "soft": 65536,
+      "hard": 65536
+    },
+    "stack_size_bytes": {
+      "soft": 8388608,
+      "hard": 8388608
+    },
+    "cpu_time_seconds": {
+      "soft": "unlimited",
+      "hard": "unlimited"
+    },
+    "max_user_processes": {
+      "soft": 7823,
+      "hard": 7823
+    },
+    "virtual_memory_kbytes": {
+      "soft": "unlimited",
+      "hard": "unlimited"
+    }
+  },
+  "sharedObjects": [
+    "/lib/x86_64-linux-gnu/libdl.so.2",
+    "/lib/x86_64-linux-gnu/librt.so.1",
+    "/usr/lib/x86_64-linux-gnu/libstdc++.so.6",
+    "/lib/x86_64-linux-gnu/libm.so.6",
+    "/lib/x86_64-linux-gnu/libgcc_s.so.1",
+    "/lib/x86_64-linux-gnu/libpthread.so.0",
+    "/lib/x86_64-linux-gnu/libc.so.6",
+    "/lib64/ld-linux-x86-64.so.2"
+  ]
+}
