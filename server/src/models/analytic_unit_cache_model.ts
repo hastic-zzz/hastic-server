@@ -52,12 +52,6 @@ export class AnalyticUnitCache {
   public getTimeStep(): number {
     return this.data.timeStep;
   }
-
-  public isCacheOutdated(analyticUnit: AnalyticUnit) {
-    return !_.every(
-      _.keys(analyticUnit.analyticProps).map(k => _.isEqual(analyticUnit.analyticProps[k], this.data[k]))
-    );
-  }
 }
 
 export async function findById(id: AnalyticUnitId): Promise<AnalyticUnitCache> {
