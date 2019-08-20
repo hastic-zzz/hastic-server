@@ -56,6 +56,7 @@ async function createUnit(ctx: Router.IRouterContext) {
 }
 
 async function updateUnit(ctx: Router.IRouterContext) {
+  console.log('update unit');
   const analyticUnitObj = ctx.request.body as AnalyticUnit.AnalyticUnit;
   if(analyticUnitObj.id === undefined) {
     throw new Error('Cannot update undefined id');

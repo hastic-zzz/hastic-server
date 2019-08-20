@@ -644,7 +644,7 @@ export async function getHSR(
   hsr: TableTimeSeries,
   lowerBound?: TableTimeSeries,
   upperBound?: TableTimeSeries
-}> {
+} | undefined> {
   try {
     const grafanaUrl = getGrafanaUrl(analyticUnit.grafanaUrl);
     const data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
@@ -657,7 +657,11 @@ export async function getHSR(
     }
 
     let cache = await AnalyticUnitCache.findById(analyticUnit.id);
+
     if(cache === null || cache.isCacheOutdated(analyticUnit)) {
+      if(analyticUnit.status === AnalyticUnit.AnalyticUnitStatus.LEARNING) {
+        return; //because we wait end of learning
+      }
       await runLearning(analyticUnit.id, from, to);
       cache = await AnalyticUnitCache.findById(analyticUnit.id);
     }
