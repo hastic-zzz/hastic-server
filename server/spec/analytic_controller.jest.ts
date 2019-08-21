@@ -139,7 +139,7 @@ describe('onDetect', () => {
 });
 
 describe('getHSR', function() {
-  it('should return nothink if unit state is LEARNING', async () => {
+  it('should return nothing if unit state is LEARNING', async () => {
     let unitObj = _.clone(DEFAULT_ANALYTIC_UNIT_OBJECT);
     unitObj.detectorType = 'anomaly';
     const analyticUnitId = await addTestUnitToDB(unitObj);
