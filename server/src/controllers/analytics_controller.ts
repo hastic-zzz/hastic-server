@@ -660,6 +660,8 @@ export async function getHSR(
     let cache = await AnalyticUnitCache.findById(analyticUnit.id);
 
     const inLearningState = analyticUnit.status === AnalyticUnit.AnalyticUnitStatus.LEARNING;
+
+    //cache.data === null when learning started but not completed yet or first learning was failed
     if(cache === null || cache.data === null || inLearningState) {
         return; // because we can process data only after learning
         //TODO: send warning: can't show HSR before learning

@@ -19,7 +19,7 @@ import { HASTIC_API_KEY } from '../src/config';
 
 import * as _ from 'lodash';
 
-const analyticUnitObj = {
+const DEFAULT_ANALYTIC_UNIT_OBJECT = {
   name: "test",
   grafanaUrl: "http://127.0.0.1:3000",
   panelId: "ZLc0KfNZk/2",
@@ -87,9 +87,9 @@ describe('Check detection range', function() {
     const to = 1500000000001;
     const expectedFrom = to - WINDOW_SIZE * TIME_STEP * 2;
 
-    const id = await addTestUnitToDB(analyticUnitObj);
+    const id = await addTestUnitToDB(DEFAULT_ANALYTIC_UNIT_OBJECT);
     await runDetect(id, from, to);
-    expect(queryByMetric).toBeCalledWith(analyticUnitObj.metric, undefined, expectedFrom, to, HASTIC_API_KEY);
+    expect(queryByMetric).toBeCalledWith(DEFAULT_ANALYTIC_UNIT_OBJECT.metric, undefined, expectedFrom, to, HASTIC_API_KEY);
   });
 });
 
@@ -140,7 +140,7 @@ describe('onDetect', () => {
 
 describe('getHSR', function() {
   it('should return nothink if unit state is LEARNING', async () => {
-    let unitObj = _.clone(analyticUnitObj);
+    let unitObj = _.clone(DEFAULT_ANALYTIC_UNIT_OBJECT);
     unitObj.detectorType = 'anomaly';
     const analyticUnitId = await addTestUnitToDB(unitObj);
     await AnalyticUnitCache.remove(analyticUnitId);
