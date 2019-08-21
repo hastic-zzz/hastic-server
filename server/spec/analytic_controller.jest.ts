@@ -4,7 +4,7 @@ jest.mock('grafana-datasource-kit', () => (
   {
     ...(jest.requireActual('grafana-datasource-kit')),
     queryByMetric: jest.fn((metric, url, from, to, apiKey) => {
-      return {values:[], columns:[]}
+      return { values:[], columns:[] }
     })
   }
 ));
@@ -18,6 +18,7 @@ import { buildSegments, clearSegmentsDB, convertSegmentsToTimeRanges } from './u
 import { HASTIC_API_KEY } from '../src/config';
 
 import * as _ from 'lodash';
+
 
 const DEFAULT_ANALYTIC_UNIT_OBJECT = {
   name: "test",
