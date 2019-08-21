@@ -4,7 +4,7 @@ jest.mock('grafana-datasource-kit', () => (
   {
     ...(jest.requireActual('grafana-datasource-kit')),
     queryByMetric: jest.fn((metric, url, from, to, apiKey) => {
-      return {values:[], columns:[]}
+      return { values:[], columns:[] }
     })
   }
 ));
