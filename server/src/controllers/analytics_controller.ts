@@ -640,15 +640,12 @@ export async function getHSR(
   analyticUnit: AnalyticUnit.AnalyticUnit,
   from: number,
   to: number
-): Promise<{
-  hsr: TableTimeSeries,
-  lowerBound?: TableTimeSeries,
-  upperBound?: TableTimeSeries
-} | undefined> {
+): Promise< HSRResult | undefined> {
   try {
-
+    let resultSeries: HSRResult = {
+      hsr: null
+    }
     const grafanaUrl = getGrafanaUrl(analyticUnit.grafanaUrl);
-    let resultSeries: HSRResult;
 
     if(analyticUnit.detectorType === AnalyticUnit.DetectorType.PATTERN) {
       resultSeries.hsr = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
@@ -666,13 +663,12 @@ export async function getHSR(
     }
 
     cache = cache.data;
-
-    const data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
+    resultSeries.hsr = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
 
     const analyticUnitType = analyticUnit.type;
     const detector = analyticUnit.detectorType;
     const payload = {
-      data: data.values,
+      data: resultSeries.hsr.values,
       analyticUnitType,
       detector,
       cache
@@ -685,11 +681,11 @@ export async function getHSR(
     }
 
     if(result.payload.lowerBound !== undefined) {
-      resultSeries.lowerBound = { values: result.payload.lowerBound, columns: data.columns };
+      resultSeries.lowerBound = { values: result.payload.lowerBound, columns: resultSeries.hsr.columns };
     }
 
     if(result.payload.upperBound !== undefined) {
-      resultSeries.upperBound = { values: result.payload.upperBound, columns: data.columns };
+      resultSeries.upperBound = { values: result.payload.upperBound, columns: resultSeries.hsr.columns };
     }
 
     return resultSeries;
