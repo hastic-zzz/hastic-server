@@ -72,7 +72,7 @@ const TIME_STEP = 1000;
 
 async function addTestUnitToDB(analyticUnitObj: any): Promise<string> {
   const analyticUnitId = await saveAnalyticUnitFromObject(analyticUnitObj);
-  await AnalyticUnit.update(analyticUnitId, {lastDetectionTime: 1000});
+  await AnalyticUnit.update(analyticUnitId, { lastDetectionTime: 1000 });
   await AnalyticUnitCache.create(analyticUnitId);
   await AnalyticUnitCache.setData(analyticUnitId, {
     windowSize: WINDOW_SIZE,
