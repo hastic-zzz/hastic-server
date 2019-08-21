@@ -642,13 +642,12 @@ export async function getHSR(
   to: number
 ): Promise< HSRResult | undefined> {
   try {
-    let resultSeries: HSRResult = {
-      hsr: null
-    }
     const grafanaUrl = getGrafanaUrl(analyticUnit.grafanaUrl);
 
     if(analyticUnit.detectorType === AnalyticUnit.DetectorType.PATTERN) {
-      resultSeries.hsr = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
+      const resultSeries: HSRResult = {
+        hsr: await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY)
+      };
       return resultSeries;
     }
 
@@ -658,13 +657,17 @@ export async function getHSR(
 
     //cache.data === null when learning started but not completed yet or first learning was failed
     if(cache === null || cache.data === null || inLearningState) {
-      resultSeries.hsr = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
+      const resultSeries: HSRResult = {
+        hsr: await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY)
+      };
       return resultSeries;
       //TODO: send warning: can't show HSR before learning
     }
 
     cache = cache.data;
-    resultSeries.hsr = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
+    let resultSeries: HSRResult = {
+      hsr: await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY)
+    };
 
     const analyticUnitType = analyticUnit.type;
     const detector = analyticUnit.detectorType;
