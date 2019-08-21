@@ -660,7 +660,7 @@ export async function getHSR(
 
     if(cache === null || cache.data === null) {
       if(analyticUnit.status === AnalyticUnit.AnalyticUnitStatus.LEARNING) {
-        return; //because we wait end of learning
+        return; // because we wait end of learning
       }
       await runLearning(analyticUnit.id, from, to);
       cache = await AnalyticUnitCache.findById(analyticUnit.id);
