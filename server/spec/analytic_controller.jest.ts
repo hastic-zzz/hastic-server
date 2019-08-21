@@ -147,6 +147,6 @@ describe('getHSR', function() {
     await AnalyticUnitCache.remove(analyticUnitId);
     const unit = await AnalyticUnit.findById(analyticUnitId);
     const result = await getHSR(unit, 9000, 100000);
-    expect(result).toBe(undefined);
+    expect(result).toEqual({"hsr": {"columns": [], "values": []}});
   });
 });
