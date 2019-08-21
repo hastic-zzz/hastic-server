@@ -640,34 +640,39 @@ export async function getHSR(
   analyticUnit: AnalyticUnit.AnalyticUnit,
   from: number,
   to: number
-): Promise<{
-  hsr: TableTimeSeries,
-  lowerBound?: TableTimeSeries,
-  upperBound?: TableTimeSeries
-}> {
+): Promise< HSRResult | undefined> {
   try {
     const grafanaUrl = getGrafanaUrl(analyticUnit.grafanaUrl);
-    const data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
-    let resultSeries: HSRResult = {
-      hsr: data
-    }
 
     if(analyticUnit.detectorType === AnalyticUnit.DetectorType.PATTERN) {
+      const resultSeries: HSRResult = {
+        hsr: await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY)
+      };
       return resultSeries;
     }
 
     let cache = await AnalyticUnitCache.findById(analyticUnit.id);
-    if(cache === null || cache.isCacheOutdated(analyticUnit)) {
-      await runLearning(analyticUnit.id, from, to);
-      cache = await AnalyticUnitCache.findById(analyticUnit.id);
+
+    const inLearningState = analyticUnit.status === AnalyticUnit.AnalyticUnitStatus.LEARNING;
+
+    //cache.data === null when learning started but not completed yet or first learning was failed
+    if(inLearningState || cache === null || cache.data === null) {
+      const resultSeries: HSRResult = {
+        hsr: await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY)
+      };
+      return resultSeries;
+      //TODO: send warning: can't show HSR before learning
     }
 
     cache = cache.data;
+    let resultSeries: HSRResult = {
+      hsr: await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY)
+    };
 
     const analyticUnitType = analyticUnit.type;
     const detector = analyticUnit.detectorType;
     const payload = {
-      data: data.values,
+      data: resultSeries.hsr.values,
       analyticUnitType,
       detector,
       cache
@@ -680,11 +685,11 @@ export async function getHSR(
     }
 
     if(result.payload.lowerBound !== undefined) {
-      resultSeries.lowerBound = { values: result.payload.lowerBound, columns: data.columns };
+      resultSeries.lowerBound = { values: result.payload.lowerBound, columns: resultSeries.hsr.columns };
     }
 
     if(result.payload.upperBound !== undefined) {
-      resultSeries.upperBound = { values: result.payload.upperBound, columns: data.columns };
+      resultSeries.upperBound = { values: result.payload.upperBound, columns: resultSeries.hsr.columns };
     }
 
     return resultSeries;
