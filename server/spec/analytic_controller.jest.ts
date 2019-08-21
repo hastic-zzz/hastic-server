@@ -3,7 +3,9 @@ import { queryByMetric } from 'grafana-datasource-kit';
 jest.mock('grafana-datasource-kit', () => (
   {
     ...(jest.requireActual('grafana-datasource-kit')),
-    queryByMetric: jest.fn((metric, url, from, to, apiKey) => {})
+    queryByMetric: jest.fn((metric, url, from, to, apiKey) => {
+      return {values:[], columns:[]}
+    })
   }
 ));
 
@@ -13,8 +15,9 @@ import * as AnalyticUnitCache from '../src/models/analytic_unit_cache_model';
 import * as Segment from '../src/models/segment_model';
 import { TEST_ANALYTIC_UNIT_ID } from './utils_for_tests/analytic_units';
 import { buildSegments, clearSegmentsDB, convertSegmentsToTimeRanges } from './utils_for_tests/segments';
-
 import { HASTIC_API_KEY } from '../src/config';
+
+import * as _ from 'lodash';
 
 const analyticUnitObj = {
   name: "test",
@@ -67,7 +70,7 @@ const analyticUnitObj = {
 const WINDOW_SIZE = 10;
 const TIME_STEP = 1000;
 
-async function addTestUnitToDB(): Promise<string> {
+async function addTestUnitToDB(analyticUnitObj: any): Promise<string> {
   const analyticUnitId = await saveAnalyticUnitFromObject(analyticUnitObj);
   await AnalyticUnit.update(analyticUnitId, {lastDetectionTime: 1000});
   await AnalyticUnitCache.create(analyticUnitId);
@@ -84,7 +87,7 @@ describe('Check detection range', function() {
     const to = 1500000000001;
     const expectedFrom = to - WINDOW_SIZE * TIME_STEP * 2;
 
-    const id = await addTestUnitToDB();
+    const id = await addTestUnitToDB(analyticUnitObj);
     await runDetect(id, from, to);
     expect(queryByMetric).toBeCalledWith(analyticUnitObj.metric, undefined, expectedFrom, to, HASTIC_API_KEY);
   });
@@ -137,9 +140,12 @@ describe('onDetect', () => {
 
 describe('getHSR', function() {
   it('should return nothink if unit state is LEARNING', async () => {
-    const analyticUnitId = await addTestUnitToDB()
+    let unitObj = _.clone(analyticUnitObj);
+    unitObj.detectorType = 'anomaly';
+    const analyticUnitId = await addTestUnitToDB(unitObj);
+    await AnalyticUnitCache.remove(analyticUnitId);
     const unit = await AnalyticUnit.findById(analyticUnitId);
     const result = await getHSR(unit, 9000, 100000);
-    expect(result.hsr).toBe(undefined);
+    expect(result).toBe(undefined);
   });
 });

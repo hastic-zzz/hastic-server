@@ -646,27 +646,28 @@ export async function getHSR(
   upperBound?: TableTimeSeries
 } | undefined> {
   try {
+
     const grafanaUrl = getGrafanaUrl(analyticUnit.grafanaUrl);
-    const data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
     let resultSeries: HSRResult = {
-      hsr: data
+      hsr: undefined
     }
 
     if(analyticUnit.detectorType === AnalyticUnit.DetectorType.PATTERN) {
+      resultSeries.hsr = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
       return resultSeries;
     }
 
     let cache = await AnalyticUnitCache.findById(analyticUnit.id);
 
-    if(cache === null || cache.data === null) {
-      if(analyticUnit.status === AnalyticUnit.AnalyticUnitStatus.LEARNING) {
-        return; // because we wait end of learning
-      }
-      await runLearning(analyticUnit.id, from, to);
-      cache = await AnalyticUnitCache.findById(analyticUnit.id);
+    const inLearningState = analyticUnit.status === AnalyticUnit.AnalyticUnitStatus.LEARNING;
+    if(cache === null || cache.data === null || inLearningState) {
+        return; // because we can process data only after learning
+        //TODO: send warning: can't show HSR before learning
     }
 
     cache = cache.data;
+
+    const data = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
 
     const analyticUnitType = analyticUnit.type;
     const detector = analyticUnit.detectorType;
