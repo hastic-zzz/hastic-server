@@ -19,6 +19,7 @@ import { HASTIC_API_KEY } from '../src/config';
 
 import * as _ from 'lodash';
 
+
 const DEFAULT_ANALYTIC_UNIT_OBJECT = {
   name: "test",
   grafanaUrl: "http://127.0.0.1:3000",
