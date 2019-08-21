@@ -658,8 +658,9 @@ export async function getHSR(
 
     //cache.data === null when learning started but not completed yet or first learning was failed
     if(cache === null || cache.data === null || inLearningState) {
-        return; // because we can process data only after learning
-        //TODO: send warning: can't show HSR before learning
+      resultSeries.hsr = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
+      return resultSeries;
+      //TODO: send warning: can't show HSR before learning
     }
 
     cache = cache.data;
