@@ -656,7 +656,7 @@ export async function getHSR(
     const inLearningState = analyticUnit.status === AnalyticUnit.AnalyticUnitStatus.LEARNING;
 
     //cache.data === null when learning started but not completed yet or first learning was failed
-    if(cache === null || cache.data === null || inLearningState) {
+    if(inLearningState || cache === null || cache.data === null) {
       const resultSeries: HSRResult = {
         hsr: await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY)
       };
