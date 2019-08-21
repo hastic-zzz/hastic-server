@@ -648,9 +648,7 @@ export async function getHSR(
   try {
 
     const grafanaUrl = getGrafanaUrl(analyticUnit.grafanaUrl);
-    let resultSeries: HSRResult = {
-      hsr: undefined
-    }
+    let resultSeries: HSRResult;
 
     if(analyticUnit.detectorType === AnalyticUnit.DetectorType.PATTERN) {
       resultSeries.hsr = await queryByMetric(analyticUnit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
