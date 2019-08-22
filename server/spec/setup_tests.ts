@@ -27,5 +27,5 @@ async function createTestDB() {
     })
   );
   await AnalyticUnitCache.create(TEST_ANALYTIC_UNIT_ID);
-  await AnalyticUnitCache.setData(TEST_ANALYTIC_UNIT_ID, { timeStep: 1, windowSize: 10 });
+  await AnalyticUnitCache.setData(TEST_ANALYTIC_UNIT_ID, { timeStep: 1 });
 }

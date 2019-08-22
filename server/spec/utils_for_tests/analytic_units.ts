@@ -9,7 +9,7 @@ export async function createAnalyticUnit(detectorType = AnalyticUnit.DetectorTyp
     const analyticUnitObject = AnalyticUnitObject.getAnalyticUnitObject(detectorType);
     const unit = AnalyticUnit.createAnalyticUnitFromObject(analyticUnitObject);
     const id = await AnalyticUnit.create(unit);
-    return id;
+    return { id, unit };
 }
 
 export class AnalyticUnitObject {

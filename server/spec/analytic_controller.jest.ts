@@ -13,58 +13,11 @@ import { saveAnalyticUnitFromObject, runDetect, onDetect, getHSR } from '../src/
 import * as AnalyticUnit from '../src/models/analytic_units';
 import * as AnalyticUnitCache from '../src/models/analytic_unit_cache_model';
 import * as Segment from '../src/models/segment_model';
-import { TEST_ANALYTIC_UNIT_ID } from './utils_for_tests/analytic_units';
+import { TEST_ANALYTIC_UNIT_ID, createAnalyticUnit } from './utils_for_tests/analytic_units';
 import { buildSegments, clearSegmentsDB, convertSegmentsToTimeRanges } from './utils_for_tests/segments';
 import { HASTIC_API_KEY } from '../src/config';
 
 import * as _ from 'lodash';
-
-
-const DEFAULT_ANALYTIC_UNIT_OBJECT = {
-  name: "test",
-  grafanaUrl: "http://127.0.0.1:3000",
-  panelId: "ZLc0KfNZk/2",
-  type: "GENERAL",
-  metric: {
-    datasource: {
-      url: "api/datasources/proxy/5/query",
-      method: "GET",
-      data: null,
-      params: {
-        db:"dbname",
-        q: "SELECT mean(\"value\") FROM \"autogen\".\"tcpconns_value\" WHERE time >= now() - 6h GROUP BY time(20s) fill(null)",
-        epoch: "ms"
-      },
-      type: "influxdb"
-    },
-    targets: [
-      {
-        groupBy: [
-          {
-            params: ["$__interval"],
-            type: "time"
-          },
-          {
-            params: ["null"],
-            type: "fill"
-          }
-        ],
-        measurement: "tcpconns_value",
-        orderByTime: "ASC",
-        policy: "autogen",
-        refId: "A",
-        resultFormat: "time_series",
-        select: [[{"params":["value"],"type":"field"},{"params":[],"type":"mean"}]],"tags":[]
-      }
-    ]
-  },
-  alert: false,
-  labeledColor: "#FF99FF",
-  deletedColor: "#00f0ff",
-  detectorType: "pattern",
-  visible: true,
-  collapsed: false
-}
 
 const WINDOW_SIZE = 10;
 const TIME_STEP = 1000;
@@ -86,9 +39,9 @@ describe('Check detection range', function() {
     const to = 1500000000001;
     const expectedFrom = to - WINDOW_SIZE * TIME_STEP * 2;
 
-    const id = await addTestUnitToDB(DEFAULT_ANALYTIC_UNIT_OBJECT);
-    await runDetect(id, from, to);
-    expect(queryByMetric).toBeCalledWith(DEFAULT_ANALYTIC_UNIT_OBJECT.metric, undefined, expectedFrom, to, HASTIC_API_KEY);
+    const testAnalyticUnit = await createAnalyticUnit();
+    await runDetect(testAnalyticUnit.id, from, to);
+    expect(queryByMetric).toBeCalledWith(testAnalyticUnit.unit.metric, undefined, expectedFrom, to, HASTIC_API_KEY);
   });
 });
 
@@ -139,12 +92,8 @@ describe('onDetect', () => {
 
 describe('getHSR', function() {
   it('should return nothing if unit state is LEARNING', async () => {
-    //let unitObj = _.clone(DEFAULT_ANALYTIC_UNIT_OBJECT);
-    //unitObj.detectorType = 'anomaly';
-    //const analyticUnitId = await addTestUnitToDB(unitObj);
-    //await AnalyticUnitCache.remove(analyticUnitId);
-    const unit = await AnalyticUnit.findById(TEST_ANALYTIC_UNIT_ID);
-    const result = await getHSR(unit, 9000, 100000);
+    const testAnalyticUnit = await createAnalyticUnit(AnalyticUnit.DetectorType.ANOMALY);
+    const result = await getHSR(testAnalyticUnit.unit, 9000, 100000);
     expect(result).toEqual({"hsr": {"columns": [], "values": []}});
   });
 });
