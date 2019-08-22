@@ -63,9 +63,7 @@ const DEFAULT_ANALYTIC_UNIT_OBJECT = {
   deletedColor: "#00f0ff",
   detectorType: "pattern",
   visible: true,
-  collapsed: false,
-  createdAt: {"$$date":1564476040880},
-  updatedAt: {"$$date":1564476040880}
+  collapsed: false
 }
 
 const WINDOW_SIZE = 10;
@@ -141,11 +139,11 @@ describe('onDetect', () => {
 
 describe('getHSR', function() {
   it('should return nothing if unit state is LEARNING', async () => {
-    let unitObj = _.clone(DEFAULT_ANALYTIC_UNIT_OBJECT);
-    unitObj.detectorType = 'anomaly';
-    const analyticUnitId = await addTestUnitToDB(unitObj);
-    await AnalyticUnitCache.remove(analyticUnitId);
-    const unit = await AnalyticUnit.findById(analyticUnitId);
+    //let unitObj = _.clone(DEFAULT_ANALYTIC_UNIT_OBJECT);
+    //unitObj.detectorType = 'anomaly';
+    //const analyticUnitId = await addTestUnitToDB(unitObj);
+    //await AnalyticUnitCache.remove(analyticUnitId);
+    const unit = await AnalyticUnit.findById(TEST_ANALYTIC_UNIT_ID);
     const result = await getHSR(unit, 9000, 100000);
     expect(result).toEqual({"hsr": {"columns": [], "values": []}});
   });
