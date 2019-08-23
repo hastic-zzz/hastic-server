@@ -22,24 +22,15 @@ import * as _ from 'lodash';
 const WINDOW_SIZE = 10;
 const TIME_STEP = 1000;
 
-async function addTestUnitToDB(analyticUnitObj: any): Promise<string> {
-  const analyticUnitId = await saveAnalyticUnitFromObject(analyticUnitObj);
-  await AnalyticUnit.update(analyticUnitId, { lastDetectionTime: 1000 });
-  await AnalyticUnitCache.create(analyticUnitId);
-  await AnalyticUnitCache.setData(analyticUnitId, {
-    windowSize: WINDOW_SIZE,
-    timeStep: TIME_STEP
-  });
-  return analyticUnitId;
-};
-
 describe('Check detection range', function() {
-  it('check range >= 2 * window size * timeStep', async () => {
+  it('range should be >= 2 * windowSize * timeStep', async () => {
     const from = 1500000000000;
     const to = 1500000000001;
     const expectedFrom = to - WINDOW_SIZE * TIME_STEP * 2;
 
     const testAnalyticUnit = await createAnalyticUnit();
+    await AnalyticUnitCache.create(testAnalyticUnit.id);
+    await AnalyticUnitCache.setData(testAnalyticUnit.id, {timeStep: TIME_STEP, windowSize: WINDOW_SIZE});
     await runDetect(testAnalyticUnit.id, from, to);
     expect(queryByMetric).toBeCalledWith(testAnalyticUnit.unit.metric, undefined, expectedFrom, to, HASTIC_API_KEY);
   });

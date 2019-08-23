@@ -7,8 +7,8 @@ import * as _ from 'lodash';
 
 export const TEST_ANALYTIC_UNIT_ID: AnalyticUnit.AnalyticUnitId = 'testid';
 
-export async function createAnalyticUnit(detectorType = AnalyticUnit.DetectorType.ANOMALY) {
-  const analyticUnitObject = AnalyticUnitObject.getAnalyticUnitObject(detectorType);
+export async function createAnalyticUnit(analyticUnitId?: string) {
+  const analyticUnitObject = AnalyticUnitObject.getAnalyticUnitObject(analyticUnitId);
   const unit = AnalyticUnit.createAnalyticUnitFromObject(analyticUnitObject);
   const id = await AnalyticUnit.create(unit);
   return { id, unit };
@@ -16,8 +16,9 @@ export async function createAnalyticUnit(detectorType = AnalyticUnit.DetectorTyp
 
 export class AnalyticUnitObject {
 
+  private _id: string = null;
   constructor(
-    private _id: string = null,
+    id?: string,
     public name: string = 'name',
     public grafanaUrl: string = 'grafanaUrl',
     public panelId: string = 'panelId',
@@ -61,14 +62,15 @@ export class AnalyticUnitObject {
     public visible: boolean = true,
     public collapsed: boolean = false
   ){
-    if(this._id === null) {
+    if(id === undefined) {
       this._id = Math.random().toString(36).substring(2, 15); //random string
+    } else {
+      this._id = id;
     }
   };
 
-  static getAnalyticUnitObject(detectorType: AnalyticUnit.DetectorType): AnalyticUnitObject {
-    let obj = new AnalyticUnitObject();
-    obj.detectorType = detectorType;
+  static getAnalyticUnitObject(id?: string): AnalyticUnitObject {
+    let obj = new AnalyticUnitObject(id);
     return obj;
   }
 }
