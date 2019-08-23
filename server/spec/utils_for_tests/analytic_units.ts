@@ -3,6 +3,7 @@ import * as AnalyticUnit from '../../src/models/analytic_units';
 import { Metric } from 'grafana-datasource-kit';
 
 import * as _ from 'lodash';
+import * as AnalyticUnitCache from '../../src/models/analytic_unit_cache_model';
 
 
 export const TEST_ANALYTIC_UNIT_ID: AnalyticUnit.AnalyticUnitId = 'testid';
@@ -44,20 +45,23 @@ const DEFAULT_METRIC = new Metric(
   DEFAULT_TARGETS_STRUCTURE
 );
 
-export async function getAnalyticUnitFromDb(analyticUnitId?: string) {
-  const analyticUnitObject = AnalyticUnitObject.getAnalyticUnitObject(analyticUnitId);
+export async function getAnalyticUnitFromDb() {
+  const analyticUnitObject = AnalyticUnitObject.getAnalyticUnitObject();
   const unit = AnalyticUnit.createAnalyticUnitFromObject(analyticUnitObject);
   const id = await AnalyticUnit.create(unit);
   return { id, unit };
 }
 
+export async function clearAnalyticUnitDb() {
+  await AnalyticUnit.remove(TEST_ANALYTIC_UNIT_ID);
+  await AnalyticUnitCache.remove(TEST_ANALYTIC_UNIT_ID);
+}
+
 export class AnalyticUnitObject {
 
-  static ids = AnalyticUnitObject._idGenerator();
-  _id: string = null;
+  private _id = TEST_ANALYTIC_UNIT_ID;
 
   constructor(
-    id?: string,
     public name: string = 'name',
     public grafanaUrl: string = 'grafanaUrl',
     public panelId: string = 'panelId',
@@ -69,26 +73,9 @@ export class AnalyticUnitObject {
     public detectorType: AnalyticUnit.DetectorType = AnalyticUnit.DetectorType.ANOMALY,
     public visible: boolean = true,
     public collapsed: boolean = false
-  ){
-    if(id === undefined) {
-      this._id = Math.random().toString(36).substring(2, 15); //random string
-    } else {
-      this._id = id;
-    }
-  };
+  ){};
 
-  static getAnalyticUnitObject(id?: string): AnalyticUnitObject {
-    if(id === undefined) {
-      id = AnalyticUnitObject.ids.next().value;
-    }
-    let obj = new AnalyticUnitObject(id);
-    return obj;
-  }
-
-  private static * _idGenerator(): IterableIterator<string> {
-    let x = 0;
-    while(true) {
-      yield `${x++}`;
-    }
+  static getAnalyticUnitObject(): AnalyticUnitObject {
+    return new AnalyticUnitObject();
   }
 }

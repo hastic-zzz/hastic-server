@@ -13,7 +13,7 @@ import { saveAnalyticUnitFromObject, runDetect, onDetect, getHSR } from '../src/
 import * as AnalyticUnit from '../src/models/analytic_units';
 import * as AnalyticUnitCache from '../src/models/analytic_unit_cache_model';
 import * as Segment from '../src/models/segment_model';
-import { TEST_ANALYTIC_UNIT_ID, getAnalyticUnitFromDb } from './utils_for_tests/analytic_units';
+import { TEST_ANALYTIC_UNIT_ID, getAnalyticUnitFromDb, clearAnalyticUnitDb } from './utils_for_tests/analytic_units';
 import { buildSegments, clearSegmentsDB, convertSegmentsToTimeRanges } from './utils_for_tests/segments';
 import { HASTIC_API_KEY } from '../src/config';
 
@@ -23,6 +23,10 @@ const WINDOW_SIZE = 10;
 const TIME_STEP = 1000;
 
 describe('Check detection range', function() {
+  beforeEach(async () => {
+    await clearAnalyticUnitDb();
+  });
+
   it('range should be >= 2 * windowSize * timeStep', async () => {
     const from = 1500000000000;
     const to = 1500000000001;
@@ -82,8 +86,12 @@ describe('onDetect', () => {
 });
 
 describe('getHSR', function() {
+  beforeEach(async () => {
+    await clearAnalyticUnitDb();
+  });
+
   it('should return nothing if unit state is LEARNING', async () => {
-    const testAnalyticUnit = await getAnalyticUnitFromDb(AnalyticUnit.DetectorType.ANOMALY);
+    const testAnalyticUnit = await getAnalyticUnitFromDb();
     const result = await getHSR(testAnalyticUnit.unit, 9000, 100000);
     expect(result).toEqual({"hsr": {"columns": [], "values": []}});
   });

@@ -16,7 +16,7 @@ createTestDB();
 
 async function createTestDB() {
   await clearSegmentsDB();
-  await getAnalyticUnitFromDb(TEST_ANALYTIC_UNIT_ID);
+  await getAnalyticUnitFromDb();
   await AnalyticUnitCache.create(TEST_ANALYTIC_UNIT_ID);
   await AnalyticUnitCache.setData(TEST_ANALYTIC_UNIT_ID, { timeStep: 1 });
 }
