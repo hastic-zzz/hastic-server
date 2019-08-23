@@ -53,7 +53,9 @@ export async function getAnalyticUnitFromDb(analyticUnitId?: string) {
 
 export class AnalyticUnitObject {
 
-  private _id: string = null;
+  static ids = AnalyticUnitObject._idGenerator();
+  _id: string = null;
+
   constructor(
     id?: string,
     public name: string = 'name',
@@ -76,7 +78,17 @@ export class AnalyticUnitObject {
   };
 
   static getAnalyticUnitObject(id?: string): AnalyticUnitObject {
+    if(id === undefined) {
+      id = AnalyticUnitObject.ids.next().value;
+    }
     let obj = new AnalyticUnitObject(id);
     return obj;
+  }
+
+  private static * _idGenerator(): IterableIterator<string> {
+    let x = 0;
+    while(true) {
+      yield `${x++}`;
+    }
   }
 }
