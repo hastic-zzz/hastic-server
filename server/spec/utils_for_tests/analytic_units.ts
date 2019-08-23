@@ -7,7 +7,7 @@ import * as _ from 'lodash';
 
 export const TEST_ANALYTIC_UNIT_ID: AnalyticUnit.AnalyticUnitId = 'testid';
 
-export async function createAnalyticUnit(analyticUnitId?: string) {
+export async function getAnalyticUnitFromDb(analyticUnitId?: string) {
   const analyticUnitObject = AnalyticUnitObject.getAnalyticUnitObject(analyticUnitId);
   const unit = AnalyticUnit.createAnalyticUnitFromObject(analyticUnitObject);
   const id = await AnalyticUnit.create(unit);
