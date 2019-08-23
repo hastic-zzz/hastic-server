@@ -7,7 +7,7 @@ import * as _ from 'lodash';
 
 export const TEST_ANALYTIC_UNIT_ID: AnalyticUnit.AnalyticUnitId = 'testid';
 
-const TEST_DATASOURCE_STRUCTURE = {
+const DEFAULT_DATASOURCE_STRUCTURE = {
   url: "api/datasources/proxy/5/query",
   data: null,
   params: {
@@ -18,7 +18,7 @@ const TEST_DATASOURCE_STRUCTURE = {
   type: "influxdb"
 };
 
-const TEST_TARGETS_STRUCTURE = [
+const DEFAULT_TARGETS_STRUCTURE = [
   {
     groupBy: [
       {
@@ -39,6 +39,11 @@ const TEST_TARGETS_STRUCTURE = [
   }
 ];
 
+const DEFAULT_METRIC = new Metric(
+  DEFAULT_DATASOURCE_STRUCTURE,
+  DEFAULT_TARGETS_STRUCTURE
+);
+
 export async function getAnalyticUnitFromDb(analyticUnitId?: string) {
   const analyticUnitObject = AnalyticUnitObject.getAnalyticUnitObject(analyticUnitId);
   const unit = AnalyticUnit.createAnalyticUnitFromObject(analyticUnitObject);
@@ -55,10 +60,7 @@ export class AnalyticUnitObject {
     public grafanaUrl: string = 'grafanaUrl',
     public panelId: string = 'panelId',
     public type: string = 'type',
-    public metric: Metric = new Metric(
-      TEST_DATASOURCE_STRUCTURE,
-      TEST_TARGETS_STRUCTURE
-    ),
+    public metric: Metric = DEFAULT_METRIC,
     public alert: boolean = false,
     public labeledColor: string = '#FF99FF',
     public deletedColor: string = '#00f0ff',
