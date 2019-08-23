@@ -1,6 +1,6 @@
 import * as AnalyticUnit from '../src/models/analytic_units';
 import * as AnalyticUnitCache from '../src/models/analytic_unit_cache_model';
-import { TEST_ANALYTIC_UNIT_ID, getAnalyticUnitFromDb } from './utils_for_tests/analytic_units';
+import { TEST_ANALYTIC_UNIT_ID, createTestUnitInDb } from './utils_for_tests/analytic_units';
 import { clearSegmentsDB } from './utils_for_tests/segments';
 
 console.log = jest.fn();
@@ -16,7 +16,5 @@ createTestDB();
 
 async function createTestDB() {
   await clearSegmentsDB();
-  await getAnalyticUnitFromDb();
-  await AnalyticUnitCache.create(TEST_ANALYTIC_UNIT_ID);
-  await AnalyticUnitCache.setData(TEST_ANALYTIC_UNIT_ID, { timeStep: 1 });
+  await createTestUnitInDb();
 }

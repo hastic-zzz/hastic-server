@@ -13,7 +13,7 @@ import { saveAnalyticUnitFromObject, runDetect, onDetect, getHSR } from '../src/
 import * as AnalyticUnit from '../src/models/analytic_units';
 import * as AnalyticUnitCache from '../src/models/analytic_unit_cache_model';
 import * as Segment from '../src/models/segment_model';
-import { TEST_ANALYTIC_UNIT_ID, getAnalyticUnitFromDb, clearAnalyticUnitDb } from './utils_for_tests/analytic_units';
+import { TEST_ANALYTIC_UNIT_ID, createTestUnitInDb, clearAnalyticUnitDb } from './utils_for_tests/analytic_units';
 import { buildSegments, clearSegmentsDB, convertSegmentsToTimeRanges } from './utils_for_tests/segments';
 import { HASTIC_API_KEY } from '../src/config';
 
@@ -24,6 +24,10 @@ const TIME_STEP = 1000;
 
 describe('Check detection range', function() {
   beforeEach(async () => {
+    await createTestUnitInDb();
+  });
+
+  afterEach(async () => {
     await clearAnalyticUnitDb();
   });
 
@@ -32,11 +36,10 @@ describe('Check detection range', function() {
     const to = 1500000000001;
     const expectedFrom = to - WINDOW_SIZE * TIME_STEP * 2;
 
-    const testAnalyticUnit = await getAnalyticUnitFromDb();
-    await AnalyticUnitCache.create(testAnalyticUnit.id);
-    await AnalyticUnitCache.setData(testAnalyticUnit.id, {timeStep: TIME_STEP, windowSize: WINDOW_SIZE});
-    await runDetect(testAnalyticUnit.id, from, to);
-    expect(queryByMetric).toBeCalledWith(testAnalyticUnit.unit.metric, undefined, expectedFrom, to, HASTIC_API_KEY);
+    const unit = await createTestUnitInDb();
+    await AnalyticUnitCache.setData(TEST_ANALYTIC_UNIT_ID, {timeStep: TIME_STEP, windowSize: WINDOW_SIZE});
+    await runDetect(TEST_ANALYTIC_UNIT_ID, from, to);
+    expect(queryByMetric).toBeCalledWith(unit.metric, undefined, expectedFrom, to, HASTIC_API_KEY);
   });
 });
 
@@ -44,11 +47,13 @@ describe('onDetect', () => {
   const INITIAL_SEGMENTS = buildSegments([[0, 1], [2, 3], [4, 5]]);
 
   beforeEach(async () => {
+    await createTestUnitInDb();
     await Segment.mergeAndInsertSegments(INITIAL_SEGMENTS);
   });
 
   afterEach(async () => {
     await clearSegmentsDB();
+    await clearAnalyticUnitDb();
   });
 
   it('should not send a webhook after merging', async () => {
@@ -91,8 +96,8 @@ describe('getHSR', function() {
   });
 
   it('should return nothing if unit state is LEARNING', async () => {
-    const testAnalyticUnit = await getAnalyticUnitFromDb();
-    const result = await getHSR(testAnalyticUnit.unit, 9000, 100000);
+    const unit = await createTestUnitInDb(false);
+    const result = await getHSR(unit, 9000, 100000);
     expect(result).toEqual({"hsr": {"columns": [], "values": []}});
   });
 });
