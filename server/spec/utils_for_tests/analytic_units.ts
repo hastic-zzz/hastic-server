@@ -7,6 +7,38 @@ import * as _ from 'lodash';
 
 export const TEST_ANALYTIC_UNIT_ID: AnalyticUnit.AnalyticUnitId = 'testid';
 
+const TEST_DATASOURCE_STRUCTURE = {
+  url: "api/datasources/proxy/5/query",
+  data: null,
+  params: {
+    db:"dbname",
+    q: "SELECT mean(\"value\") FROM \"autogen\".\"tcpconns_value\" WHERE time >= now() - 6h GROUP BY time(20s) fill(null)",
+    epoch: "ms"
+  },
+  type: "influxdb"
+};
+
+const TEST_TARGETS_STRUCTURE = [
+  {
+    groupBy: [
+      {
+        params: ["$__interval"],
+        type: "time"
+      },
+      {
+        params: ["null"],
+        type: "fill"
+      }
+    ],
+    measurement: "tcpconns_value",
+    orderByTime: "ASC",
+    policy: "autogen",
+    refId: "A",
+    resultFormat: "time_series",
+    select: [[{"params":["value"],"type":"field"},{"params":[],"type":"mean"}]],"tags":[]
+  }
+];
+
 export async function getAnalyticUnitFromDb(analyticUnitId?: string) {
   const analyticUnitObject = AnalyticUnitObject.getAnalyticUnitObject(analyticUnitId);
   const unit = AnalyticUnit.createAnalyticUnitFromObject(analyticUnitObject);
@@ -24,36 +56,8 @@ export class AnalyticUnitObject {
     public panelId: string = 'panelId',
     public type: string = 'type',
     public metric: Metric = new Metric(
-      {
-        url: "api/datasources/proxy/5/query",
-        data: null,
-        params: {
-          db:"dbname",
-          q: "SELECT mean(\"value\") FROM \"autogen\".\"tcpconns_value\" WHERE time >= now() - 6h GROUP BY time(20s) fill(null)",
-          epoch: "ms"
-        },
-        type: "influxdb"
-      },
-      [
-        {
-          groupBy: [
-            {
-              params: ["$__interval"],
-              type: "time"
-            },
-            {
-              params: ["null"],
-              type: "fill"
-            }
-          ],
-          measurement: "tcpconns_value",
-          orderByTime: "ASC",
-          policy: "autogen",
-          refId: "A",
-          resultFormat: "time_series",
-          select: [[{"params":["value"],"type":"field"},{"params":[],"type":"mean"}]],"tags":[]
-        }
-      ]
+      TEST_DATASOURCE_STRUCTURE,
+      TEST_TARGETS_STRUCTURE
     ),
     public alert: boolean = false,
     public labeledColor: string = '#FF99FF',
