@@ -64,9 +64,8 @@ export async function clearAnalyticUnitDb() {
 
 export class AnalyticUnitObject {
 
-  private _id = TEST_ANALYTIC_UNIT_ID;
-
   constructor(
+    public _id: AnalyticUnit.AnalyticUnitId = TEST_ANALYTIC_UNIT_ID,
     public name: string = 'name',
     public grafanaUrl: string = 'grafanaUrl',
     public panelId: string = 'panelId',
