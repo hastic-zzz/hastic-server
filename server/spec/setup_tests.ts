@@ -3,7 +3,7 @@ import * as AnalyticUnitCache from '../src/models/analytic_unit_cache_model';
 import { TEST_ANALYTIC_UNIT_ID, getAnalyticUnitFromDb } from './utils_for_tests/analytic_units';
 import { clearSegmentsDB } from './utils_for_tests/segments';
 
-//console.log = jest.fn();
+console.log = jest.fn();
 console.error = jest.fn();
 
 jest.mock('../src/config.ts', () => ({
