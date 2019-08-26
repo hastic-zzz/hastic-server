@@ -101,6 +101,7 @@ describe('getHSR', function() {
 
   it('should return nothing if unit state is LEARNING', async () => {
     const unit = await AnalyticUnit.findById(TEST_ANALYTIC_UNIT_ID);
+    unit.status = AnalyticUnit.AnalyticUnitStatus.LEARNING;
     const result = await getHSR(unit, 9000, 100000);
     expect(result).toEqual({"hsr": {"columns": [], "values": []}});
   });
