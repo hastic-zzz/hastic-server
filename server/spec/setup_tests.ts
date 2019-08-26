@@ -13,4 +13,3 @@ jest.mock('../src/config.ts', () => ({
 
 clearSegmentsDB();
 createTestDB();
-
