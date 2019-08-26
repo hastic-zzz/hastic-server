@@ -40,12 +40,12 @@ const DEFAULT_TARGETS_STRUCTURE = [
   }
 ];
 
-const DEFAULT_METRIC = new Metric(
+export const DEFAULT_METRIC = new Metric(
   DEFAULT_DATASOURCE_STRUCTURE,
   DEFAULT_TARGETS_STRUCTURE
 );
 
-export async function createTestUnitInDb(createCache = true) {
+export async function createTestDB(createCache = true) {
   const analyticUnitObject = AnalyticUnitObject.getAnalyticUnitObject();
   const unit = AnalyticUnit.createAnalyticUnitFromObject(analyticUnitObject);
   await AnalyticUnit.create(unit);
@@ -57,7 +57,7 @@ export async function createTestUnitInDb(createCache = true) {
   return unit;
 }
 
-export async function clearAnalyticUnitDb() {
+export async function clearTestDB() {
   await AnalyticUnit.remove(TEST_ANALYTIC_UNIT_ID);
   await AnalyticUnitCache.remove(TEST_ANALYTIC_UNIT_ID);
 }

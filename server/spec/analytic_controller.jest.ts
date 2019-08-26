@@ -9,37 +9,34 @@ jest.mock('grafana-datasource-kit', () => (
   }
 ));
 
-import { saveAnalyticUnitFromObject, runDetect, onDetect, getHSR } from '../src/controllers/analytics_controller';
-import * as AnalyticUnit from '../src/models/analytic_units';
+import { runDetect, onDetect, getHSR } from '../src/controllers/analytics_controller';
 import * as AnalyticUnitCache from '../src/models/analytic_unit_cache_model';
 import * as Segment from '../src/models/segment_model';
-import { TEST_ANALYTIC_UNIT_ID, createTestUnitInDb, clearAnalyticUnitDb } from './utils_for_tests/analytic_units';
+import { TEST_ANALYTIC_UNIT_ID, createTestDB, clearTestDB, DEFAULT_METRIC } from './utils_for_tests/analytic_units';
 import { buildSegments, clearSegmentsDB, convertSegmentsToTimeRanges } from './utils_for_tests/segments';
-import { HASTIC_API_KEY } from '../src/config';
+import { HASTIC_API_KEY, GRAFANA_URL } from '../src/config';
 
 import * as _ from 'lodash';
+import * as AnalyticUnit from '../src/models/analytic_units';
 
 const WINDOW_SIZE = 10;
 const TIME_STEP = 1000;
 
+beforeEach(async () => {
+  await clearTestDB();
+  await createTestDB();
+});
+
 describe('Check detection range', function() {
-  beforeEach(async () => {
-    await createTestUnitInDb();
-  });
-
-  afterEach(async () => {
-    await clearAnalyticUnitDb();
-  });
-
   it('range should be >= 2 * windowSize * timeStep', async () => {
     const from = 1500000000000;
     const to = 1500000000001;
     const expectedFrom = to - WINDOW_SIZE * TIME_STEP * 2;
 
-    const unit = await createTestUnitInDb();
-    await AnalyticUnitCache.setData(TEST_ANALYTIC_UNIT_ID, {timeStep: TIME_STEP, windowSize: WINDOW_SIZE});
+    await AnalyticUnitCache.setData(TEST_ANALYTIC_UNIT_ID, {timeStep: TIME_STEP, windowSize: WINDOW_SIZE });
+    console.log(await AnalyticUnitCache.findById(TEST_ANALYTIC_UNIT_ID));
     await runDetect(TEST_ANALYTIC_UNIT_ID, from, to);
-    expect(queryByMetric).toBeCalledWith(unit.metric, undefined, expectedFrom, to, HASTIC_API_KEY);
+    expect(queryByMetric).toBeCalledWith(DEFAULT_METRIC, GRAFANA_URL, expectedFrom, to, HASTIC_API_KEY);
   });
 });
 
@@ -47,13 +44,11 @@ describe('onDetect', () => {
   const INITIAL_SEGMENTS = buildSegments([[0, 1], [2, 3], [4, 5]]);
 
   beforeEach(async () => {
-    await createTestUnitInDb();
     await Segment.mergeAndInsertSegments(INITIAL_SEGMENTS);
   });
 
   afterEach(async () => {
     await clearSegmentsDB();
-    await clearAnalyticUnitDb();
   });
 
   it('should not send a webhook after merging', async () => {
@@ -81,6 +76,7 @@ describe('onDetect', () => {
       segments: buildSegments([[7, 8]]),
       lastDetectionTime: 0
     });
+
     const detectedSegments = await Promise.all(
       detectedSegmentIds.map(id => Segment.findOne(id))
     );
@@ -91,12 +87,20 @@ describe('onDetect', () => {
 });
 
 describe('getHSR', function() {
-  beforeEach(async () => {
-    await clearAnalyticUnitDb();
+  let cacheToSave: AnalyticUnitCache.AnalyticUnitCache;
+
+  beforeAll(async () => {
+    await clearTestDB();
+    await createTestDB(false);
+  });
+
+  afterAll(async () => {
+    await AnalyticUnitCache.create(TEST_ANALYTIC_UNIT_ID);
+    await AnalyticUnitCache.setData(TEST_ANALYTIC_UNIT_ID, cacheToSave.data);
   });
 
   it('should return nothing if unit state is LEARNING', async () => {
-    const unit = await createTestUnitInDb(false);
+    const unit = await AnalyticUnit.findById(TEST_ANALYTIC_UNIT_ID);
     const result = await getHSR(unit, 9000, 100000);
     expect(result).toEqual({"hsr": {"columns": [], "values": []}});
   });
