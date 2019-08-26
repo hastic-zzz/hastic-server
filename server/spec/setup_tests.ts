@@ -7,6 +7,7 @@ console.log = jest.fn();
 console.error = jest.fn();
 
 jest.mock('../src/config.ts', () => ({
+  DATA_PATH: 'fake-data-path',
   HASTIC_API_KEY: 'fake-key',
   ZMQ_IPC_PATH: 'fake-zmq-path'
 }));
