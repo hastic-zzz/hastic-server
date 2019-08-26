@@ -19,3 +19,5 @@ module.exports = {
     "<rootDir>/spec/setup_tests.ts"
   ]
 };
+
+process.env.HASTIC_IN_MEMORY_PERSISTANCE = 'true';
