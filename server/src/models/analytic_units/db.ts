@@ -10,7 +10,7 @@ import * as _ from 'lodash';
 
 const db = makeDBQ(Collection.ANALYTIC_UNITS);
 
-export async function findById(id: AnalyticUnitId): Promise<AnalyticUnit> {
+export async function findById(id: AnalyticUnitId): Promise<AnalyticUnit | null> {
   let obj = await db.findOne(id);
   if (obj === null) {
     return null;
