@@ -33,7 +33,7 @@ describe('Check detection range', function() {
     const to = 1500000000001;
     const expectedFrom = to - WINDOW_SIZE * TIME_STEP * 2;
 
-    await AnalyticUnitCache.setData(TEST_ANALYTIC_UNIT_ID, {timeStep: TIME_STEP, windowSize: WINDOW_SIZE });
+    await AnalyticUnitCache.setData(TEST_ANALYTIC_UNIT_ID, { timeStep: TIME_STEP, windowSize: WINDOW_SIZE });
     console.log(await AnalyticUnitCache.findById(TEST_ANALYTIC_UNIT_ID));
     await runDetect(TEST_ANALYTIC_UNIT_ID, from, to);
     expect(queryByMetric).toBeCalledWith(DEFAULT_METRIC, GRAFANA_URL, expectedFrom, to, HASTIC_API_KEY);
