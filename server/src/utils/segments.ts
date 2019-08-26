@@ -113,7 +113,7 @@ export class IntegerSegmentsSet {
         }
         return s;
       }, null);
-      push(_.last(this._segments).to + 1, Infinity);
+      push(this._segments[this._segments.length - 1].to + 1, Infinity);
     }
     return new IntegerSegmentsSet(invertedSegments, true);
   }
