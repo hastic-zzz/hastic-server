@@ -20,4 +20,4 @@ module.exports = {
   ]
 };
 
-process.env.HASTIC_IN_MEMORY_PERSISTANCE = 'true';
+process.env.HASTIC_DB_IN_MEMORY = 'true';

@@ -215,7 +215,7 @@ function checkDataFolders(): void {
 }
 checkDataFolders();
 
-const inMemoryOnly = config.HASTIC_IN_MEMORY_PERSISTANCE;
+const inMemoryOnly = config.HASTIC_DB_IN_MEMORY;
 
 // TODO: it's better if models request db which we create if it`s needed
 db.set(Collection.ANALYTIC_UNITS, new nedb({ filename: config.ANALYTIC_UNITS_DATABASE_PATH, autoload: true, timestampData: true, inMemoryOnly}));
