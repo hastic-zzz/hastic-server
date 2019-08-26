@@ -11,6 +11,8 @@ let configExists = fs.existsSync(configFile);
 
 export const ANALYTICS_PATH = path.join(__dirname, '../../analytics');
 
+export const HASTIC_DB_IN_MEMORY = getConfigField('HASTIC_IN_MEMORY_PERSISTANCE', false);
+
 export const DATA_PATH = path.join(__dirname, '../../data');
 
 export const ANALYTIC_UNITS_DATABASE_PATH = path.join(DATA_PATH, 'analytic_units.db');
