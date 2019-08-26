@@ -159,7 +159,6 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
 
   let segmentIdsToRemove: SegmentId[] = [];
   let segmentsToInsert: Segment[] = [];
-  let skippedIds: SegmentId[] = [];
 
   for(let segment of segments) {
     if(await isIntersectedWithExistingLabeled(segment)) {

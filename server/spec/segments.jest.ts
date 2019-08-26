@@ -1,5 +1,5 @@
 import { TEST_ANALYTIC_UNIT_ID } from './utils_for_tests/analytic_units';
-import { buildSegments, clearSegmentsDB, convertSegmentsToTimeRanges } from './utils_for_tests/segments';
+import { buildSegments, clearSegmentsDB } from './utils_for_tests/segments';
 
 import * as Segment from '../src/models/segment_model';
 
@@ -16,7 +16,7 @@ afterEach(async () => {
 });
 
 describe('mergeAndInsertSegments', function() {
-  it('Should be merged before insertion', async function() {
+  it('should be merged before insertion', async function() {
     const segmentsToInsert = buildSegments([[1, 2]]);
     await Segment.mergeAndInsertSegments(segmentsToInsert);
 
