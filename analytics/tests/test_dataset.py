@@ -1,10 +1,11 @@
 import unittest
 import pandas as pd
-import numpy as np 
+import numpy as np
 from utils import prepare_data
 import models
 import random
 import scipy.signal
+
 
 class TestDataset(unittest.TestCase):
 
@@ -22,66 +23,52 @@ class TestDataset(unittest.TestCase):
         ]
 
         for model in model_instances:
-            model_name = model.__class__.__name__
             model.state = model.get_state(None)
             with self.assertRaises(AssertionError):
                 model.fit(dataframe, segments, 'test')
-    
+
     def test_peak_antisegments(self):
         data_val = [1.0, 1.0, 1.0, 2.0, 3.0, 2.0, 1.0, 1.0, 1.0, 1.0, 5.0, 7.0, 5.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000012, 'labeled': True, 'deleted': False},
                     {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000003, 'to': 1523889000005, 'labeled': False, 'deleted': True}]
 
-        try:
-            model = models.PeakModel()
-            model_name = model.__class__.__name__
-            model.state = model.get_state(None)
-            model.fit(dataframe, segments, 'test')
-        except ValueError:
-            self.fail('Model {} raised unexpectedly'.format(model_name))
-        
+        model = models.PeakModel()
+        model.state = model.get_state(None)
+        model.fit(dataframe, segments, 'test')
+
     def test_jump_antisegments(self):
         data_val = [1.0, 1.0, 1.0, 1.0, 1.0, 5.0, 5.0, 5.0, 5.0, 1.0, 1.0, 1.0, 1.0, 9.0, 9.0, 9.0, 9.0, 9.0, 1.0, 1.0]
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000016, 'labeled': True, 'deleted': False},
                     {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000002, 'to': 1523889000008, 'labeled': False, 'deleted': True}]
 
-        try:
-            model = models.JumpModel()
-            model_name = model.__class__.__name__
-            model.state = model.get_state(None)
-            model.fit(dataframe, segments, 'test')
-        except ValueError:
-            self.fail('Model {} raised unexpectedly'.format(model_name))
-    
+        model = models.JumpModel()
+        model.state = model.get_state(None)
+        model.fit(dataframe, segments, 'test')
+
     def test_trough_antisegments(self):
         data_val = [9.0, 9.0, 9.0, 9.0, 7.0, 4.0, 7.0, 9.0, 9.0, 9.0, 5.0, 1.0, 5.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0]
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000012, 'labeled': True, 'deleted': False},
                     {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000003, 'to': 1523889000005, 'labeled': False, 'deleted': True}]
 
-        try:
-            model = models.TroughModel()
-            model_name = model.__class__.__name__
-            model.state = model.get_state(None)
-            model.fit(dataframe, segments, 'test')
-        except ValueError:
-            self.fail('Model {} raised unexpectedly'.format(model_name))
-    
+        model = models.TroughModel()
+        model.state = model.get_state(None)
+        model.fit(dataframe, segments, 'test')
+
+
     def test_drop_antisegments(self):
         data_val = [9.0, 9.0, 9.0, 9.0, 9.0, 5.0, 5.0, 5.0, 5.0, 9.0, 9.0, 9.0, 9.0, 1.0, 1.0, 1.0, 1.0, 1.0, 9.0, 9.0]
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000016, 'labeled': True, 'deleted': False},
                     {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000002, 'to': 1523889000008, 'labeled': False, 'deleted': True}]
 
-        try:
-            model = models.DropModel()
-            model_name = model.__class__.__name__
-            model.state = model.get_state(None)
-            model.fit(dataframe, segments, 'test')
-        except ValueError:
-            self.fail('Model {} raised unexpectedly'.format(model_name))
+
+        model = models.DropModel()
+        model.state = model.get_state(None)
+        model.fit(dataframe, segments, 'test')
+
 
     def test_general_antisegments(self):
         data_val = [1.0, 2.0, 1.0, 2.0, 5.0, 6.0, 3.0, 2.0, 1.0, 1.0, 8.0, 9.0, 8.0, 1.0, 2.0, 3.0, 2.0, 1.0, 1.0, 2.0]
@@ -89,69 +76,49 @@ class TestDataset(unittest.TestCase):
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000012, 'labeled': True, 'deleted': False},
                     {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000003, 'to': 1523889000005, 'labeled': False, 'deleted': True}]
 
-        try:
-            model = models.GeneralModel()
-            model_name = model.__class__.__name__
-            model.state = model.get_state(None)
-            model.fit(dataframe, segments, 'test')
-        except ValueError:
-            self.fail('Model {} raised unexpectedly'.format(model_name))
-    
+        model = models.GeneralModel()
+        model.state = model.get_state(None)
+        model.fit(dataframe, segments, 'test')
+
     def test_jump_empty_segment(self):
         data_val = [1.0, 1.0, 1.0, 1.0, 1.0, 5.0, 5.0, 5.0, 5.0, 1.0, 1.0, 1.0, 1.0, 9.0, 9.0, 9.0, 9.0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000019, 'to': 1523889000025, 'labeled': True, 'deleted': False},
                     {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000002, 'to': 1523889000008, 'labeled': True, 'deleted': False}]
 
-        try:
-            model = models.JumpModel()
-            model_name = model.__class__.__name__
-            model.state = model.get_state(None)
-            model.fit(dataframe, segments, 'test')
-        except ValueError:
-            self.fail('Model {} raised unexpectedly'.format(model_name))
-    
+        model = models.JumpModel()
+        model.state = model.get_state(None)
+        model.fit(dataframe, segments, 'test')
+
     def test_drop_empty_segment(self):
         data_val = [1.0, 1.0, 1.0, 1.0, 1.0, 5.0, 5.0, 5.0, 5.0, 1.0, 1.0, 1.0, 1.0, 9.0, 9.0, 9.0, 9.0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000019, 'to': 1523889000025, 'labeled': True, 'deleted': False},
                     {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000002, 'to': 1523889000008, 'labeled': True, 'deleted': False}]
 
-        try:
-            model = models.DropModel()
-            model.state = model.get_state(None)
-            model_name = model.__class__.__name__
-            model.fit(dataframe, segments, 'test')
-        except ValueError:
-            self.fail('Model {} raised unexpectedly'.format(model_name))
+        model = models.DropModel()
+        model.state = model.get_state(None)
+        model.fit(dataframe, segments, 'test')
 
     def test_value_error_dataset_input_should_have_multiple_elements(self):
         data_val = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 5.0, 5.0, 4.0, 5.0, 5.0, 6.0, 5.0, 1.0, 2.0, 3.0, 4.0, 5.0,3.0,3.0,2.0,7.0,8.0,9.0,8.0,7.0,6.0]
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000007, 'to': 1523889000011, 'labeled': True, 'deleted': False}]
 
-        try:
-            model = models.JumpModel()
-            model.state = model.get_state(None)
-            model_name = model.__class__.__name__
-            model.fit(dataframe, segments, 'test')
-        except ValueError:
-            self.fail('Model {} raised unexpectedly'.format(model_name))
-    
+        
+        model = models.JumpModel()
+        model.state = model.get_state(None)
+        model.fit(dataframe, segments, 'test')
+        
+
     def test_prepare_data_for_nonetype(self):
         data = [[1523889000000, None], [1523889000001, None], [1523889000002, None]]
-        try:
-            data = prepare_data(data)
-        except ValueError:
-            self.fail('Model {} raised unexpectedly'.format(model_name))  
-    
+        prepare_data(data)
+
     def test_prepare_data_for_nan(self):
         data = [[1523889000000, np.nan], [1523889000001, np.nan], [1523889000002, np.nan]]
-        try:
-            data = prepare_data(data)
-        except ValueError:
-            self.fail('Model {} raised unexpectedly'.format(model_name))
-    
+        prepare_data(data)
+
     def test_prepare_data_output_fon_nan(self):
         data_nan = [[1523889000000, np.nan], [1523889000001, np.nan], [1523889000002, np.nan]]
         data_none = [[1523889000000, None], [1523889000001, None], [1523889000002, None]]
@@ -161,7 +128,7 @@ class TestDataset(unittest.TestCase):
             self.assertTrue(np.isnan(item))
         for item in return_data_none.value:
             self.assertTrue(np.isnan(item))
-    
+
     def test_three_value_segment(self):
         data_val = [1.0, 1.0, 1.0, 1.0, 1.0, 5.0, 2.0, 5.0, 5.0, 1.0, 1.0, 1.0, 1.0, 9.0, 9.0, 9.0, 9.0, 2.0, 3.0, 4.0, 5.0, 4.0, 2.0, 1.0, 3.0, 4.0]
         dataframe = create_dataframe(data_val)
@@ -171,13 +138,11 @@ class TestDataset(unittest.TestCase):
             models.GeneralModel(),
             models.PeakModel(),
         ]
-        try:
-            for model in model_instances:
-                model_name = model.__class__.__name__
-                model.state = model.get_state(None)
-                model.fit(dataframe, segments, 'test')
-        except ValueError:
-            self.fail('Model {} raised unexpectedly'.format(model_name))
+    
+        for model in model_instances:        
+            model.state = model.get_state(None)
+            model.fit(dataframe, segments, 'test')
+        
 
     def test_general_for_two_labeling(self):
         data_val = [1.0, 2.0, 5.0, 2.0, 1.0, 1.0, 3.0, 6.0, 4.0, 2.0, 1.0, 0, 0]
@@ -192,7 +157,7 @@ class TestDataset(unittest.TestCase):
             max_pattern_index = max(model.do_detect(dataframe))
             self.assertLessEqual(max_pattern_index[0], result)
 
-    
+
     def test_peak_model_for_cache(self):
         cache = {
             'patternCenter': [1, 6],
@@ -266,14 +231,12 @@ class TestDataset(unittest.TestCase):
         data_val = [5.0, 5.0, 5.0, 5.0, 1.0, 1.0, 1.0, 1.0, 9.0, 9.0, 9.0, 9.0, 0, 0, 0, 0, 0, 0, 6.0, 6.0, 6.0, 1.0, 1.0, 1.0, 1.0, 1.0]
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000019, 'to': 1523889000024, 'labeled': True, 'deleted': False}]
-        try:
-            model = models.DropModel()
-            model_name = model.__class__.__name__
-            model.state = model.get_state(cache)
-            model.fit(dataframe, segments, 'test')
-        except ValueError:
-            self.fail('Model {} raised unexpectedly'.format(model_name))
-    
+        
+        model = models.DropModel()
+        model.state = model.get_state(cache)
+        model.fit(dataframe, segments, 'test')
+        
+
     def test_problem_data_for_random_model(self):
         problem_data = [2.0, 3.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0,
                         3.0, 3.0, 3.0, 5.0, 5.0, 5.0, 5.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 2.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0,
@@ -301,14 +264,12 @@ class TestDataset(unittest.TestCase):
                 cache['patternModel'] = pattern_model
                 cache['convolveMin'] = max(convolve)
                 cache['convolveMax'] = max(convolve)
-                try:
-                    model = models.GeneralModel()
-                    model.state = model.get_state(cache)
-                    model_name = model.__class__.__name__
-                    model.detect(data, 'test')
-                except ValueError:
-                    self.fail('Model {} raised unexpectedly with av_model {} and window size {}'.format(model_name, pattern_model, ws))
-    
+
+                model = models.GeneralModel()
+                model.state = model.get_state(cache)
+                model.detect(data, 'test')
+                
+
     def test_random_dataset_for_random_model(self):
         data = create_random_model(random.randint(1, 100))
         data = create_dataframe(data)
@@ -339,18 +300,17 @@ class TestDataset(unittest.TestCase):
         cache['confidence'] = confidence
         cache['heightMax'] = data['value'].max()
         cache['heightMin'] = confidence
-        try:
-            for model in model_instances:
-                model_name = model.__class__.__name__
-                model.state = model.get_state(cache)
-                model.detect(data, 'test')
-        except ValueError:
-            self.fail('Model {} raised unexpectedly with dataset {} and cache {}'.format(model_name, data['value'], cache))
+        
+        for model in model_instances:
+            model_name = model.__class__.__name__
+            model.state = model.get_state(cache)
+            model.detect(data, 'test')
+        
 
 if __name__ == '__main__':
     unittest.main()
 
-def create_dataframe(data_val: list) -> pd.DataFrame:    
+def create_dataframe(data_val: list) -> pd.DataFrame:
     data_ind = [1523889000000 + i for i in range(len(data_val))]
     data = {'timestamp': data_ind, 'value': data_val}
     dataframe = pd.DataFrame(data)

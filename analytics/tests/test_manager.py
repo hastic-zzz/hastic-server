@@ -5,6 +5,7 @@ import aiounittest
 from analytic_unit_manager import AnalyticUnitManager
 from collections import namedtuple
 
+
 TestData = namedtuple('TestData', ['uid', 'type', 'values', 'segments'])
 
 def get_random_id() -> str:
