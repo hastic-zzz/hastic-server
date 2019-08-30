@@ -12,9 +12,14 @@ let configExists = fs.existsSync(configFile);
 export const ANALYTICS_PATH = path.join(__dirname, '../../analytics');
 
 export const HASTIC_DB_IN_MEMORY = getConfigField('HASTIC_IN_MEMORY_PERSISTANCE', false);
+export const HASTIC_EXTERNAL_DB = getConfigField('HASTIC_EXTERNAL_DB', false);
+
+export const HASTIC_MONGODB_URL = getConfigField('HASTIC_MONGODB_URL', 'mongodb:27017');
+export const HASTIC_MONGODB_DATABASE = getConfigField('HASTIC_MONGODB_URL', 'hastic');
+export const HASTIC_MONGODB_USER = getConfigField('HASTIC_MONGODB_USER', 'hastic');
+export const HASTIC_MONGODB_PASSWOD = getConfigField('HASTIC_MONGODB_PASSWOD', '');
 
 export const DATA_PATH = path.join(__dirname, '../../data');
-
 export const ANALYTIC_UNITS_DATABASE_PATH = path.join(DATA_PATH, 'analytic_units.db');
 export const ANALYTIC_UNIT_CACHES_DATABASE_PATH = path.join(DATA_PATH, 'analytic_unit_caches.db');
 export const SEGMENTS_DATABASE_PATH = path.join(DATA_PATH, 'segments.db');

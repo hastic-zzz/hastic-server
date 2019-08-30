@@ -2,7 +2,11 @@ import * as config from '../config';
 
 import * as nedb from 'nedb';
 import * as fs from 'fs';
+import * as mongodb from 'mongodb';
 
+
+const url = `mongodb://${config.HASTIC_MONGODB_USER}:${config.HASTIC_MONGODB_PASSWOD}@${config.HASTIC_MONGODB_URL}`
+const mongoClient = new mongodb.MongoClient(url, { useNewUrlParser: true });
 
 export enum Collection { 
   ANALYTIC_UNITS,
@@ -11,6 +15,15 @@ export enum Collection {
   THRESHOLD,
   DETECTION_SPANS,
   DB_META
+};
+
+export const NamesCollection = {
+  ANALYTIC_UNITS: 'analytic_units',
+  ANALYTIC_UNIT_CACHES: 'analytic_unit_caches',
+  SEGMENTS: 'segments',
+  THRESHOLD: 'threshold',
+  DETECTION_SPANS: 'detection_spans',
+  DB_META: 'db_meta'
 };
 
 export enum SortingOrder { ASCENDING = 1, DESCENDING = -1 };
@@ -31,24 +44,24 @@ export type DBQ = {
   removeMany: (query: string[] | object) => Promise<number>
 }
 
-function nedbCollectionFromCollection(collection: Collection): nedb {
-  let nedbCollection = db.get(collection);
-  if(nedbCollection === undefined) {
+function dbCollectionFromCollection(collection: Collection): nedb | mongodb.Collection<any> {
+  let dbCollection = db.get(collection);
+  if(dbCollection === undefined) {
     throw new Error('Can`t find collection ' + collection);
   }
-  return nedbCollection;
+  return dbCollection;
 }
 
 export function makeDBQ(collection: Collection): DBQ {
   return {
-    findOne: dbFindOne.bind(null, nedbCollectionFromCollection(collection)),
-    findMany: dbFindMany.bind(null, nedbCollectionFromCollection(collection)),
-    insertOne: dbInsertOne.bind(null, nedbCollectionFromCollection(collection)),
-    insertMany: dbInsertMany.bind(null, nedbCollectionFromCollection(collection)),
-    updateOne: dbUpdateOne.bind(null, nedbCollectionFromCollection(collection)),
-    updateMany: dbUpdateMany.bind(null, nedbCollectionFromCollection(collection)),
-    removeOne: dbRemoveOne.bind(null, nedbCollectionFromCollection(collection)),
-    removeMany: dbRemoveMany.bind(null, nedbCollectionFromCollection(collection))
+    findOne: dbFindOne.bind(null, dbCollectionFromCollection(collection)),
+    findMany: dbFindMany.bind(null, dbCollectionFromCollection(collection)),
+    insertOne: dbInsertOne.bind(null, dbCollectionFromCollection(collection)),
+    insertMany: dbInsertMany.bind(null, dbCollectionFromCollection(collection)),
+    updateOne: dbUpdateOne.bind(null, dbCollectionFromCollection(collection)),
+    updateMany: dbUpdateMany.bind(null, dbCollectionFromCollection(collection)),
+    removeOne: dbRemoveOne.bind(null, dbCollectionFromCollection(collection)),
+    removeMany: dbRemoveMany.bind(null, dbCollectionFromCollection(collection))
   }
 }
 
@@ -74,7 +87,7 @@ function isEmptyArray(obj: any): boolean {
   return obj.length == 0;
 }
 
-const db = new Map<Collection, nedb>();
+const db = new Map<Collection, nedb | mongodb.Collection<any>>();
 
 
 async function dbInsertOne(nd: nedb, doc: object): Promise<string> {
@@ -223,14 +236,33 @@ function checkDataFolders(): void {
     config.ZMQ_IPC_PATH
   ].forEach(maybeCreateDir);
 }
-checkDataFolders();
 
-const inMemoryOnly = config.HASTIC_DB_IN_MEMORY;
+export async function connectToDb() {
+  if(!config.HASTIC_EXTERNAL_DB) {
+    checkDataFolders();
+    const inMemoryOnly = config.HASTIC_DB_IN_MEMORY;
 
-// TODO: it's better if models request db which we create if it`s needed
-db.set(Collection.ANALYTIC_UNITS, new nedb({ filename: config.ANALYTIC_UNITS_DATABASE_PATH, autoload: true, timestampData: true, inMemoryOnly}));
-db.set(Collection.ANALYTIC_UNIT_CACHES, new nedb({ filename: config.ANALYTIC_UNIT_CACHES_DATABASE_PATH, autoload: true, inMemoryOnly}));
-db.set(Collection.SEGMENTS, new nedb({ filename: config.SEGMENTS_DATABASE_PATH, autoload: true, inMemoryOnly}));
-db.set(Collection.THRESHOLD, new nedb({ filename: config.THRESHOLD_DATABASE_PATH, autoload: true, inMemoryOnly}));
-db.set(Collection.DETECTION_SPANS, new nedb({ filename: config.DETECTION_SPANS_DATABASE_PATH, autoload: true, inMemoryOnly}));
-db.set(Collection.DB_META, new nedb({ filename: config.DB_META_PATH, autoload: true, inMemoryOnly}));
+    // TODO: it's better if models request db which we create if it`s needed
+    db.set(Collection.ANALYTIC_UNITS, new nedb({ filename: config.ANALYTIC_UNITS_DATABASE_PATH, autoload: true, timestampData: true, inMemoryOnly}));
+    db.set(Collection.ANALYTIC_UNIT_CACHES, new nedb({ filename: config.ANALYTIC_UNIT_CACHES_DATABASE_PATH, autoload: true, inMemoryOnly}));
+    db.set(Collection.SEGMENTS, new nedb({ filename: config.SEGMENTS_DATABASE_PATH, autoload: true, inMemoryOnly}));
+    db.set(Collection.THRESHOLD, new nedb({ filename: config.THRESHOLD_DATABASE_PATH, autoload: true, inMemoryOnly}));
+    db.set(Collection.DETECTION_SPANS, new nedb({ filename: config.DETECTION_SPANS_DATABASE_PATH, autoload: true, inMemoryOnly}));
+    db.set(Collection.DB_META, new nedb({ filename: config.DB_META_PATH, autoload: true, inMemoryOnly}));
+  } else {
+    await mongoClient.connect();
+    const hasticDb = mongoClient.db(config.HASTIC_MONGODB_DATABASE);
+    db.set(Collection.ANALYTIC_UNITS, hasticDb.collection(NamesCollection.ANALYTIC_UNITS));
+    db.set(Collection.ANALYTIC_UNIT_CACHES, hasticDb.collection(NamesCollection.ANALYTIC_UNIT_CACHES));
+    db.set(Collection.SEGMENTS, hasticDb.collection(NamesCollection.SEGMENTS));
+    db.set(Collection.THRESHOLD, hasticDb.collection(NamesCollection.THRESHOLD));
+    db.set(Collection.DETECTION_SPANS, hasticDb.collection(NamesCollection.DETECTION_SPANS));
+    db.set(Collection.DB_META, hasticDb.collection(NamesCollection.DB_META));
+  }
+}
+
+export async function closeDb() {
+  if(mongoClient.isConnected) {
+    await mongoClient.close();
+  }
+}

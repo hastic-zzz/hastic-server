@@ -6,6 +6,7 @@ import { router as detectionsRouter }  from './routes/detections_router';
 import * as AnalyticsController from './controllers/analytics_controller';
 
 import * as ProcessService from './services/process_service';
+import * as DataService from './services/data_service';
 
 import { HASTIC_PORT, PACKAGE_VERSION, GIT_INFO, ZMQ_CONNECTION_STRING, HASTIC_INSTANCE_NAME } from './config';
 

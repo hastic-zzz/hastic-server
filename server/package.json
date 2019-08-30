@@ -19,7 +19,10 @@
     "url": "https://github.com/hastic/hastic-server/issues"
   },
   "homepage": "https://github.com/hastic/hastic-server#readme",
-  "dependencies": {},
+  "dependencies": {
+    "@types/mongodb": "^3.3.1",
+    "mongodb": "^3.3.2"
+  },
   "devDependencies": {
     "@types/jest": "^23.3.14",
     "@types/koa": "^2.0.46",
