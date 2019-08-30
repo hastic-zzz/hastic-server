@@ -56,7 +56,7 @@ export class PatternAnalyticUnit extends AnalyticUnit {
 
   static fromObject(obj: any) {
     // TODO: remove duplication
-    let metric: Metric;
+    let metric: Metric | undefined = undefined;
     if(obj.metric !== undefined) {
       metric = Metric.fromObject(obj.metric);
     }

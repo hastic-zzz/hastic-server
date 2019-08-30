@@ -16,5 +16,5 @@ export function convertSegmentsToTimeRanges(segments: Segment.Segment[]): number
 
 export async function clearSegmentsDB(): Promise<void> {
   const segments = await Segment.findMany(TEST_ANALYTIC_UNIT_ID, { labeled: false, deleted: false });
-  await Segment.removeSegments(segments.map(s => s.id));
+  await Segment.removeSegments(_.compact(segments.map(s => s.id)));
 }

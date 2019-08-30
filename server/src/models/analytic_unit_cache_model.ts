@@ -54,7 +54,7 @@ export class AnalyticUnitCache {
   }
 }
 
-export async function findById(id: AnalyticUnitId): Promise<AnalyticUnitCache> {
+export async function findById(id: AnalyticUnitId): Promise<AnalyticUnitCache | null> {
   let obj = await db.findOne(id);
   if(obj === null) {
     return null;

@@ -31,16 +31,24 @@ export type DBQ = {
   removeMany: (query: string[] | object) => Promise<number>
 }
 
+function nedbCollectionFromCollection(collection: Collection): nedb {
+  let nedbCollection = db.get(collection);
+  if(nedbCollection === undefined) {
+    throw new Error('Can`t find collection ' + collection);
+  }
+  return nedbCollection;
+}
+
 export function makeDBQ(collection: Collection): DBQ {
   return {
-    findOne: dbFindOne.bind(null, collection),
-    findMany: dbFindMany.bind(null, collection),
-    insertOne: dbInsertOne.bind(null, collection),
-    insertMany: dbInsertMany.bind(null, collection),
-    updateOne: dbUpdateOne.bind(null, collection),
-    updateMany: dbUpdateMany.bind(null, collection),
-    removeOne: dbRemoveOne.bind(null, collection),
-    removeMany: dbRemoveMany.bind(null, collection)
+    findOne: dbFindOne.bind(null, nedbCollectionFromCollection(collection)),
+    findMany: dbFindMany.bind(null, nedbCollectionFromCollection(collection)),
+    insertOne: dbInsertOne.bind(null, nedbCollectionFromCollection(collection)),
+    insertMany: dbInsertMany.bind(null, nedbCollectionFromCollection(collection)),
+    updateOne: dbUpdateOne.bind(null, nedbCollectionFromCollection(collection)),
+    updateMany: dbUpdateMany.bind(null, nedbCollectionFromCollection(collection)),
+    removeOne: dbRemoveOne.bind(null, nedbCollectionFromCollection(collection)),
+    removeMany: dbRemoveMany.bind(null, nedbCollectionFromCollection(collection))
   }
 }
 
@@ -58,6 +66,7 @@ function wrapIdsToQuery(query: string[] | object): any {
   return query;
 }
 
+// TODO: move to utils
 function isEmptyArray(obj: any): boolean {
   if(!Array.isArray(obj)) {
     return false;
@@ -67,24 +76,25 @@ function isEmptyArray(obj: any): boolean {
 
 const db = new Map<Collection, nedb>();
 
-let dbInsertOne = (collection: Collection, doc: object) => {
+
+async function dbInsertOne(nd: nedb, doc: object): Promise<string> {
   return new Promise<string>((resolve, reject) => {
-    db.get(collection).insert(doc, (err, newDoc: any) => {
+    nd.insert(doc, (err, newDoc: any) => {
       if(err) {
         reject(err);
       } else {
         resolve(newDoc._id);
       }
-    });
+    })
   });
 }
 
-let dbInsertMany = (collection: Collection, docs: object[]) => {
+async function dbInsertMany(nd: nedb, docs: object[]): Promise<string[]> {
   if(docs.length === 0) {
     return Promise.resolve([]);
   }
   return new Promise<string[]>((resolve, reject) => {
-    db.get(collection).insert(docs, (err, newDocs: any[]) => {
+    nd.insert(docs, (err, newDocs: any[]) => {
       if(err) {
         reject(err);
       } else {
@@ -94,12 +104,12 @@ let dbInsertMany = (collection: Collection, docs: object[]) => {
   });
 }
 
-let dbUpdateOne = (collection: Collection, query: string | object, updateQuery: object) => {
+async function dbUpdateOne(nd: nedb, query: string | object, updateQuery: object): Promise<any> {
   // https://github.com/louischatriot/nedb#updating-documents
   let nedbUpdateQuery = { $set: updateQuery }
   query = wrapIdToQuery(query);
   return new Promise<any>((resolve, reject) => {
-    db.get(collection).update(
+    nd.update(
       query,
       nedbUpdateQuery,
       { returnUpdatedDocs: true },
@@ -114,7 +124,7 @@ let dbUpdateOne = (collection: Collection, query: string | object, updateQuery: 
   });
 }
 
-let dbUpdateMany = (collection: Collection, query: string[] | object, updateQuery: object) => {
+async function dbUpdateMany(nd: nedb, query: string[] | object, updateQuery: object): Promise<any[]> {
   // https://github.com/louischatriot/nedb#updating-documents
   if(isEmptyArray(query)) {
     return Promise.resolve([]);
@@ -122,7 +132,7 @@ let dbUpdateMany = (collection: Collection, query: string[] | object, updateQuer
   let nedbUpdateQuery = { $set: updateQuery };
   query = wrapIdsToQuery(query);
   return new Promise<any[]>((resolve, reject) => {
-    db.get(collection).update(
+    nd.update(
       query,
       nedbUpdateQuery,
       { returnUpdatedDocs: true, multi: true },
@@ -137,10 +147,10 @@ let dbUpdateMany = (collection: Collection, query: string[] | object, updateQuer
   });
 }
 
-let dbFindOne = (collection: Collection, query: string | object) => {
+async function dbFindOne(nd: nedb, query: string | object): Promise<any> {
   query = wrapIdToQuery(query);
   return new Promise<any | null>((resolve, reject) => {
-    db.get(collection).findOne(query, (err, doc) => {
+    nd.findOne(query, (err, doc) => {
       if(err) {
         reject(err);
       } else {
@@ -150,13 +160,13 @@ let dbFindOne = (collection: Collection, query: string | object) => {
   });
 }
 
-let dbFindMany = (collection: Collection, query: string[] | object, sortQuery: object = {}) => {
+async function dbFindMany(nd: nedb, query: string[] | object, sortQuery: object = {}): Promise<any[]> {
   if(isEmptyArray(query)) {
     return Promise.resolve([]);
   }
   query = wrapIdsToQuery(query);
   return new Promise<any[]>((resolve, reject) => {
-    db.get(collection).find(query).sort(sortQuery).exec((err, docs: any[]) => {
+    nd.find(query).sort(sortQuery).exec((err, docs: any[]) => {
       if(err) {
         reject(err);
       } else {
@@ -166,10 +176,10 @@ let dbFindMany = (collection: Collection, query: string[] | object, sortQuery: o
   });
 }
 
-let dbRemoveOne = (collection: Collection, query: string | object) => {
+async function dbRemoveOne(nd: nedb, query: string | object): Promise<boolean> {
   query = wrapIdToQuery(query);
   return new Promise<boolean>((resolve, reject) => {
-    db.get(collection).remove(query, { /* options */ }, (err, numRemoved) => {
+    nd.remove(query, { /* options */ }, (err, numRemoved) => {
       if(err) {
         reject(err);
       } else {
@@ -183,13 +193,13 @@ let dbRemoveOne = (collection: Collection, query: string | object) => {
   });
 }
 
-let dbRemoveMany = (collection: Collection, query: string[] | object) => {
+async function dbRemoveMany(nd: nedb, query: string[] | object): Promise<number> {
   if(isEmptyArray(query)) {
-    return Promise.resolve([]);
+    return Promise.resolve(0);
   }
   query = wrapIdsToQuery(query);
   return new Promise<number>((resolve, reject) => {
-    db.get(collection).remove(query, { multi: true }, (err, numRemoved) => {
+    nd.remove(query, { multi: true }, (err, numRemoved) => {
       if(err) {
         reject(err);
       } else {

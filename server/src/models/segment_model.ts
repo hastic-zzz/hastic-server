@@ -114,8 +114,8 @@ export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promis
  * If `from` and `to` are undefined: @returns all segments
  */
 export async function findIntersectedSegments(
-  analyticUnitId: AnalyticUnit.AnalyticUnitId, 
-  from?: number, 
+  analyticUnitId: AnalyticUnit.AnalyticUnitId,
+  from?: number,
   to?: number
 ): Promise<Segment[]> {
   let query: FindManyQuery = {};
@@ -128,6 +128,9 @@ export async function findIntersectedSegments(
   return findMany(analyticUnitId, query);
 }
 
+
+// TODO: rewrite all this horrible function
+// TODO: use utils.segments.IntegerSegmentsSet
 /**
  * Merges an array of segments with ones existing in the DB
  * Inserts resulting segments into DB
@@ -142,6 +145,18 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
     return { addedIds: [], removedIds: [] };
   }
   const analyticUnitId: AnalyticUnitId = segments[0].analyticUnitId;
+  const unit = await AnalyticUnit.findById(analyticUnitId);
+  if(unit === null) {
+    throw new Error('Can`t find analytic unit ' + analyticUnitId);
+  }
+  const cache = await AnalyticUnitCache.findById(analyticUnitId);
+
+  if(cache === null) {
+    throw new Error('Can`t find cache for analytic unit ' + analyticUnitId);
+  }
+
+  const detector = unit.detectorType;
+
   let segmentIdsToRemove: SegmentId[] = [];
   let segmentsToInsert: Segment[] = [];
 
@@ -156,11 +171,7 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
       }
     }
 
-    let cache = await AnalyticUnitCache.findById(analyticUnitId);
-    let unit = await AnalyticUnit.findById(analyticUnitId);
-    const detector = unit.detectorType;
-
-    let intersectedSegments: Segment[];
+    let intersectedSegments: Segment[] = [];
     if(detector === AnalyticUnit.DetectorType.PATTERN) {
       intersectedSegments = await findMany(analyticUnitId, {
         to: { $gte: segment.from },
@@ -179,12 +190,24 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
     }
 
     if(intersectedSegments.length > 0) {
-      let from = _.minBy(intersectedSegments.concat(segment), s => s.from).from;
-      let to = _.maxBy(intersectedSegments.concat(segment), s => s.to).to;
+      let intersectedIds = intersectedSegments.map(s => s.id);
+      let minFromSegment = _.minBy(intersectedSegments.concat(segment), s => s.from);
+      let maxToSegment = _.maxBy(intersectedSegments.concat(segment), s => s.to);
+
+      if(minFromSegment === undefined) {
+        throw new Error('minFromSegment is undefined');
+      }
+
+      if(maxToSegment === undefined) {
+        throw new Error('maxToSegment is undefined');
+      }
+
+      let from = minFromSegment.from;
+      let to = maxToSegment.to;
       let newSegment = Segment.fromObject(segment.toObject());
       newSegment.from = from;
       newSegment.to = to;
-      segmentIdsToRemove = segmentIdsToRemove.concat(intersectedSegments.map(s => s.id));
+      segmentIdsToRemove = segmentIdsToRemove.concat(_.compact(intersectedIds));
       segmentsToInsert.push(newSegment);
     } else {
       segmentsToInsert.push(segment);
