@@ -44,6 +44,10 @@ export type DBQ = {
   removeMany: (query: string[] | object) => Promise<number>
 }
 
+export class DataService {
+
+}
+
 function dbCollectionFromCollection(collection: Collection): nedb | mongodb.Collection<any> {
   let dbCollection = db.get(collection);
   if(dbCollection === undefined) {
@@ -241,7 +245,7 @@ export async function connectToDb() {
   if(!config.HASTIC_EXTERNAL_DB) {
     checkDataFolders();
     const inMemoryOnly = config.HASTIC_DB_IN_MEMORY;
-
+    console.log('use nedb');
     // TODO: it's better if models request db which we create if it`s needed
     db.set(Collection.ANALYTIC_UNITS, new nedb({ filename: config.ANALYTIC_UNITS_DATABASE_PATH, autoload: true, timestampData: true, inMemoryOnly}));
     db.set(Collection.ANALYTIC_UNIT_CACHES, new nedb({ filename: config.ANALYTIC_UNIT_CACHES_DATABASE_PATH, autoload: true, inMemoryOnly}));
@@ -250,14 +254,16 @@ export async function connectToDb() {
     db.set(Collection.DETECTION_SPANS, new nedb({ filename: config.DETECTION_SPANS_DATABASE_PATH, autoload: true, inMemoryOnly}));
     db.set(Collection.DB_META, new nedb({ filename: config.DB_META_PATH, autoload: true, inMemoryOnly}));
   } else {
-    await mongoClient.connect();
-    const hasticDb = mongoClient.db(config.HASTIC_MONGODB_DATABASE);
+    console.log('use mongo');
+    await mongoClient.connect(function(err, client) {
+    const hasticDb = client.db(config.HASTIC_MONGODB_DATABASE);
     db.set(Collection.ANALYTIC_UNITS, hasticDb.collection(NamesCollection.ANALYTIC_UNITS));
     db.set(Collection.ANALYTIC_UNIT_CACHES, hasticDb.collection(NamesCollection.ANALYTIC_UNIT_CACHES));
     db.set(Collection.SEGMENTS, hasticDb.collection(NamesCollection.SEGMENTS));
     db.set(Collection.THRESHOLD, hasticDb.collection(NamesCollection.THRESHOLD));
     db.set(Collection.DETECTION_SPANS, hasticDb.collection(NamesCollection.DETECTION_SPANS));
     db.set(Collection.DB_META, hasticDb.collection(NamesCollection.DB_META));
+    });
   }
 }
 

@@ -1,3 +1,6 @@
+import { connectToDb } from './services/data_service';
+connectToDb();
+
 import { router as analyticUnitsRouter } from './routes/analytic_units_router';
 import { router as segmentsRouter } from './routes/segments_router';
 import { router as dataRouter } from './routes/data_router';
@@ -6,7 +9,7 @@ import { router as detectionsRouter }  from './routes/detections_router';
 import * as AnalyticsController from './controllers/analytics_controller';
 
 import * as ProcessService from './services/process_service';
-import * as DataService from './services/data_service';
+
 
 import { HASTIC_PORT, PACKAGE_VERSION, GIT_INFO, ZMQ_CONNECTION_STRING, HASTIC_INSTANCE_NAME } from './config';
 
