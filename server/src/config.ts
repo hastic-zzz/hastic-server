@@ -4,7 +4,6 @@ import { normalizeUrl } from './utils/url';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
-import { url } from 'koa-router';
 
 
 let configFile = path.join(__dirname, '../../config.json');
@@ -29,7 +28,6 @@ export const HASTIC_DB_CONNECTION_STRING = getConfigField(
 );
 
 export const HASTIC_DB_CONFIG = getDbConfig(HASTIC_DB_CONNECTION_STRING);
-console.log(HASTIC_DB_CONFIG);
 
 export const DATA_PATH = path.join(__dirname, '../../data');
 export const ANALYTIC_UNITS_DATABASE_PATH = path.join(DATA_PATH, 'analytic_units.db');
@@ -143,6 +141,5 @@ function getDbConfig(connectionStr: string): DataBaseConfig {
     url,
     db_name
   };
-  console.log(`DB CONFIG ${config}`);
   return config;
 }
