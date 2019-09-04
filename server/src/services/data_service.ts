@@ -273,7 +273,7 @@ async function connectToDb() {
       db.set(Collection.DETECTION_SPANS, hasticDb.collection(NamesCollection.DETECTION_SPANS));
       db.set(Collection.DB_META, hasticDb.collection(NamesCollection.DB_META));
     } catch(err) {
-      console.log(`got error while connect to mongodb ${err}`);
+      console.log(`got error while connect to MongoDB ${err}`);
       throw err;
     }
   }
@@ -289,6 +289,6 @@ let done = false;
 connectToDb().then(() => {
   done = true;
 }).catch((err) => {
-  console.log(`err while connectToDb ${err}`);
+  console.log(`got error while connect to data base ${err}`);
 });
 deasync.loopWhile(function(){return !done;});
