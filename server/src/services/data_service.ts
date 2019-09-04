@@ -78,7 +78,7 @@ export class DataService {
 }
 /** */
 
-let mongoClient = null;
+let mongoClient: mongodb.MongoClient;
 
 function dbCollectionFromCollection(collection: Collection): nedb | mongodb.Collection<any> {
   let dbCollection = db.get(collection);
@@ -277,7 +277,7 @@ export async function connectToDb() {
   if(!config.HASTIC_EXTERNAL_DB) {
     checkDataFolders();
     const inMemoryOnly = config.HASTIC_DB_IN_MEMORY;
-    console.log('use nedb');
+    console.log('NeDB used as storage');
     // TODO: it's better if models request db which we create if it`s needed
     db.set(Collection.ANALYTIC_UNITS, new nedb({ filename: config.ANALYTIC_UNITS_DATABASE_PATH, autoload: true, timestampData: true, inMemoryOnly}));
     db.set(Collection.ANALYTIC_UNIT_CACHES, new nedb({ filename: config.ANALYTIC_UNIT_CACHES_DATABASE_PATH, autoload: true, inMemoryOnly}));
@@ -286,13 +286,13 @@ export async function connectToDb() {
     db.set(Collection.DETECTION_SPANS, new nedb({ filename: config.DETECTION_SPANS_DATABASE_PATH, autoload: true, inMemoryOnly}));
     db.set(Collection.DB_META, new nedb({ filename: config.DB_META_PATH, autoload: true, inMemoryOnly}));
   } else {
-    console.log('use mongo');
-    const url = `mongodb://${config.HASTIC_MONGODB_USER}:${config.HASTIC_MONGODB_PASSWORD}@${config.HASTIC_MONGODB_URL}`;
+    console.log('MongoDB used as storage');
+    const uri = `mongodb://${config.HASTIC_MONGODB_USER}:${config.HASTIC_MONGODB_PASSWORD}@${config.HASTIC_MONGODB_URL}`;
     const auth = {
       user: config.HASTIC_MONGODB_USER,
       password: config.HASTIC_MONGODB_PASSWORD
     };
-    mongoClient = new mongodb.MongoClient(url, {
+    mongoClient = new mongodb.MongoClient(uri, {
       useNewUrlParser: true,
       auth,
       autoReconnect: true,
@@ -301,8 +301,8 @@ export async function connectToDb() {
       authSource: config.HASTIC_MONGODB_DATABASE
     });
     try {
-      const client = await mongoClient.connect();
-      const hasticDb = client.db(config.HASTIC_MONGODB_DATABASE);
+      const client: mongodb.MongoClient = await mongoClient.connect();
+      const hasticDb: mongodb.Db = client.db(config.HASTIC_MONGODB_DATABASE);
       db.set(Collection.ANALYTIC_UNITS, hasticDb.collection(NamesCollection.ANALYTIC_UNITS));
       db.set(Collection.ANALYTIC_UNIT_CACHES, hasticDb.collection(NamesCollection.ANALYTIC_UNIT_CACHES));
       db.set(Collection.SEGMENTS, hasticDb.collection(NamesCollection.SEGMENTS));
@@ -314,7 +314,6 @@ export async function connectToDb() {
       throw err;
     }
   }
-  console.log('end of foo');
 }
 
 export async function closeDb() {
@@ -323,11 +322,10 @@ export async function closeDb() {
   }
 }
 
-console.log('start de async');
-try{
-const syncConnectToDb = deasync(connectToDb);
-syncConnectToDb();
-} catch(err) {
-  console.log(err);
-}
-console.log('end de async');
+let done = false;
+connectToDb().then(() => {
+  done = true;
+}).catch((err) => {
+  console.log(`err while connectToDb ${err}`);
+});
+deasync.loopWhile(function(){return !done;});
