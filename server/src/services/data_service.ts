@@ -291,6 +291,7 @@ connectToDb().then(() => {
   done = true;
 }).catch((err) => {
   console.log(`data service got error while connect to data base ${err}`);
+  //TODO: choose best practice for error handling
   throw err;
 });
 deasync.loopWhile(() => !done);
