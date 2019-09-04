@@ -3,10 +3,8 @@ import * as config from '../config';
 import * as nedb from 'nedb';
 import * as fs from 'fs';
 import * as mongodb from 'mongodb';
+import * as deasync from 'deasync';
 
-
-const url = `mongodb://${config.HASTIC_MONGODB_USER}:${config.HASTIC_MONGODB_PASSWOD}@${config.HASTIC_MONGODB_URL}`
-const mongoClient = new mongodb.MongoClient(url, { useNewUrlParser: true });
 
 export enum Collection { 
   ANALYTIC_UNITS,
@@ -44,9 +42,43 @@ export type DBQ = {
   removeMany: (query: string[] | object) => Promise<number>
 }
 
+/*
 export class DataService {
 
+  static instance = null;
+  private const db = new Map<Collection, nedb | mongodb.Collection<any>>();
+  private mongoClient;
+
+  constructor() {
+    if(DataService.instance !== null) {
+      throw new Error('DataService may have only one instance');
+    }
+
+    if(config.HASTIC_EXTERNAL_DB === true) {
+      const url = `mongodb://${config.HASTIC_MONGODB_URL}`;
+      const auth = {
+        user: config.HASTIC_MONGODB_USER,
+        password: config.HASTIC_MONGODB_PASSWOD
+      };
+      this.mongoClient = new mongodb.MongoClient(url, {
+        useNewUrlParser: true,
+        auth,
+        autoReconnect: true,
+        loggerLevel: 'debug'
+      });
+    }
+  }
+
+  static getDataService() {
+    if(DataService.instance === null) {
+      DataService.instance = new DataService();
+    }
+    return DataService.instance;
+  }
 }
+/** */
+
+let mongoClient = null;
 
 function dbCollectionFromCollection(collection: Collection): nedb | mongodb.Collection<any> {
   let dbCollection = db.get(collection);
@@ -255,14 +287,33 @@ export async function connectToDb() {
     db.set(Collection.DB_META, new nedb({ filename: config.DB_META_PATH, autoload: true, inMemoryOnly}));
   } else {
     console.log('use mongo');
+    const url = `mongodb://${config.HASTIC_MONGODB_USER}:${config.HASTIC_MONGODB_PASSWORD}@${config.HASTIC_MONGODB_URL}`;
+    const auth = {
+      user: config.HASTIC_MONGODB_USER,
+      password: config.HASTIC_MONGODB_PASSWORD
+    };
+    mongoClient = new mongodb.MongoClient(url, {
+      useNewUrlParser: true,
+      auth,
+      autoReconnect: true,
+      loggerLevel: 'debug',
+      useUnifiedTopology: true,
+      authMechanism: 'SCRAM-SHA-1',
+      authSource: 'hastic'
+    });
     await mongoClient.connect(function(err, client) {
-    const hasticDb = client.db(config.HASTIC_MONGODB_DATABASE);
-    db.set(Collection.ANALYTIC_UNITS, hasticDb.collection(NamesCollection.ANALYTIC_UNITS));
-    db.set(Collection.ANALYTIC_UNIT_CACHES, hasticDb.collection(NamesCollection.ANALYTIC_UNIT_CACHES));
-    db.set(Collection.SEGMENTS, hasticDb.collection(NamesCollection.SEGMENTS));
-    db.set(Collection.THRESHOLD, hasticDb.collection(NamesCollection.THRESHOLD));
-    db.set(Collection.DETECTION_SPANS, hasticDb.collection(NamesCollection.DETECTION_SPANS));
-    db.set(Collection.DB_META, hasticDb.collection(NamesCollection.DB_META));
+      if(err){
+        console.log(`got error while connect to mongodb ${err}`);
+        throw err;
+      }
+      const hasticDb = client.db(config.HASTIC_MONGODB_DATABASE);
+      db.set(Collection.ANALYTIC_UNITS, hasticDb.collection(NamesCollection.ANALYTIC_UNITS));
+      db.set(Collection.ANALYTIC_UNIT_CACHES, hasticDb.collection(NamesCollection.ANALYTIC_UNIT_CACHES));
+      db.set(Collection.SEGMENTS, hasticDb.collection(NamesCollection.SEGMENTS));
+      db.set(Collection.THRESHOLD, hasticDb.collection(NamesCollection.THRESHOLD));
+      db.set(Collection.DETECTION_SPANS, hasticDb.collection(NamesCollection.DETECTION_SPANS));
+      db.set(Collection.DB_META, hasticDb.collection(NamesCollection.DB_META));
+      return;
     });
   }
 }
@@ -272,3 +323,5 @@ export async function closeDb() {
     await mongoClient.close();
   }
 }
+
+deasync(connectToDb)();

@@ -21,6 +21,7 @@
   "homepage": "https://github.com/hastic/hastic-server#readme",
   "dependencies": {
     "@types/mongodb": "^3.3.1",
+    "deasync": "^0.1.15",
     "mongodb": "^3.3.2"
   },
   "devDependencies": {

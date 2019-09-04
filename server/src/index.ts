@@ -1,6 +1,3 @@
-import { connectToDb } from './services/data_service';
-connectToDb();
-
 import { router as analyticUnitsRouter } from './routes/analytic_units_router';
 import { router as segmentsRouter } from './routes/segments_router';
 import { router as dataRouter } from './routes/data_router';
