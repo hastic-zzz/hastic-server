@@ -42,44 +42,6 @@ export type DBQ = {
   removeMany: (query: string[] | object) => Promise<number>
 }
 
-/*
-export class DataService {
-
-  static instance = null;
-  private const db = new Map<Collection, nedb | mongodb.Collection<any>>();
-  private mongoClient;
-
-  constructor() {
-    if(DataService.instance !== null) {
-      throw new Error('DataService may have only one instance');
-    }
-
-    if(config.HASTIC_EXTERNAL_DB === true) {
-      const url = `mongodb://${config.HASTIC_MONGODB_URL}`;
-      const auth = {
-        user: config.HASTIC_MONGODB_USER,
-        password: config.HASTIC_MONGODB_PASSWOD
-      };
-      this.mongoClient = new mongodb.MongoClient(url, {
-        useNewUrlParser: true,
-        auth,
-        autoReconnect: true,
-        loggerLevel: 'debug'
-      });
-    }
-  }
-
-  static getDataService() {
-    if(DataService.instance === null) {
-      DataService.instance = new DataService();
-    }
-    return DataService.instance;
-  }
-}
-/** */
-
-let mongoClient: mongodb.MongoClient;
-
 function dbCollectionFromCollection(collection: Collection): nedb | mongodb.Collection<any> {
   let dbCollection = db.get(collection);
   if(dbCollection === undefined) {
@@ -124,6 +86,7 @@ function isEmptyArray(obj: any): boolean {
 }
 
 const db = new Map<Collection, nedb | mongodb.Collection<any>>();
+let mongoClient: mongodb.MongoClient;
 
 
 async function dbInsertOne(nd: nedb, doc: object): Promise<string> {
@@ -273,7 +236,7 @@ function checkDataFolders(): void {
   ].forEach(maybeCreateDir);
 }
 
-export async function connectToDb() {
+async function connectToDb() {
   if(!config.HASTIC_EXTERNAL_DB) {
     checkDataFolders();
     const inMemoryOnly = config.HASTIC_DB_IN_MEMORY;
@@ -317,7 +280,7 @@ export async function connectToDb() {
 }
 
 export async function closeDb() {
-  if(mongoClient.isConnected) {
+  if(mongoClient !== undefined && mongoClient.isConnected) {
     await mongoClient.close();
   }
 }

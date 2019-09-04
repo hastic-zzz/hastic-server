@@ -7,9 +7,10 @@
   Note: do not import code from other modules here because it can be changed
 */
 
-import { Collection, makeDBQ, connectToDb } from './services/data_service';
+import { Collection, makeDBQ } from './services/data_service';
 
 import * as _ from 'lodash';
+
 
 const metaDB = makeDBQ(Collection.DB_META);
 const analyticUnitsDB = makeDBQ(Collection.ANALYTIC_UNITS);
