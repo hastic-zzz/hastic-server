@@ -296,16 +296,12 @@ export async function connectToDb() {
       useNewUrlParser: true,
       auth,
       autoReconnect: true,
-      loggerLevel: 'debug',
       useUnifiedTopology: true,
       authMechanism: 'SCRAM-SHA-1',
-      authSource: 'hastic'
+      authSource: config.HASTIC_MONGODB_DATABASE
     });
-    await mongoClient.connect(function(err, client) {
-      if(err){
-        console.log(`got error while connect to mongodb ${err}`);
-        throw err;
-      }
+    try {
+      const client = await mongoClient.connect();
       const hasticDb = client.db(config.HASTIC_MONGODB_DATABASE);
       db.set(Collection.ANALYTIC_UNITS, hasticDb.collection(NamesCollection.ANALYTIC_UNITS));
       db.set(Collection.ANALYTIC_UNIT_CACHES, hasticDb.collection(NamesCollection.ANALYTIC_UNIT_CACHES));
@@ -313,9 +309,12 @@ export async function connectToDb() {
       db.set(Collection.THRESHOLD, hasticDb.collection(NamesCollection.THRESHOLD));
       db.set(Collection.DETECTION_SPANS, hasticDb.collection(NamesCollection.DETECTION_SPANS));
       db.set(Collection.DB_META, hasticDb.collection(NamesCollection.DB_META));
-      return;
-    });
+    } catch(err) {
+      console.log(`got error while connect to mongodb ${err}`);
+      throw err;
+    }
   }
+  console.log('end of foo');
 }
 
 export async function closeDb() {
@@ -324,4 +323,11 @@ export async function closeDb() {
   }
 }
 
-deasync(connectToDb)();
+console.log('start de async');
+try{
+const syncConnectToDb = deasync(connectToDb);
+syncConnectToDb();
+} catch(err) {
+  console.log(err);
+}
+console.log('end de async');
