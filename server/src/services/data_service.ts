@@ -15,14 +15,14 @@ export enum Collection {
   DB_META
 };
 
-export const NamesCollection = {
-  ANALYTIC_UNITS: 'analytic_units',
-  ANALYTIC_UNIT_CACHES: 'analytic_unit_caches',
-  SEGMENTS: 'segments',
-  THRESHOLD: 'threshold',
-  DETECTION_SPANS: 'detection_spans',
-  DB_META: 'db_meta'
-};
+const COLLECTION_TO_NAME_MAPPING = new Map<Collection, string>([
+  [Collection.ANALYTIC_UNITS, 'analytic_units'],
+  [Collection.ANALYTIC_UNIT_CACHES, 'analytic_unit_caches'],
+  [Collection.SEGMENTS, 'segments'],
+  [Collection.THRESHOLD, 'threshold'],
+  [Collection.DETECTION_SPANS, 'detection_spans'],
+  [Collection.DB_META, 'db_meta']
+])
 
 export enum SortingOrder { ASCENDING = 1, DESCENDING = -1 };
 
@@ -251,10 +251,10 @@ async function connectToDb() {
   } else {
     console.log('MongoDB used as storage');
     const dbConfig = config.HASTIC_DB_CONFIG;
-    const uri = `mongodb://${dbConfig.USER}:${dbConfig.PASSWORD}@${dbConfig.URL}`;
+    const uri = `mongodb://${dbConfig.user}:${dbConfig.password}@${dbConfig.url}`;
     const auth = {
-      user: dbConfig.USER,
-      password: dbConfig.PASSWORD
+      user: dbConfig.user,
+      password: dbConfig.password
     };
     mongoClient = new mongodb.MongoClient(uri, {
       useNewUrlParser: true,
@@ -262,17 +262,14 @@ async function connectToDb() {
       autoReconnect: true,
       useUnifiedTopology: true,
       authMechanism: 'SCRAM-SHA-1',
-      authSource: dbConfig.DB_NAME
+      authSource: dbConfig.db_name
     });
     try {
       const client: mongodb.MongoClient = await mongoClient.connect();
-      const hasticDb: mongodb.Db = client.db(dbConfig.DB_NAME);
-      db.set(Collection.ANALYTIC_UNITS, hasticDb.collection(NamesCollection.ANALYTIC_UNITS));
-      db.set(Collection.ANALYTIC_UNIT_CACHES, hasticDb.collection(NamesCollection.ANALYTIC_UNIT_CACHES));
-      db.set(Collection.SEGMENTS, hasticDb.collection(NamesCollection.SEGMENTS));
-      db.set(Collection.THRESHOLD, hasticDb.collection(NamesCollection.THRESHOLD));
-      db.set(Collection.DETECTION_SPANS, hasticDb.collection(NamesCollection.DETECTION_SPANS));
-      db.set(Collection.DB_META, hasticDb.collection(NamesCollection.DB_META));
+      const hasticDb: mongodb.Db = client.db(dbConfig.db_name);
+      COLLECTION_TO_NAME_MAPPING.forEach((name, collection) => {
+        db.set(collection, hasticDb.collection(name));
+      });
     } catch(err) {
       console.log(`got error while connect to MongoDB ${err}`);
       throw err;

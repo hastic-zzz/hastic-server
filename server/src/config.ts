@@ -11,10 +11,10 @@ let configFile = path.join(__dirname, '../../config.json');
 let configExists = fs.existsSync(configFile);
 
 export type DataBaseConfig = {
-  USER: string,
-  PASSWORD: string,
-  URL: string,
-  DB_NAME: string
+  user: string,
+  password: string,
+  url: string,
+  db_name: string
 }
 
 export const ANALYTICS_PATH = path.join(__dirname, '../../analytics');
@@ -133,15 +133,15 @@ function createZMQConnectionString() {
 }
 
 function getDbConfig(connectionStr: string): DataBaseConfig {
-  const [USER, PASSWORD] = connectionStr.split('@')[0].split(':');
-  const [DB_NAME, ...urlParts] = connectionStr.split('@')[1].split('/').reverse();
-  const URL = urlParts.reverse().join('/');
+  const [user, password] = connectionStr.split('@')[0].split(':');
+  const [db_name, ...urlParts] = connectionStr.split('@')[1].split('/').reverse();
+  const url = urlParts.reverse().join('/');
 
   const config = {
-    USER,
-    PASSWORD,
-    URL,
-    DB_NAME
+    user,
+    password,
+    url,
+    db_name
   };
   console.log(`DB CONFIG ${config}`);
   return config;
