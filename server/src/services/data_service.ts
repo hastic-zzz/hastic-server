@@ -237,7 +237,7 @@ function checkDataFolders(): void {
 }
 
 async function connectToDb() {
-  if(!config.HASTIC_EXTERNAL_DB) {
+  if(config.HASTIC_DB_CONNECTION_TYPE === 'nedb') {
     checkDataFolders();
     const inMemoryOnly = config.HASTIC_DB_IN_MEMORY;
     console.log('NeDB used as storage');
@@ -250,10 +250,11 @@ async function connectToDb() {
     db.set(Collection.DB_META, new nedb({ filename: config.DB_META_PATH, autoload: true, inMemoryOnly}));
   } else {
     console.log('MongoDB used as storage');
-    const uri = `mongodb://${config.HASTIC_MONGODB_USER}:${config.HASTIC_MONGODB_PASSWORD}@${config.HASTIC_MONGODB_URL}`;
+    const dbConfig = config.HASTIC_DB_CONFIG;
+    const uri = `mongodb://${dbConfig.USER}:${dbConfig.PASSWORD}@${dbConfig.URL}`;
     const auth = {
-      user: config.HASTIC_MONGODB_USER,
-      password: config.HASTIC_MONGODB_PASSWORD
+      user: dbConfig.USER,
+      password: dbConfig.PASSWORD
     };
     mongoClient = new mongodb.MongoClient(uri, {
       useNewUrlParser: true,
@@ -261,11 +262,11 @@ async function connectToDb() {
       autoReconnect: true,
       useUnifiedTopology: true,
       authMechanism: 'SCRAM-SHA-1',
-      authSource: config.HASTIC_MONGODB_DATABASE
+      authSource: dbConfig.DB_NAME
     });
     try {
       const client: mongodb.MongoClient = await mongoClient.connect();
-      const hasticDb: mongodb.Db = client.db(config.HASTIC_MONGODB_DATABASE);
+      const hasticDb: mongodb.Db = client.db(dbConfig.DB_NAME);
       db.set(Collection.ANALYTIC_UNITS, hasticDb.collection(NamesCollection.ANALYTIC_UNITS));
       db.set(Collection.ANALYTIC_UNIT_CACHES, hasticDb.collection(NamesCollection.ANALYTIC_UNIT_CACHES));
       db.set(Collection.SEGMENTS, hasticDb.collection(NamesCollection.SEGMENTS));
@@ -289,6 +290,7 @@ let done = false;
 connectToDb().then(() => {
   done = true;
 }).catch((err) => {
-  console.log(`got error while connect to data base ${err}`);
+  console.log(`data service got error while connect to data base ${err}`);
+  throw err;
 });
-deasync.loopWhile(function(){return !done;});
+deasync.loopWhile(() => !done);

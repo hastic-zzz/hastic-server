@@ -4,20 +4,32 @@ import { normalizeUrl } from './utils/url';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
+import { url } from 'koa-router';
 
 
 let configFile = path.join(__dirname, '../../config.json');
 let configExists = fs.existsSync(configFile);
 
+export type DataBaseConfig = {
+  USER: string,
+  PASSWORD: string,
+  URL: string,
+  DB_NAME: string
+}
+
 export const ANALYTICS_PATH = path.join(__dirname, '../../analytics');
 
 export const HASTIC_DB_IN_MEMORY = getConfigField('HASTIC_IN_MEMORY_PERSISTANCE', false);
-export const HASTIC_EXTERNAL_DB = getConfigField('HASTIC_EXTERNAL_DB', false);
+export const HASTIC_DB_CONNECTION_TYPE = getConfigField('HASTIC_DB_CONNECTION_TYPE', 'nedb'); //nedb or mongodb
 
-export const HASTIC_MONGODB_URL = getConfigField('HASTIC_MONGODB_URL', 'mongodb:27017');
-export const HASTIC_MONGODB_DATABASE = getConfigField('HASTIC_MONGODB_DATABASE', 'hastic');
-export const HASTIC_MONGODB_USER = getConfigField('HASTIC_MONGODB_USER', 'hastic');
-export const HASTIC_MONGODB_PASSWORD = getConfigField('HASTIC_MONGODB_PASSWORD', '');
+//connection string syntax: <db_user>:<db_password>@<db_url>/<db_name>
+export const HASTIC_DB_CONNECTION_STRING = getConfigField(
+  'HASTIC_DB_CONNECTION_STRING',
+  'hastic:password@mongodb:27017/hastic'
+);
+
+export const HASTIC_DB_CONFIG = getDbConfig(HASTIC_DB_CONNECTION_STRING);
+console.log(HASTIC_DB_CONFIG);
 
 export const DATA_PATH = path.join(__dirname, '../../data');
 export const ANALYTIC_UNITS_DATABASE_PATH = path.join(DATA_PATH, 'analytic_units.db');
@@ -118,4 +130,19 @@ function createZMQConnectionString() {
     }
   }
   return zmq;
+}
+
+function getDbConfig(connectionStr: string): DataBaseConfig {
+  const [USER, PASSWORD] = connectionStr.split('@')[0].split(':');
+  const [DB_NAME, ...urlParts] = connectionStr.split('@')[1].split('/').reverse();
+  const URL = urlParts.reverse().join('/');
+
+  const config = {
+    USER,
+    PASSWORD,
+    URL,
+    DB_NAME
+  };
+  console.log(`DB CONFIG ${config}`);
+  return config;
 }
