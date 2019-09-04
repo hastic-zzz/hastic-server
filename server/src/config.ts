@@ -9,12 +9,27 @@ import * as os from 'os';
 let configFile = path.join(__dirname, '../../config.json');
 let configExists = fs.existsSync(configFile);
 
+export type DataBaseConfig = {
+  user: string,
+  password: string,
+  url: string,
+  db_name: string
+}
+
 export const ANALYTICS_PATH = path.join(__dirname, '../../analytics');
 
 export const HASTIC_DB_IN_MEMORY = getConfigField('HASTIC_IN_MEMORY_PERSISTANCE', false);
+export const HASTIC_DB_CONNECTION_TYPE = getConfigField('HASTIC_DB_CONNECTION_TYPE', 'nedb'); //nedb or mongodb
+
+//connection string syntax: <db_user>:<db_password>@<db_url>/<db_name>
+export const HASTIC_DB_CONNECTION_STRING = getConfigField(
+  'HASTIC_DB_CONNECTION_STRING',
+  'hastic:password@mongodb:27017/hastic'
+);
+
+export const HASTIC_DB_CONFIG = getDbConfig(HASTIC_DB_CONNECTION_STRING);
 
 export const DATA_PATH = path.join(__dirname, '../../data');
-
 export const ANALYTIC_UNITS_DATABASE_PATH = path.join(DATA_PATH, 'analytic_units.db');
 export const ANALYTIC_UNIT_CACHES_DATABASE_PATH = path.join(DATA_PATH, 'analytic_unit_caches.db');
 export const SEGMENTS_DATABASE_PATH = path.join(DATA_PATH, 'segments.db');
@@ -113,4 +128,18 @@ function createZMQConnectionString() {
     }
   }
   return zmq;
+}
+
+function getDbConfig(connectionStr: string): DataBaseConfig {
+  const [user, password] = connectionStr.split('@')[0].split(':');
+  const [db_name, ...urlParts] = connectionStr.split('@')[1].split('/').reverse();
+  const url = urlParts.reverse().join('/');
+
+  const config = {
+    user,
+    password,
+    url,
+    db_name
+  };
+  return config;
 }
