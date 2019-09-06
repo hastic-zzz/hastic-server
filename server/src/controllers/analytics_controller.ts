@@ -321,12 +321,12 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
     let task = new AnalyticsTask(
       id, AnalyticsTaskType.LEARN, taskPayload
     );
-    AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
     console.log(`run ${task.type} task, id:${id}`);
     let result = await runTask(task);
     if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
       throw new Error(result.error);
     }
+    AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
     // TODO: rename SUCCESS to something better
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.SUCCESS);
     await AnalyticUnitCache.setData(id, result.payload.cache);
