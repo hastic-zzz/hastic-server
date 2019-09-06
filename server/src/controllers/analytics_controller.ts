@@ -323,7 +323,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
     );
     console.log(`run ${task.type} task, id:${id}`);
     let result = await runTask(task);
-    if(result.status !== AnalyticUnit.AnalyticUnitStatus.SUCCESS) {
+    if(result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
       throw new Error(result.error);
     }
     AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.LEARNING);
