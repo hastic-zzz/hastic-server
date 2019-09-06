@@ -327,7 +327,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
     }
     let result = await runTask(task);
     if(result.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
-      throw new Error(`Analytics failed with an error: ${result.error}`);
+      throw new Error(`Task for analytics failed with an error: ${result.error}`);
     }
     // TODO: rename SUCCESS to something better
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.SUCCESS);
