@@ -49,7 +49,7 @@ export class NeDbAdapter {
     });
   }
     
-  async dbUpdateMany(nd: nedb, query: string[] | object, updateQuery: object): Promise<void> {
+  async dbUpdateMany(nd: nedb, query: string[] | object, updateQuery: object): Promise<any> {
     // https://github.com/louischatriot/nedb#updating-documents
     if(isEmptyArray(query)) {
       return Promise.resolve([]);
