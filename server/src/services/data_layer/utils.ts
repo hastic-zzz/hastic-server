@@ -1,3 +1,7 @@
+import { ObjectID } from 'mongodb';
+
+//TODO: move to database adapter base class
+
 export function wrapIdToQuery(query: string | object): object {
   if(typeof query === 'string') {
     return { _id: query };
@@ -5,8 +9,23 @@ export function wrapIdToQuery(query: string | object): object {
   return query;
 }
 
+export function wrapIdToMongoDbQuery(query: string | object): object {
+  if(typeof query === 'string') {
+    return { _id: new ObjectID(query) };
+  }
+  return query;
+}
+
 export function wrapIdsToQuery(query: string[] | object): object {
   if(Array.isArray(query)) {
+    return { _id: { $in: query } };
+  }
+  return query;
+}
+
+export function wrapIdsToMongoDbQuery(query: string[] | object): object {
+  if(Array.isArray(query)) {
+    query = query.map(id => new ObjectID(id));
     return { _id: { $in: query } };
   }
   return query;
