@@ -61,8 +61,9 @@ async function updateUnit(ctx: Router.IRouterContext) {
     throw new Error('Cannot update undefined id');
   }
 
-  const updatedObj = await AnalyticUnit.update(analyticUnitObj.id, analyticUnitObj);
-  const analyticUnit = AnalyticUnit.createAnalyticUnitFromObject(updatedObj);
+  await AnalyticUnit.update(analyticUnitObj.id, analyticUnitObj);
+  // TODO: check if learning need without database query
+  const analyticUnit = await AnalyticUnit.findById(analyticUnitObj.id);
 
   if(analyticUnit.learningAfterUpdateRequired) {
     await AnalyticsController.runLearning(analyticUnitObj.id);

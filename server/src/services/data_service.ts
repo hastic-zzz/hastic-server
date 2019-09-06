@@ -37,8 +37,8 @@ export type DBQ = {
   findMany: (query: string[] | object, sortQuery?: object) => Promise<any[]>,
   insertOne: (document: object) => Promise<string>,
   insertMany: (documents: object[]) => Promise<string[]>,
-  updateOne: (query: string | object, updateQuery: any) => Promise<any>,
-  updateMany: (query: string[] | object, updateQuery: any) => Promise<null>,
+  updateOne: (query: string | object, updateQuery: any) => Promise<void>,
+  updateMany: (query: string[] | object, updateQuery: any) => Promise<void>,
   removeOne: (query: string) => Promise<boolean>
   removeMany: (query: string[] | object) => Promise<number>
 }

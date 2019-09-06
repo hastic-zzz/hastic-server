@@ -29,7 +29,7 @@ export class NeDbAdapter {
     });
   }
     
-  async dbUpdateOne(nd: nedb, query: string | object, updateQuery: object): Promise<any> {
+  async dbUpdateOne(nd: nedb, query: string | object, updateQuery: object): Promise<void> {
     // https://github.com/louischatriot/nedb#updating-documents
     let nedbUpdateQuery = { $set: updateQuery }
     query = wrapIdToQuery(query);
@@ -42,21 +42,21 @@ export class NeDbAdapter {
           if(err) {
             reject(err);
           } else {
-            resolve(affectedDocument);
+            resolve();
           }
         }
       );
     });
   }
     
-  async dbUpdateMany(nd: nedb, query: string[] | object, updateQuery: object): Promise<any[]> {
+  async dbUpdateMany(nd: nedb, query: string[] | object, updateQuery: object): Promise<void> {
     // https://github.com/louischatriot/nedb#updating-documents
     if(isEmptyArray(query)) {
       return Promise.resolve([]);
     }
     let nedbUpdateQuery = { $set: updateQuery };
     query = wrapIdsToQuery(query);
-    return new Promise<any[]>((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       nd.update(
         query,
         nedbUpdateQuery,
@@ -65,7 +65,7 @@ export class NeDbAdapter {
           if(err) {
             reject(err);
           } else {
-            resolve(affectedDocuments);
+            resolve();
           }
         }
       );
