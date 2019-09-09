@@ -1,3 +1,4 @@
+import { dbQueryWrapper } from './basedb';
 import { NeDbAdapter } from './nedb';
 import { MongoDbAdapter } from './mongodb';
 

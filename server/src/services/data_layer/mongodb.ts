@@ -1,10 +1,12 @@
-import { Collection, FilterQuery, ObjectID } from 'mongodb';
+import { dbQueryWrapper } from "./basedb";
+
+import { Collection, FilterQuery } from 'mongodb';
 import { wrapIdToMongoDbQuery, wrapIdsToMongoDbQuery, isEmptyArray } from './utils';
 
 import * as _ from 'lodash';
 
 
-export class MongoDbAdapter {
+export class MongoDbAdapter implements dbQueryWrapper {
 
   async dbInsertOne(nd: Collection, doc: object): Promise<string> {
     // http://mongodb.github.io/node-mongodb-native/3.1/api/Collection.html#insertOne
@@ -15,7 +17,7 @@ export class MongoDbAdapter {
   async dbInsertMany(nd: Collection, docs: object[]): Promise<string[]> {
     // http://mongodb.github.io/node-mongodb-native/3.1/api/Collection.html#insertMany
     if(docs.length === 0) {
-      return Promise.resolve([]);
+      return [];
     }
     const newDocs = await nd.insertMany(docs);
     return _.map(newDocs.insertedIds, (k,v) => v.toString());
@@ -34,7 +36,7 @@ export class MongoDbAdapter {
   async dbUpdateMany(collection: Collection, query: string[] | object, updateQuery: object): Promise<void> {
       // http://mongodb.github.io/node-mongodb-native/3.1/api/Collection.html#updateMany
       if(isEmptyArray(query)) {
-      return Promise.resolve();
+        return;
       }
       let mongodbUpdateQuery = { $set: updateQuery };
       query = wrapIdsToMongoDbQuery(query);

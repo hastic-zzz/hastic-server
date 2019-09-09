@@ -1,7 +1,10 @@
-import * as nedb from 'nedb';
+import { dbQueryWrapper } from './basedb';
 import { wrapIdToQuery, wrapIdsToQuery, isEmptyArray } from './utils';
 
-export class NeDbAdapter {
+import * as nedb from 'nedb';
+
+
+export class NeDbAdapter implements dbQueryWrapper {
   async dbInsertOne(nd: nedb, doc: object): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       nd.insert(doc, (err, newDoc: any) => {
@@ -52,7 +55,7 @@ export class NeDbAdapter {
   async dbUpdateMany(nd: nedb, query: string[] | object, updateQuery: object): Promise<void> {
     // https://github.com/louischatriot/nedb#updating-documents
     if(isEmptyArray(query)) {
-      return Promise.resolve([]);
+      return;
     }
     let nedbUpdateQuery = { $set: updateQuery };
     query = wrapIdsToQuery(query);
