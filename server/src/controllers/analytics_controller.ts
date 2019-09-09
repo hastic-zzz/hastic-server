@@ -262,7 +262,6 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
     if(oldCache !== null) {
       oldCache = oldCache.data;
     } else {
-      console.log('runLearning', id);
       await AnalyticUnitCache.create(id);
     }
 
@@ -349,7 +348,6 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     intersection = oldCache.getIntersection();
     oldCache = oldCache.data;
   } else {
-    console.log('run detect', id);
     await AnalyticUnitCache.create(id);
   }
 
@@ -385,6 +383,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     }
 
     const payload = await processDetectionResult(id, result.payload);
+
     await Segment.mergeAndInsertSegments(payload.segments);
     await Promise.all([
       AnalyticUnitCache.setData(id, payload.cache),

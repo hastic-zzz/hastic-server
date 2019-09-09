@@ -150,7 +150,6 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
     throw new Error('Can`t find analytic unit ' + analyticUnitId);
   }
   const cache = await AnalyticUnitCache.findById(analyticUnitId);
-  console.log(cache, analyticUnitId);
 
   const detector = unit.detectorType;
 
