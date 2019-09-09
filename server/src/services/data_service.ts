@@ -1,4 +1,4 @@
-import { getDbAdapter } from './data_layer';
+import { getDbAdapter, dbCollection } from './data_layer';
 import * as config from '../config';
 
 import * as nedb from 'nedb';
@@ -43,11 +43,11 @@ export type DBQ = {
   removeMany: (query: string[] | object) => Promise<number>
 }
 
-const adapter = getDbAdapter();
-const db = new Map<Collection, nedb | mongodb.Collection<any>>();
+const queryWrapper = getDbAdapter();
+const db = new Map<Collection, dbCollection>();
 let mongoClient: mongodb.MongoClient;
 
-function dbCollectionFromCollection(collection: Collection): nedb | mongodb.Collection<any> {
+function dbCollectionFromCollection(collection: Collection): dbCollection {
   let dbCollection = db.get(collection);
   if(dbCollection === undefined) {
     throw new Error('Can`t find collection ' + collection);
@@ -57,14 +57,14 @@ function dbCollectionFromCollection(collection: Collection): nedb | mongodb.Coll
 
 export function makeDBQ(collection: Collection): DBQ {
   return {
-    findOne: adapter.dbFindOne.bind(null, dbCollectionFromCollection(collection)),
-    findMany: adapter.dbFindMany.bind(null, dbCollectionFromCollection(collection)),
-    insertOne: adapter.dbInsertOne.bind(null, dbCollectionFromCollection(collection)),
-    insertMany: adapter.dbInsertMany.bind(null, dbCollectionFromCollection(collection)),
-    updateOne: adapter.dbUpdateOne.bind(null, dbCollectionFromCollection(collection)),
-    updateMany: adapter.dbUpdateMany.bind(null, dbCollectionFromCollection(collection)),
-    removeOne: adapter.dbRemoveOne.bind(null, dbCollectionFromCollection(collection)),
-    removeMany: adapter.dbRemoveMany.bind(null, dbCollectionFromCollection(collection))
+    findOne: queryWrapper.dbFindOne.bind(null, dbCollectionFromCollection(collection)),
+    findMany: queryWrapper.dbFindMany.bind(null, dbCollectionFromCollection(collection)),
+    insertOne: queryWrapper.dbInsertOne.bind(null, dbCollectionFromCollection(collection)),
+    insertMany: queryWrapper.dbInsertMany.bind(null, dbCollectionFromCollection(collection)),
+    updateOne: queryWrapper.dbUpdateOne.bind(null, dbCollectionFromCollection(collection)),
+    updateMany: queryWrapper.dbUpdateMany.bind(null, dbCollectionFromCollection(collection)),
+    removeOne: queryWrapper.dbRemoveOne.bind(null, dbCollectionFromCollection(collection)),
+    removeMany: queryWrapper.dbRemoveMany.bind(null, dbCollectionFromCollection(collection))
   }
 }
 

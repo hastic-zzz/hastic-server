@@ -1,14 +1,14 @@
-import { dbQueryWrapper } from './basedb';
-import { NeDbAdapter } from './nedb';
+import { dbQueryWrapper, dbCollection } from './basedb';
+import { NeDbQueryWrapper } from './nedb';
 import { MongoDbQueryWrapper } from './mongodb';
 
 import { HASTIC_DB_CONNECTION_TYPE } from '../../config';
 
-export { NeDbAdapter };
+export { NeDbQueryWrapper, MongoDbQueryWrapper, dbQueryWrapper, dbCollection };
 
-export function getDbAdapter() {
+export function getDbAdapter(): dbQueryWrapper {
   if(HASTIC_DB_CONNECTION_TYPE === 'nedb') {
-    return new NeDbAdapter();
+    return new NeDbQueryWrapper();
   }
   if(HASTIC_DB_CONNECTION_TYPE === 'mongodb') {
     return new MongoDbQueryWrapper();

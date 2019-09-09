@@ -4,7 +4,7 @@ import { wrapIdToQuery, wrapIdsToQuery, isEmptyArray } from './utils';
 import * as nedb from 'nedb';
 
 
-export class NeDbAdapter implements dbQueryWrapper {
+export class NeDbQueryWrapper implements dbQueryWrapper {
   async dbInsertOne(nd: nedb, doc: object): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       nd.insert(doc, (err, newDoc: any) => {
