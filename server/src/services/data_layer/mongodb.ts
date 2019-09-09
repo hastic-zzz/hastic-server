@@ -6,7 +6,7 @@ import { wrapIdToMongoDbQuery, wrapIdsToMongoDbQuery, isEmptyArray } from './uti
 import * as _ from 'lodash';
 
 
-export class MongoDbAdapter implements dbQueryWrapper {
+export class MongoDbQueryWrapper implements dbQueryWrapper {
 
   async dbInsertOne(nd: Collection, doc: object): Promise<string> {
     // http://mongodb.github.io/node-mongodb-native/3.1/api/Collection.html#insertOne
