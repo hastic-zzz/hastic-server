@@ -19,5 +19,3 @@ module.exports = {
     "<rootDir>/spec/setup_tests.ts"
   ]
 };
-
-process.env.HASTIC_DB_IN_MEMORY = 'true';
