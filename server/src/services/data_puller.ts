@@ -114,7 +114,6 @@ export class DataPuller {
       const now = Date.now();
       let payloadValues = data.values;
       let cache = await AnalyticUnitCache.findById(analyticUnit.id);
-
       if(cache !== null) {
         cache = cache.data
       }
