@@ -55,7 +55,9 @@ export class AnalyticUnitCache {
 }
 
 export async function findById(id: AnalyticUnitId): Promise<AnalyticUnitCache | null> {
+  console.log('findById', id);
   let obj = await db.findOne(id);
+  console.log('obj', obj);
   if(obj === null) {
     return null;
   }
@@ -63,6 +65,7 @@ export async function findById(id: AnalyticUnitId): Promise<AnalyticUnitCache | 
 }
 
 export async function create(id: AnalyticUnitId): Promise<AnalyticUnitId> {
+  console.log('create', id);
   let cache = new AnalyticUnitCache(id);
   return db.insertOne(cache.toObject());
 }

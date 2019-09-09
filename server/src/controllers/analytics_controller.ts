@@ -67,6 +67,7 @@ export async function onDetect(detectionResult: DetectionResult): Promise<Segmen
   detectionsCount++;
   let id = detectionResult.analyticUnitId;
   let payload = await processDetectionResult(id, detectionResult);
+  console.log('before merge segments in onDetect');
   const insertionResult = await Segment.mergeAndInsertSegments(payload.segments)
   await Promise.all([
     AnalyticUnitCache.setData(id, payload.cache),
@@ -262,6 +263,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
     if(oldCache !== null) {
       oldCache = oldCache.data;
     } else {
+      console.log('runLearning', id);
       await AnalyticUnitCache.create(id);
     }
 
@@ -348,6 +350,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     intersection = oldCache.getIntersection();
     oldCache = oldCache.data;
   } else {
+    console.log('run detect', id);
     await AnalyticUnitCache.create(id);
   }
 
@@ -383,7 +386,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     }
 
     const payload = await processDetectionResult(id, result.payload);
-
+    console.log('before merge segments in run detect');
     await Segment.mergeAndInsertSegments(payload.segments);
     await Promise.all([
       AnalyticUnitCache.setData(id, payload.cache),
@@ -526,7 +529,9 @@ export async function updateSegments(
   segmentsToInsert: Segment.Segment[],
   removedIds: Segment.SegmentId[]
 ): Promise<{ addedIds: Segment.SegmentId[] }> {
+  await AnalyticUnitCache.create(id);
   await Segment.removeSegments(removedIds);
+  console.log('before merge segments in updateSegments');
   const insertionResult = await Segment.mergeAndInsertSegments(segmentsToInsert);
 
   return { addedIds: insertionResult.addedIds };
