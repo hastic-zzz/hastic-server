@@ -1,4 +1,4 @@
-import { getDbAdapter, dbCollection } from './data_layer';
+import { getDbQueryWrapper, dbCollection } from './data_layer';
 import * as config from '../config';
 
 import * as nedb from 'nedb';
@@ -43,7 +43,7 @@ export type DBQ = {
   removeMany: (query: string[] | object) => Promise<number>
 }
 
-const queryWrapper = getDbAdapter();
+const queryWrapper = getDbQueryWrapper();
 const db = new Map<Collection, dbCollection>();
 let mongoClient: mongodb.MongoClient;
 

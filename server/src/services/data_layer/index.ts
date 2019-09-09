@@ -6,7 +6,7 @@ import { HASTIC_DB_CONNECTION_TYPE } from '../../config';
 
 export { NeDbQueryWrapper, MongoDbQueryWrapper, dbQueryWrapper, dbCollection };
 
-export function getDbAdapter(): dbQueryWrapper {
+export function getDbQueryWrapper(): dbQueryWrapper {
   if(HASTIC_DB_CONNECTION_TYPE === 'nedb') {
     return new NeDbQueryWrapper();
   }

@@ -21,6 +21,7 @@
   "homepage": "https://github.com/hastic/hastic-server#readme",
   "dependencies": {},
   "devDependencies": {
+    "@types/axios": "^0.14.0",
     "@types/deasync": "^0.1.0",
     "@types/jest": "^23.3.14",
     "@types/koa": "^2.0.46",
@@ -30,7 +31,6 @@
     "@types/mongodb": "^3.3.1",
     "@types/nedb": "^1.8.0",
     "@types/zeromq": "^4.6.0",
-    "deasync": "^0.1.15",
     "axios": "^0.18.0",
     "babel-core": "^6.26.3",
     "babel-jest": "^23.4.2",
@@ -38,6 +38,7 @@
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "babel-preset-es2015": "^6.24.1",
+    "deasync": "^0.1.15",
     "es6-promise": "^4.2.4",
     "event-stream": "3.3.4",
     "file-loader": "^1.1.11",
