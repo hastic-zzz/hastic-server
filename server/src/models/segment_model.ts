@@ -176,16 +176,16 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
         deleted: segment.deleted
       });
     } else {
-      let intersectionZone = 0;
+      let intersectionRange = 0;
       if(cache !== null) {
         const timeStep = cache.getTimeStep();
         if(timeStep !== undefined) {
-          intersectionZone = timeStep;
+          intersectionRange = timeStep;
         }
       }
       intersectedSegments = await findMany(analyticUnitId, {
-        to: { $gte: segment.from - intersectionZone },
-        from: { $lte: segment.to + intersectionZone },
+        to: { $gte: segment.from - intersectionRange },
+        from: { $lte: segment.to + intersectionRange },
         labeled: segment.labeled,
         deleted: segment.deleted
       });
