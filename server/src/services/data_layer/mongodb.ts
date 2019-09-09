@@ -1,4 +1,4 @@
-import { dbQueryWrapper } from "./basedb";
+import { dbQueryWrapper } from './basedb';
 
 import { Collection, FilterQuery } from 'mongodb';
 import { wrapIdToMongoDbQuery, wrapIdsToMongoDbQuery, isEmptyArray } from './utils';
@@ -27,7 +27,7 @@ export class MongoDbQueryWrapper implements dbQueryWrapper {
     // http://mongodb.github.io/node-mongodb-native/3.1/api/Collection.html#updateOne
     let mongodbUpdateQuery = { $set: updateQuery }
     query = wrapIdToMongoDbQuery(query);
-    const affected = await nd.updateOne(
+    await nd.updateOne(
       query,
       mongodbUpdateQuery
     );
@@ -40,9 +40,9 @@ export class MongoDbQueryWrapper implements dbQueryWrapper {
       }
       let mongodbUpdateQuery = { $set: updateQuery };
       query = wrapIdsToMongoDbQuery(query);
-      const affectedDocuments = await collection.updateMany(
-          query,
-          mongodbUpdateQuery
+      await collection.updateMany(
+        query,
+        mongodbUpdateQuery
       );
   }
   
@@ -59,7 +59,7 @@ export class MongoDbQueryWrapper implements dbQueryWrapper {
   async dbFindMany(collection: Collection, query: string[] | object, sortQuery: object = {}): Promise<any[]> {
     // http://mongodb.github.io/node-mongodb-native/3.1/api/Collection.html#find  
     if(isEmptyArray(query)) {
-      return Promise.resolve([]);
+      return [];
     }
     query = wrapIdsToMongoDbQuery(query);
     return await collection.find(query).sort(sortQuery).toArray();
@@ -72,13 +72,13 @@ export class MongoDbQueryWrapper implements dbQueryWrapper {
     if(deleted.deletedCount > 1) {
       throw new Error(`Removed ${deleted.deletedCount} elements with query: ${JSON.stringify(query)}. Only one is Ok.`);
     }
-    return deleted.deletedCount == 1;
+    return deleted.deletedCount === 1;
   }
   
   async dbRemoveMany(collection: Collection, query: string[] | object): Promise<number> {
     // http://mongodb.github.io/node-mongodb-native/3.1/api/Collection.html#deleteMany
     if(isEmptyArray(query)) {
-      return Promise.resolve(0);
+      return 0;
     }
     query = wrapIdsToMongoDbQuery(query);
     const deleted = await collection.deleteMany(query);
