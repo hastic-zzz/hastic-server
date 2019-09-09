@@ -8,26 +8,26 @@ import * as _ from 'lodash';
 
 export class MongoDbQueryWrapper implements dbQueryWrapper {
 
-  async dbInsertOne(nd: Collection, doc: object): Promise<string> {
+  async dbInsertOne(collection: Collection, doc: object): Promise<string> {
     // http://mongodb.github.io/node-mongodb-native/3.1/api/Collection.html#insertOne
-    const newDoc = await nd.insertOne(doc);
+    const newDoc = await collection.insertOne(doc);
     return newDoc.insertedId.toString();
   }
   
-  async dbInsertMany(nd: Collection, docs: object[]): Promise<string[]> {
+  async dbInsertMany(collection: Collection, docs: object[]): Promise<string[]> {
     // http://mongodb.github.io/node-mongodb-native/3.1/api/Collection.html#insertMany
     if(docs.length === 0) {
       return [];
     }
-    const newDocs = await nd.insertMany(docs);
+    const newDocs = await collection.insertMany(docs);
     return _.map(newDocs.insertedIds, (k,v) => v.toString());
   }
   
-  async dbUpdateOne(nd: Collection, query: FilterQuery<string | object>, updateQuery: object): Promise<void> {
+  async dbUpdateOne(collection: Collection, query: FilterQuery<string | object>, updateQuery: object): Promise<void> {
     // http://mongodb.github.io/node-mongodb-native/3.1/api/Collection.html#updateOne
     let mongodbUpdateQuery = { $set: updateQuery }
     query = wrapIdToMongoDbQuery(query);
-    await nd.updateOne(
+    await collection.updateOne(
       query,
       mongodbUpdateQuery
     );
