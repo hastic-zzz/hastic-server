@@ -178,7 +178,7 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
     } else {
       let intersectionRangeExtension = 0;
       if(cache !== null) {
-        const timeStep = cache.getTimeStep();
+        const timeStep = cache.timeStep;
         if(timeStep !== undefined) {
           intersectionRangeExtension = timeStep;
         }
