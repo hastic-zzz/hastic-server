@@ -17,7 +17,7 @@ const analyticUnitsDB = makeDBQ(Collection.ANALYTIC_UNITS);
 const analyticUnitCachesDB = makeDBQ(Collection.ANALYTIC_UNIT_CACHES);
 const thresholdsDB = makeDBQ(Collection.THRESHOLD);
 
-const DB_META_ID = "000000000000000000000001"; //24 symbols for mongodb
+const DB_META_ID = '000000000000000000000001'; //24 symbols for mongodb
 
 type DbMeta = {
   revision: number

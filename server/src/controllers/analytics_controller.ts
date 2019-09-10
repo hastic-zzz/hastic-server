@@ -592,7 +592,7 @@ export async function getDetectionSpans(
 async function getPayloadData(
   analyticUnit: AnalyticUnit.AnalyticUnit,
   from: number,
-  to:number
+  to: number
 ) {
   let range: TimeRange;
   if(from !== undefined && to !== undefined) {

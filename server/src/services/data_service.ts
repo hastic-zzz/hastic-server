@@ -98,7 +98,7 @@ async function connectToDb() {
     db.set(Collection.THRESHOLD, new nedb({ filename: config.THRESHOLD_DATABASE_PATH, autoload: true, inMemoryOnly}));
     db.set(Collection.DETECTION_SPANS, new nedb({ filename: config.DETECTION_SPANS_DATABASE_PATH, autoload: true, inMemoryOnly}));
     db.set(Collection.DB_META, new nedb({ filename: config.DB_META_PATH, autoload: true, inMemoryOnly}));
-  } else {
+  } else if(config.HASTIC_DB_CONNECTION_TYPE === 'mongodb') {
     console.log('MongoDB used as storage');
     const dbConfig = config.HASTIC_DB_CONFIG;
     const uri = `mongodb://${dbConfig.user}:${dbConfig.password}@${dbConfig.url}`;
@@ -112,11 +112,11 @@ async function connectToDb() {
       autoReconnect: true,
       useUnifiedTopology: true,
       authMechanism: 'SCRAM-SHA-1',
-      authSource: dbConfig.db_name
+      authSource: dbConfig.dbName
     });
     try {
       const client: mongodb.MongoClient = await mongoClient.connect();
-      const hasticDb: mongodb.Db = client.db(dbConfig.db_name);
+      const hasticDb: mongodb.Db = client.db(dbConfig.dbName);
       COLLECTION_TO_NAME_MAPPING.forEach((name, collection) => {
         db.set(collection, hasticDb.collection(name));
       });
@@ -124,6 +124,10 @@ async function connectToDb() {
       console.log(`got error while connect to MongoDB ${err}`);
       throw err;
     }
+  } else {
+    throw new Error(
+      `"${config.HASTIC_DB_CONNECTION_TYPE}" HASTIC_DB_CONNECTION_TYPE is not supported. Possible values: "nedb", "mongodb"`
+    );
   }
 }
 

@@ -62,7 +62,7 @@ async function updateUnit(ctx: Router.IRouterContext) {
   }
 
   await AnalyticUnit.update(analyticUnitObj.id, analyticUnitObj);
-  // TODO: check if learning need without database query
+  // TODO: check if learning is necessary without database query
   const analyticUnit = await AnalyticUnit.findById(analyticUnitObj.id);
 
   if(analyticUnit.learningAfterUpdateRequired) {

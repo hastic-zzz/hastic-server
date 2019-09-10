@@ -13,7 +13,7 @@ export type DataBaseConfig = {
   user: string,
   password: string,
   url: string,
-  db_name: string
+  dbName: string
 }
 
 export const ANALYTICS_PATH = path.join(__dirname, '../../analytics');
@@ -132,14 +132,14 @@ function createZMQConnectionString() {
 
 function getDbConfig(connectionStr: string): DataBaseConfig {
   const [user, password] = connectionStr.split('@')[0].split(':');
-  const [db_name, ...urlParts] = connectionStr.split('@')[1].split('/').reverse();
+  const [dbName, ...urlParts] = connectionStr.split('@')[1].split('/').reverse();
   const url = urlParts.reverse().join('/');
 
   const config = {
     user,
     password,
     url,
-    db_name
+    dbName
   };
   return config;
 }
