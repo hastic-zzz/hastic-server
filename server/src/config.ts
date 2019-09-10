@@ -9,6 +9,7 @@ import * as os from 'os';
 let configFile = path.join(__dirname, '../../config.json');
 let configExists = fs.existsSync(configFile);
 
+// TODO: move to data_layer
 export type DBConfig = {
   user: string,
   password: string,
@@ -130,6 +131,7 @@ function createZMQConnectionString() {
   return zmq;
 }
 
+// TODO: move to data_layer
 function getDbConfig(connectionStr: string): DBConfig {
   const [user, password] = connectionStr.split('@')[0].split(':');
   const [dbName, ...urlParts] = connectionStr.split('@')[1].split('/').reverse();

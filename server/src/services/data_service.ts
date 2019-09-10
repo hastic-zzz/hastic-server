@@ -1,4 +1,4 @@
-import { getDbQueryWrapper, dbCollection } from './data_layer';
+import { getDbQueryWrapper, dbCollection, DBType } from './data_layer';
 import * as config from '../config';
 
 import * as nedb from 'nedb';
@@ -23,7 +23,7 @@ const COLLECTION_TO_NAME_MAPPING = new Map<Collection, string>([
   [Collection.THRESHOLD, 'threshold'],
   [Collection.DETECTION_SPANS, 'detection_spans'],
   [Collection.DB_META, 'db_meta']
-])
+]);
 
 export enum SortingOrder { ASCENDING = 1, DESCENDING = -1 };
 
@@ -87,10 +87,10 @@ function checkDataFolders(): void {
 }
 
 async function connectToDb() {
-  if(config.HASTIC_DB_CONNECTION_TYPE === 'nedb') {
+  if(config.HASTIC_DB_CONNECTION_TYPE === DBType.nedb) {
     checkDataFolders();
     const inMemoryOnly = config.HASTIC_DB_IN_MEMORY;
-    console.log('NeDB used as storage');
+    console.log('NeDB is used as storage');
     // TODO: it's better if models request db which we create if it`s needed
     db.set(Collection.ANALYTIC_UNITS, new nedb({ filename: config.ANALYTIC_UNITS_DATABASE_PATH, autoload: true, timestampData: true, inMemoryOnly}));
     db.set(Collection.ANALYTIC_UNIT_CACHES, new nedb({ filename: config.ANALYTIC_UNIT_CACHES_DATABASE_PATH, autoload: true, inMemoryOnly}));
@@ -98,8 +98,8 @@ async function connectToDb() {
     db.set(Collection.THRESHOLD, new nedb({ filename: config.THRESHOLD_DATABASE_PATH, autoload: true, inMemoryOnly}));
     db.set(Collection.DETECTION_SPANS, new nedb({ filename: config.DETECTION_SPANS_DATABASE_PATH, autoload: true, inMemoryOnly}));
     db.set(Collection.DB_META, new nedb({ filename: config.DB_META_PATH, autoload: true, inMemoryOnly}));
-  } else if(config.HASTIC_DB_CONNECTION_TYPE === 'mongodb') {
-    console.log('MongoDB used as storage');
+  } else if(config.HASTIC_DB_CONNECTION_TYPE === DBType.mongodb) {
+    console.log('MongoDB is used as storage');
     const dbConfig = config.HASTIC_DB_CONFIG;
     const uri = `mongodb://${dbConfig.user}:${dbConfig.password}@${dbConfig.url}`;
     const auth = {
