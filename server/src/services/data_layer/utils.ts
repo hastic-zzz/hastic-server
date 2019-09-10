@@ -23,6 +23,8 @@ export function wrapIdsToQuery(query: string[] | object): object {
   return query;
 }
 
+// mongodb uses ObjectIds to store _id
+// we should wrap ids into ObjectID to generate correct query
 export function wrapIdsToMongoDbQuery(query: string[] | object): object {
   if(Array.isArray(query)) {
     query = query.map(id => new ObjectID(id));
