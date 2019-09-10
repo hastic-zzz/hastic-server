@@ -1,4 +1,4 @@
-import { dbQueryWrapper } from './basedb';
+import { DbQueryWrapper } from './basedb';
 
 import { Collection, FilterQuery, ObjectID } from 'mongodb';
 import { wrapIdToMongoDbQuery, wrapIdsToMongoDbQuery, isEmptyArray } from './utils';
@@ -6,7 +6,7 @@ import { wrapIdToMongoDbQuery, wrapIdsToMongoDbQuery, isEmptyArray } from './uti
 import * as _ from 'lodash';
 
 
-export class MongoDbQueryWrapper implements dbQueryWrapper {
+export class MongoDbQueryWrapper implements DbQueryWrapper {
 
   async dbInsertOne(collection: Collection, doc: any): Promise<string> {
     // http://mongodb.github.io/node-mongodb-native/3.1/api/Collection.html#insertOne

@@ -3,7 +3,7 @@ import * as mongodb from 'mongodb';
 
 export type dbCollection = nedb | mongodb.Collection;
 
-export interface dbQueryWrapper {
+export interface DbQueryWrapper {
   dbInsertOne(collection: dbCollection, doc: object): Promise<string>;
   dbInsertMany(collection: dbCollection, docs: object[]): Promise<string[]>;
   dbUpdateOne(collection: dbCollection, query: string | object, updateQuery: object): Promise<void>;

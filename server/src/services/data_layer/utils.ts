@@ -1,6 +1,6 @@
 import { ObjectID } from 'mongodb';
 
-//TODO: move to dbQueryWrapper
+//TODO: move to DbQueryWrapper
 
 export function wrapIdToQuery(query: string | object): object {
   if(typeof query === 'string') {
