@@ -1,3 +1,4 @@
+import { getDbQueryWrapper, dbCollection, DBType } from './data_layer';
 import * as config from '../config';
 
 import * as nedb from 'nedb';
@@ -22,7 +23,7 @@ const COLLECTION_TO_NAME_MAPPING = new Map<Collection, string>([
   [Collection.THRESHOLD, 'threshold'],
   [Collection.DETECTION_SPANS, 'detection_spans'],
   [Collection.DB_META, 'db_meta']
-])
+]);
 
 export enum SortingOrder { ASCENDING = 1, DESCENDING = -1 };
 
@@ -36,13 +37,17 @@ export type DBQ = {
   findMany: (query: string[] | object, sortQuery?: object) => Promise<any[]>,
   insertOne: (document: object) => Promise<string>,
   insertMany: (documents: object[]) => Promise<string[]>,
-  updateOne: (query: string | object, updateQuery: any) => Promise<any>,
-  updateMany: (query: string[] | object, updateQuery: any) => Promise<any[]>,
+  updateOne: (query: string | object, updateQuery: any) => Promise<void>,
+  updateMany: (query: string[] | object, updateQuery: any) => Promise<void>,
   removeOne: (query: string) => Promise<boolean>
   removeMany: (query: string[] | object) => Promise<number>
 }
 
-function dbCollectionFromCollection(collection: Collection): nedb | mongodb.Collection<any> {
+const queryWrapper = getDbQueryWrapper();
+const db = new Map<Collection, dbCollection>();
+let mongoClient: mongodb.MongoClient;
+
+function dbCollectionFromCollection(collection: Collection): dbCollection {
   let dbCollection = db.get(collection);
   if(dbCollection === undefined) {
     throw new Error('Can`t find collection ' + collection);
@@ -52,174 +57,19 @@ function dbCollectionFromCollection(collection: Collection): nedb | mongodb.Coll
 
 export function makeDBQ(collection: Collection): DBQ {
   return {
-    findOne: dbFindOne.bind(null, dbCollectionFromCollection(collection)),
-    findMany: dbFindMany.bind(null, dbCollectionFromCollection(collection)),
-    insertOne: dbInsertOne.bind(null, dbCollectionFromCollection(collection)),
-    insertMany: dbInsertMany.bind(null, dbCollectionFromCollection(collection)),
-    updateOne: dbUpdateOne.bind(null, dbCollectionFromCollection(collection)),
-    updateMany: dbUpdateMany.bind(null, dbCollectionFromCollection(collection)),
-    removeOne: dbRemoveOne.bind(null, dbCollectionFromCollection(collection)),
-    removeMany: dbRemoveMany.bind(null, dbCollectionFromCollection(collection))
+    findOne: queryWrapper.dbFindOne.bind(null, dbCollectionFromCollection(collection)),
+    findMany: queryWrapper.dbFindMany.bind(null, dbCollectionFromCollection(collection)),
+    insertOne: queryWrapper.dbInsertOne.bind(null, dbCollectionFromCollection(collection)),
+    insertMany: queryWrapper.dbInsertMany.bind(null, dbCollectionFromCollection(collection)),
+    updateOne: queryWrapper.dbUpdateOne.bind(null, dbCollectionFromCollection(collection)),
+    updateMany: queryWrapper.dbUpdateMany.bind(null, dbCollectionFromCollection(collection)),
+    removeOne: queryWrapper.dbRemoveOne.bind(null, dbCollectionFromCollection(collection)),
+    removeMany: queryWrapper.dbRemoveMany.bind(null, dbCollectionFromCollection(collection))
   }
 }
 
-function wrapIdToQuery(query: string | object): any {
-  if(typeof query === 'string') {
-    return { _id: query };
-  }
-  return query;
-}
-
-function wrapIdsToQuery(query: string[] | object): any {
-  if(Array.isArray(query)) {
-    return { _id: { $in: query } };
-  }
-  return query;
-}
-
-// TODO: move to utils
-function isEmptyArray(obj: any): boolean {
-  if(!Array.isArray(obj)) {
-    return false;
-  }
-  return obj.length == 0;
-}
-
-const db = new Map<Collection, nedb | mongodb.Collection<any>>();
-let mongoClient: mongodb.MongoClient;
 
 
-async function dbInsertOne(nd: nedb, doc: object): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
-    nd.insert(doc, (err, newDoc: any) => {
-      if(err) {
-        reject(err);
-      } else {
-        resolve(newDoc._id);
-      }
-    })
-  });
-}
-
-async function dbInsertMany(nd: nedb, docs: object[]): Promise<string[]> {
-  if(docs.length === 0) {
-    return Promise.resolve([]);
-  }
-  return new Promise<string[]>((resolve, reject) => {
-    nd.insert(docs, (err, newDocs: any[]) => {
-      if(err) {
-        reject(err);
-      } else {
-        resolve(newDocs.map(d => d._id));
-      }
-    });
-  });
-}
-
-async function dbUpdateOne(nd: nedb, query: string | object, updateQuery: object): Promise<any> {
-  // https://github.com/louischatriot/nedb#updating-documents
-  let nedbUpdateQuery = { $set: updateQuery }
-  query = wrapIdToQuery(query);
-  return new Promise<any>((resolve, reject) => {
-    nd.update(
-      query,
-      nedbUpdateQuery,
-      { returnUpdatedDocs: true },
-      (err: Error, numAffected: number, affectedDocument: any) => {
-        if(err) {
-          reject(err);
-        } else {
-          resolve(affectedDocument);
-        }
-      }
-    );
-  });
-}
-
-async function dbUpdateMany(nd: nedb, query: string[] | object, updateQuery: object): Promise<any[]> {
-  // https://github.com/louischatriot/nedb#updating-documents
-  if(isEmptyArray(query)) {
-    return Promise.resolve([]);
-  }
-  let nedbUpdateQuery = { $set: updateQuery };
-  query = wrapIdsToQuery(query);
-  return new Promise<any[]>((resolve, reject) => {
-    nd.update(
-      query,
-      nedbUpdateQuery,
-      { returnUpdatedDocs: true, multi: true },
-      (err: Error, numAffected: number, affectedDocuments: any[]) => {
-        if(err) {
-          reject(err);
-        } else {
-          resolve(affectedDocuments);
-        }
-      }
-    );
-  });
-}
-
-async function dbFindOne(nd: nedb, query: string | object): Promise<any> {
-  query = wrapIdToQuery(query);
-  return new Promise<any | null>((resolve, reject) => {
-    nd.findOne(query, (err, doc) => {
-      if(err) {
-        reject(err);
-      } else {
-        resolve(doc);
-      }
-    });
-  });
-}
-
-async function dbFindMany(nd: nedb, query: string[] | object, sortQuery: object = {}): Promise<any[]> {
-  if(isEmptyArray(query)) {
-    return Promise.resolve([]);
-  }
-  query = wrapIdsToQuery(query);
-  return new Promise<any[]>((resolve, reject) => {
-    nd.find(query).sort(sortQuery).exec((err, docs: any[]) => {
-      if(err) {
-        reject(err);
-      } else {
-        resolve(docs);
-      }
-    });
-  });
-}
-
-async function dbRemoveOne(nd: nedb, query: string | object): Promise<boolean> {
-  query = wrapIdToQuery(query);
-  return new Promise<boolean>((resolve, reject) => {
-    nd.remove(query, { /* options */ }, (err, numRemoved) => {
-      if(err) {
-        reject(err);
-      } else {
-        if(numRemoved > 1) {
-          throw new Error(`Removed ${numRemoved} elements with query: ${JSON.stringify(query)}. Only one is Ok.`);
-        } else {
-          resolve(numRemoved == 1);
-        }
-      }
-    });
-  });
-}
-
-async function dbRemoveMany(nd: nedb, query: string[] | object): Promise<number> {
-  if(isEmptyArray(query)) {
-    return Promise.resolve(0);
-  }
-  query = wrapIdsToQuery(query);
-  return new Promise<number>((resolve, reject) => {
-    nd.remove(query, { multi: true }, (err, numRemoved) => {
-      if(err) {
-        reject(err);
-      } else {
-        resolve(numRemoved);
-      }
-    });
-  });
-}
 
 function maybeCreateDir(path: string): void {
   if(fs.existsSync(path)) {
@@ -237,10 +87,10 @@ function checkDataFolders(): void {
 }
 
 async function connectToDb() {
-  if(config.HASTIC_DB_CONNECTION_TYPE === 'nedb') {
+  if(config.HASTIC_DB_CONNECTION_TYPE === DBType.nedb) {
     checkDataFolders();
     const inMemoryOnly = config.HASTIC_DB_IN_MEMORY;
-    console.log('NeDB used as storage');
+    console.log('NeDB is used as the storage');
     // TODO: it's better if models request db which we create if it`s needed
     db.set(Collection.ANALYTIC_UNITS, new nedb({ filename: config.ANALYTIC_UNITS_DATABASE_PATH, autoload: true, timestampData: true, inMemoryOnly}));
     db.set(Collection.ANALYTIC_UNIT_CACHES, new nedb({ filename: config.ANALYTIC_UNIT_CACHES_DATABASE_PATH, autoload: true, inMemoryOnly}));
@@ -248,8 +98,8 @@ async function connectToDb() {
     db.set(Collection.THRESHOLD, new nedb({ filename: config.THRESHOLD_DATABASE_PATH, autoload: true, inMemoryOnly}));
     db.set(Collection.DETECTION_SPANS, new nedb({ filename: config.DETECTION_SPANS_DATABASE_PATH, autoload: true, inMemoryOnly}));
     db.set(Collection.DB_META, new nedb({ filename: config.DB_META_PATH, autoload: true, inMemoryOnly}));
-  } else {
-    console.log('MongoDB used as storage');
+  } else if(config.HASTIC_DB_CONNECTION_TYPE === DBType.mongodb) {
+    console.log('MongoDB is used as the storage');
     const dbConfig = config.HASTIC_DB_CONFIG;
     const uri = `mongodb://${dbConfig.user}:${dbConfig.password}@${dbConfig.url}`;
     const auth = {
@@ -262,11 +112,11 @@ async function connectToDb() {
       autoReconnect: true,
       useUnifiedTopology: true,
       authMechanism: 'SCRAM-SHA-1',
-      authSource: dbConfig.db_name
+      authSource: dbConfig.dbName
     });
     try {
       const client: mongodb.MongoClient = await mongoClient.connect();
-      const hasticDb: mongodb.Db = client.db(dbConfig.db_name);
+      const hasticDb: mongodb.Db = client.db(dbConfig.dbName);
       COLLECTION_TO_NAME_MAPPING.forEach((name, collection) => {
         db.set(collection, hasticDb.collection(name));
       });
@@ -274,6 +124,10 @@ async function connectToDb() {
       console.log(`got error while connect to MongoDB ${err}`);
       throw err;
     }
+  } else {
+    throw new Error(
+      `"${config.HASTIC_DB_CONNECTION_TYPE}" HASTIC_DB_CONNECTION_TYPE is not supported. Possible values: "nedb", "mongodb"`
+    );
   }
 }
 

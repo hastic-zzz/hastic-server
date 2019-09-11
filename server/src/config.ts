@@ -9,11 +9,12 @@ import * as os from 'os';
 let configFile = path.join(__dirname, '../../config.json');
 let configExists = fs.existsSync(configFile);
 
-export type DataBaseConfig = {
+// TODO: move to data_layer
+export type DBConfig = {
   user: string,
   password: string,
   url: string,
-  db_name: string
+  dbName: string
 }
 
 export const ANALYTICS_PATH = path.join(__dirname, '../../analytics');
@@ -130,16 +131,17 @@ function createZMQConnectionString() {
   return zmq;
 }
 
-function getDbConfig(connectionStr: string): DataBaseConfig {
+// TODO: move to data_layer
+function getDbConfig(connectionStr: string): DBConfig {
   const [user, password] = connectionStr.split('@')[0].split(':');
-  const [db_name, ...urlParts] = connectionStr.split('@')[1].split('/').reverse();
+  const [dbName, ...urlParts] = connectionStr.split('@')[1].split('/').reverse();
   const url = urlParts.reverse().join('/');
 
   const config = {
     user,
     password,
     url,
-    db_name
+    dbName
   };
   return config;
 }
