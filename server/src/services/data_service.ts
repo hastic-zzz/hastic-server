@@ -90,7 +90,7 @@ async function connectToDb() {
   if(config.HASTIC_DB_CONNECTION_TYPE === DBType.nedb) {
     checkDataFolders();
     const inMemoryOnly = config.HASTIC_DB_IN_MEMORY;
-    console.log('NeDB is used as storage');
+    console.log('NeDB is used as the storage');
     // TODO: it's better if models request db which we create if it`s needed
     db.set(Collection.ANALYTIC_UNITS, new nedb({ filename: config.ANALYTIC_UNITS_DATABASE_PATH, autoload: true, timestampData: true, inMemoryOnly}));
     db.set(Collection.ANALYTIC_UNIT_CACHES, new nedb({ filename: config.ANALYTIC_UNIT_CACHES_DATABASE_PATH, autoload: true, inMemoryOnly}));
