@@ -99,7 +99,7 @@ async function connectToDb() {
     db.set(Collection.DETECTION_SPANS, new nedb({ filename: config.DETECTION_SPANS_DATABASE_PATH, autoload: true, inMemoryOnly}));
     db.set(Collection.DB_META, new nedb({ filename: config.DB_META_PATH, autoload: true, inMemoryOnly}));
   } else if(config.HASTIC_DB_CONNECTION_TYPE === DBType.mongodb) {
-    console.log('MongoDB is used as storage');
+    console.log('MongoDB is used as the storage');
     const dbConfig = config.HASTIC_DB_CONFIG;
     const uri = `mongodb://${dbConfig.user}:${dbConfig.password}@${dbConfig.url}`;
     const auth = {
