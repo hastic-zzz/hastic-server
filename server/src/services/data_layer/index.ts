@@ -19,5 +19,7 @@ export function getDbQueryWrapper(): DbQueryWrapper {
     return new MongoDbQueryWrapper();
   }
 
-  throw new Error(`"${HASTIC_DB_CONNECTION_TYPE}" HASTIC_DB_CONNECTION_TYPE is not supported. Possible values: "nedb", "mongodb"`);
+  throw new Error(
+    `"${HASTIC_DB_CONNECTION_TYPE}" HASTIC_DB_CONNECTION_TYPE is not supported. Possible values: "nedb", "mongodb"`
+  );
 }
