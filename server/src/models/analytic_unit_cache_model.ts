@@ -49,8 +49,11 @@ export class AnalyticUnitCache {
     return 3 * MILLISECONDS_IN_INDEX;
   }
 
-  public getTimeStep(): number {
-    return this.data.timeStep;
+  public get timeStep(): number | undefined {
+    if(this.data !== undefined) {
+      return this.data.timeStep;
+    }
+    return undefined;
   }
 }
 

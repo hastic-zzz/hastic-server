@@ -151,10 +151,6 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
   }
   const cache = await AnalyticUnitCache.findById(analyticUnitId);
 
-  if(cache === null) {
-    throw new Error('Can`t find cache for analytic unit ' + analyticUnitId);
-  }
-
   const detector = unit.detectorType;
 
   let segmentIdsToRemove: SegmentId[] = [];
@@ -180,10 +176,16 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
         deleted: segment.deleted
       });
     } else {
-      const timeStep = cache.getTimeStep();
+      let intersectionRangeExtension = 0;
+      if(cache !== null) {
+        const timeStep = cache.timeStep;
+        if(timeStep !== undefined) {
+          intersectionRangeExtension = timeStep;
+        }
+      }
       intersectedSegments = await findMany(analyticUnitId, {
-        to: { $gte: segment.from - timeStep },
-        from: { $lte: segment.to + timeStep },
+        to: { $gte: segment.from - intersectionRangeExtension },
+        from: { $lte: segment.to + intersectionRangeExtension },
         labeled: segment.labeled,
         deleted: segment.deleted
       });
