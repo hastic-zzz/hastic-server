@@ -2,6 +2,8 @@ const EventHooksPlugin = require('event-hooks-webpack-plugin');
 
 const webpack = require('webpack');
 const path = require('path');
+// fs-extra is used to create directory recursively
+// fs supports it only since node v10.x
 const fs = require('fs-extra');
 
 var base = require('./webpack.base.conf');
@@ -41,6 +43,7 @@ base.plugins.push(
 
       console.log('Copying deasync.node from node_modules to dist/bin...');
 
+      // Create dist/bin/<platform> if it doesn't exist
       fs.ensureDirSync(DEASYNC_DIST_PATH);
 
       fs.copySync(

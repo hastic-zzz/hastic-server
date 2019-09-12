@@ -4,9 +4,10 @@ var path = require('path');
 module.exports = function nodeLoader(m, q) {
   const ZERO_MQ_MODULE_PATH = `__dirname + '/${path.basename(this.resourcePath)}'`;
   const DEASYNC_MODULE_PATH = `'${this.resourcePath}'`;
-  const isZeromq = this.resourcePath.indexOf('zeromq') >= 0;
+  
+  const isDeasync = this.resourcePath.indexOf('deasync') >= 0;
   return (`
-    var modulePath = ${isZeromq? ZERO_MQ_MODULE_PATH: DEASYNC_MODULE_PATH};
+    var modulePath = ${isDeasync ? DEASYNC_MODULE_PATH : ZERO_MQ_MODULE_PATH};
     try {
       global.process.dlopen(module, modulePath); 
     } catch(e) {
