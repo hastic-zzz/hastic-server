@@ -1,4 +1,4 @@
-const path = require('path');
+var path = require('path');
 
 // based on: https://github.com/webpack-contrib/node-loader/blob/master/index.js
 module.exports = function nodeLoader(m, q) {
@@ -7,7 +7,6 @@ module.exports = function nodeLoader(m, q) {
     try {
       global.process.dlopen(module, modulePath); 
     } catch(e) {
-      console.error('dlopen: Cannot open ' + modulePath + ': ' + e);
       throw new Error('dlopen: Cannot open ' + modulePath + ': ' + e);
     }
   `);
