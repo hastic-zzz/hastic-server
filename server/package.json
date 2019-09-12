@@ -37,7 +37,6 @@
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "babel-preset-es2015": "^6.24.1",
-    "copy-webpack-plugin": "^5.0.4",
     "deasync": "^0.1.15",
     "es6-promise": "^4.2.4",
     "event-stream": "3.3.4",
