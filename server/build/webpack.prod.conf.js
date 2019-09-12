@@ -1,13 +1,11 @@
-const utils = require('./utils');
-
 const webpack = require('webpack');
 const path = require('path');
 const fs = require('fs');
 
 var base = require('./webpack.base.conf');
 
-
-const PLATFORM = utils.getPlatform();
+const nodeVersion = 'node-' + /[0-9]+/.exec(process.versions.node)[0];
+const PLATFORM = `${process.platform}-${process.arch}-${nodeVersion}`;
 
 const DEASYNC_NODE_MODULES_PATH = path.resolve(
   'node_modules',
@@ -24,27 +22,23 @@ if(!fs.existsSync(DEASYNC_NODE_MODULES_PATH)) {
 
 base.mode = 'production';
 
+base.externals = base.externals ? base.externals : [];
+base.externals.push(
+  function (context, request, callback) {
+    if(request.indexOf('bindings') === 0) {
+      callback(null, `() => require('./deasync.node')`)
+    } else {
+      callback();
+    }
+  }
+);
+
 const prodRules = [
   {
-    test: /zmq\.node$/,
+    test: /\.node$/,
     use: [
       { loader: './build/node-loader' },
       { loader: 'file-loader', options: { name: '[name].[ext]' } }
-    ]
-  },
-  // deasync is trying to find dist/bin/<platform>/deasync.node in runtime
-  // so we change default outputPath
-  {
-    test: /deasync\.node$/,
-    use: [
-      { loader: './build/node-loader' },
-      {
-        loader: 'file-loader',
-        options: {
-          name: '[name].[ext]',
-          outputPath: path.join('bin', PLATFORM)
-        }
-      }
     ]
   }
 ];
