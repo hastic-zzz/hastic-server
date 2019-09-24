@@ -79,17 +79,18 @@ export class MongoDbQueryWrapper implements DbQueryWrapper {
     return doc;
   }
 
-  async dbFindMany(collection: Collection, query: string[] | object | any, sortQuery: object = {}): Promise<any[]> {
+  async dbFindMany(collection: Collection, query: any, sortQuery: object = {}): Promise<any[]> {
     // http://mongodb.github.io/node-mongodb-native/3.1/api/Collection.html#find
     if(isEmptyArray(query)) {
       return [];
     }
     if(query.$or !== undefined) {
-      let queryOrMongo = [];
-      for(var key in query.$or) {
-        queryOrMongo.push(_.pick(query.$or, key));
+      let queryOr = [];
+      for(const key in query.$or) {
+        const newObject = _.pick(query.$or, key);
+        queryOr.push(newObject);
       }
-      query.$or = queryOrMongo;
+      query.$or = queryOr;
     }
     query = wrapIdsToMongoDbQuery(query);
     const docs = await collection.find(query).sort(sortQuery).toArray();
