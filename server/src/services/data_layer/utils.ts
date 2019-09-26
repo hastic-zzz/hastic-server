@@ -1,5 +1,4 @@
 import { ObjectID } from 'mongodb';
-import * as _ from 'lodash';
 
 //TODO: move to DbQueryWrapper
 
