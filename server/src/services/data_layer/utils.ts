@@ -40,12 +40,3 @@ export function isEmptyArray(obj: any): boolean {
   }
   return obj.length == 0;
 }
-
-export function useMongoSyntax(query: object): object[] {
-  let mongoQuery = [];
-  for (const key in query) {
-    const newObject = _.pick(query, key);
-    mongoQuery.push(newObject);
-  }
-  return mongoQuery;
-}

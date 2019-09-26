@@ -1,7 +1,7 @@
 import { DbQueryWrapper, QueryExecutionError } from './basedb';
 
 import { Collection, FilterQuery, ObjectID } from 'mongodb';
-import { wrapIdToMongoDbQuery, wrapIdsToMongoDbQuery, isEmptyArray, useMongoSyntax } from './utils';
+import { wrapIdToMongoDbQuery, wrapIdsToMongoDbQuery, isEmptyArray } from './utils';
 
 import * as _ from 'lodash';
 
@@ -102,7 +102,7 @@ export class MongoDbQueryWrapper implements DbQueryWrapper {
       });
       return docs;
     } catch(error) {
-      console.error(`Can't find query in collection: ${collection.namespace}`);
+      console.error(`Can't get query result for query ${JSON.stringify(query)} in collection: ${collection.namespace}`);
       throw new QueryExecutionError(`mongo query problem: ${error.message}`);
     }
   }
@@ -126,4 +126,13 @@ export class MongoDbQueryWrapper implements DbQueryWrapper {
     const deleted = await collection.deleteMany(query);
     return deleted.deletedCount;
   }
+}
+
+function useMongoSyntax(query: object): object[] {
+  let mongoQuery = [];
+  for (const key in query) {
+    const newObject = _.pick(query, key);
+    mongoQuery.push(newObject);
+  }
+  return mongoQuery;
 }
