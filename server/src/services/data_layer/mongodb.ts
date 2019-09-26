@@ -94,7 +94,6 @@ export class MongoDbQueryWrapper implements DbQueryWrapper {
     query = wrapIdsToMongoDbQuery(query);
     try{
       const docs = await collection.find(query).sort(sortQuery).toArray();
-      // TODO: move to utils
       docs.forEach(doc => {
         if (doc !== null) {
           doc._id = doc._id.toString();
