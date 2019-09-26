@@ -1,4 +1,5 @@
 import { ObjectID } from 'mongodb';
+import * as _ from 'lodash';
 
 //TODO: move to DbQueryWrapper
 
@@ -38,4 +39,13 @@ export function isEmptyArray(obj: any): boolean {
     return false;
   }
   return obj.length == 0;
+}
+
+export function useMongoSyntax(query: any): any {
+  let mongoQuery = [];
+  for (const key in query) {
+    const newObject = _.pick(query, key);
+    mongoQuery.push(newObject);
+  }
+  return mongoQuery;
 }

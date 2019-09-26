@@ -1,7 +1,7 @@
-import { DbQueryWrapper } from './basedb';
+import { DbQueryWrapper, QueryExecutionError } from './basedb';
 
 import { Collection, FilterQuery, ObjectID } from 'mongodb';
-import { wrapIdToMongoDbQuery, wrapIdsToMongoDbQuery, isEmptyArray } from './utils';
+import { wrapIdToMongoDbQuery, wrapIdsToMongoDbQuery, isEmptyArray, useMongoSyntax } from './utils';
 
 import * as _ from 'lodash';
 
@@ -85,22 +85,26 @@ export class MongoDbQueryWrapper implements DbQueryWrapper {
       return [];
     }
     if(query.$or !== undefined) {
-      let queryOr = [];
-      for(const key in query.$or) {
-        const newObject = _.pick(query.$or, key);
-        queryOr.push(newObject);
-      }
-      query.$or = queryOr;
+      query.$or = useMongoSyntax(query.$or);
     }
+    if(query.$and !== undefined) {
+      query.$and = useMongoSyntax(query.$and);
+    }
+
     query = wrapIdsToMongoDbQuery(query);
-    const docs = await collection.find(query).sort(sortQuery).toArray();
-    // TODO: move to utils
-    docs.forEach(doc => {
-      if(doc !== null) {
-        doc._id = doc._id.toString();
-      }
-    });
-    return docs;
+    try{
+      const docs = await collection.find(query).sort(sortQuery).toArray();
+      // TODO: move to utils
+      docs.forEach(doc => {
+        if (doc !== null) {
+          doc._id = doc._id.toString();
+        }
+      });
+      return docs;
+    } catch(error) {
+      console.error(`Can't find query in collection: ${collection.namespace}`);
+      throw new QueryExecutionError(`mongo query problem: ${error.message}`);
+    }
   }
 
   async dbRemoveOne(collection: Collection, query: FilterQuery<string | object>): Promise<boolean> {
