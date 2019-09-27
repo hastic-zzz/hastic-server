@@ -121,11 +121,11 @@ export class MongoDbQueryWrapper implements DbQueryWrapper {
   }
 }
 
-function convertQueryToMongoFormat(query: any): any {
-  if (query.$or !== undefined) {
+function convertQueryToMongoFormat(query: any): object {
+  if(query.$or !== undefined) {
     query.$or = convertQueryFieldToMongoFormat(query.$or);
   }
-  if (query.$and !== undefined) {
+  if(query.$and !== undefined) {
     query.$and = convertQueryFieldToMongoFormat(query.$and);
   }
   return query;
@@ -133,7 +133,7 @@ function convertQueryToMongoFormat(query: any): any {
 
 function convertQueryFieldToMongoFormat(query: object): object[] {
   let mongoQuery = [];
-  for (const key in query) {
+  for(const key in query) {
     const newObject = _.pick(query, key);
     mongoQuery.push(newObject);
   }
