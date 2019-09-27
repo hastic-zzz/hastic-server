@@ -79,18 +79,12 @@ export class MongoDbQueryWrapper implements DbQueryWrapper {
     return doc;
   }
 
-  async dbFindMany(collection: Collection, query: any, sortQuery: object = {}): Promise<any[]> {
+  async dbFindMany(collection: Collection, query: string[] | object, sortQuery: object = {}): Promise<any[]> {
     // http://mongodb.github.io/node-mongodb-native/3.1/api/Collection.html#find
     if(isEmptyArray(query)) {
       return [];
     }
-    if(query.$or !== undefined) {
-      query.$or = useMongoSyntax(query.$or);
-    }
-    if(query.$and !== undefined) {
-      query.$and = useMongoSyntax(query.$and);
-    }
-
+    query = convertQueryToMongoFormat(query);
     query = wrapIdsToMongoDbQuery(query);
     try{
       const docs = await collection.find(query).sort(sortQuery).toArray();
@@ -127,7 +121,17 @@ export class MongoDbQueryWrapper implements DbQueryWrapper {
   }
 }
 
-function useMongoSyntax(query: object): object[] {
+function convertQueryToMongoFormat(query: any): any {
+  if (query.$or !== undefined) {
+    query.$or = convertQueryFieldToMongoFormat(query.$or);
+  }
+  if (query.$and !== undefined) {
+    query.$and = convertQueryFieldToMongoFormat(query.$and);
+  }
+  return query;
+}
+
+function convertQueryFieldToMongoFormat(query: object): object[] {
   let mongoQuery = [];
   for (const key in query) {
     const newObject = _.pick(query, key);
