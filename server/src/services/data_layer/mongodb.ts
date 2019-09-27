@@ -86,7 +86,7 @@ export class MongoDbQueryWrapper implements DbQueryWrapper {
     }
     query = convertQueryToMongoFormat(query);
     query = wrapIdsToMongoDbQuery(query);
-    try{
+    try {
       const docs = await collection.find(query).sort(sortQuery).toArray();
       docs.forEach(doc => {
         if (doc !== null) {
@@ -96,7 +96,7 @@ export class MongoDbQueryWrapper implements DbQueryWrapper {
       return docs;
     } catch(error) {
       console.error(`Can't get query result for query ${JSON.stringify(query)} in collection: ${collection.namespace}`);
-      throw new QueryExecutionError(`mongo query problem: ${error.message}`);
+      throw new QueryExecutionError(`MongoDB query error: ${error.message}`);
     }
   }
 
