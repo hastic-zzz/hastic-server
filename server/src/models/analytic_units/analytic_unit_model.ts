@@ -24,7 +24,8 @@ export abstract class AnalyticUnit {
     // TODO: detectorType -> type
     public detectorType?: DetectorType,
     public visible?: boolean,
-    public collapsed?: boolean
+    public collapsed?: boolean,
+    public timezoneOffset?: number,
   ) {
 
     if(name === undefined) {
@@ -59,7 +60,8 @@ export abstract class AnalyticUnit {
       deletedColor: this.deletedColor,
       detectorType: this.detectorType,
       visible: this.visible,
-      collapsed: this.collapsed
+      collapsed: this.collapsed,
+      timezoneOffset: this.timezoneOffset
     };
   }
 

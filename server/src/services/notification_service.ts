@@ -42,6 +42,7 @@ export declare type Notification = {
 }
 
 export async function sendNotification(notification: Notification) {
+  console.log('sendNotification');
   if(HASTIC_WEBHOOK_URL === null) {
     console.log(`HASTIC_WEBHOOK_URL is not set, skip sending notification: ${notification.text}`);
     return;
@@ -57,7 +58,7 @@ export async function sendNotification(notification: Notification) {
   } else {
     throw new Error(`Unknown webhook type: ${HASTIC_WEBHOOK_TYPE}`);
   }
-
+  data = changeTimezone(data);
   // TODO: use HASTIC_WEBHOOK_SECRET
   const options = {
     method: 'POST',
@@ -65,10 +66,16 @@ export async function sendNotification(notification: Notification) {
     data,
     headers: { 'Content-Type': HASTIC_WEBHOOK_TYPE }
   };
-
+  console.log(options);
   try {
     await axios(options);
   } catch(err) {
     console.error(`Can't send notification to ${HASTIC_WEBHOOK_URL}. Error: ${err.message}`);
   }
+}
+
+export function changeTimezone(data: any): any {
+  const offset = new Date().getTimezoneOffset();
+  console.log(offset);
+  return data;
 }
