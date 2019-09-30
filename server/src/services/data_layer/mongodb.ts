@@ -1,4 +1,4 @@
-import { DbQueryWrapper } from './basedb';
+import { DbQueryWrapper, QueryExecutionError } from './basedb';
 
 import { Collection, FilterQuery, ObjectID } from 'mongodb';
 import { wrapIdToMongoDbQuery, wrapIdsToMongoDbQuery, isEmptyArray } from './utils';
@@ -84,15 +84,20 @@ export class MongoDbQueryWrapper implements DbQueryWrapper {
     if(isEmptyArray(query)) {
       return [];
     }
+    query = convertQueryToMongoFormat(query);
     query = wrapIdsToMongoDbQuery(query);
-    const docs = await collection.find(query).sort(sortQuery).toArray();
-    // TODO: move to utils
-    docs.forEach(doc => {
-      if(doc !== null) {
-        doc._id = doc._id.toString();
-      }
-    });
-    return docs;
+    try {
+      const docs = await collection.find(query).sort(sortQuery).toArray();
+      docs.forEach(doc => {
+        if (doc !== null) {
+          doc._id = doc._id.toString();
+        }
+      });
+      return docs;
+    } catch(error) {
+      console.error(`Can't get query result for query ${JSON.stringify(query)} in collection: ${collection.namespace}`);
+      throw new QueryExecutionError(`MongoDB query error: ${error.message}`);
+    }
   }
 
   async dbRemoveOne(collection: Collection, query: FilterQuery<string | object>): Promise<boolean> {
@@ -114,4 +119,23 @@ export class MongoDbQueryWrapper implements DbQueryWrapper {
     const deleted = await collection.deleteMany(query);
     return deleted.deletedCount;
   }
+}
+
+function convertQueryToMongoFormat(query: any): object {
+  if(query.$or !== undefined) {
+    query.$or = convertQueryFieldToMongoFormat(query.$or);
+  }
+  if(query.$and !== undefined) {
+    query.$and = convertQueryFieldToMongoFormat(query.$and);
+  }
+  return query;
+}
+
+function convertQueryFieldToMongoFormat(query: object): object[] {
+  let mongoQuery = [];
+  for(const key in query) {
+    const newObject = _.pick(query, key);
+    mongoQuery.push(newObject);
+  }
+  return mongoQuery;
 }

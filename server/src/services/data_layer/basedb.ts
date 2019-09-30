@@ -13,3 +13,6 @@ export interface DbQueryWrapper {
   dbRemoveOne(collection: dbCollection, query: string | object): Promise<boolean>;
   dbRemoveMany(collection: dbCollection, query: string[] | object): Promise<number>;
 }
+
+export class QueryExecutionError extends Error {
+}
