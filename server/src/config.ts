@@ -10,6 +10,7 @@ import * as moment from 'moment';
 let configFile = path.join(__dirname, '../../config.json');
 let configExists = fs.existsSync(configFile);
 
+const MINUTS_IN_HOUR = 60;
 // TODO: move to data_layer
 export type DBConfig = {
   user: string,
@@ -51,7 +52,7 @@ export const HASTIC_WEBHOOK_URL = getConfigField('HASTIC_WEBHOOK_URL', null);
 export const HASTIC_WEBHOOK_TYPE = getConfigField('HASTIC_WEBHOOK_TYPE', 'application/json');
 export const HASTIC_WEBHOOK_SECRET = getConfigField('HASTIC_WEBHOOK_SECRET', null);
 export const HASTIC_WEBHOOK_IMAGE_ENABLED = getConfigField('HASTIC_WEBHOOK_IMAGE', false);
-export const TIMEZONE_UTC_OFFSET = getTimeZoneOffset('TIMEZONE_UTC_OFFSET');
+export const TIMEZONE_UTC_OFFSET = getTimeZoneOffset();
 
 export const ANLYTICS_PING_INTERVAL = 500; // ms
 export const PACKAGE_VERSION = getPackageVersion();
@@ -148,8 +149,8 @@ function getDbConfig(connectionStr: string): DBConfig {
   return config;
 }
 
-function getTimeZoneOffset(timeZone: string): Number {
-  let configTimeZone = getConfigField(timeZone, null);
+function getTimeZoneOffset(): Number {
+  let configTimeZone = getConfigField('TIMEZONE_UTC_OFFSET', null);
   if(configTimeZone !== null) {
     return parseTimeZone(configTimeZone);
   } else {
@@ -159,10 +160,15 @@ function getTimeZoneOffset(timeZone: string): Number {
 }
 
 export function parseTimeZone(timeZone: string): Number {
-  const time = _.split(timeZone, ':');
-  let minutsOffset = Math.abs(Number(time[0])) * 60 + Number(time[1]);
-  if(timeZone.indexOf('-') !== -1) {
-    minutsOffset = -1 * minutsOffset;
+  try {
+    const time = _.split(timeZone, ':');
+    let minutsOffset = Math.abs(Number(time[0])) * MINUTS_IN_HOUR + Number(time[1]);
+    if (timeZone.indexOf('-') !== -1) {
+      minutsOffset = -1 * minutsOffset;
+    }
+    return minutsOffset;
+  } catch(error) {
+    console.log(error);
+    throw new Error(`Wrong "TIMEZONE_UTC_OFFSET": ${timeZone} format`);
   }
-  return minutsOffset;
 }
