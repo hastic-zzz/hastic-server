@@ -1,5 +1,5 @@
 import * as AnalyticUnit from '../models/analytic_units';
-import { HASTIC_WEBHOOK_URL, HASTIC_WEBHOOK_TYPE, HASTIC_WEBHOOK_SECRET, HASTIC_INSTANCE_NAME } from '../config';
+import { HASTIC_WEBHOOK_URL, HASTIC_WEBHOOK_TYPE, TIMEZONE_UTC_OFFSET, HASTIC_INSTANCE_NAME } from '../config';
 
 import axios from 'axios';
 import * as querystring from 'querystring';
@@ -58,6 +58,7 @@ export async function sendNotification(notification: Notification) {
   } else {
     throw new Error(`Unknown webhook type: ${HASTIC_WEBHOOK_TYPE}`);
   }
+  console.log('data before changetimezone: ', data);
   data = changeTimezone(data);
   // TODO: use HASTIC_WEBHOOK_SECRET
   const options = {
@@ -76,6 +77,8 @@ export async function sendNotification(notification: Notification) {
 
 export function changeTimezone(data: any): any {
   const offset = new Date().getTimezoneOffset();
-  console.log(offset);
+  console.log('offset: ', offset, typeof (offset));
+  const configOffset = Number(TIMEZONE_UTC_OFFSET);
+  console.log('config offset: ', configOffset, typeof (configOffset));
   return data;
 }

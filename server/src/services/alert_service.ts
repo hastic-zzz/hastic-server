@@ -2,23 +2,32 @@ import { sendNotification, MetaInfo, AnalyticMeta, WebhookType, Notification } f
 import * as AnalyticUnit from '../models/analytic_units';
 import { Segment } from '../models/segment_model';
 import { availableReporter } from '../utils/reporter';
-import { ORG_ID, HASTIC_API_KEY, HASTIC_WEBHOOK_IMAGE_ENABLED } from '../config';
+import { ORG_ID, HASTIC_API_KEY, HASTIC_WEBHOOK_IMAGE_ENABLED, TIMEZONE_UTC_OFFSET } from '../config';
 
 import axios from 'axios';
 import * as _ from 'lodash';
+import * as moment from 'moment';
 
+
+export function toTimeZone(time, zone) {
+  const utcTime = moment(time).utc();
+  return utcTime.utcOffset(zone);
+}
 
 export class Alert {
   public enabled = true;
   constructor(protected analyticUnit: AnalyticUnit.AnalyticUnit) {};
   public receive(segment: Segment) {
-    if(this.enabled) {
+    console.log('this.enabled: ', this.enabled)
+    if(true) {
+      console.log('send segment: ', segment);
       this.send(segment);
     }
   };
 
   protected async send(segment) {
     const notification = await this.makeNotification(segment);
+    console.log('send notification: ', notification);
     try {
       await sendNotification(notification);
     } catch(error) {
@@ -122,9 +131,12 @@ class ThresholdAlert extends Alert {
   lastOccurence = 0;
 
   public receive(segment: Segment) {
-    if(this.lastOccurence === 0) {
+    console.log('receive');
+    if(true) {
       this.lastOccurence = segment.from;
+      console.log('this.enabled: ', this.enabled)
       if(this.enabled) {
+        console.log('send seg: ', segment)
         this.send(segment);
       }
     } else {
@@ -141,14 +153,16 @@ class ThresholdAlert extends Alert {
   }
 
   protected makeMessage(meta: AnalyticMeta): string {
+    console.log('Date in makeMessage: ', new Date(meta.from));
+    const localTime = toTimeZone(meta.from, TIMEZONE_UTC_OFFSET);
+    console.log('Moment in makeMessage: ', localTime);
     let message = [
       `[THRESHOLD ALERTING] ${meta.analyticUnitName}`,
       `URL: ${meta.grafanaUrl}`,
       ``,
-      `Starts at: ${new Date(meta.from)}`,
+      `Starts at: ${localTime.format('ddd MMM DD YYYY HH:mm:ss')}`,
       `ID: ${meta.analyticUnitId}`
     ].join('\n');
-
     if(meta.message !== undefined) {
       message += meta.message;
     }
@@ -181,13 +195,13 @@ export class AlertService {
     if(!this._alertingEnable) {
       return;
     }
-
+    console.log('receiveAlert1');
     let id = analyticUnit.id;
 
     if(!_.has(this._alerts, id)) {
       this.addAnalyticUnit(analyticUnit);
     }
-
+    console.log('receiveAlert2');
     this._alerts[id].receive(segment);
   };
 

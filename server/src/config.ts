@@ -4,7 +4,8 @@ import { normalizeUrl } from './utils/url';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
-
+import * as _ from 'lodash';
+import * as moment from 'moment';
 
 let configFile = path.join(__dirname, '../../config.json');
 let configExists = fs.existsSync(configFile);
@@ -50,6 +51,7 @@ export const HASTIC_WEBHOOK_URL = getConfigField('HASTIC_WEBHOOK_URL', null);
 export const HASTIC_WEBHOOK_TYPE = getConfigField('HASTIC_WEBHOOK_TYPE', 'application/json');
 export const HASTIC_WEBHOOK_SECRET = getConfigField('HASTIC_WEBHOOK_SECRET', null);
 export const HASTIC_WEBHOOK_IMAGE_ENABLED = getConfigField('HASTIC_WEBHOOK_IMAGE', false);
+export const TIMEZONE_UTC_OFFSET = getTimeZoneOffset('TIMEZONE_UTC_OFFSET');
 
 export const ANLYTICS_PING_INTERVAL = 500; // ms
 export const PACKAGE_VERSION = getPackageVersion();
@@ -144,4 +146,23 @@ function getDbConfig(connectionStr: string): DBConfig {
     dbName
   };
   return config;
+}
+
+function getTimeZoneOffset(timeZone: string): Number {
+  let configTimeZone = getConfigField(timeZone, null);
+  if(configTimeZone !== null) {
+    return parseTimeZone(configTimeZone);
+  } else {
+    const serverUtcOffset = moment().utcOffset();
+    return serverUtcOffset;
+  }
+}
+
+export function parseTimeZone(timeZone: string): Number {
+  const time = _.split(timeZone, ':');
+  let minutsOffset = Math.abs(Number(time[0])) * 60 + Number(time[1]);
+  if(timeZone.indexOf('-') !== -1) {
+    minutsOffset = -1 * minutsOffset;
+  }
+  return minutsOffset;
 }
