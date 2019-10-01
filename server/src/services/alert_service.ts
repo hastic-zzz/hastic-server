@@ -18,7 +18,7 @@ export class Alert {
   public enabled = true;
   constructor(protected analyticUnit: AnalyticUnit.AnalyticUnit) {};
   public receive(segment: Segment) {
-    if(true) {
+    if(this.enabled) {
       this.send(segment);
     }
   };
@@ -147,9 +147,7 @@ class ThresholdAlert extends Alert {
   }
 
   protected makeMessage(meta: AnalyticMeta): string {
-    console.log('Date in makeMessage: ', new Date(meta.from));
     const localTime = toTimeZone(meta.from, TIMEZONE_UTC_OFFSET);
-    console.log('Moment in makeMessage: ', localTime);
     let message = [
       `[THRESHOLD ALERTING] ${meta.analyticUnitName}`,
       `URL: ${meta.grafanaUrl}`,
@@ -157,6 +155,7 @@ class ThresholdAlert extends Alert {
       `Starts at: ${localTime.format('ddd MMM DD YYYY HH:mm:ss')}`,
       `ID: ${meta.analyticUnitId}`
     ].join('\n');
+
     if(meta.message !== undefined) {
       message += meta.message;
     }
@@ -189,11 +188,13 @@ export class AlertService {
     if(!this._alertingEnable) {
       return;
     }
+
     let id = analyticUnit.id;
 
     if(!_.has(this._alerts, id)) {
       this.addAnalyticUnit(analyticUnit);
     }
+
     this._alerts[id].receive(segment);
   };
 
