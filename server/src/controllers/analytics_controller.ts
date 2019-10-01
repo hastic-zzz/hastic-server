@@ -67,16 +67,15 @@ export async function onDetect(detectionResult: DetectionResult): Promise<Segmen
   detectionsCount++;
   let id = detectionResult.analyticUnitId;
   let payload = await processDetectionResult(id, detectionResult);
-  console.log('70');
   const insertionResult = await Segment.mergeAndInsertSegments(payload.segments)
   await Promise.all([
     AnalyticUnitCache.setData(id, payload.cache),
     AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime),
   ]);
   // removedIds.length > 0 means that there was at least 1 merge
-  // if(insertionResult.removedIds.length > 0) {
-  //   return [];
-  // }
+  if(insertionResult.removedIds.length > 0) {
+    return [];
+  }
 
   return insertionResult.addedIds;
 }
@@ -87,15 +86,10 @@ export async function onDetect(detectionResult: DetectionResult): Promise<Segmen
  */
 async function onPushDetect(detectionResult: DetectionResult): Promise<void> {
   const analyticUnit = await AnalyticUnit.findById(detectionResult.analyticUnitId);
-  console.log('detectionResult: ', detectionResult);
   const segments = await onDetect(detectionResult);
-  console.log('onPushDetect before try segments: ', JSON.stringify(segments));
   if(!_.isEmpty(segments) && analyticUnit.alert) {
     try {
       const segment = await Segment.findOne(_.last(segments));
-      console.log('segment: ', segment);
-      console.log('onPushDetect');
-      console.log(segment);
       alertService.receiveAlert(analyticUnit, segment);
     } catch(err) {
       console.error(`error while sending webhook: ${err.message}`);
@@ -389,7 +383,6 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
     }
 
     const payload = await processDetectionResult(id, result.payload);
-    console.log('388');
     await Segment.mergeAndInsertSegments(payload.segments);
     await Promise.all([
       AnalyticUnitCache.setData(id, payload.cache),
@@ -459,7 +452,6 @@ async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitI
     );
   }
   console.log(`got detection result for ${analyticUnitId} with ${detectionResult.segments.length} segments`);
-  console.log(`segments: ${JSON.stringify(detectionResult.segments)}`)
   const sortedSegments: {from, to, message?}[] = _.sortBy(detectionResult.segments, 'from');
   const segments = sortedSegments.map(
     segment => new Segment.Segment(analyticUnitId, segment.from, segment.to, false, false, undefined, segment.message)

@@ -36,8 +36,7 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
     labeledColor?: string,
     deletedColor?: string,
     visible?: boolean,
-    collapsed?: boolean,
-    timezoneOffset?: number
+    collapsed?: boolean
   ) {
     super(
       name,
@@ -54,8 +53,7 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
       deletedColor,
       DetectorType.ANOMALY,
       visible,
-      collapsed,
-      timezoneOffset
+      collapsed
     );
   }
 
@@ -101,8 +99,7 @@ export class AnomalyAnalyticUnit extends AnalyticUnit {
       obj.labeledColor,
       obj.deletedColor,
       obj.visible,
-      obj.collapsed,
-      obj.timezoneOffset
+      obj.collapsed
     );
   }
 

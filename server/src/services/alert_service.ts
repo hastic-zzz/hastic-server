@@ -195,13 +195,11 @@ export class AlertService {
     if(!this._alertingEnable) {
       return;
     }
-    console.log('receiveAlert1');
     let id = analyticUnit.id;
 
     if(!_.has(this._alerts, id)) {
       this.addAnalyticUnit(analyticUnit);
     }
-    console.log('receiveAlert2');
     this._alerts[id].receive(segment);
   };
 
