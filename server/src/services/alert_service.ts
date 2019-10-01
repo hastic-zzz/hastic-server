@@ -18,16 +18,13 @@ export class Alert {
   public enabled = true;
   constructor(protected analyticUnit: AnalyticUnit.AnalyticUnit) {};
   public receive(segment: Segment) {
-    console.log('this.enabled: ', this.enabled)
     if(true) {
-      console.log('send segment: ', segment);
       this.send(segment);
     }
   };
 
   protected async send(segment) {
     const notification = await this.makeNotification(segment);
-    console.log('send notification: ', notification);
     try {
       await sendNotification(notification);
     } catch(error) {
@@ -131,12 +128,9 @@ class ThresholdAlert extends Alert {
   lastOccurence = 0;
 
   public receive(segment: Segment) {
-    console.log('receive');
-    if(true) {
+    if(this.lastOccurence === 0) {
       this.lastOccurence = segment.from;
-      console.log('this.enabled: ', this.enabled)
       if(this.enabled) {
-        console.log('send seg: ', segment)
         this.send(segment);
       }
     } else {
