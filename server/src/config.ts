@@ -10,7 +10,7 @@ import * as moment from 'moment';
 let configFile = path.join(__dirname, '../../config.json');
 let configExists = fs.existsSync(configFile);
 
-const MINUTS_IN_HOUR = 60;
+const MINUTES_IN_HOUR = 60;
 // TODO: move to data_layer
 export type DBConfig = {
   user: string,
@@ -166,9 +166,9 @@ export function parseTimeZone(timeZone: string): number {
     throw new Error(`Wrong timeZone format in config - "TIMEZONE_UTC_OFFSET": ${timeZone}`);
   }
   const time = _.split(timeZone, ':');
-  let minutsOffset = Math.abs(Number(time[0])) * MINUTS_IN_HOUR + Number(time[1]);
+  let minutesOffset = Math.abs(Number(time[0])) * MINUTES_IN_HOUR + Number(time[1]);
   if(timeZone.indexOf('-') !== -1) {
-    minutsOffset = -1 * minutsOffset;
+    minutesOffset = -1 * minutesOffset;
   }
-  return minutsOffset;
+  return minutesOffset;
 }

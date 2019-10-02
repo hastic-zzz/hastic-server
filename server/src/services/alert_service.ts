@@ -9,9 +9,9 @@ import * as _ from 'lodash';
 import * as moment from 'moment';
 
 
-export function toTimeZone(time: moment.MomentInput, zone: number): string {
+export function toTimeZone(time: moment.MomentInput): string {
   const utcTime = moment(time).utc();
-  const timeWithOffset = utcTime.utcOffset(zone);
+  const timeWithOffset = utcTime.utcOffset(TIMEZONE_UTC_OFFSET);
   return timeWithOffset.format('ddd MMM DD YYYY HH:mm:ss');
 }
 
@@ -84,8 +84,8 @@ export class Alert {
   }
 
   protected makeMessage(meta: AnalyticMeta): string {
-    const localTimeFrom = toTimeZone(meta.from, TIMEZONE_UTC_OFFSET);
-    const localTimeTo = toTimeZone(meta.to, TIMEZONE_UTC_OFFSET);
+    const localTimeFrom = toTimeZone(meta.from);
+    const localTimeTo = toTimeZone(meta.to);
     return [
     `[${meta.analyticUnitType.toUpperCase()} ALERTING] ${meta.analyticUnitName}`,
     `URL: ${meta.grafanaUrl}`,
@@ -112,8 +112,8 @@ class PatternAlert extends Alert {
   }
 
   protected makeMessage(meta: AnalyticMeta): string {
-    const localTimeFrom = toTimeZone(meta.from, TIMEZONE_UTC_OFFSET);
-    const localTimeTo = toTimeZone(meta.to, TIMEZONE_UTC_OFFSET);
+    const localTimeFrom = toTimeZone(meta.from);
+    const localTimeTo = toTimeZone(meta.to);
     return [
       `[PATTERN DETECTED] ${meta.analyticUnitName}`,
       `URL: ${meta.grafanaUrl}`,
@@ -152,7 +152,7 @@ class ThresholdAlert extends Alert {
   }
 
   protected makeMessage(meta: AnalyticMeta): string {
-    const localTimeFrom = toTimeZone(meta.from, TIMEZONE_UTC_OFFSET);
+    const localTimeFrom = toTimeZone(meta.from);
     let message = [
       `[THRESHOLD ALERTING] ${meta.analyticUnitName}`,
       `URL: ${meta.grafanaUrl}`,
