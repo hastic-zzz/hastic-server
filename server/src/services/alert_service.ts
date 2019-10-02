@@ -109,12 +109,14 @@ class PatternAlert extends Alert {
   }
 
   protected makeMessage(meta: AnalyticMeta): string {
+    const localTimeFrom = toTimeZone(meta.from, TIMEZONE_UTC_OFFSET);
+    const localTimeTo = toTimeZone(meta.to, TIMEZONE_UTC_OFFSET);
     return [
       `[PATTERN DETECTED] ${meta.analyticUnitName}`,
       `URL: ${meta.grafanaUrl}`,
       ``,
-      `From: ${new Date(meta.from)}`,
-      `To: ${new Date(meta.to)}`,
+      `From: ${localTimeFrom.format('ddd MMM DD YYYY HH:mm:ss')}`,
+      `To: ${localTimeTo.format('ddd MMM DD YYYY HH:mm:ss')}`,
       `ID: ${meta.analyticUnitId}`
     ].join('\n');
   }
@@ -147,12 +149,12 @@ class ThresholdAlert extends Alert {
   }
 
   protected makeMessage(meta: AnalyticMeta): string {
-    const localTime = toTimeZone(meta.from, TIMEZONE_UTC_OFFSET);
+    const localTimeFrom = toTimeZone(meta.from, TIMEZONE_UTC_OFFSET);
     let message = [
       `[THRESHOLD ALERTING] ${meta.analyticUnitName}`,
       `URL: ${meta.grafanaUrl}`,
       ``,
-      `Starts at: ${localTime.format('ddd MMM DD YYYY HH:mm:ss')}`,
+      `Starts at: ${localTimeFrom.format('ddd MMM DD YYYY HH:mm:ss')}`,
       `ID: ${meta.analyticUnitId}`
     ].join('\n');
 
