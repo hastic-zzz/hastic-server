@@ -11,7 +11,8 @@ import * as moment from 'moment';
 
 export function toTimeZone(time, zone) {
   const utcTime = moment(time).utc();
-  return utcTime.utcOffset(zone);
+  const timeWithOffset = utcTime.utcOffset(zone);
+  return timeWithOffset.format('ddd MMM DD YYYY HH:mm:ss');
 }
 
 export class Alert {
@@ -89,8 +90,8 @@ export class Alert {
     `[${meta.analyticUnitType.toUpperCase()} ALERTING] ${meta.analyticUnitName}`,
     `URL: ${meta.grafanaUrl}`,
     ``,
-    `From: ${localTimeFrom.format('ddd MMM DD YYYY HH:mm:ss')}`,
-    `To: ${localTimeTo.format('ddd MMM DD YYYY HH:mm:ss')}`,
+    `From: ${localTimeFrom}`,
+    `To: ${localTimeTo}`,
     `ID: ${meta.analyticUnitId}`,
     `Message: ${meta.message}`
     ].join('\n');
@@ -117,8 +118,8 @@ class PatternAlert extends Alert {
       `[PATTERN DETECTED] ${meta.analyticUnitName}`,
       `URL: ${meta.grafanaUrl}`,
       ``,
-      `From: ${localTimeFrom.format('ddd MMM DD YYYY HH:mm:ss')}`,
-      `To: ${localTimeTo.format('ddd MMM DD YYYY HH:mm:ss')}`,
+      `From: ${localTimeFrom}`,
+      `To: ${localTimeTo}`,
       `ID: ${meta.analyticUnitId}`
     ].join('\n');
   }
@@ -156,7 +157,7 @@ class ThresholdAlert extends Alert {
       `[THRESHOLD ALERTING] ${meta.analyticUnitName}`,
       `URL: ${meta.grafanaUrl}`,
       ``,
-      `Starts at: ${localTimeFrom.format('ddd MMM DD YYYY HH:mm:ss')}`,
+      `Starts at: ${localTimeFrom}`,
       `ID: ${meta.analyticUnitId}`
     ].join('\n');
 
