@@ -9,7 +9,7 @@ import * as _ from 'lodash';
 import * as moment from 'moment';
 
 
-export function toTimeZone(time, zone) {
+export function toTimeZone(time: moment.MomentInput, zone: number): string {
   const utcTime = moment(time).utc();
   const timeWithOffset = utcTime.utcOffset(zone);
   return timeWithOffset.format('ddd MMM DD YYYY HH:mm:ss');

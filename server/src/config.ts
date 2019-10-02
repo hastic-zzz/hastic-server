@@ -149,7 +149,7 @@ function getDbConfig(connectionStr: string): DBConfig {
   return config;
 }
 
-function getTimeZoneOffset(): Number {
+function getTimeZoneOffset(): number {
   let configTimeZone = getConfigField('TIMEZONE_UTC_OFFSET', null);
   if(configTimeZone !== null) {
     return parseTimeZone(configTimeZone);
@@ -159,7 +159,7 @@ function getTimeZoneOffset(): Number {
   }
 }
 
-export function parseTimeZone(timeZone: string): Number {
+export function parseTimeZone(timeZone: string): number {
   const re = /\b-?\d{1,2}?:\d{2}\b/;
   const correctFormat = re.test(timeZone);
   if(!correctFormat) {
