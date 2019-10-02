@@ -167,7 +167,7 @@ export function parseTimeZone(timeZone: string): number {
   }
   const time = _.split(timeZone, ':');
   let minutsOffset = Math.abs(Number(time[0])) * MINUTS_IN_HOUR + Number(time[1]);
-  if (timeZone.indexOf('-') !== -1) {
+  if(timeZone.indexOf('-') !== -1) {
     minutsOffset = -1 * minutsOffset;
   }
   return minutsOffset;
