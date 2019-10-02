@@ -83,12 +83,14 @@ export class Alert {
   }
 
   protected makeMessage(meta: AnalyticMeta): string {
+    const localTimeFrom = toTimeZone(meta.from, TIMEZONE_UTC_OFFSET);
+    const localTimeTo = toTimeZone(meta.to, TIMEZONE_UTC_OFFSET);
     return [
     `[${meta.analyticUnitType.toUpperCase()} ALERTING] ${meta.analyticUnitName}`,
     `URL: ${meta.grafanaUrl}`,
     ``,
-    `From: ${new Date(meta.from)}`,
-    `To: ${new Date(meta.to)}`,
+    `From: ${localTimeFrom.format('ddd MMM DD YYYY HH:mm:ss')}`,
+    `To: ${localTimeTo.format('ddd MMM DD YYYY HH:mm:ss')}`,
     `ID: ${meta.analyticUnitId}`,
     `Message: ${meta.message}`
     ].join('\n');
