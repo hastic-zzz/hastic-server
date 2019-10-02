@@ -160,15 +160,15 @@ function getTimeZoneOffset(): Number {
 }
 
 export function parseTimeZone(timeZone: string): Number {
-  try {
-    const time = _.split(timeZone, ':');
-    let minutsOffset = Math.abs(Number(time[0])) * MINUTS_IN_HOUR + Number(time[1]);
-    if (timeZone.indexOf('-') !== -1) {
-      minutsOffset = -1 * minutsOffset;
-    }
-    return minutsOffset;
-  } catch(error) {
-    console.log(error);
-    throw new Error(`Wrong "TIMEZONE_UTC_OFFSET": ${timeZone} format`);
+  const re = /\b-?\d{1,2}?:\d{2}\b/;
+  const correctFormat = re.test(timeZone);
+  if(!correctFormat) {
+    throw new Error(`Wrong timeZone format in config - "TIMEZONE_UTC_OFFSET": ${timeZone}`);
   }
+  const time = _.split(timeZone, ':');
+  let minutsOffset = Math.abs(Number(time[0])) * MINUTS_IN_HOUR + Number(time[1]);
+  if (timeZone.indexOf('-') !== -1) {
+    minutsOffset = -1 * minutsOffset;
+  }
+  return minutsOffset;
 }
