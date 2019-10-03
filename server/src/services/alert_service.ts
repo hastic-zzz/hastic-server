@@ -2,7 +2,7 @@ import { sendNotification, MetaInfo, AnalyticMeta, WebhookType, Notification } f
 import * as AnalyticUnit from '../models/analytic_units';
 import { Segment } from '../models/segment_model';
 import { availableReporter } from '../utils/reporter';
-import { toTimeZone } from '../utils/timezone';
+import { toTimeZone } from '../utils/time';
 import { ORG_ID, HASTIC_API_KEY, HASTIC_WEBHOOK_IMAGE_ENABLED } from '../config';
 
 import axios from 'axios';

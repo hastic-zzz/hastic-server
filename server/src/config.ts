@@ -1,6 +1,6 @@
 import { getJsonDataSync } from './services/json_service';
 import { normalizeUrl } from './utils/url';
-import { parseTimeZone } from './utils/timezone';
+import { parseTimeZone } from './utils/time';
 
 import * as path from 'path';
 import * as fs from 'fs';
