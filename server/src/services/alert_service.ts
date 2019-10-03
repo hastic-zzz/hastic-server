@@ -2,18 +2,12 @@ import { sendNotification, MetaInfo, AnalyticMeta, WebhookType, Notification } f
 import * as AnalyticUnit from '../models/analytic_units';
 import { Segment } from '../models/segment_model';
 import { availableReporter } from '../utils/reporter';
-import { ORG_ID, HASTIC_API_KEY, HASTIC_WEBHOOK_IMAGE_ENABLED, TIMEZONE_UTC_OFFSET } from '../config';
+import { toTimeZone } from '../utils/timezone';
+import { ORG_ID, HASTIC_API_KEY, HASTIC_WEBHOOK_IMAGE_ENABLED } from '../config';
 
 import axios from 'axios';
 import * as _ from 'lodash';
-import * as moment from 'moment';
 
-
-export function toTimeZone(time: moment.MomentInput): string {
-  const utcTime = moment(time).utc();
-  const timeWithOffset = utcTime.utcOffset(TIMEZONE_UTC_OFFSET);
-  return timeWithOffset.format('ddd MMM DD YYYY HH:mm:ss');
-}
 
 export class Alert {
   public enabled = true;

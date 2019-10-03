@@ -1,16 +1,15 @@
 import { getJsonDataSync } from './services/json_service';
 import { normalizeUrl } from './utils/url';
+import { parseTimeZone } from './utils/timezone';
 
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
-import * as _ from 'lodash';
 import * as moment from 'moment';
 
 let configFile = path.join(__dirname, '../../config.json');
 let configExists = fs.existsSync(configFile);
 
-const MINUTES_IN_HOUR = 60;
 // TODO: move to data_layer
 export type DBConfig = {
   user: string,
@@ -157,18 +156,4 @@ function getTimeZoneOffset(): number {
     const serverUtcOffset = moment().utcOffset();
     return serverUtcOffset;
   }
-}
-
-export function parseTimeZone(timeZone: string): number {
-  const re = /\b-?\d{1,2}?:\d{2}\b/;
-  const correctFormat = re.test(timeZone);
-  if(!correctFormat) {
-    throw new Error(`Wrong timeZone format in config - "TIMEZONE_UTC_OFFSET": ${timeZone}`);
-  }
-  const time = _.split(timeZone, ':');
-  let minutesOffset = Math.abs(Number(time[0])) * MINUTES_IN_HOUR + Number(time[1]);
-  if(timeZone.indexOf('-') !== -1) {
-    minutesOffset = -1 * minutesOffset;
-  }
-  return minutesOffset;
 }
