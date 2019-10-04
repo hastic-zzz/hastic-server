@@ -1,10 +1,11 @@
 import { getJsonDataSync } from './services/json_service';
 import { normalizeUrl } from './utils/url';
+import { parseTimeZone } from './utils/time';
 
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
-
+import * as moment from 'moment';
 
 let configFile = path.join(__dirname, '../../config.json');
 let configExists = fs.existsSync(configFile);
@@ -50,6 +51,7 @@ export const HASTIC_WEBHOOK_URL = getConfigField('HASTIC_WEBHOOK_URL', null);
 export const HASTIC_WEBHOOK_TYPE = getConfigField('HASTIC_WEBHOOK_TYPE', 'application/json');
 export const HASTIC_WEBHOOK_SECRET = getConfigField('HASTIC_WEBHOOK_SECRET', null);
 export const HASTIC_WEBHOOK_IMAGE_ENABLED = getConfigField('HASTIC_WEBHOOK_IMAGE', false);
+export const TIMEZONE_UTC_OFFSET = getTimeZoneOffset();
 
 export const ANLYTICS_PING_INTERVAL = 500; // ms
 export const PACKAGE_VERSION = getPackageVersion();
@@ -144,4 +146,14 @@ function getDbConfig(connectionStr: string): DBConfig {
     dbName
   };
   return config;
+}
+
+function getTimeZoneOffset(): number {
+  let configTimeZone = getConfigField('TIMEZONE_UTC_OFFSET', null);
+  if(configTimeZone !== null) {
+    return parseTimeZone(configTimeZone);
+  } else {
+    const serverUtcOffset = moment().utcOffset();
+    return serverUtcOffset;
+  }
 }

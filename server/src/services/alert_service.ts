@@ -2,6 +2,7 @@ import { sendNotification, MetaInfo, AnalyticMeta, WebhookType, Notification } f
 import * as AnalyticUnit from '../models/analytic_units';
 import { Segment } from '../models/segment_model';
 import { availableReporter } from '../utils/reporter';
+import { toTimeZone } from '../utils/time';
 import { ORG_ID, HASTIC_API_KEY, HASTIC_WEBHOOK_IMAGE_ENABLED } from '../config';
 
 import axios from 'axios';
@@ -77,12 +78,14 @@ export class Alert {
   }
 
   protected makeMessage(meta: AnalyticMeta): string {
+    const localTimeFrom = toTimeZone(meta.from);
+    const localTimeTo = toTimeZone(meta.to);
     return [
     `[${meta.analyticUnitType.toUpperCase()} ALERTING] ${meta.analyticUnitName}`,
     `URL: ${meta.grafanaUrl}`,
     ``,
-    `From: ${new Date(meta.from)}`,
-    `To: ${new Date(meta.to)}`,
+    `From: ${localTimeFrom}`,
+    `To: ${localTimeTo}`,
     `ID: ${meta.analyticUnitId}`,
     `Message: ${meta.message}`
     ].join('\n');
@@ -103,12 +106,14 @@ class PatternAlert extends Alert {
   }
 
   protected makeMessage(meta: AnalyticMeta): string {
+    const localTimeFrom = toTimeZone(meta.from);
+    const localTimeTo = toTimeZone(meta.to);
     return [
       `[PATTERN DETECTED] ${meta.analyticUnitName}`,
       `URL: ${meta.grafanaUrl}`,
       ``,
-      `From: ${new Date(meta.from)}`,
-      `To: ${new Date(meta.to)}`,
+      `From: ${localTimeFrom}`,
+      `To: ${localTimeTo}`,
       `ID: ${meta.analyticUnitId}`
     ].join('\n');
   }
@@ -141,11 +146,12 @@ class ThresholdAlert extends Alert {
   }
 
   protected makeMessage(meta: AnalyticMeta): string {
+    const localTimeFrom = toTimeZone(meta.from);
     let message = [
       `[THRESHOLD ALERTING] ${meta.analyticUnitName}`,
       `URL: ${meta.grafanaUrl}`,
       ``,
-      `Starts at: ${new Date(meta.from)}`,
+      `Starts at: ${localTimeFrom}`,
       `ID: ${meta.analyticUnitId}`
     ].join('\n');
 

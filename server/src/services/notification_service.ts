@@ -1,5 +1,5 @@
 import * as AnalyticUnit from '../models/analytic_units';
-import { HASTIC_WEBHOOK_URL, HASTIC_WEBHOOK_TYPE, HASTIC_WEBHOOK_SECRET, HASTIC_INSTANCE_NAME } from '../config';
+import { HASTIC_WEBHOOK_URL, HASTIC_WEBHOOK_TYPE, HASTIC_INSTANCE_NAME } from '../config';
 
 import axios from 'axios';
 import * as querystring from 'querystring';
