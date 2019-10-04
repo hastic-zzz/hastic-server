@@ -48,7 +48,7 @@ export async function sendNotification(notification: Notification) {
   }
 
   notification.text += `\nInstance: ${HASTIC_INSTANCE_NAME}`;
-
+  console.log('notificaton: ', notification);
   let data;
   if(HASTIC_WEBHOOK_TYPE === ContentType.JSON) {
     data = JSON.stringify(notification);

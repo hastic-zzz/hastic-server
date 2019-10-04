@@ -16,11 +16,14 @@ export function parseTimeZone(timeZone: string): number {
   if(timeZone.indexOf('-') !== -1) {
     minutesOffset = -1 * minutesOffset;
   }
+  console.log('parseTimeZone minutesOffset :', minutesOffset);
   return minutesOffset;
 }
 
 export function toTimeZone(time: moment.MomentInput): string {
   const utcTime = moment(time).utc();
+  console.log('toTimeZone utcTime: ', utcTime);
   const timeWithOffset = utcTime.utcOffset(TIMEZONE_UTC_OFFSET);
+  console.log('toTimeZone timeWithOffset: ', timeWithOffset);
   return timeWithOffset.format('ddd MMM DD YYYY HH:mm:ss');
 }
