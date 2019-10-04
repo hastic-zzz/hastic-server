@@ -24,14 +24,15 @@ export class MongoDbQueryWrapper implements DbQueryWrapper {
     if(docs.length === 0) {
       return [];
     }
-
     // TODO: move to utils
     docs.forEach(doc => {
       if(doc._id !== undefined) {
         doc._id = new ObjectID(doc._id);
       }
     });
+    console.log('dbInsertMany docs: ', docs);
     const newDocs = await collection.insertMany(docs);
+    console.log('dbInsertMany newDocs: ', docs);
     return _.map(newDocs.insertedIds, (id: ObjectID) => id.toString());
   }
 
@@ -70,8 +71,11 @@ export class MongoDbQueryWrapper implements DbQueryWrapper {
 
   async dbFindOne(collection: Collection, query: FilterQuery<string | object>): Promise<any> {
     // http://mongodb.github.io/node-mongodb-native/3.1/api/Collection.html#findOne
+    console.log('findOne query: ', query);
     query = wrapIdToMongoDbQuery(query);
+    console.log('findOne new query: ', query);
     let doc = await collection.findOne(query);
+    console.log('findOne doc: ', doc);
     // TODO: move to utils
     if(doc !== null) {
       doc._id = doc._id.toString();

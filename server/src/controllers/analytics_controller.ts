@@ -88,7 +88,7 @@ async function onPushDetect(detectionResult: DetectionResult): Promise<void> {
   console.log('onPushDetect');
   const analyticUnit = await AnalyticUnit.findById(detectionResult.analyticUnitId);
   const segments = await onDetect(detectionResult);
-  if(!_.isEmpty(segments) && analyticUnit.alert) {
+  if(true) {
     try {
       console.log('segments in onPushDetect: ', segments);
       const segment = await Segment.findOne(_.last(segments));

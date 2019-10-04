@@ -141,6 +141,7 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
   addedIds: SegmentId[],
   removedIds: SegmentId[]
 }> {
+  console.log('start merge and insert');
   if(_.isEmpty(segments)) {
     return { addedIds: [], removedIds: [] };
   }
@@ -155,7 +156,7 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
 
   let segmentIdsToRemove: SegmentId[] = [];
   let segmentsToInsert: Segment[] = [];
-
+  console.log('segments: ', segments);
   for(let segment of segments) {
     if(await isIntersectedWithExistingLabeled(segment)) {
       continue;
@@ -215,9 +216,12 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
       segmentsToInsert.push(segment);
     }
   }
-
+  console.log('segments to insert: ', segmentsToInsert);
   await db.removeMany(segmentIdsToRemove);
+  console.log('insert many: ', segmentsToInsert.map(s => s.toObject()));
   const addedIds = await db.insertMany(segmentsToInsert.map(s => s.toObject()));
+  console.log('addedIds: ', addedIds);
+  console.log('end merge and insert');
   return {
     addedIds,
     removedIds: segmentIdsToRemove
