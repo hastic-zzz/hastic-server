@@ -215,7 +215,7 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
       segmentsToInsert.push(segment);
     }
   }
-  
+
   await db.removeMany(segmentIdsToRemove);
   const addedIds = await db.insertMany(segmentsToInsert.map(s => s.toObject()));
   return {
