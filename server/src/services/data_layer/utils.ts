@@ -1,4 +1,4 @@
-import { ObjectID } from 'mongodb';
+import { FilterQuery, ObjectID } from 'mongodb';
 
 //TODO: move to DbQueryWrapper
 
@@ -9,9 +9,12 @@ export function wrapIdToQuery(query: string | object): object {
   return query;
 }
 
-export function wrapIdToMongoDbQuery(query: string | object): object {
+export function wrapIdToMongoDbQuery(query: FilterQuery<string | object>): object {
   if(typeof query === 'string') {
     return { _id: new ObjectID(query) };
+  }
+  if(typeof query._id === 'string') {
+    return { _id: new ObjectID(query._id) };
   }
   return query;
 }
