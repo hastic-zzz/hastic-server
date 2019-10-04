@@ -85,7 +85,6 @@ export async function onDetect(detectionResult: DetectionResult): Promise<Segmen
  * Sends a webhook if it's needed
  */
 async function onPushDetect(detectionResult: DetectionResult): Promise<void> {
-  console.log('onPushDetect');
   const analyticUnit = await AnalyticUnit.findById(detectionResult.analyticUnitId);
   const segments = await onDetect(detectionResult);
   if(true) {
