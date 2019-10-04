@@ -155,6 +155,7 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
 
   let segmentIdsToRemove: SegmentId[] = [];
   let segmentsToInsert: Segment[] = [];
+
   for(let segment of segments) {
     if(await isIntersectedWithExistingLabeled(segment)) {
       continue;
@@ -214,6 +215,7 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
       segmentsToInsert.push(segment);
     }
   }
+  
   await db.removeMany(segmentIdsToRemove);
   const addedIds = await db.insertMany(segmentsToInsert.map(s => s.toObject()));
   return {

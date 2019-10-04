@@ -24,6 +24,7 @@ export class MongoDbQueryWrapper implements DbQueryWrapper {
     if(docs.length === 0) {
       return [];
     }
+    
     // TODO: move to utils
     docs.forEach(doc => {
       if(doc._id !== undefined) {

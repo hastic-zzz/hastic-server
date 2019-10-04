@@ -2,7 +2,6 @@ import { FilterQuery, ObjectID } from 'mongodb';
 
 //TODO: move to DbQueryWrapper
 
-
 export function wrapIdToQuery(query: string | object): object {
   if(typeof query === 'string') {
     return { _id: query };
@@ -21,8 +20,6 @@ export function wrapIdToMongoDbQuery(query: FilterQuery<string | object>): objec
 }
 
 export function wrapIdsToQuery(query: string[] | object): object {
-  console.log('wrapid type: ', typeof query);
-  console.log('wrapid query: ', query);
   if(Array.isArray(query)) {
     return { _id: { $in: query } };
   }

@@ -89,7 +89,7 @@ async function onPushDetect(detectionResult: DetectionResult): Promise<void> {
   const segments = await onDetect(detectionResult);
   if(!_.isEmpty(segments) && analyticUnit.alert) {
     try {
-      const segment = await Segment.findOne(_.last(segments));
+      const segment = await Segment.findOne(_.last(segments))
       alertService.receiveAlert(analyticUnit, segment);
     } catch(err) {
       console.error(`error while sending webhook: ${err.message}`);
