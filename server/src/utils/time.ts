@@ -23,6 +23,7 @@ export function parseTimeZone(timeZone: string): number {
 export function toTimeZone(time: moment.MomentInput): string {
   const utcTime = moment(time).utc();
   console.log('toTimeZone utcTime: ', utcTime);
+  console.log('toTimeZone utcTime: ', TIMEZONE_UTC_OFFSET);
   const timeWithOffset = utcTime.utcOffset(TIMEZONE_UTC_OFFSET);
   console.log('toTimeZone timeWithOffset: ', timeWithOffset);
   return timeWithOffset.format('ddd MMM DD YYYY HH:mm:ss');

@@ -150,6 +150,7 @@ function getDbConfig(connectionStr: string): DBConfig {
 
 function getTimeZoneOffset(): number {
   let configTimeZone = getConfigField('TIMEZONE_UTC_OFFSET', null);
+  console.log('getTimeZoneOffset- configTimeZone:', configTimeZone);
   if(configTimeZone !== null) {
     return parseTimeZone(configTimeZone);
   } else {
