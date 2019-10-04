@@ -87,11 +87,9 @@ export async function onDetect(detectionResult: DetectionResult): Promise<Segmen
 async function onPushDetect(detectionResult: DetectionResult): Promise<void> {
   const analyticUnit = await AnalyticUnit.findById(detectionResult.analyticUnitId);
   const segments = await onDetect(detectionResult);
-  if(true) {
+  if(!_.isEmpty(segments) && analyticUnit.alert) {
     try {
-      console.log('segments in onPushDetect: ', segments);
       const segment = await Segment.findOne(_.last(segments));
-      console.log('segment after findOne: ', segment);
       alertService.receiveAlert(analyticUnit, segment);
     } catch(err) {
       console.error(`error while sending webhook: ${err.message}`);
