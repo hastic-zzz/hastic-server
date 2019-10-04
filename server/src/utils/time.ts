@@ -8,10 +8,12 @@ const MINUTES_IN_HOUR = 60;
 export function parseTimeZone(timeZone: string): number {
   const re = /\b-?\d{1,2}?:\d{2}\b/;
   const correctFormat = re.test(timeZone);
+  console.log('timezone: ', timeZone);
   if(!correctFormat) {
     throw new Error(`Wrong timeZone format in config - "TIMEZONE_UTC_OFFSET": ${timeZone}`);
   }
   const time = _.split(timeZone, ':');
+  console.log('timearray: ', time);
   let minutesOffset = Math.abs(Number(time[0])) * MINUTES_IN_HOUR + Number(time[1]);
   if(timeZone.indexOf('-') !== -1) {
     minutesOffset = -1 * minutesOffset;
