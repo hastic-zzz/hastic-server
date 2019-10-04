@@ -6,7 +6,7 @@ import * as moment from 'moment';
 const MINUTES_IN_HOUR = 60;
 
 export function parseTimeZone(timeZone: string): number {
-  timeZone = timeZone.replace(/['|"]/, '');
+  timeZone = timeZone.replace(/['|"]/g, '');
   const re = /^-?\d{1,2}?:\d{2}$/;
   const correctFormat = re.test(timeZone);
   console.log('timezone: ', timeZone);
