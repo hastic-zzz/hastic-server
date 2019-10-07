@@ -23,5 +23,19 @@ export function parseTimeZone(timeZone: string): number {
 export function toTimeZone(time: moment.MomentInput): string {
   const utcTime = moment(time).utc();
   const timeWithOffset = utcTime.utcOffset(TIMEZONE_UTC_OFFSET);
-  return timeWithOffset.format('ddd MMM DD YYYY HH:mm:ss');
+  const timeInfo = timeWithOffset.format('ddd MMM DD YYYY HH:mm:ss') + `(UTC ${getTimeFromMins(TIMEZONE_UTC_OFFSET)})`;
+  return timeInfo;
 }
+
+function getTimeFromMins(mins: number): string {
+  let sign = '+';
+  if(mins < 0) {
+    sign = '-';
+  }
+  let hours = Math.abs(Math.trunc(mins / MINUTES_IN_HOUR)).toString();
+  let minutes = Math.abs(mins % MINUTES_IN_HOUR).toString();
+  if(minutes.length === 1) {
+    minutes = '0' + minutes;
+  }
+  return sign + hours + ':' + minutes;
+};
