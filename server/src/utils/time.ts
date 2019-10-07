@@ -4,6 +4,7 @@ import * as _ from 'lodash';
 import * as moment from 'moment';
 
 const MINUTES_IN_HOUR = 60;
+const TIME_FORMAT = 'ddd MMM DD YYYY HH:mm:ss Z';
 
 export function parseTimeZone(timeZone: string): number {
   timeZone = timeZone.replace(/['|"]/g, '');
@@ -23,19 +24,6 @@ export function parseTimeZone(timeZone: string): number {
 export function toTimeZone(time: moment.MomentInput): string {
   const utcTime = moment(time).utc();
   const timeWithOffset = utcTime.utcOffset(TIMEZONE_UTC_OFFSET);
-  const timeInfo = timeWithOffset.format('ddd MMM DD YYYY HH:mm:ss') + `(UTC ${getTimeFromMins(TIMEZONE_UTC_OFFSET)})`;
-  return timeInfo;
+  return timeWithOffset.format(TIME_FORMAT);
 }
 
-function getTimeFromMins(mins: number): string {
-  let sign = '+';
-  if(mins < 0) {
-    sign = '-';
-  }
-  let hours = Math.abs(Math.trunc(mins / MINUTES_IN_HOUR)).toString();
-  let minutes = Math.abs(mins % MINUTES_IN_HOUR).toString();
-  if(minutes.length === 1) {
-    minutes = '0' + minutes;
-  }
-  return sign + hours + ':' + minutes;
-};
