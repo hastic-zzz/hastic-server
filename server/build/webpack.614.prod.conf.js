@@ -18,7 +18,9 @@ module.exports = {
         test: /\.js$/,
         use: [
           { loader: 'babel-loader' }
-        ],
+        ]
+      },
+      {
         test: /\.node$/,
         use: [
           { loader: './build/node-loader' }
