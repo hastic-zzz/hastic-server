@@ -6,7 +6,8 @@ import * as moment from 'moment';
 const MINUTES_IN_HOUR = 60;
 
 export function parseTimeZone(timeZone: string): number {
-  const re = /\b-?\d{1,2}?:\d{2}\b/;
+  timeZone = timeZone.replace(/['|"]/g, '');
+  const re = /^-?\d{1,2}?:\d{2}$/;
   const correctFormat = re.test(timeZone);
   if(!correctFormat) {
     throw new Error(`Wrong timeZone format in config - "TIMEZONE_UTC_OFFSET": ${timeZone}`);
