@@ -302,6 +302,14 @@ class TestUtils(unittest.TestCase):
         utils_result = utils.get_start_and_end_of_segments(segments)
         self.assertEqual(result, utils_result)
 
+    def test_list_to_list_of_lists(self):
+        lst = [1,2,3]
+        lst_ex = [['a'], ['b', 'c']]
+        list_result = [[1], [2, 3]]
+        utils_result = utils.list_to_list_of_lists(lst, lst_ex)
+        for got, expected in zip(list_result, utils_result):
+            self.assertEqual(len(got), len(expected))
+
     def test_merge_intersecting_segments(self):
         test_cases = [
             {

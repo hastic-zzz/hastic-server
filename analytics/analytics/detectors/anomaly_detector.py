@@ -101,24 +101,24 @@ class AnomalyDetector(ProcessingDetector):
                 upper_bound = self.add_season_to_data(upper_bound, segment_data, seasonality_offset, seasonality_index, Bound.UPPER)
 
         anomaly_indexes = []
+        bound_types = []
         for idx, val in enumerate(data.values):
             if val > upper_bound.values[idx]:
                 if enable_bounds == Bound.UPPER or enable_bounds == Bound.ALL:
                     anomaly_indexes.append(data.index[idx])
+                    bound_types.append('upper')
 
             if val < lower_bound.values[idx]:
                 if enable_bounds == Bound.LOWER or enable_bounds == Bound.ALL:
                     anomaly_indexes.append(data.index[idx])
+                    bound_types.append('lower')
 
         # TODO: use Segment in utils
         segments = utils.close_filtering(anomaly_indexes, 1)
+        bound_types = utils.list_to_list_of_lists(bound_types, segments)
         segments = utils.get_start_and_end_of_segments(segments)
-        segments = [Segment(
-            utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[0]]),
-            utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[1]]),
-            f'{data[segment[0]]} out of bound'
-        ) for segment in segments]
-
+        bound_types = utils.get_start_and_end_of_segments(bound_types)
+        segments = self.make_segments_with_message(dataframe, segments, bound_types)
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_detection_time = utils.convert_pd_timestamp_to_ms(last_dataframe_time)
 
@@ -277,3 +277,15 @@ class AnomalyDetector(ProcessingDetector):
         upper_bound = pd.Series(upper_bound, index = segment.index)
         lower_bound = pd.Series(lower_bound, index = segment.index)
         return upper_bound, lower_bound
+
+    def make_segments_with_message(self, dataframe: pd.dataframe, segments: List[List[int]], bound_types: List[List[str]]) -> List[Segment]:
+        data = dataframe['value']
+        result_segments = []
+        for idx, segment in enumerate(segments):
+            segment_message = f'{data[segment[0]]} out of {bound_types[idx][0]} bound'
+            result_segments.append(Segment(
+                utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[0]]),
+                utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[1]]),
+                segment_message
+            ))
+        return result_segments

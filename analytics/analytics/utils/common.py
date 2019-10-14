@@ -130,6 +130,20 @@ def close_filtering(pattern_list: List[int], win_size: int) -> TimeSeries:
             s.append([pattern_list[i]])
     return s
 
+def list_to_list_of_lists(lst: List[Union[int, str]], lists_example: List[List[Union[int, str]]]) -> List[List[Union[int, str]]]:
+    '''
+    Convert lst to list_of_lists by lists_example
+    [1, 2, 3] -> [[1], [2, 3]] if example is[[a], [b, c]]
+    '''
+    result_list = []
+
+    for val in lists_example:
+        new_list = []
+        for _ in val:
+            new_list.append(lst.pop(0))
+        result_list.append(new_list)
+    return result_list
+
 def merge_intersecting_segments(segments: List[Segment], time_step: int) -> List[Segment]:
     '''
     Find intersecting segments in segments list and merge it.
