@@ -119,7 +119,6 @@ class AnomalyDetector(ProcessingDetector):
         segments = utils.get_start_and_end_of_segments(segments)
         bound_types = utils.get_start_and_end_of_segments(bound_types)
         segments_with_info = list(zip(segments, bound_types))
-        print('segments with info: ', segments_with_info)
         segments = [Segment(
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[0][0]]),
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[0][1]]),
@@ -283,4 +282,3 @@ class AnomalyDetector(ProcessingDetector):
         upper_bound = pd.Series(upper_bound, index = segment.index)
         lower_bound = pd.Series(lower_bound, index = segment.index)
         return upper_bound, lower_bound
-
