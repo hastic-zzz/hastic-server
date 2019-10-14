@@ -138,9 +138,7 @@ def list_to_list_of_lists(lst: List[Union[int, str]], lists_example: List[List[U
     result_list = []
 
     for val in lists_example:
-        new_list = []
-        for _ in val:
-            new_list.append(lst.pop(0))
+        new_list = list(map(lambda _: lst.pop(0), val))
         result_list.append(new_list)
     return result_list
 
