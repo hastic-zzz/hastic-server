@@ -118,7 +118,13 @@ class AnomalyDetector(ProcessingDetector):
         bound_types = utils.list_to_list_of_lists(bound_types, segments)
         segments = utils.get_start_and_end_of_segments(segments)
         bound_types = utils.get_start_and_end_of_segments(bound_types)
-        segments = self.make_segments_with_message(dataframe, segments, bound_types)
+        segments_with_info = list(zip(segments, bound_types))
+        print('segments with info: ', segments_with_info)
+        segments = [Segment(
+            utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[0][0]]),
+            utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[0][1]]),
+            f'{data[segment[0][0]]} out of {segment[1][0]} bound'
+        ) for segment in segments_with_info]
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_detection_time = utils.convert_pd_timestamp_to_ms(last_dataframe_time)
 
@@ -278,14 +284,3 @@ class AnomalyDetector(ProcessingDetector):
         lower_bound = pd.Series(lower_bound, index = segment.index)
         return upper_bound, lower_bound
 
-    def make_segments_with_message(self, dataframe: pd.dataframe, segments: List[List[int]], bound_types: List[List[str]]) -> List[Segment]:
-        data = dataframe['value']
-        result_segments = []
-        for idx, segment in enumerate(segments):
-            segment_message = f'{data[segment[0]]} out of {bound_types[idx][0]} bound'
-            result_segments.append(Segment(
-                utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[0]]),
-                utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[1]]),
-                segment_message
-            ))
-        return result_segments
