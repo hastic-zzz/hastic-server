@@ -122,10 +122,10 @@ export class MongoDbQueryWrapper implements DbQueryWrapper {
 }
 
 function convertQueryToMongoFormat(query: any): object {
-  if(query.$or !== undefined) {
+  if(query.$or !== undefined && typeof query.$or === 'object') {
     query.$or = convertQueryFieldToMongoFormat(query.$or);
   }
-  if(query.$and !== undefined) {
+  if(query.$and !== undefined && typeof query.$or === 'object') {
     query.$and = convertQueryFieldToMongoFormat(query.$and);
   }
   return query;
