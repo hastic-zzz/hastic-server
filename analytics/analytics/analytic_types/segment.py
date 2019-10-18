@@ -5,7 +5,7 @@ class Segment:
     Used for segment manipulation instead of { 'from': ..., 'to': ... } dict
     '''
 
-    def __init__(self, from_timestamp: int, to_timestamp: int, labeled: bool = None, deleted: bool = None, message: str = None):
+    def __init__(self, from_timestamp: int, to_timestamp: int, labeled: Optional[bool], deleted: Optional[bool], message: str = None):
         if to_timestamp < from_timestamp:
             raise ValueError(f'Can`t create segment with to < from: {to_timestamp} < {from_timestamp}')
         self.from_timestamp = from_timestamp
