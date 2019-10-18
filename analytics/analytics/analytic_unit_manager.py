@@ -5,6 +5,7 @@ from concurrent.futures import Executor, ThreadPoolExecutor
 
 from analytic_unit_worker import AnalyticUnitWorker
 from analytic_types import AnalyticUnitId, ModelCache
+from analytic_types.segment import Segment
 import detectors
 
 
@@ -66,7 +67,14 @@ class AnalyticUnitManager:
             return res
         elif task['type'] == 'LEARN':
             if 'segments' in payload:
-                return await worker.do_train(payload['segments'], data, payload['cache'])
+                let segments = payload['segments']
+                segments = list(map(lambda segment:
+                    Segment(
+                        segment['from'],
+                        segment['to'],
+                        segment['labeled'],
+                        segment['deleted']), segments))
+                return await worker.do_train(segments, data, payload['cache'])
             elif 'threshold' in payload:
                 return await worker.do_train(payload['threshold'], data, payload['cache'])
             elif 'anomaly' in payload:

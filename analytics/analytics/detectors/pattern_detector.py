@@ -46,14 +46,8 @@ class PatternDetector(Detector):
         self.model = resolve_model_by_pattern(self.pattern_type)
         self.bucket = DataBucket()
 
-    def train(self, dataframe: pd.DataFrame, segments: List[dict], cache: Optional[ModelCache]) -> ModelCache:
+    def train(self, dataframe: pd.DataFrame, segments: List[Segment], cache: Optional[ModelCache]) -> ModelCache:
         # TODO: pass only part of dataframe that has segments
-        segments = list(map(lambda segment:
-            Segment(
-                segment['from'],
-                segment['to'],
-                segment['labeled'],
-                segment['deleted']), segments))
 
         if self.check_labeled_segments(segments) == False:
             msg = f'{self.analytic_unit_id} has no positive labeled segments. Pattern detector needs at least 1 positive labeled segment'
