@@ -68,7 +68,7 @@ class AnalyticUnitManager:
         elif task['type'] == 'LEARN':
             if 'segments' in payload:
                 segments = payload['segments']
-                segments = list(map(lambda segment: Segment.from_json(segment), segments))
+                segments = [Segment.from_json(segment) for segment in segments]
                 return await worker.do_train(segments, data, payload['cache'])
             elif 'threshold' in payload:
                 return await worker.do_train(payload['threshold'], data, payload['cache'])

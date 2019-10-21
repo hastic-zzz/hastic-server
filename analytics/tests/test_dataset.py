@@ -34,7 +34,7 @@ class TestDataset(unittest.TestCase):
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000012, 'labeled': True, 'deleted': False},
                     {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000003, 'to': 1523889000005, 'labeled': False, 'deleted': True}]
-        segments = list(map(lambda segment: Segment.from_json(segment), segments))
+        segments = [Segment.from_json(segment) for segment in segments]
 
         try:
             model = models.PeakModel()
@@ -49,7 +49,7 @@ class TestDataset(unittest.TestCase):
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000016, 'labeled': True, 'deleted': False},
                     {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000002, 'to': 1523889000008, 'labeled': False, 'deleted': True}]
-        segments = list(map(lambda segment: Segment.from_json(segment), segments))
+        segments = [Segment.from_json(segment) for segment in segments]
 
         try:
             model = models.JumpModel()
@@ -64,7 +64,7 @@ class TestDataset(unittest.TestCase):
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000012, 'labeled': True, 'deleted': False},
                     {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000003, 'to': 1523889000005, 'labeled': False, 'deleted': True}]
-        segments = list(map(lambda segment: Segment.from_json(segment), segments))
+        segments = [Segment.from_json(segment) for segment in segments]
 
         try:
             model = models.TroughModel()
@@ -79,7 +79,7 @@ class TestDataset(unittest.TestCase):
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000016, 'labeled': True, 'deleted': False},
                     {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000002, 'to': 1523889000008, 'labeled': False, 'deleted': True}]
-        segments = list(map(lambda segment: Segment.from_json(segment), segments))
+        segments = [Segment.from_json(segment) for segment in segments]
 
         try:
             model = models.DropModel()
@@ -94,7 +94,7 @@ class TestDataset(unittest.TestCase):
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000012, 'labeled': True, 'deleted': False},
                     {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000003, 'to': 1523889000005, 'labeled': False, 'deleted': True}]
-        segments = list(map(lambda segment: Segment.from_json(segment), segments))
+        segments = [Segment.from_json(segment) for segment in segments]
 
         try:
             model = models.GeneralModel()
@@ -109,7 +109,7 @@ class TestDataset(unittest.TestCase):
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000019, 'to': 1523889000025, 'labeled': True, 'deleted': False},
                     {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000002, 'to': 1523889000008, 'labeled': True, 'deleted': False}]
-        segments = list(map(lambda segment: Segment.from_json(segment), segments))
+        segments = [Segment.from_json(segment) for segment in segments]
 
         try:
             model = models.JumpModel()
@@ -124,7 +124,7 @@ class TestDataset(unittest.TestCase):
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000019, 'to': 1523889000025, 'labeled': True, 'deleted': False},
                     {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000002, 'to': 1523889000008, 'labeled': True, 'deleted': False}]
-        segments = list(map(lambda segment: Segment.from_json(segment), segments))
+        segments = [Segment.from_json(segment) for segment in segments]
 
         try:
             model = models.DropModel()
@@ -138,7 +138,7 @@ class TestDataset(unittest.TestCase):
         data_val = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 5.0, 5.0, 4.0, 5.0, 5.0, 6.0, 5.0, 1.0, 2.0, 3.0, 4.0, 5.0,3.0,3.0,2.0,7.0,8.0,9.0,8.0,7.0,6.0]
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000007, 'to': 1523889000011, 'labeled': True, 'deleted': False}]
-        segments = list(map(lambda segment: Segment.from_json(segment), segments))
+        segments = [Segment.from_json(segment) for segment in segments]
 
         try:
             model = models.JumpModel()
@@ -176,7 +176,7 @@ class TestDataset(unittest.TestCase):
         data_val = [1.0, 1.0, 1.0, 1.0, 1.0, 5.0, 2.0, 5.0, 5.0, 1.0, 1.0, 1.0, 1.0, 9.0, 9.0, 9.0, 9.0, 2.0, 3.0, 4.0, 5.0, 4.0, 2.0, 1.0, 3.0, 4.0]
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000004, 'to': 1523889000006, 'labeled': True, 'deleted': False}]
-        segments = list(map(lambda segment: Segment.from_json(segment), segments))
+        segments = [Segment.from_json(segment) for segment in segments]
 
         model_instances = [
             models.GeneralModel(),
@@ -194,7 +194,7 @@ class TestDataset(unittest.TestCase):
         data_val = [1.0, 2.0, 5.0, 2.0, 1.0, 1.0, 3.0, 6.0, 4.0, 2.0, 1.0, 0, 0]
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000001, 'to': 1523889000003, 'labeled': True, 'deleted': False}]
-        segments = list(map(lambda segment: Segment.from_json(segment), segments))
+        segments = [Segment.from_json(segment) for segment in segments]
     
         model = models.GeneralModel()
         model.state = model.get_state(None)
@@ -222,7 +222,7 @@ class TestDataset(unittest.TestCase):
         data_val = [2.0, 5.0, 1.0, 1.0, 1.0, 2.0, 5.0, 1.0, 1.0, 2.0, 3.0, 7.0, 1.0, 1.0, 1.0]
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000012, 'labeled': True, 'deleted': False}]
-        segments = list(map(lambda segment: Segment.from_json(segment), segments))
+        segments = [Segment.from_json(segment) for segment in segments]
 
         model = models.PeakModel()
         model.state = model.get_state(cache)
@@ -243,7 +243,7 @@ class TestDataset(unittest.TestCase):
         data_val = [5.0, 5.0, 1.0, 4.0, 5.0, 5.0, 0.0, 4.0, 5.0, 5.0, 6.0, 1.0, 5.0, 5.0, 5.0]
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000010, 'to': 1523889000012, 'labeled': True, 'deleted': False}]
-        segments = list(map(lambda segment: Segment.from_json(segment), segments))
+        segments = [Segment.from_json(segment) for segment in segments]
 
         model = models.TroughModel()
         model.state = model.get_state(cache)
@@ -264,7 +264,7 @@ class TestDataset(unittest.TestCase):
         data_val = [1.0, 1.0, 1.0, 4.0, 4.0, 0.0, 0.0, 5.0, 5.0, 0.0, 0.0, 4.0, 4.0, 4.0, 4.0]
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 152388900009, 'to': 1523889000013, 'labeled': True, 'deleted': False}]
-        segments = list(map(lambda segment: Segment.from_json(segment), segments))
+        segments = [Segment.from_json(segment) for segment in segments]
 
         model = models.JumpModel()
         model.state = model.get_state(cache)
@@ -285,7 +285,7 @@ class TestDataset(unittest.TestCase):
         data_val = [5.0, 5.0, 5.0, 5.0, 1.0, 1.0, 1.0, 1.0, 9.0, 9.0, 9.0, 9.0, 0, 0, 0, 0, 0, 0, 6.0, 6.0, 6.0, 1.0, 1.0, 1.0, 1.0, 1.0]
         dataframe = create_dataframe(data_val)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000019, 'to': 1523889000024, 'labeled': True, 'deleted': False}]
-        segments = list(map(lambda segment: Segment.from_json(segment), segments))
+        segments = [Segment.from_json(segment) for segment in segments]
 
         try:
             model = models.DropModel()

@@ -49,7 +49,7 @@ class PatternDetector(Detector):
     def train(self, dataframe: pd.DataFrame, segments: List[Segment], cache: Optional[ModelCache]) -> ModelCache:
         # TODO: pass only part of dataframe that has segments
 
-        if self.check_labeled_segments(segments) == False:
+        if self.contains_labeled_segments(segments) == False:
             msg = f'{self.analytic_unit_id} has no positive labeled segments. Pattern detector needs at least 1 positive labeled segment'
             logger.error(msg)
             raise ValueError(msg)
@@ -140,7 +140,7 @@ class PatternDetector(Detector):
         # TODO: windowSize -> window_size
         return cache.get('windowSize', self.DEFAULT_WINDOW_SIZE)
 
-    def check_labeled_segments(self, segments: List[Segment]) -> bool:
+    def contains_labeled_segments(self, segments: List[Segment]) -> bool:
         for segment in segments:
             if segment.labeled == True:
                 return True
