@@ -67,7 +67,7 @@ class AnalyticUnitManager:
             return res
         elif task['type'] == 'LEARN':
             if 'segments' in payload:
-                let segments = payload['segments']
+                segments = payload['segments']
                 segments = list(map(lambda segment:
                     Segment(
                         segment['from'],
