@@ -8,7 +8,7 @@ CAMEL_REGEX = re.compile(r'([A-Z])')
 UNDERSCORE_REGEX = re.compile(r'_([a-z])')
 
 def camel_to_underscore(name):
-    if name == 'from' or name == 'to:
+    if name == 'from' or name == 'to':
         name += '_timestamp'
     return CAMEL_REGEX.sub(lambda x: '_' + x.group(1).lower(), name)
 
