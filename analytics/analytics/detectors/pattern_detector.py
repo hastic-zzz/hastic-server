@@ -93,6 +93,7 @@ class PatternDetector(Detector):
         detected = self.model.detect(dataframe, self.analytic_unit_id)
 
         segments = [Segment(segment[0], segment[1]) for segment in detected['segments']]
+        print(segments)
         new_cache = detected['cache'].to_json()
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_detection_time = convert_pd_timestamp_to_ms(last_dataframe_time)

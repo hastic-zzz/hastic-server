@@ -6,6 +6,8 @@ import models
 import random
 import scipy.signal
 
+from analytic_types.segment import Segment
+
 class TestDataset(unittest.TestCase):
 
     def test_models_with_corrupted_dataframe(self):

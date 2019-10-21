@@ -68,12 +68,9 @@ class AnalyticUnitManager:
         elif task['type'] == 'LEARN':
             if 'segments' in payload:
                 segments = payload['segments']
+                print('before: ', segments)
                 segments = list(map(lambda segment:
-                    Segment(
-                        segment['from'],
-                        segment['to'],
-                        segment['labeled'],
-                        segment['deleted']), segments))
+                    Segment.from_json(segment), segments))
                 return await worker.do_train(segments, data, payload['cache'])
             elif 'threshold' in payload:
                 return await worker.do_train(payload['threshold'], data, payload['cache'])
@@ -82,7 +79,9 @@ class AnalyticUnitManager:
             else:
                 raise ValueError('No segments or threshold in LEARN payload')
         elif task['type'] == 'DETECT':
-            return await worker.do_detect(data, payload['cache'])
+            res = await worker.do_detect(data, payload['cache'])
+            print(res)
+            return res
         elif task['type'] == 'PROCESS':
             return await worker.process_data(data, payload['cache'])
 
