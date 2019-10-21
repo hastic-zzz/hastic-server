@@ -13,7 +13,7 @@ def camel_to_underscore(name):
     return CAMEL_REGEX.sub(lambda x: '_' + x.group(1).lower(), name)
 
 def underscore_to_camel(name):
-    if name == 'from_timestamp' or 'to_timestamp':
+    if name == 'from_timestamp' or name == 'to_timestamp':
         name = name.replace('_timestamp', '')
     return UNDERSCORE_REGEX.sub(lambda x: x.group(1).upper(), name)
 
