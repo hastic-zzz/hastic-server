@@ -136,7 +136,6 @@ class Model(ABC):
         deleted = []
         for segment_map in segments:
             if segment_map.labeled or segment_map.deleted:
-                print('segment_map.labeled: ', segment_map.labeled)
                 segment = AnalyticSegment(
                     segment_map.from_timestamp,
                     segment_map.to_timestamp,
@@ -148,7 +147,6 @@ class Model(ABC):
                     dataframe,
                     self.find_segment_center
                 )
-                print('segment.labeled: ', segment.labeled)
                 if segment.percent_of_nans > 0.1 or len(segment.data) == 0:
                     logging.debug(f'segment {segment.from_index}-{segment.to_index} skip because of invalid data')
                     continue
