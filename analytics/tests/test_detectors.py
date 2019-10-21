@@ -17,16 +17,33 @@ class TestPatternDetector(unittest.TestCase):
             detector.detect(dataframe, cache)
 
     def test_only_negative_segments(self):
-        data = [[0,1,2,3,2,1,0], [1,2,3,4,5,6,7]]
-        dataframe = pd.DataFrame(data, columns=['timestamp', 'values'])
+        data_val = [0, 1, 2, 1, 2, 10, 1, 2, 1]
+        data_ind = [1523889000000 + i for i in range(len(data_val))]
+        data = {'timestamp': data_ind, 'value': data_val}
+        dataframe = pd.DataFrame(data = data)
         segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000019, 'to': 1523889000025, 'labeled': False, 'deleted': False},
                     {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000002, 'to': 1523889000008, 'labeled': False, 'deleted': False}]
         segments = [Segment.from_json(segment) for segment in segments]
         cache = {}
         detector = pattern_detector.PatternDetector('PEAK', 'test_id')
 
-        with self.assertRaises(AssertionError):
+        try:
             detector.train(dataframe, segments, cache)
+        except ValueError as e:
+            self.fail('detector error {}'.format(e))
+
+    def test_positive_and_negative_segments(self):
+        data = [[0,1,2,3,2,1,0], [1,2,3,4,5,6,7]]
+        dataframe = pd.DataFrame(data, columns=['timestamp', 'values'])
+        segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000019, 'to': 1523889000025, 'labeled': True, 'deleted': False},
+                    {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000002, 'to': 1523889000008, 'labeled': False, 'deleted': False}]
+        segments = [Segment.from_json(segment) for segment in segments]
+        cache = {}
+        detector = pattern_detector.PatternDetector('PEAK', 'test_id')
+        try:
+            detector.train(dataframe, segments, cache)
+        except Exception as e:
+            self.fail('detector.train fail with error {}'.format(e))
 
 class TestThresholdDetector(unittest.TestCase):
 
