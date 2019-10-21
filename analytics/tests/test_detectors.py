@@ -4,7 +4,7 @@ import pandas as pd
 from detectors import pattern_detector, threshold_detector, anomaly_detector
 from analytic_types.detector_typing import DetectionResult, ProcessingResult
 from analytic_types.segment import Segment
-from test_dataset import create_dataframe
+from tests.test_dataset import create_dataframe
 
 class TestPatternDetector(unittest.TestCase):
 
@@ -28,12 +28,12 @@ class TestPatternDetector(unittest.TestCase):
         segments = [Segment.from_json(segment) for segment in segments]
         cache = {}
         detector = pattern_detector.PatternDetector('PEAK', 'test_id')
-        excepted_error_message = 'detector error test_id has no positive labeled segments. Pattern detector needs at least 1 positive labeled segment'
+        excepted_error_message = 'test_id has no positive labeled segments. Pattern detector needs at least 1 positive labeled segment'
 
         try:
             detector.train(dataframe, segments, cache)
         except ValueError as e:
-            self.assertEqual(e.message, excepted_error_message)
+            self.assertEqual(str(e), excepted_error_message)
 
     def test_positive_and_negative_segments(self):
         data_val = [1.0, 1.0, 1.0, 2.0, 3.0, 2.0, 1.0, 1.0, 1.0, 1.0, 5.0, 7.0, 5.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
