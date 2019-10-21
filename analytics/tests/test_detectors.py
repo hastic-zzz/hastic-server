@@ -16,6 +16,17 @@ class TestPatternDetector(unittest.TestCase):
         with self.assertRaises(ValueError):
             detector.detect(dataframe, cache)
 
+    def test_only_negative_segments(self):
+        data = [[0,1,2,3,2,1,0], [1,2,3,4,5,6,7]]
+        dataframe = pd.DataFrame(data, columns=['timestamp', 'values'])
+        segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000019, 'to': 1523889000025, 'labeled': False, 'deleted': False},
+                    {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000002, 'to': 1523889000008, 'labeled': False, 'deleted': False}]
+        segments = [Segment.from_json(segment) for segment in segments]
+        cache = {}
+        detector = pattern_detector.PatternDetector('PEAK', 'test_id')
+
+        with self.assertRaises(AssertionError):
+            detector.train(dataframe, segments, cache)
 
 class TestThresholdDetector(unittest.TestCase):
 

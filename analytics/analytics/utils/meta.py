@@ -8,6 +8,7 @@ CAMEL_REGEX = re.compile(r'([A-Z])')
 UNDERSCORE_REGEX = re.compile(r'_([a-z])')
 
 def camel_to_underscore(name):
+    #TODO: need to rename 'from'/'to' to 'from_timestamp'/'to_timestamp' everywhere(in analytics, server, panel)
     if name == 'from' or name == 'to':
         name += '_timestamp'
     return CAMEL_REGEX.sub(lambda x: '_' + x.group(1).lower(), name)
