@@ -26,12 +26,23 @@ class AnalyticSegment(Segment):
         self,
         from_timestamp: int,
         to_timestamp: int,
+        _id: str,
+        analytic_unit_id: str,
         labeled: bool,
         deleted: bool,
+        message: str,
         dataframe: pd.DataFrame,
         center_finder = None
     ):
-        super().__init__(from_timestamp, to_timestamp, labeled, deleted)
+        super().__init__(
+            from_timestamp,
+            to_timestamp,
+            _id,
+            analytic_unit_id,
+            labeled,
+            deleted,
+            message
+        )
 
         self.from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(self.from_timestamp, unit='ms'))
         self.to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(self.to_timestamp, unit='ms'))
@@ -128,8 +139,11 @@ class Model(ABC):
                 segment = AnalyticSegment(
                     segment_map.from_timestamp,
                     segment_map.to_timestamp,
+                    segment_map._id,
+                    segment_map.analytic_unit_id,
                     segment_map.labeled,
                     segment_map.deleted,
+                    segment_map.message,
                     dataframe,
                     self.find_segment_center
                 )
