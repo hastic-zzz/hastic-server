@@ -84,7 +84,6 @@ export class MongoDbQueryWrapper implements DbQueryWrapper {
     if(isEmptyArray(query)) {
       return [];
     }
-    query = convertQueryToMongoFormat(query);
     query = wrapIdsToMongoDbQuery(query);
     try {
       const docs = await collection.find(query).sort(sortQuery).toArray();
@@ -121,21 +120,3 @@ export class MongoDbQueryWrapper implements DbQueryWrapper {
   }
 }
 
-function convertQueryToMongoFormat(query: any): object {
-  if(query.$or !== undefined && typeof query.$or === 'object') {
-    query.$or = convertQueryFieldToMongoFormat(query.$or);
-  }
-  if(query.$and !== undefined && typeof query.$or === 'object') {
-    query.$and = convertQueryFieldToMongoFormat(query.$and);
-  }
-  return query;
-}
-
-function convertQueryFieldToMongoFormat(query: object): object[] {
-  let mongoQuery = [];
-  for(const key in query) {
-    const newObject = _.pick(query, key);
-    mongoQuery.push(newObject);
-  }
-  return mongoQuery;
-}
