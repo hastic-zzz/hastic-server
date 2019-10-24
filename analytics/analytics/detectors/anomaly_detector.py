@@ -15,12 +15,19 @@ import utils
 MAX_DEPENDENCY_LEVEL = 100
 MIN_DEPENDENCY_FACTOR = 0.1
 BASIC_ALPHA = 0.5
+MAXGAP = 1
 logger = logging.getLogger('ANOMALY_DETECTOR')
 
 class Bound(Enum):
     ALL = 'ALL'
     UPPER = 'UPPER'
     LOWER = 'LOWER'
+
+class AnomalySegment:
+
+    def __init__(self, index: int, bound_type: str):
+        self.index = index
+        self.bound_type = bound_type
 
 class AnomalyDetector(ProcessingDetector):
 
@@ -100,29 +107,23 @@ class AnomalyDetector(ProcessingDetector):
                 lower_bound = self.add_season_to_data(lower_bound, segment_data, seasonality_offset, seasonality_index, Bound.LOWER)
                 upper_bound = self.add_season_to_data(upper_bound, segment_data, seasonality_offset, seasonality_index, Bound.UPPER)
 
-        anomaly_indexes = []
-        bound_types = []
+        anomaly_segments = []
         for idx, val in enumerate(data.values):
             if val > upper_bound.values[idx]:
                 if enable_bounds == Bound.UPPER or enable_bounds == Bound.ALL:
-                    anomaly_indexes.append(data.index[idx])
-                    bound_types.append('upper')
+                    anomaly_segments.append(AnomalySegment(data.index[idx], 'upper')
 
             if val < lower_bound.values[idx]:
                 if enable_bounds == Bound.LOWER or enable_bounds == Bound.ALL:
-                    anomaly_indexes.append(data.index[idx])
-                    bound_types.append('lower')
+                    anomaly_segments.append(AnomalySegment(data.index[idx], 'lower')
 
         # TODO: use Segment in utils
-        segments = utils.close_filtering(anomaly_indexes, 1)
-        bound_types = utils.list_to_list_of_lists(bound_types, segments)
+        segments = self.cluster_anomaly_segments(anomaly_segments)
         segments = utils.get_start_and_end_of_segments(segments)
-        bound_types = utils.get_start_and_end_of_segments(bound_types)
-        segments_with_info = list(zip(segments, bound_types))
         segments = [Segment(
-            utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[0][0]]),
-            utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[0][1]]),
-            f'{data[segment[0][0]]} out of {segment[1][0]} bound'
+            utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[0].index]),
+            utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[1].index]),
+            f'{data[segment[0].index]} out of {segment[0].bound_type} bound'
         ) for segment in segments_with_info]
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_detection_time = utils.convert_pd_timestamp_to_ms(last_dataframe_time)
@@ -282,3 +283,16 @@ class AnomalyDetector(ProcessingDetector):
         upper_bound = pd.Series(upper_bound, index = segment.index)
         lower_bound = pd.Series(lower_bound, index = segment.index)
         return upper_bound, lower_bound
+
+    def cluster_anomaly_segments(self, segments: List[AnomalySegment]) -> List[List[AnomalySegment]]:
+        if segments.length == 0:
+            return []
+
+        groups = [[segments[0]]]
+        for segment in segments[1:]:
+            if abs(segment.index - groups[-1][-1]) <= MAXGAP:
+                groups[-1].append(segment)
+            else:
+                groups.append([segment])
+
+        return groups

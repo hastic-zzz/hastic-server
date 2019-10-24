@@ -130,18 +130,6 @@ def close_filtering(pattern_list: List[int], win_size: int) -> TimeSeries:
             s.append([pattern_list[i]])
     return s
 
-def list_to_list_of_lists(lst: List[Union[int, str]], lists_example: List[List[Union[int, str]]]) -> List[List[Union[int, str]]]:
-    '''
-    Convert lst to list_of_lists by lists_example
-    [1, 2, 3] -> [[1], [2, 3]] if example is[[a], [b, c]]
-    '''
-    result_list = []
-
-    for val in lists_example:
-        new_list = list(map(lambda _: lst.pop(0), val))
-        result_list.append(new_list)
-    return result_list
-
 def merge_intersecting_segments(segments: List[Segment], time_step: int) -> List[Segment]:
     '''
     Find intersecting segments in segments list and merge it.
@@ -171,16 +159,9 @@ def get_start_and_end_of_segments(segments: List[List[int]]) -> TimeSeries:
     find start and end of segment: [1, 2, 3, 4] -> [1, 4]
     if segment is 1 index - it will be doubled: [7] -> [7, 7]
     '''
-    result = []
-    for segment in segments:
-        if len(segment) == 0:
-            continue
-        elif len(segment) > 1:
-            segment = [segment[0], segment[-1]]
-        else:
-            segment = [segment[0], segment[0]]
-        result.append(segment)
-    return result
+    segments = list(filter(lambda x: len(x) > 0, segments))
+    segments = list(map(lambda x: [x[0],x[-1]], segments))
+    return segments
 
 def best_pattern(pattern_list: list, data: pd.Series, dir: str) -> list:
     new_pattern_list = []
