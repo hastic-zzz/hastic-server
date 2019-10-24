@@ -2,6 +2,7 @@ import unittest
 import pandas as pd
 
 from detectors import pattern_detector, threshold_detector, anomaly_detector
+from detectors.anomaly_detector import AnomalySegment
 from analytic_types.detector_typing import DetectionResult, ProcessingResult
 from analytic_types.segment import Segment
 from tests.test_dataset import create_dataframe
@@ -163,3 +164,12 @@ class TestAnomalyDetector(unittest.TestCase):
                 (1523889000008, 3.4343868900000007)
             ]}
         self.assertEqual(detect_result.to_json(), expected_result)
+
+    def test_cluster_anomaly_segments(self):
+        data = [1, 2, 3, 6, 7, 8, 10, 11, 12, 15, 20]
+        data = [AnomalySegment(idx, 'UPPER') for idx in data]
+        expected_result = [[1, 2, 3], [6, 7, 8], [10, 11, 12], [15], [20]]
+        detector = anomaly_detector.AnomalyDetector('test_id')
+        detector_result = detector.cluster_anomaly_segments(data)
+        for got, expected in zip(detector_result, expected_result):
+            self.assertEqual(len(got), len(expected))
