@@ -1,22 +1,31 @@
-FROM python:3.6.6
+FROM node:8-alpine AS build
 
-RUN apt-get install curl \
-                    bash \
-                    gnupg \
-                    make \
-                    g++ \
- && curl -sL https://deb.nodesource.com/setup_8.x | bash - \
- && apt-get update \
- && apt-get install nodejs
+#tools for building zeromq
+RUN apk add --no-cache curl gnupg make g++ bash python
 
-VOLUME [ "/var/www/data" ]
+#Note: context starts in directory above (see docker-compose file)
+COPY server /var/www/server
 
-COPY . /var/www
+#copy git head file for current branch
+#if nothing specified in `git_branch` arg then whole directory will be copied
+COPY .git/refs/heads /var/www/.git/refs/heads
 
 WORKDIR /var/www/server
 
 RUN npm install
 RUN npm run build
+
+FROM node:8-alpine
+
+#Note: context starts in directory above (see docker-compose file)
+COPY .git/HEAD /var/www/.git/
+COPY server/package.json /var/www/server/
+
+WORKDIR /var/www/server
+
+COPY --from=build /var/www/server/dist /var/www/server/dist
+
+VOLUME ["/var/www/data"]
 
 ENV INSIDE_DOCKER true
 

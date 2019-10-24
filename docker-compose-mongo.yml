@@ -1,0 +1,45 @@
+version: '2.1'
+services:
+  server:
+    image: hastic/server:latest
+    build:
+      dockerfile: server/Dockerfile
+      context: .
+    environment:
+      ZMQ_CONNECTION_STRING: ${ZMQ_CONNECTION_STRING:-tcp://analytics:8002}
+      HASTIC_API_KEY: ${HASTIC_API_KEY}
+      HASTIC_WEBHOOK_URL: ${HASTIC_WEBHOOK_URL}
+      HASTIC_WEBHOOK_TYPE: ${HASTIC_WEBHOOK_TYPE}
+      GRAFANA_URL: ${GRAFANA_URL}
+      HASTIC_INSTANCE_NAME: ${HASTIC_INSTANCE_NAME}
+      HASTIC_WEBHOOK_IMAGE: ${HASTIC_WEBHOOK_IMAGE}
+      HASTIC_DB_CONNECTION_STRING: ${HASTIC_MONGO_USER:-hasic}:${HASTIC_MONGO_PASSWORD:-password}@mongodb:27017/${HASTIC_MONGO_DB:-hastic}
+      HASTIC_DB_CONNECTION_TYPE: mongodb
+      TIMEZONE_UTC_OFFSET: ${TIMEZONE_UTC_OFFSET}
+    ports:
+      - ${HASTIC_PORT:-8000}:8000
+    volumes:
+      - data-volume:/var/www/data
+    restart: always
+    depends_on:
+      - mongo
+
+  analytics:
+    image: hastic/analytics:latest
+    build: analytics
+    restart: always
+    ports:
+      - 5678:5678
+  mongo:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${HASTIC_MONGO_USER:-hasic}
+      MONGO_INITDB_ROOT_PASSWORD: ${HASTIC_MONGO_PASSWORD:-password}
+      MONGO_INITDB_DATABASE: ${HASTIC_MONGO_DB:-hastic}
+    volumes:
+    - data-volume:/data/db
+
+volumes:
+  data-volume:
+
+
