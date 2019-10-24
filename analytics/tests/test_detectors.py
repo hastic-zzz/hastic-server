@@ -3,6 +3,8 @@ import pandas as pd
 
 from detectors import pattern_detector, threshold_detector, anomaly_detector
 from analytic_types.detector_typing import DetectionResult, ProcessingResult
+from analytic_types.segment import Segment
+from tests.test_dataset import create_dataframe
 
 class TestPatternDetector(unittest.TestCase):
 
@@ -16,6 +18,35 @@ class TestPatternDetector(unittest.TestCase):
         with self.assertRaises(ValueError):
             detector.detect(dataframe, cache)
 
+    def test_only_negative_segments(self):
+        data_val = [0, 1, 2, 1, 2, 10, 1, 2, 1]
+        data_ind = [1523889000000 + i for i in range(len(data_val))]
+        data = {'timestamp': data_ind, 'value': data_val}
+        dataframe = pd.DataFrame(data = data)
+        segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000019, 'to': 1523889000025, 'labeled': False, 'deleted': False},
+                    {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000002, 'to': 1523889000008, 'labeled': False, 'deleted': False}]
+        segments = [Segment.from_json(segment) for segment in segments]
+        cache = {}
+        detector = pattern_detector.PatternDetector('PEAK', 'test_id')
+        excepted_error_message = 'test_id has no positive labeled segments. Pattern detector needs at least 1 positive labeled segment'
+
+        try:
+            detector.train(dataframe, segments, cache)
+        except ValueError as e:
+            self.assertEqual(str(e), excepted_error_message)
+
+    def test_positive_and_negative_segments(self):
+        data_val = [1.0, 1.0, 1.0, 2.0, 3.0, 2.0, 1.0, 1.0, 1.0, 1.0, 5.0, 7.0, 5.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+        dataframe = create_dataframe(data_val)
+        segments = [{'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000004, 'to': 1523889000006, 'labeled': True, 'deleted': False},
+                    {'_id': 'Esl7uetLhx4lCqHa', 'analyticUnitId': 'opnICRJwOmwBELK8', 'from': 1523889000001, 'to': 1523889000003, 'labeled': False, 'deleted': False}]
+        segments = [Segment.from_json(segment) for segment in segments]
+        cache = {}
+        detector = pattern_detector.PatternDetector('PEAK', 'test_id')
+        try:
+            detector.train(dataframe, segments, cache)
+        except Exception as e:
+            self.fail('detector.train fail with error {}'.format(e))
 
 class TestThresholdDetector(unittest.TestCase):
 

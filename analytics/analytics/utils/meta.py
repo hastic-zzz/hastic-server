@@ -8,9 +8,14 @@ CAMEL_REGEX = re.compile(r'([A-Z])')
 UNDERSCORE_REGEX = re.compile(r'_([a-z])')
 
 def camel_to_underscore(name):
+    #TODO: need to rename 'from'/'to' to 'from_timestamp'/'to_timestamp' everywhere(in analytics, server, panel)
+    if name == 'from' or name == 'to':
+        name += '_timestamp'
     return CAMEL_REGEX.sub(lambda x: '_' + x.group(1).lower(), name)
 
 def underscore_to_camel(name):
+    if name == 'from_timestamp' or name == 'to_timestamp':
+        name = name.replace('_timestamp', '')
     return UNDERSCORE_REGEX.sub(lambda x: x.group(1).upper(), name)
 
 def is_field_private(field_name: str) -> Optional[str]:

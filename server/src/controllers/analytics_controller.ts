@@ -156,7 +156,7 @@ async function getQueryRange(
   let segments: Segment.Segment[];
   switch(detectorType) {
     case AnalyticUnit.DetectorType.PATTERN:
-      segments = await Segment.findMany(analyticUnitId, { $or: { labeled: true, deleted: true } });
+      segments = await Segment.findMany(analyticUnitId, { $or: [{ labeled: true }, { deleted: true }] });
       if(segments.length === 0) {
         throw new Error('Need at least 1 labeled segment');
       }
@@ -170,7 +170,7 @@ async function getQueryRange(
       };
 
     case AnalyticUnit.DetectorType.ANOMALY:
-      segments = await Segment.findMany(analyticUnitId, { $or: { labeled: true, deleted: true } });
+      segments = await Segment.findMany(analyticUnitId, { $or: [{ labeled: true }, { deleted: true }] });
       if(segments.length === 0) {
         const now = Date.now();
         return {
@@ -272,7 +272,7 @@ export async function runLearning(id: AnalyticUnit.AnalyticUnitId, from?: number
 
     switch(detector) {
       case AnalyticUnit.DetectorType.PATTERN:
-        let segments = await Segment.findMany(id, { labeled: true });
+        let segments = await Segment.findMany(id, { $or: [{ labeled: true }, { deleted: true }]} );
         if(segments.length === 0) {
           throw new Error('Need at least 1 labeled segment');
         }
