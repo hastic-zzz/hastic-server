@@ -159,8 +159,7 @@ def get_start_and_end_of_segments(segments: List[List[int]]) -> TimeSeries:
     find start and end of segment: [1, 2, 3, 4] -> [1, 4]
     if segment is 1 index - it will be doubled: [7] -> [7, 7]
     '''
-    segments = list(filter(lambda x: len(x) > 0, segments))
-    segments = list(map(lambda x: [x[0],x[-1]], segments))
+    segments = [[x[0],x[-1]] for x in segments if len(x) > 0]
     return segments
 
 def best_pattern(pattern_list: list, data: pd.Series, dir: str) -> list:
