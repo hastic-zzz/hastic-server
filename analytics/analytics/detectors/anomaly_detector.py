@@ -25,7 +25,7 @@ class Bound(Enum):
 
 class AnomalySegment:
 
-    def __init__(self, index: int, bound_type: str):
+    def __init__(self, index: int, bound_type: Bound):
         self.index = index
         self.bound_type = bound_type
 
@@ -111,11 +111,11 @@ class AnomalyDetector(ProcessingDetector):
         for idx, val in enumerate(data.values):
             if val > upper_bound.values[idx]:
                 if enable_bounds == Bound.UPPER or enable_bounds == Bound.ALL:
-                    anomaly_segments.append(AnomalySegment(data.index[idx], 'upper')
+                    anomaly_segments.append(AnomalySegment(data.index[idx], Bound.UPPER))
 
             if val < lower_bound.values[idx]:
                 if enable_bounds == Bound.LOWER or enable_bounds == Bound.ALL:
-                    anomaly_segments.append(AnomalySegment(data.index[idx], 'lower')
+                    anomaly_segments.append(AnomalySegment(data.index[idx], Bound.LOWER))
 
         # TODO: use Segment in utils
         segments = self.cluster_anomaly_segments(anomaly_segments)
@@ -123,8 +123,8 @@ class AnomalyDetector(ProcessingDetector):
         segments = [Segment(
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[0].index]),
             utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][segment[1].index]),
-            f'{data[segment[0].index]} out of {segment[0].bound_type} bound'
-        ) for segment in segments_with_info]
+            message = f'{data[segment[0].index]} out of {segment[0].bound_type} bound'
+        ) for segment in segments]
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_detection_time = utils.convert_pd_timestamp_to_ms(last_dataframe_time)
 
@@ -285,12 +285,12 @@ class AnomalyDetector(ProcessingDetector):
         return upper_bound, lower_bound
 
     def cluster_anomaly_segments(self, segments: List[AnomalySegment]) -> List[List[AnomalySegment]]:
-        if segments.length == 0:
+        if len(segments) == 0:
             return []
 
         groups = [[segments[0]]]
         for segment in segments[1:]:
-            if abs(segment.index - groups[-1][-1]) <= MAXGAP:
+            if abs(segment.index - groups[-1][-1].index) <= MAXGAP:
                 groups[-1].append(segment)
             else:
                 groups.append([segment])
