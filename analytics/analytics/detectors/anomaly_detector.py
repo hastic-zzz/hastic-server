@@ -285,6 +285,14 @@ class AnomalyDetector(ProcessingDetector):
         return upper_bound, lower_bound
 
     def cluster_anomaly_segments(self, segments: List[AnomalySegment]) -> List[List[AnomalySegment]]:
+        '''
+        Arrange segments into groups where successive elements
+        differ by no more than *MAXGAP*
+
+        >>> cluster_anomaly_segments([1, 2, 3, 5, 6, 7, 19, 38, 39], MAXGAP=1)
+        [[1, 2, 3], [5, 6, 7], [19], [38, 39]]
+
+        '''
         if len(segments) == 0:
             return []
 
