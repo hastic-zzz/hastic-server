@@ -18,8 +18,6 @@ services:
       TIMEZONE_UTC_OFFSET: ${TIMEZONE_UTC_OFFSET}
     ports:
       - ${HASTIC_PORT:-8000}:8000
-    volumes:
-      - data-volume:/var/www/data
     restart: always
     depends_on:
       - mongo
@@ -28,14 +26,15 @@ services:
     image: hastic/analytics:latest
     build: analytics
     restart: always
-    ports:
-      - 5678:5678
+
   mongo:
     image: mongo
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${HASTIC_MONGO_USER:-hasic}
       MONGO_INITDB_ROOT_PASSWORD: ${HASTIC_MONGO_PASSWORD:-password}
       MONGO_INITDB_DATABASE: ${HASTIC_MONGO_DB:-hastic}
+    ports:
+      - 27017:27017
     volumes:
     - data-volume:/data/db
 
