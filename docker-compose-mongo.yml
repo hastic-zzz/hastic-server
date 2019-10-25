@@ -33,12 +33,14 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${HASTIC_MONGO_USER:-hasic}
       MONGO_INITDB_ROOT_PASSWORD: ${HASTIC_MONGO_PASSWORD:-password}
       MONGO_INITDB_DATABASE: ${HASTIC_MONGO_DB:-hastic}
+    restart: always
     ports:
       - 27017:27017
+    command: mongod
     volumes:
-    - data-volume:/data/db
+      - mongodb:/data/db
+      - mongodb_config:/data/configdb
 
 volumes:
-  data-volume:
-
-
+  mongodb:
+  mongodb_config:
