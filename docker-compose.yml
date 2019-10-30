@@ -26,7 +26,6 @@ services:
     image: hastic/analytics:latest
     build: analytics
     restart: always
-    command: ${HASTIC_ANALYTICS_COMMAND}
 
 volumes:
   data-volume:
