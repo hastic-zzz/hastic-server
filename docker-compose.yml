@@ -7,7 +7,7 @@ services:
       context: .
     environment:
       ZMQ_CONNECTION_STRING: ${ZMQ_CONNECTION_STRING:-tcp://analytics:8002}
-      HASTIC_API_KEY: ${HASTIC_API_KEY}
+      HASTIC_API_KEY: ${HASTIC_API_KEY?"HASTIC_API_KEY variable required"}
       HASTIC_WEBHOOK_URL: ${HASTIC_WEBHOOK_URL}
       HASTIC_WEBHOOK_TYPE: ${HASTIC_WEBHOOK_TYPE}
       GRAFANA_URL: ${GRAFANA_URL}
