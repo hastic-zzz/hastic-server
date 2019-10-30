@@ -13,7 +13,7 @@ services:
       GRAFANA_URL: ${GRAFANA_URL}
       HASTIC_INSTANCE_NAME: ${HASTIC_INSTANCE_NAME}
       HASTIC_WEBHOOK_IMAGE: ${HASTIC_WEBHOOK_IMAGE}
-      HASTIC_DB_CONNECTION_STRING: ${HASTIC_MONGO_USER:-hasic}:${HASTIC_MONGO_PASSWORD:-password}@mongodb:27017/${HASTIC_MONGO_DB:-hastic}
+      HASTIC_DB_CONNECTION_STRING: ${HASTIC_MONGO_USER:-hastic}:${HASTIC_MONGO_PASSWORD:-password}@mongo:27017/${HASTIC_MONGO_DB:-hastic}
       HASTIC_DB_CONNECTION_TYPE: mongodb
       TIMEZONE_UTC_OFFSET: ${TIMEZONE_UTC_OFFSET}
     ports:
@@ -28,18 +28,18 @@ services:
     restart: always
 
   mongo:
-    image: mongo
+    image: mongo:4.2.1-bionic
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${HASTIC_MONGO_USER:-hasic}
-      MONGO_INITDB_ROOT_PASSWORD: ${HASTIC_MONGO_PASSWORD:-password}
+      MONGO_INITDB_ROOT_USERNAME: ${HASTIC_MONGO_ADMIN_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${HASTIC_MONGO_ADMIN_PASSWORD:-password}
       MONGO_INITDB_DATABASE: ${HASTIC_MONGO_DB:-hastic}
     restart: always
     ports:
       - 27017:27017
-    command: mongod
     volumes:
       - mongodb:/data/db
       - mongodb_config:/data/configdb
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
 
 volumes:
   mongodb:
