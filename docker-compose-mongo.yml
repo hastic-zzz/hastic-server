@@ -10,26 +10,40 @@ services:
       HASTIC_API_KEY: ${HASTIC_API_KEY?"HASTIC_API_KEY variable is required"}
       GRAFANA_URL: ${GRAFANA_URL?"GRAFANA_URL variable is required"}
 
+      HASTIC_DB_CONNECTION_STRING: ${HASTIC_MONGO_USER:-hastic}:${HASTIC_MONGO_PASSWORD:-password}@mongo:27017/${HASTIC_MONGO_DB:-hastic}
       ZMQ_CONNECTION_STRING: ${ZMQ_CONNECTION_STRING:-tcp://analytics:8002}
 
       HASTIC_WEBHOOK_URL: ${HASTIC_WEBHOOK_URL}
       HASTIC_WEBHOOK_TYPE: ${HASTIC_WEBHOOK_TYPE}
       HASTIC_INSTANCE_NAME: ${HASTIC_INSTANCE_NAME}
       HASTIC_WEBHOOK_IMAGE: ${HASTIC_WEBHOOK_IMAGE}
-      HASTIC_DB_CONNECTION_STRING: ${HASTIC_DB_CONNECTION_STRING}
-      HASTIC_DB_CONNECTION_TYPE: ${HASTIC_DB_CONNECTION_TYPE}
       TIMEZONE_UTC_OFFSET: ${TIMEZONE_UTC_OFFSET}
+
+      HASTIC_DB_CONNECTION_TYPE: mongodb
 
     ports:
       - ${HASTIC_PORT:-8000}:8000
-    volumes:
-      - data-volume:/var/www/data
     restart: always
+    depends_on:
+      - mongo
 
   analytics:
     image: hastic/analytics:latest
     build: analytics
     restart: always
 
+  mongo:
+    image: mongo:4.2.1-bionic
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${HASTIC_MONGO_ADMIN_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${HASTIC_MONGO_ADMIN_PASSWORD:-password}
+      MONGO_INITDB_DATABASE: ${HASTIC_MONGO_DB:-hastic}
+    restart: always
+    volumes:
+      - hastic_mongo:/data/db
+      - hastic_mongo_config:/data/configdb
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+
 volumes:
-  data-volume:
+  hastic_mongo:
+  hastic_mongo_config:
