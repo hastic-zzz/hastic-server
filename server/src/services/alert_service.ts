@@ -55,7 +55,7 @@ export class Alert {
       panelId,
       ordId: ORG_ID,
       apiRendering: true,
-      showAnalyticUnit: this.analyticUnit.id
+      analyticUnitId: this.analyticUnit.id
     };
     const response = await axios.get(renderUrl, {
       params,
