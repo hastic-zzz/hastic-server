@@ -7,10 +7,10 @@ services:
       context: .
     environment:
       ZMQ_CONNECTION_STRING: ${ZMQ_CONNECTION_STRING:-tcp://analytics:8002}
-      HASTIC_API_KEY: ${HASTIC_API_KEY?"HASTIC_API_KEY variable required"}
+      HASTIC_API_KEY: ${HASTIC_API_KEY?"HASTIC_API_KEY variable is required"}
       HASTIC_WEBHOOK_URL: ${HASTIC_WEBHOOK_URL}
       HASTIC_WEBHOOK_TYPE: ${HASTIC_WEBHOOK_TYPE}
-      GRAFANA_URL: ${GRAFANA_URL?"GRAFANA_URL variable required"}
+      GRAFANA_URL: ${GRAFANA_URL?"GRAFANA_URL variable is required"}
       HASTIC_INSTANCE_NAME: ${HASTIC_INSTANCE_NAME}
       HASTIC_WEBHOOK_IMAGE: ${HASTIC_WEBHOOK_IMAGE}
       HASTIC_DB_CONNECTION_STRING: ${HASTIC_MONGO_USER:-hastic}:${HASTIC_MONGO_PASSWORD:-password}@mongo:27017/${HASTIC_MONGO_DB:-hastic}
@@ -34,8 +34,6 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${HASTIC_MONGO_ADMIN_PASSWORD:-password}
       MONGO_INITDB_DATABASE: ${HASTIC_MONGO_DB:-hastic}
     restart: always
-    ports:
-      - 27017:27017
     volumes:
       - hastic_mongo:/data/db
       - hastic_mongo_config:/data/configdb

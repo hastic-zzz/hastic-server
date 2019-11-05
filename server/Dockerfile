@@ -1,6 +1,7 @@
 FROM node:8-alpine AS build
 
 #tools for building zeromq
+
 RUN apk add --no-cache curl gnupg make g++ bash python
 
 #Note: context starts in directory above (see docker-compose file)
