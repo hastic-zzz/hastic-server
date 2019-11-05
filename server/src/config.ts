@@ -6,6 +6,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as moment from 'moment';
+import * as _ from 'lodash';
 
 let configFile = path.join(__dirname, '../../config.json');
 let configExists = fs.existsSync(configFile);
@@ -21,7 +22,7 @@ export type DBConfig = {
 export const ANALYTICS_PATH = path.join(__dirname, '../../analytics');
 
 export const HASTIC_DB_IN_MEMORY = getConfigField('HASTIC_IN_MEMORY_PERSISTANCE', false);
-export const HASTIC_DB_CONNECTION_TYPE = getConfigField('HASTIC_DB_CONNECTION_TYPE', 'nedb'); //nedb or mongodb
+export const HASTIC_DB_CONNECTION_TYPE = getConfigField('HASTIC_DB_CONNECTION_TYPE', 'nedb', ['nedb', 'mongodb']);
 
 //connection string syntax: <db_user>:<db_password>@<db_url>/<db_name>
 export const HASTIC_DB_CONNECTION_STRING = getConfigField(
@@ -45,13 +46,19 @@ export const ZMQ_DEV_PORT = getConfigField('ZMQ_DEV_PORT', '8002');
 export const ZMQ_HOST = getConfigField('ZMQ_HOST', '127.0.0.1');
 export const HASTIC_API_KEY = getConfigField('HASTIC_API_KEY');
 export const GRAFANA_URL = normalizeUrl(getConfigField('GRAFANA_URL', null));
+
 // TODO: save orgId in analytic_units.db
 export const ORG_ID = getConfigField('ORG_ID', 1);
+
+export const HASTIC_ALERT_TYPE = getConfigField('HASTIC_ALERT_TYPE', 'webhook', ['webhook', 'alertmanager']);
+export const HASTIC_ALERT_IMAGE_ENABLED = getConfigField('HASTIC_ALERT_IMAGE_ENABLED', false);
+
 export const HASTIC_WEBHOOK_URL = getConfigField('HASTIC_WEBHOOK_URL', null);
 export const HASTIC_WEBHOOK_TYPE = getConfigField('HASTIC_WEBHOOK_TYPE', 'application/json');
 export const HASTIC_WEBHOOK_SECRET = getConfigField('HASTIC_WEBHOOK_SECRET', null);
-export const HASTIC_WEBHOOK_IMAGE_ENABLED = getConfigField('HASTIC_WEBHOOK_IMAGE', false);
 export const TIMEZONE_UTC_OFFSET = getTimeZoneOffset();
+
+export const HASTIC_ALERTMANAGER_URL = getConfigField('HASTIC_ALERTMANAGER_URL', null);
 
 export const ANLYTICS_PING_INTERVAL = 500; // ms
 export const PACKAGE_VERSION = getPackageVersion();
@@ -63,7 +70,7 @@ export const ZMQ_CONNECTION_STRING = createZMQConnectionString();
 export const HASTIC_INSTANCE_NAME = getConfigField('HASTIC_INSTANCE_NAME', os.hostname());
 
 
-function getConfigField(field: string, defaultVal?: any) {
+function getConfigField(field: string, defaultVal?: any, allowedVals?: any[]) {
   let val;
 
   if(process.env[field] !== undefined) {
@@ -82,6 +89,11 @@ function getConfigField(field: string, defaultVal?: any) {
     }
     val = defaultVal;
   }
+
+  if(allowedVals !== undefined && !_.includes(allowedVals, val)) {
+    throw new Error(`${field} value must be in ${allowedVals}, got ${val}`);
+  }
+
   console.log(`${field}: ${val}`);
   return val;
 }
