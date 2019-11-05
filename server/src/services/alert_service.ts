@@ -50,8 +50,15 @@ export class Alert {
     const dashboardApiURL = `${this.analyticUnit.grafanaUrl}/api/dashboards/uid/${dashdoardId}`;
     const dashboardInfo: any = await axios.get(dashboardApiURL, { headers });
     const dashboardName = _.last(dashboardInfo.data.meta.url.split('/'));
-    const renderUrl = `${this.analyticUnit.grafanaUrl}/render/d-solo/${dashdoardId}/${dashboardName}?panelId=${panelId}&ordId=${ORG_ID}&api-rendering`;
+    const renderUrl = `${this.analyticUnit.grafanaUrl}/render/d-solo/${dashdoardId}/${dashboardName}`;
+    const params = {
+      panelId,
+      ordId: ORG_ID,
+      apiRendering: true,
+      analyticUnitId: this.analyticUnit.id
+    };
     const response = await axios.get(renderUrl, {
+      params,
       headers,
       responseType: 'arraybuffer'
     });
