@@ -115,8 +115,6 @@ class AlertManagerNotifier implements Notifier {
       console.log(`HASTIC_ALERTMANAGER_URL is not set, skip sending notification: ${notification.text}`);
       return;
     }
-  
-    notification.text += `\nInstance: ${config.HASTIC_INSTANCE_NAME}`;
 
     let generatorURL: string;
     let labels: PostableAlertLabels = {
@@ -132,6 +130,7 @@ class AlertManagerNotifier implements Notifier {
       labels.alertname = (notification.meta as AnalyticMeta).analyticUnitName;
       labels.analyticUnitId = (notification.meta as AnalyticMeta).analyticUnitId;
       labels.analyticUnitType = (notification.meta as AnalyticMeta).analyticUnitType;
+      annotations.message = (notification.meta as AnalyticMeta).message;
     }
     
     let alertData: PostableAlert = {
