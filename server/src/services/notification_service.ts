@@ -110,7 +110,7 @@ type PostableAlert = {
 class AlertManagerNotifier implements Notifier {
 
   /**
-   * @throws {Error}
+   * @throws {Error} from axios if query fails
    */
   async sendNotification(notification: Notification) {
     if(config.HASTIC_ALERTMANAGER_URL === null) {
