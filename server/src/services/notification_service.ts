@@ -131,8 +131,10 @@ class AlertManagerNotifier implements Notifier {
       labels.alertname = (notification.meta as AnalyticMeta).analyticUnitName;
       labels.analyticUnitId = (notification.meta as AnalyticMeta).analyticUnitId;
       labels.analyticUnitType = (notification.meta as AnalyticMeta).analyticUnitType;
-      annotations.message = `${(notification.meta as AnalyticMeta).message}\n${generatorURL}`;
+      annotations.message = `${(notification.meta as AnalyticMeta).message}\nURL: ${generatorURL}`;
     }
+
+    annotations.message += `\nInstance: ${config.HASTIC_INSTANCE_NAME}`;
     
     let alertData: PostableAlert = {
       labels,
@@ -147,11 +149,10 @@ class AlertManagerNotifier implements Notifier {
       headers: { 'Content-Type': ContentType.JSON }
     };
   
-    //first part: send start request
+    // first part: send "start" request
     await axios(options);
-    //TODO: resolve FAILURE alert only after RECOVERY event
-    //second part: send end request
-    alertData.endsAt = (new Date()).toISOString();
+    // TODO: resolve FAILURE alert only after RECOVERY event
+    // second part: send "end" request
     options.data = JSON.stringify([alertData]);
     await axios(options);
   }
