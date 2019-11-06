@@ -130,7 +130,7 @@ class AlertManagerNotifier implements Notifier {
       labels.alertname = (notification.meta as AnalyticMeta).analyticUnitName;
       labels.analyticUnitId = (notification.meta as AnalyticMeta).analyticUnitId;
       labels.analyticUnitType = (notification.meta as AnalyticMeta).analyticUnitType;
-      annotations.message = (notification.meta as AnalyticMeta).message;
+      annotations.message = `${(notification.meta as AnalyticMeta).message}\n${generatorURL}`;
     }
     
     let alertData: PostableAlert = {
