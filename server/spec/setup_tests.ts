@@ -11,7 +11,7 @@ jest.mock('../src/config.ts', () => ({
   HASTIC_DB_CONNECTION_TYPE: 'nedb',
   HASTIC_IN_MEMORY_PERSISTANCE: true,
   HASTIC_ALERT_TYPE: 'webhook',
-  ALERT_TYPES: jest.requireActual('../src/config').ALERT_TYPES,
+  AlertTypes: jest.requireActual('../src/config').AlertTypes,
 }));
 
 jest.mock('deasync', () => ({ loopWhile: jest.fn() }));

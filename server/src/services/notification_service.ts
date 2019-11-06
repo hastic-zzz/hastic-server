@@ -47,11 +47,11 @@ export interface Notifier {
 }
 
 export function getNotifier(): Notifier {
-  if(config.HASTIC_ALERT_TYPE === config.ALERT_TYPES.webhook) {
+  if(config.HASTIC_ALERT_TYPE === config.AlertTypes.webhook) {
     return new WebhookNotifier();
   }
 
-  if(config.HASTIC_ALERT_TYPE === config.ALERT_TYPES.alertmanager) {
+  if(config.HASTIC_ALERT_TYPE === config.AlertTypes.alertmanager) {
     return new AlertManagerNotifier();
   }
 
@@ -119,7 +119,8 @@ class AlertManagerNotifier implements Notifier {
 
     let generatorURL: string;
     let labels: PostableAlertLabels = {
-      alertname:  notification.meta.type
+      alertname:  notification.meta.type,
+      instance: config.HASTIC_INSTANCE_NAME
     };
     let annotations: PostableAlertAnnotations = {
       info: notification.text
@@ -138,10 +139,12 @@ class AlertManagerNotifier implements Notifier {
       generatorURL
     };
 
+    let data = JSON.stringify([alertData]);
+
     const options = {
       method: 'POST',
       url: `${config.HASTIC_ALERTMANAGER_URL}/api/v2/alerts`,
-      data: JSON.stringify([alertData]),
+      data,
       headers: { 'Content-Type': ContentType.JSON }
     };
   

@@ -50,12 +50,12 @@ export const GRAFANA_URL = normalizeUrl(getConfigField('GRAFANA_URL', null));
 // TODO: save orgId in analytic_units.db
 export const ORG_ID = getConfigField('ORG_ID', 1);
 
-export enum ALERT_TYPES {
+export enum AlertTypes {
   webhook = 'webhook',
   alertmanager = 'alertmanager'
 };
-export const HASTIC_ALERT_TYPE = getConfigField('HASTIC_ALERT_TYPE', ALERT_TYPES.webhook, _.keys(ALERT_TYPES));
-export const HASTIC_ALERT_IMAGE_ENABLED = getConfigField('HASTIC_ALERT_IMAGE_ENABLED', false);
+export const HASTIC_ALERT_TYPE = getConfigField('HASTIC_ALERT_TYPE', AlertTypes.webhook, _.keys(AlertTypes));
+export const HASTIC_ALERT_IMAGE = getConfigField('HASTIC_ALERT_IMAGE_ENABLED', false);
 
 export const HASTIC_WEBHOOK_URL = getConfigField('HASTIC_WEBHOOK_URL', null);
 export const HASTIC_WEBHOOK_TYPE = getConfigField('HASTIC_WEBHOOK_TYPE', 'application/json');

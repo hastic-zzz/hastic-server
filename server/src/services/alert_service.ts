@@ -3,7 +3,7 @@ import * as AnalyticUnit from '../models/analytic_units';
 import { Segment } from '../models/segment_model';
 import { availableReporter } from '../utils/reporter';
 import { toTimeZone } from '../utils/time';
-import { ORG_ID, HASTIC_API_KEY, HASTIC_ALERT_IMAGE_ENABLED } from '../config';
+import { ORG_ID, HASTIC_API_KEY, HASTIC_ALERT_IMAGE } from '../config';
 
 import axios from 'axios';
 import * as _ from 'lodash';
@@ -31,7 +31,7 @@ export class Alert {
     const meta = this.makeMeta(segment);
     const text = this.makeMessage(meta);
     let result: Notification = { meta, text };
-    if(HASTIC_ALERT_IMAGE_ENABLED) {
+    if(HASTIC_ALERT_IMAGE) {
       try {
         const image = await this.loadImage();
         result.image = image;
