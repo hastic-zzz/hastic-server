@@ -2,11 +2,12 @@ import { getJsonDataSync } from './services/json_service';
 import { normalizeUrl } from './utils/url';
 import { parseTimeZone } from './utils/time';
 
+import * as _ from 'lodash';
+import * as moment from 'moment';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
-import * as moment from 'moment';
-import * as _ from 'lodash';
+
 
 let configFile = path.join(__dirname, '../../config.json');
 let configExists = fs.existsSync(configFile);
