@@ -99,8 +99,6 @@ declare type AlertManagerPostableAlert = {
   annotations: {
     text: string
   },
-  startsAt: string,
-  endsAt: string,
   generatorURL?: string
 }
 
@@ -117,6 +115,9 @@ class AlertManagerNotifier implements Notifier {
     let labels: any = {};
     let annotations: any = {};
 
+    labels.alertname = notification.meta.type
+    annotations.info = notification.text
+
     if(_.has(notification.meta, 'grafanaUrl')) {
       generatorURL = (notification.meta as AnalyticMeta).grafanaUrl;
       labels.alertname = (notification.meta as AnalyticMeta).analyticUnitName;
@@ -124,16 +125,9 @@ class AlertManagerNotifier implements Notifier {
       labels.analyticUnitType = (notification.meta as AnalyticMeta).analyticUnitType;
     }
     
-    labels.alertname = notification.meta.type
-    annotations.text = notification.text
-    const startsAt = (new Date(notification.meta.from)).toISOString();
-    const endsAt = (new Date(notification.meta.to)).toISOString();
-    
     let alertData: AlertManagerPostableAlert = {
       labels,
       annotations,
-      startsAt,
-      endsAt,
       generatorURL
     }
 
@@ -143,7 +137,6 @@ class AlertManagerNotifier implements Notifier {
       data: JSON.stringify([alertData]),
       headers: { 'Content-Type': ContentType.JSON }
     };
-    console.log(options);
   
     try {
       await axios(options);
