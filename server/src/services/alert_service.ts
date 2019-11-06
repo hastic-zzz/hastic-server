@@ -1,4 +1,4 @@
-import { getNotifier, MetaInfo, AnalyticMeta, WebhookType, Notification } from './notification_service';
+import { getNotifier, Meta, AnalyticMeta, WebhookType, Notification } from './notification_service';
 import * as AnalyticUnit from '../models/analytic_units';
 import { Segment } from '../models/segment_model';
 import { availableReporter } from '../utils/reporter';
@@ -206,7 +206,7 @@ export class AlertService {
 
   public sendMessage(text: string, type: WebhookType, optionalInfo = {}) {
     const now = Date.now();
-    const infoAlert: MetaInfo = {
+    const infoAlert: Meta = {
       params: optionalInfo,
       type,
       from: now,

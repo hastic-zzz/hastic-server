@@ -4,6 +4,7 @@ import * as config from '../config';
 import axios from 'axios';
 import * as querystring from 'querystring';
 import * as _ from 'lodash';
+import { analyticsLastAlive } from '../controllers/analytics_controller';
 
 enum ContentType {
   JSON = 'application/json',
@@ -17,7 +18,14 @@ export enum WebhookType {
   MESSAGE = 'MESSAGE'
 }
 
-export declare type AnalyticMeta = {
+export type MetaInfo = {
+  type: WebhookType,
+  from: number,
+  to: number,
+  params?: any
+}
+
+export type AnalyticMeta = {
   type: WebhookType,
   analyticUnitType: string,
   analyticUnitName: string,
@@ -26,13 +34,6 @@ export declare type AnalyticMeta = {
   from: number,
   to: number
   message?: any
-}
-
-export declare type MetaInfo = {
-  type: WebhookType,
-  from: number,
-  to: number,
-  params?: any
 }
 
 export declare type Notification = {
@@ -46,11 +47,11 @@ export interface Notifier {
 }
 
 export function getNotifier(): Notifier {
-  if(config.HASTIC_ALERT_TYPE == 'webhook') {
+  if(config.HASTIC_ALERT_TYPE === config.ALERT_TYPES.webhook) {
     return new WebhookNotifier();
   }
 
-  if(config.HASTIC_ALERT_TYPE == 'alertmanager') {
+  if(config.HASTIC_ALERT_TYPE === config.ALERT_TYPES.alertmanager) {
     return new AlertManagerNotifier();
   }
 
@@ -91,16 +92,21 @@ class WebhookNotifier implements Notifier {
   }
 }
 
-declare type AlertManagerPostableAlert = {
-  labels: {
-    alertname: string;
-    [key: string]: string
-  },
-  annotations: {
-    text: string
-  },
+type PostableAlertLabels = {
+  alertname: string;
+  [key: string]: string
+};
+
+type PostableAlertAnnotations = {
+  info?: string;
+  summary?: string;
+};
+
+type PostableAlert = {
+  labels: PostableAlertLabels,
+  annotations: PostableAlertAnnotations
   generatorURL?: string
-}
+};
 
 class AlertManagerNotifier implements Notifier {
   async sendNotification(notification: Notification) {
@@ -111,12 +117,13 @@ class AlertManagerNotifier implements Notifier {
   
     notification.text += `\nInstance: ${config.HASTIC_INSTANCE_NAME}`;
 
-    let generatorURL;
-    let labels: any = {};
-    let annotations: any = {};
-
-    labels.alertname = notification.meta.type
-    annotations.info = notification.text
+    let generatorURL: string;
+    let labels: PostableAlertLabels = {
+      alertname:  notification.meta.type
+    };
+    let annotations: PostableAlertAnnotations = {
+      info: notification.text
+    };
 
     if(_.has(notification.meta, 'grafanaUrl')) {
       generatorURL = (notification.meta as AnalyticMeta).grafanaUrl;
@@ -125,11 +132,11 @@ class AlertManagerNotifier implements Notifier {
       labels.analyticUnitType = (notification.meta as AnalyticMeta).analyticUnitType;
     }
     
-    let alertData: AlertManagerPostableAlert = {
+    let alertData: PostableAlert = {
       labels,
       annotations,
       generatorURL
-    }
+    };
 
     const options = {
       method: 'POST',
