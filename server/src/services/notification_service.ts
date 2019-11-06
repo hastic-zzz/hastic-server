@@ -4,6 +4,7 @@ import * as config from '../config';
 import axios from 'axios';
 import * as querystring from 'querystring';
 import * as _ from 'lodash';
+import { throws } from 'assert';
 
 enum ContentType {
   JSON = 'application/json',
@@ -109,6 +110,10 @@ type PostableAlert = {
 };
 
 class AlertManagerNotifier implements Notifier {
+
+  /**
+   * @throws {Error}
+   */
   async sendNotification(notification: Notification) {
     if(config.HASTIC_ALERTMANAGER_URL === null) {
       console.log(`HASTIC_ALERTMANAGER_URL is not set, skip sending notification: ${notification.text}`);

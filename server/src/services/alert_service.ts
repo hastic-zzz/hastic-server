@@ -212,7 +212,10 @@ export class AlertService {
       from: now,
       to: now
     }
-    Notifier.sendNotification({ text, meta: infoAlert });
+
+    Notifier.sendNotification({ text, meta: infoAlert }).catch((err) => {
+      console.error(`can't send message ${err.message}`);
+    });
   }
 
   public sendGrafanaAvailableWebhook() {
