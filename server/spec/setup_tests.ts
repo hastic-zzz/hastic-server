@@ -10,7 +10,8 @@ jest.mock('../src/config.ts', () => ({
   ZMQ_IPC_PATH: 'fake-zmq-path',
   HASTIC_DB_CONNECTION_TYPE: 'nedb',
   HASTIC_IN_MEMORY_PERSISTANCE: true,
-  HASTIC_ALERT_TYPE: 'webhook'
+  HASTIC_ALERT_TYPE: 'webhook',
+  ALERT_TYPES: jest.requireActual('../src/config').ALERT_TYPES,
 }));
 
 jest.mock('deasync', () => ({ loopWhile: jest.fn() }));

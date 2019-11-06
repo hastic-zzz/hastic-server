@@ -53,7 +53,7 @@ export const ORG_ID = getConfigField('ORG_ID', 1);
 export enum ALERT_TYPES {
   webhook = 'webhook',
   alertmanager = 'alertmanager'
-}
+};
 export const HASTIC_ALERT_TYPE = getConfigField('HASTIC_ALERT_TYPE', ALERT_TYPES.webhook, _.keys(ALERT_TYPES));
 export const HASTIC_ALERT_IMAGE_ENABLED = getConfigField('HASTIC_ALERT_IMAGE_ENABLED', false);
 
