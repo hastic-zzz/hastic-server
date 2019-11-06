@@ -62,7 +62,7 @@ export const HASTIC_ALERT_IMAGE = getConfigField('HASTIC_ALERT_IMAGE', false);
 export const HASTIC_WEBHOOK_URL = getConfigField('HASTIC_WEBHOOK_URL', null);
 export const HASTIC_WEBHOOK_TYPE = getConfigField('HASTIC_WEBHOOK_TYPE', 'application/json');
 export const HASTIC_WEBHOOK_SECRET = getConfigField('HASTIC_WEBHOOK_SECRET', null);
-export const TIMEZONE_UTC_OFFSET = getTimeZoneOffset();
+export const HASTIC_TIMEZONE_OFFSET = getTimeZoneOffset();
 
 export const HASTIC_ALERTMANAGER_URL = getConfigField('HASTIC_ALERTMANAGER_URL', null);
 
@@ -167,7 +167,7 @@ function getDbConfig(connectionStr: string): DBConfig {
 }
 
 function getTimeZoneOffset(): number {
-  let configTimeZone = getConfigField('TIMEZONE_UTC_OFFSET', null);
+  let configTimeZone = getConfigField('HASTIC_TIMEZONE_OFFSET', null);
   if(configTimeZone !== null) {
     return parseTimeZone(configTimeZone);
   } else {
