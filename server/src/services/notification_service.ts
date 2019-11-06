@@ -83,12 +83,8 @@ class WebhookNotifier implements Notifier {
       data,
       headers: { 'Content-Type': config.HASTIC_WEBHOOK_TYPE }
     };
-  
-    try {
-      await axios(options);
-    } catch(err) {
-      console.error(`Can't send notification to ${config.HASTIC_WEBHOOK_URL}. Error: ${err.message}`);
-    }
+
+    await axios(options);
   }
 }
 
