@@ -4,7 +4,6 @@ import * as config from '../config';
 import axios from 'axios';
 import * as querystring from 'querystring';
 import * as _ from 'lodash';
-import { throws } from 'assert';
 
 enum ContentType {
   JSON = 'application/json',
