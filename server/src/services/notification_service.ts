@@ -105,7 +105,8 @@ type PostableAlertAnnotations = {
 type PostableAlert = {
   labels: PostableAlertLabels,
   annotations: PostableAlertAnnotations
-  generatorURL?: string
+  generatorURL?: string,
+  endsAt?: string
 };
 
 class AlertManagerNotifier implements Notifier {
@@ -139,15 +140,24 @@ class AlertManagerNotifier implements Notifier {
       generatorURL
     };
 
-    let data = JSON.stringify([alertData]);
-
-    const options = {
+    let options = {
       method: 'POST',
       url: `${config.HASTIC_ALERTMANAGER_URL}/api/v2/alerts`,
-      data,
+      data: JSON.stringify([alertData]),
       headers: { 'Content-Type': ContentType.JSON }
     };
   
+    //first part: send start request
+    try {
+      await axios(options);
+    } catch(err) {
+      console.error(`Can't send notification to ${config.HASTIC_ALERTMANAGER_URL}: Error ${err.response.data.code} ${err.response.data.message}`);
+    }
+
+    //second part: send end request
+    alertData.endsAt = (new Date()).toISOString();
+    options.data = JSON.stringify([alertData]);
+
     try {
       await axios(options);
     } catch(err) {
