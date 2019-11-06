@@ -47,6 +47,7 @@ export interface Notifier {
   sendNotification(notification: Notification): Promise<void>;
 }
 
+// TODO: singleton
 export function getNotifier(): Notifier {
   if(config.HASTIC_ALERT_TYPE === config.AlertTypes.WEBHOOK) {
     return new WebhookNotifier();
