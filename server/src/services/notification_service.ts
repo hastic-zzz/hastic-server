@@ -98,7 +98,7 @@ type PostableAlertLabels = {
 };
 
 type PostableAlertAnnotations = {
-  info?: string;
+  message?: string;
   summary?: string;
 };
 
@@ -123,7 +123,7 @@ class AlertManagerNotifier implements Notifier {
       instance: config.HASTIC_INSTANCE_NAME
     };
     let annotations: PostableAlertAnnotations = {
-      info: notification.text
+      message: notification.text
     };
 
     if(_.has(notification.meta, 'grafanaUrl')) {
