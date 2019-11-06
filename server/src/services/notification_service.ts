@@ -42,6 +42,7 @@ export declare type Notification = {
   image?: any
 }
 
+// TODO: split notifiers into 3 files
 export interface Notifier {
   sendNotification(notification: Notification): Promise<void>;
 }
