@@ -52,10 +52,10 @@ export const GRAFANA_URL = normalizeUrl(getConfigField('GRAFANA_URL', null));
 export const ORG_ID = getConfigField('ORG_ID', 1);
 
 export enum AlertTypes {
-  webhook = 'webhook',
-  alertmanager = 'alertmanager'
+  WEBHOOK = 'webhook',
+  ALERTMANAGER = 'alertmanager'
 };
-export const HASTIC_ALERT_TYPE = getConfigField('HASTIC_ALERT_TYPE', AlertTypes.webhook, _.keys(AlertTypes));
+export const HASTIC_ALERT_TYPE = getConfigField('HASTIC_ALERT_TYPE', AlertTypes.WEBHOOK, _.values(AlertTypes));
 export const HASTIC_ALERT_IMAGE = getConfigField('HASTIC_ALERT_IMAGE_ENABLED', false);
 
 export const HASTIC_WEBHOOK_URL = getConfigField('HASTIC_WEBHOOK_URL', null);

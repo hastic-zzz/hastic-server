@@ -46,11 +46,11 @@ export interface Notifier {
 }
 
 export function getNotifier(): Notifier {
-  if(config.HASTIC_ALERT_TYPE === config.AlertTypes.webhook) {
+  if(config.HASTIC_ALERT_TYPE === config.AlertTypes.WEBHOOK) {
     return new WebhookNotifier();
   }
 
-  if(config.HASTIC_ALERT_TYPE === config.AlertTypes.alertmanager) {
+  if(config.HASTIC_ALERT_TYPE === config.AlertTypes.ALERTMANAGER) {
     return new AlertManagerNotifier();
   }
 
