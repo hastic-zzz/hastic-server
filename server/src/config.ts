@@ -22,6 +22,7 @@ export type DBConfig = {
 export const ANALYTICS_PATH = path.join(__dirname, '../../analytics');
 
 export const HASTIC_DB_IN_MEMORY = getConfigField('HASTIC_IN_MEMORY_PERSISTANCE', false);
+// TODO: enum for DB type
 export const HASTIC_DB_CONNECTION_TYPE = getConfigField('HASTIC_DB_CONNECTION_TYPE', 'nedb', ['nedb', 'mongodb']);
 
 //connection string syntax: <db_user>:<db_password>@<db_url>/<db_name>
