@@ -146,21 +146,11 @@ class AlertManagerNotifier implements Notifier {
     };
   
     //first part: send start request
-    try {
-      await axios(options);
-    } catch(err) {
-      console.error(`Can't send notification to ${config.HASTIC_ALERTMANAGER_URL}: Error ${err.response.data.code} ${err.response.data.message}`);
-    }
-
+    await axios(options);
     //TODO: resolve FAILURE alert only after RECOVERY event
     //second part: send end request
     alertData.endsAt = (new Date()).toISOString();
     options.data = JSON.stringify([alertData]);
-
-    try {
-      await axios(options);
-    } catch(err) {
-      console.error(`Can't send notification to ${config.HASTIC_ALERTMANAGER_URL}: Error ${err.response.data.code} ${err.response.data.message}`);
-    }
+    await axios(options);
   }
 }
