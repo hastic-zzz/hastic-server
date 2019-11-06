@@ -56,7 +56,7 @@ export enum AlertTypes {
   ALERTMANAGER = 'alertmanager'
 };
 export const HASTIC_ALERT_TYPE = getConfigField('HASTIC_ALERT_TYPE', AlertTypes.WEBHOOK, _.values(AlertTypes));
-export const HASTIC_ALERT_IMAGE = getConfigField('HASTIC_ALERT_IMAGE_ENABLED', false);
+export const HASTIC_ALERT_IMAGE = getConfigField('HASTIC_ALERT_IMAGE', false);
 
 export const HASTIC_WEBHOOK_URL = getConfigField('HASTIC_WEBHOOK_URL', null);
 export const HASTIC_WEBHOOK_TYPE = getConfigField('HASTIC_WEBHOOK_TYPE', 'application/json');
