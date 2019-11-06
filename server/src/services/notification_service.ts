@@ -154,6 +154,7 @@ class AlertManagerNotifier implements Notifier {
       console.error(`Can't send notification to ${config.HASTIC_ALERTMANAGER_URL}: Error ${err.response.data.code} ${err.response.data.message}`);
     }
 
+    //TODO: resolve FAILURE alert only after RECOVERY event
     //second part: send end request
     alertData.endsAt = (new Date()).toISOString();
     options.data = JSON.stringify([alertData]);
