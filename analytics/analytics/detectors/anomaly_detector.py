@@ -91,11 +91,7 @@ class AnomalyDetector(ProcessingDetector):
 
             for segment in segments:
                 seasonality_index = seasonality // time_step
-                season_count = math.ceil(abs(segment['from'] - data_start_time) / seasonality)
-                start_seasonal_segment = segment['from'] + seasonality * season_count
-                seasonality_time_offset = (abs(start_seasonal_segment - data_start_time) % seasonality)
-                seasonality_offset = math.ceil(seasonality_time_offset / time_step)
-
+                seasonality_offset = self.get_seasonality_offset(segment['from'], seasonality, data_start_time, time_step)
                 segment_data = pd.Series(segment['data'])
 
                 lower_bound = self.add_season_to_data(lower_bound, segment_data, seasonality_offset, seasonality_index, Bound.LOWER)
@@ -198,10 +194,7 @@ class AnomalyDetector(ProcessingDetector):
             for segment in segments:
                 seasonality_index = seasonality // time_step
                 # TODO: move it to utils and add tests
-                season_count = math.ceil(abs(segment['from'] - data_start_time) / seasonality)
-                start_seasonal_segment = segment['from'] + seasonality * season_count
-                seasonality_time_offset = (abs(start_seasonal_segment - data_start_time) % seasonality)
-                seasonality_offset = math.ceil(seasonality_time_offset / time_step)
+                seasonality_offset = self.get_seasonality_offset(segment['from'], seasonality, data_start_time, time_step)
                 segment_data = pd.Series(segment['data'])
 
                 lower_bound = self.add_season_to_data(lower_bound, segment_data, seasonality_offset, seasonality_index, Bound.LOWER)
@@ -279,3 +272,10 @@ class AnomalyDetector(ProcessingDetector):
         upper_bound = pd.Series(upper_bound, index = segment.index)
         lower_bound = pd.Series(lower_bound, index = segment.index)
         return upper_bound, lower_bound
+
+    def get_seasonality_offset(self, from_timestamp: int, seasonality: int, data_start_time: int, time_step: int) -> int:
+        season_count = math.ceil(abs(from_timestamp - data_start_time) / seasonality)
+        start_seasonal_segment = from_timestamp + seasonality * season_count
+        seasonality_time_offset = (abs(start_seasonal_segment - data_start_time) % seasonality)
+        seasonality_offset = math.ceil(seasonality_time_offset / time_step)
+        return seasonality_offset
