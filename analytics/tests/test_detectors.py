@@ -163,3 +163,13 @@ class TestAnomalyDetector(unittest.TestCase):
                 (1523889000008, 3.4343868900000007)
             ]}
         self.assertEqual(detect_result.to_json(), expected_result)
+
+    def test_get_seasonality_offset(self):
+        detector = anomaly_detector.AnomalyDetector('test_id')
+        from_timestamp = 1573700973027
+        seasonality = 3600000
+        data_start_time = 1573698780000
+        time_step = 30000
+        detected_offset = detector.get_seasonality_offset(from_timestamp, seasonality, data_start_time, time_step)
+        expected_offset = 74
+        self.assertEqual(detected_offset, expected_offset)
