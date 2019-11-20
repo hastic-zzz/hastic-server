@@ -29,7 +29,7 @@ class Segment:
         self.message = message
 
 @utils.meta.JSONClass
-class AnomalyDetectSegment:
+class AnomalyDetectorSegment:
     '''
     Used for segment manipulation instead of { 'from': ..., 'to': ... } dict
     '''
