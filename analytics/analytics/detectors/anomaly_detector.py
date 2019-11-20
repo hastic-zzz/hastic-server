@@ -271,7 +271,7 @@ class AnomalyDetector(ProcessingDetector):
         upper_bound: pd.DataFrame,
         lower_bound: pd.DataFrame,
         enable_bounds: Bound
-        ):
+    ) -> Generator[Segment]:
 
         in_segment = False
         segment_start = 0
