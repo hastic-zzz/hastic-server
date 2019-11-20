@@ -3,7 +3,7 @@ import logging
 import numpy as np
 import pandas as pd
 import math
-from typing import Optional, Union, List, Tuple
+from typing import Optional, Union, List, Tuple, Generator
 
 from analytic_types import AnalyticUnitId, ModelCache
 from analytic_types.detector_typing import DetectionResult, ProcessingResult
@@ -98,7 +98,7 @@ class AnomalyDetector(ProcessingDetector):
                 lower_bound = self.add_season_to_data(lower_bound, segment_data, seasonality_offset, seasonality_index, Bound.LOWER)
                 upper_bound = self.add_season_to_data(upper_bound, segment_data, seasonality_offset, seasonality_index, Bound.UPPER)
 
-        detected_segments = list(self.segment_generator(dataframe, upper_bound, lower_bound, enable_bounds))
+        detected_segments = list(self.detections_generator(dataframe, upper_bound, lower_bound, enable_bounds))
 
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_detection_time = utils.convert_pd_timestamp_to_ms(last_dataframe_time)
@@ -265,13 +265,13 @@ class AnomalyDetector(ProcessingDetector):
         seasonality_offset = math.ceil(seasonality_time_offset / time_step)
         return seasonality_offset
 
-    def segment_generator(
+    def detections_generator(
         self,
         dataframe: pd.DataFrame,
         upper_bound: pd.DataFrame,
         lower_bound: pd.DataFrame,
         enable_bounds: Bound
-    ) -> Generator[Segment]:
+    ) -> Generator[Segment, None, Segment]:
 
         in_segment = False
         segment_start = 0
@@ -283,7 +283,7 @@ class AnomalyDetector(ProcessingDetector):
                         in_segment = True
                         segment_start = dataframe['timestamp'][idx]
                         bound = Bound.UPPER
-                        continue
+                    continue
 
             if val < lower_bound.values[idx]:
                 if enable_bounds == Bound.LOWER or enable_bounds == Bound.ALL:
@@ -291,7 +291,7 @@ class AnomalyDetector(ProcessingDetector):
                         in_segment = True
                         segment_start = dataframe['timestamp'][idx]
                         bound = Bound.LOWER
-                        continue
+                    continue
 
             if in_segment:
                 segment_end = dataframe['timestamp'][idx - 1]
@@ -304,7 +304,7 @@ class AnomalyDetector(ProcessingDetector):
         
         if in_segment:
             segment_end = dataframe['timestamp'][idx]
-            yield Segment(
+            return Segment(
                 utils.convert_pd_timestamp_to_ms(segment_start),
                 utils.convert_pd_timestamp_to_ms(segment_end),
                 message=f'{val} out of {str(bound.value)} bound'
