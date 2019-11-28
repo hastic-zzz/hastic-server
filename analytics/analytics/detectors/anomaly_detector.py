@@ -301,11 +301,12 @@ class AnomalyDetector(ProcessingDetector):
                     message=f'{val} out of {str(bound.value)} bound'
                 )
                 in_segment = False
-        
-        if in_segment:
-            segment_end = dataframe['timestamp'][idx]
-            return Segment(
-                utils.convert_pd_timestamp_to_ms(segment_start),
-                utils.convert_pd_timestamp_to_ms(segment_end),
-                message=f'{val} out of {str(bound.value)} bound'
-            )
+        else:
+            if in_segment:
+                print(idx)
+                segment_end = dataframe['timestamp'][idx]
+                return Segment(
+                    utils.convert_pd_timestamp_to_ms(segment_start),
+                    utils.convert_pd_timestamp_to_ms(segment_end),
+                    message=f'{val} out of {str(bound.value)} bound'
+                )
