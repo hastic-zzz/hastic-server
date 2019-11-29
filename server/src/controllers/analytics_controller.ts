@@ -344,6 +344,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
   let intersection = 0;
 
   let oldCache = await AnalyticUnitCache.findById(id);
+  console.log('oldcache: ', oldCache.segments);
   if(oldCache !== null) {
     intersection = oldCache.getIntersection();
     oldCache = oldCache.data;
@@ -375,6 +376,7 @@ export async function runDetect(id: AnalyticUnit.AnalyticUnitId, from?: number, 
       { detector, analyticUnitType, lastDetectionTime: unit.lastDetectionTime, data, cache: oldCache }
     );
     console.log(`run task, id:${id}`);
+    console.log('cache: ', oldCache);
     await AnalyticUnit.setStatus(id, AnalyticUnit.AnalyticUnitStatus.DETECTION);
     const result = await runTask(task);
 

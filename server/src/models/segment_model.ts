@@ -38,6 +38,7 @@ export class Segment {
   }
 
   public toObject() {
+    console.log(this.from, this.to);
     return {
       _id: this.id,
       analyticUnitId: this.analyticUnitId,
