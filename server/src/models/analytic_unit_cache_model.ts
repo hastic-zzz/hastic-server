@@ -13,7 +13,6 @@ export class AnalyticUnitCache {
     public id: AnalyticUnitId,
     public data?: any
   ) {
-    console.log('constructor, data:', data);
     if(id === undefined) {
       throw new Error(`Missing field "id"`);
     }
@@ -27,7 +26,6 @@ export class AnalyticUnitCache {
   }
 
   static fromObject(obj: any): AnalyticUnitCache {
-    console.log('from object', obj.data);
     return new AnalyticUnitCache(
       obj._id,
       obj.data,
@@ -64,7 +62,6 @@ export async function findById(id: AnalyticUnitId): Promise<AnalyticUnitCache | 
   if(obj === null) {
     return null;
   }
-  console.log('obj', obj.data.segments);
   return AnalyticUnitCache.fromObject(obj);
 }
 
