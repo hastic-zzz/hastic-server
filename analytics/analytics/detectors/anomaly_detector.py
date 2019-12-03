@@ -303,7 +303,6 @@ class AnomalyDetector(ProcessingDetector):
                 in_segment = False
         else:
             if in_segment:
-                print(idx)
                 segment_end = dataframe['timestamp'][idx]
                 return Segment(
                     utils.convert_pd_timestamp_to_ms(segment_start),
