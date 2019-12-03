@@ -87,7 +87,7 @@ class TestAnomalyDetector(unittest.TestCase):
             'alpha': 0.1,
             'timeStep': 1,
             'seasonality': 4,
-            'segments': [{ 'from': 1523889000001, 'data': [10] }]
+            'segments': [{ 'from': 1523889000001, 'to': 1523889000002, 'data': [10] }]
         }
         detect_result: DetectionResult = detector.detect(dataframe, cache)
         detected_segments = list(map(lambda s: {'from': s.from_timestamp, 'to': s.to_timestamp}, detect_result.segments))
@@ -137,7 +137,7 @@ class TestAnomalyDetector(unittest.TestCase):
             'alpha': 0.1,
             'timeStep': 1,
             'seasonality': 5,
-            'segments': [{ 'from': 1523889000001, 'data': [1] }]
+            'segments': [{ 'from': 1523889000001, 'to': 1523889000002,'data': [1] }]
         }
         detect_result: ProcessingResult = detector.process_data(dataframe, cache)
         expected_result = {

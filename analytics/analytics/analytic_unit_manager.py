@@ -57,7 +57,6 @@ class AnalyticUnitManager:
             return
 
         payload = task['payload']
-
         worker = self.__ensure_worker(analytic_unit_id, payload['detector'], payload['analyticUnitType'])
         data = payload.get('data')
         if task['type'] == 'PUSH':
