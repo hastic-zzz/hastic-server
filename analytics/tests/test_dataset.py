@@ -5,6 +5,7 @@ from utils import prepare_data
 import models
 import random
 import scipy.signal
+from typing import List
 
 from analytic_types.segment import Segment
 
@@ -372,11 +373,14 @@ if __name__ == '__main__':
     unittest.main()
 
 def create_dataframe(data_val: list) -> pd.DataFrame:    
-    data_ind = [1523889000000 + i for i in range(len(data_val))]
+    data_ind = create_list_of_timestamps(len(data_val))
     data = {'timestamp': data_ind, 'value': data_val}
     dataframe = pd.DataFrame(data)
     dataframe['timestamp'] = pd.to_datetime(dataframe['timestamp'], unit='ms')
     return dataframe
+
+def create_list_of_timestamps(length: int) -> List[int]:
+    return [1523889000000 + i for i in range(length)]
 
 def create_random_model(window_size: int) -> list:
     return [random.randint(0, 100) for _ in range(window_size * 2 + 1)]

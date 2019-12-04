@@ -1,14 +1,14 @@
-import { sendNotification, MetaInfo, AnalyticMeta, WebhookType, Notification } from './notification_service';
+import { getNotifier, AnalyticMeta, WebhookType, Notification, MetaInfo } from './notification_service';
 import * as AnalyticUnit from '../models/analytic_units';
 import { Segment } from '../models/segment_model';
 import { availableReporter } from '../utils/reporter';
 import { toTimeZone } from '../utils/time';
-import { ORG_ID, HASTIC_API_KEY, HASTIC_WEBHOOK_IMAGE_ENABLED } from '../config';
+import { ORG_ID, HASTIC_API_KEY, HASTIC_ALERT_IMAGE } from '../config';
 
 import axios from 'axios';
 import * as _ from 'lodash';
 
-
+const Notifier = getNotifier();
 export class Alert {
   public enabled = true;
   constructor(protected analyticUnit: AnalyticUnit.AnalyticUnit) {};
@@ -21,7 +21,7 @@ export class Alert {
   protected async send(segment) {
     const notification = await this.makeNotification(segment);
     try {
-      await sendNotification(notification);
+      await Notifier.sendNotification(notification);
     } catch(error) {
       console.error(`can't send notification ${error}`);
     };
@@ -31,7 +31,7 @@ export class Alert {
     const meta = this.makeMeta(segment);
     const text = this.makeMessage(meta);
     let result: Notification = { meta, text };
-    if(HASTIC_WEBHOOK_IMAGE_ENABLED) {
+    if(HASTIC_ALERT_IMAGE) {
       try {
         const image = await this.loadImage();
         result.image = image;
@@ -50,8 +50,15 @@ export class Alert {
     const dashboardApiURL = `${this.analyticUnit.grafanaUrl}/api/dashboards/uid/${dashdoardId}`;
     const dashboardInfo: any = await axios.get(dashboardApiURL, { headers });
     const dashboardName = _.last(dashboardInfo.data.meta.url.split('/'));
-    const renderUrl = `${this.analyticUnit.grafanaUrl}/render/d-solo/${dashdoardId}/${dashboardName}?panelId=${panelId}&ordId=${ORG_ID}&api-rendering`;
+    const renderUrl = `${this.analyticUnit.grafanaUrl}/render/d-solo/${dashdoardId}/${dashboardName}`;
+    const params = {
+      panelId,
+      ordId: ORG_ID,
+      apiRendering: true,
+      analyticUnitId: this.analyticUnit.id
+    };
     const response = await axios.get(renderUrl, {
+      params,
       headers,
       responseType: 'arraybuffer'
     });
@@ -205,7 +212,10 @@ export class AlertService {
       from: now,
       to: now
     }
-    sendNotification({ text, meta: infoAlert });
+
+    Notifier.sendNotification({ text, meta: infoAlert }).catch((err) => {
+      console.error(`can't send message ${err.message}`);
+    });
   }
 
   public sendGrafanaAvailableWebhook() {
