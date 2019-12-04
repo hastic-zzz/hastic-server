@@ -15,19 +15,12 @@ import utils
 MAX_DEPENDENCY_LEVEL = 100
 MIN_DEPENDENCY_FACTOR = 0.1
 BASIC_ALPHA = 0.5
-MAXGAP = 1
 logger = logging.getLogger('ANOMALY_DETECTOR')
 
 class Bound(Enum):
     ALL = 'ALL'
     UPPER = 'UPPER'
     LOWER = 'LOWER'
-
-class AnomalySegment:
-
-    def __init__(self, index: int, bound_type: Bound):
-        self.index = index
-        self.bound_type = bound_type
 
 class AnomalyDetector(ProcessingDetector):
 
@@ -293,7 +286,7 @@ class AnomalyDetector(ProcessingDetector):
                     if not in_segment:
                         in_segment = True
                         segment_start = dataframe['timestamp'][idx]
-                        bound = Bound.UPPER
+                        bound = self.setBoundType(Bound.UPPER, bound)
                     continue
 
             if val < lower_bound.values[idx]:
@@ -301,7 +294,7 @@ class AnomalyDetector(ProcessingDetector):
                     if not in_segment:
                         in_segment = True
                         segment_start = dataframe['timestamp'][idx]
-                        bound = Bound.LOWER
+                        bound = self.setBoundType(Bound.LOWER, bound)
                     continue
 
             if in_segment:
@@ -312,6 +305,7 @@ class AnomalyDetector(ProcessingDetector):
                     message=f'{val} out of {str(bound.value)} bound'
                 )
                 in_segment = False
+                bound = None
         else:
             if in_segment:
                 segment_end = dataframe['timestamp'][idx]
@@ -320,3 +314,9 @@ class AnomalyDetector(ProcessingDetector):
                     utils.convert_pd_timestamp_to_ms(segment_end),
                     message=f'{val} out of {str(bound.value)} bound'
                 )
+
+    def setBoundType(currentBound: Bound, oldBound: Optional[Bound]) -> Bound:
+        if oldBound == None or currentBound == oldBound:
+            return currentBound
+        else:
+            return Bound.ALL
