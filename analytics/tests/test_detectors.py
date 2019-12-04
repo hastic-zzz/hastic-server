@@ -177,15 +177,22 @@ class TestAnomalyDetector(unittest.TestCase):
 
     def test_segment_generator(self):
         detector = anomaly_detector.AnomalyDetector('test_id')
-        data = [1, 1, 5, 1, -4, 5, 5, 5, -3, 1]
+        data = [-1, 1, 1, 5, -3, 1, 5, 5, 5, 5, -3, -1]
         timestamps = create_list_of_timestamps(len(data))
         dataframe = create_dataframe(data)
-        upper_bound = pd.Series([2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
-        lower_bound = pd.Series([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        upper_bound = pd.Series([2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
+        lower_bound = pd.Series([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
         segments = list(detector.detections_generator(dataframe, upper_bound, lower_bound, enable_bounds=Bound.ALL))
 
         segments_borders = list(map(lambda s: [s.from_timestamp, s.to_timestamp], segments))
-        self.assertEqual(segments_borders, [[timestamps[2], timestamps[2]], [timestamps[4], timestamps[8]]])
+        segments_bounds = list(map(lambda s: s.message, segments))
+        expected_result = [
+            [timestamps[0], timestamps[0]],
+            [timestamps[3], timestamps[4]],
+            [timestamps[6], timestamps[11]]
+        ]
+
+        self.assertEqual(segments_borders, expected_result)
 
 if __name__ == '__main__':
     unittest.main()

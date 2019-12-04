@@ -276,25 +276,28 @@ class AnomalyDetector(ProcessingDetector):
         upper_bound: pd.DataFrame,
         lower_bound: pd.DataFrame,
         enable_bounds: Bound
-    ) -> Generator[Segment, None, Segment]:
+    ) -> Generator[Segment, None, None]:
         in_segment = False
+        segment_last_value = 0
         segment_start = 0
         bound: Bound = None
         for idx, val in enumerate(dataframe['value'].values):
             if val > upper_bound.values[idx]:
                 if enable_bounds == Bound.UPPER or enable_bounds == Bound.ALL:
+                    bound = self.setBoundType(Bound.UPPER, bound)
                     if not in_segment:
                         in_segment = True
                         segment_start = dataframe['timestamp'][idx]
-                        bound = self.setBoundType(Bound.UPPER, bound)
+                        segment_last_value = val
                     continue
 
             if val < lower_bound.values[idx]:
                 if enable_bounds == Bound.LOWER or enable_bounds == Bound.ALL:
+                    bound = self.setBoundType(Bound.LOWER, bound)
                     if not in_segment:
                         in_segment = True
                         segment_start = dataframe['timestamp'][idx]
-                        bound = self.setBoundType(Bound.LOWER, bound)
+                        segment_last_value = val
                     continue
 
             if in_segment:
@@ -302,18 +305,18 @@ class AnomalyDetector(ProcessingDetector):
                 yield Segment(
                     utils.convert_pd_timestamp_to_ms(segment_start),
                     utils.convert_pd_timestamp_to_ms(segment_end),
-                    message=f'{val} out of {str(bound.value)} bound'
+                    message=f"{segment_last_value} out of {str(bound.value)} bound"
                 )
                 in_segment = False
                 bound = None
-        else:
-            if in_segment:
-                segment_end = dataframe['timestamp'][idx]
-                return Segment(
-                    utils.convert_pd_timestamp_to_ms(segment_start),
-                    utils.convert_pd_timestamp_to_ms(segment_end),
-                    message=f'{val} out of {str(bound.value)} bound'
-                )
+
+        if in_segment:
+            segment_end = dataframe['timestamp'][idx]
+            yield Segment(
+                utils.convert_pd_timestamp_to_ms(segment_start),
+                utils.convert_pd_timestamp_to_ms(segment_end),
+                message=f'{val} out of {str(bound.value)} bound'
+            )
 
     def setBoundType(self, currentBound: Bound, oldBound: Optional[Bound]) -> Bound:
         if oldBound == None or currentBound == oldBound:
