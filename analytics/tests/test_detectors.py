@@ -1,10 +1,11 @@
 import unittest
 import pandas as pd
 
-from detectors import pattern_detector, threshold_detector, anomaly_detector
+from detectors import pattern_detector, threshold_detector, anomaly_detector, Bound
 from analytic_types.detector_typing import DetectionResult, ProcessingResult
 from analytic_types.segment import Segment
-from tests.test_dataset import create_dataframe
+from tests.test_dataset import create_dataframe, create_list_of_timestamps
+from utils import convert_pd_timestamp_to_ms
 
 class TestPatternDetector(unittest.TestCase):
 
@@ -136,7 +137,7 @@ class TestAnomalyDetector(unittest.TestCase):
             'alpha': 0.1,
             'timeStep': 1,
             'seasonality': 5,
-            'segments': [{ 'from': 1523889000001, 'to': 1523889000002, 'data': [1] }]
+            'segments': [{ 'from': 1523889000001, 'to': 1523889000002,'data': [1] }]
         }
         detect_result: ProcessingResult = detector.process_data(dataframe, cache)
         expected_result = {
@@ -163,3 +164,28 @@ class TestAnomalyDetector(unittest.TestCase):
                 (1523889000008, 3.4343868900000007)
             ]}
         self.assertEqual(detect_result.to_json(), expected_result)
+
+    def test_get_seasonality_offset(self):
+        detector = anomaly_detector.AnomalyDetector('test_id')
+        from_timestamp = 1573700973027
+        seasonality = 3600000
+        data_start_time = 1573698780000
+        time_step = 30000
+        detected_offset = detector.get_seasonality_offset(from_timestamp, seasonality, data_start_time, time_step)
+        expected_offset = 74
+        self.assertEqual(detected_offset, expected_offset)
+
+    def test_segment_generator(self):
+        detector = anomaly_detector.AnomalyDetector('test_id')
+        data = [1, 1, 5, 1, -4, 5, 5, 5, -3, 1]
+        timestamps = create_list_of_timestamps(len(data))
+        dataframe = create_dataframe(data)
+        upper_bound = pd.Series([2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
+        lower_bound = pd.Series([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        segments = list(detector.detections_generator(dataframe, upper_bound, lower_bound, enable_bounds=Bound.ALL))
+
+        segments_borders = list(map(lambda s: [s.from_timestamp, s.to_timestamp], segments))
+        self.assertEqual(segments_borders, [[timestamps[2], timestamps[2]], [timestamps[4], timestamps[8]]])
+
+if __name__ == '__main__':
+    unittest.main()
