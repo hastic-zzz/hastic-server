@@ -261,7 +261,7 @@ class AnomalyDetector(ProcessingDetector):
     def get_seasonality_offset(self, from_timestamp: int, seasonality: int, data_start_time: int, time_step: int) -> int:
         season_count = math.ceil(abs(from_timestamp - data_start_time) / seasonality)
         start_seasonal_segment = from_timestamp + seasonality * season_count
-        seasonality_time_offset = (abs(start_seasonal_segment - data_start_time) % seasonality)
+        seasonality_time_offset = abs(start_seasonal_segment - data_start_time) % seasonality
         seasonality_offset = math.ceil(seasonality_time_offset / time_step)
         return seasonality_offset
 
@@ -272,7 +272,6 @@ class AnomalyDetector(ProcessingDetector):
         lower_bound: pd.DataFrame,
         enable_bounds: Bound
     ) -> Generator[Segment, None, Segment]:
-
         in_segment = False
         segment_start = 0
         bound: Bound = None
