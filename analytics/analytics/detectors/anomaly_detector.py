@@ -45,16 +45,21 @@ class AnomalyDetector(ProcessingDetector):
             seasonality = payload.get('seasonality')
             assert seasonality is not None and seasonality > 0, \
                 f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
+            parsed_segments = map(Segment.from_json, segments)
 
-            for segment in segments:
-                segment_len = (int(segment['to']) - int(segment['from']))
+            for segment in parsed_segments:
+                segment_len = (int(segment.to_timestamp) - int(segment.from_timestamp))
                 assert segment_len <= seasonality, \
-                    f'seasonality {seasonality} must be great then segment length {segment_len}'
+                    f'seasonality {seasonality} must be greater than segment length {segment_len}'
 
-                from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['from'], unit='ms'))
-                to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment['to'], unit='ms'))
+                from_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment.from_timestamp, unit='ms'))
+                to_index = utils.timestamp_to_index(dataframe, pd.to_datetime(segment.to_timestamp, unit='ms'))
                 segment_data = dataframe[from_index : to_index]
-                prepared_segments.append({'from': segment['from'], 'to': segment['to'], 'data': segment_data.value.tolist()})
+                prepared_segments.append({
+                    'from': segment.from_timestamp,
+                    'to': segment.to_timestamp,
+                    'data': segment_data.value.tolist()
+                })
 
             new_cache['seasonality'] = seasonality
             new_cache['segments'] = prepared_segments
