@@ -82,8 +82,8 @@ class AnomalyDetector(ProcessingDetector):
 
         smoothed_data = utils.exponential_smoothing(data, alpha)
 
-        lower_bound = smoothed_data - confidence
-        upper_bound = smoothed_data + confidence
+        lower_bound = smoothed_data - confidence if enable_bounds == Bound.LOWER or enable_bounds == Bound.ALL else pd.Series([])
+        upper_bound = smoothed_data + confidence if enable_bounds == Bound.UPPER or enable_bounds == Bound.ALL else pd.Series([])
 
         if segments is not None:
             parsed_segments = map(AnomalyDetectorSegment.from_json, segments)
@@ -100,8 +100,10 @@ class AnomalyDetector(ProcessingDetector):
                 seasonality_offset = self.get_seasonality_offset(segment.from_timestamp, seasonality, data_start_time, time_step)
                 segment_data = pd.Series(segment.data)
 
-                lower_bound = self.add_season_to_data(lower_bound, segment_data, seasonality_offset, seasonality_index, Bound.LOWER)
-                upper_bound = self.add_season_to_data(upper_bound, segment_data, seasonality_offset, seasonality_index, Bound.UPPER)
+                if len(lower_bound) > 0:
+                    lower_bound = self.add_season_to_data(lower_bound, segment_data, seasonality_offset, seasonality_index, Bound.LOWER)
+                if len(upper_bound) > 0:
+                    upper_bound = self.add_season_to_data(upper_bound, segment_data, seasonality_offset, seasonality_index, Bound.UPPER)
 
         detected_segments = list(self.detections_generator(dataframe, upper_bound, lower_bound, enable_bounds))
 
@@ -273,8 +275,8 @@ class AnomalyDetector(ProcessingDetector):
     def detections_generator(
         self,
         dataframe: pd.DataFrame,
-        upper_bound: pd.DataFrame,
-        lower_bound: pd.DataFrame,
+        upper_bound: pd.Series,
+        lower_bound: pd.Series,
         enable_bounds: Bound
     ) -> Generator[Segment, None, None]:
         in_segment = False
@@ -282,23 +284,14 @@ class AnomalyDetector(ProcessingDetector):
         segment_last_value = 0
         bound: Bound = None
         for idx, val in enumerate(dataframe['value'].values):
-            if val > upper_bound.values[idx]:
-                if enable_bounds == Bound.UPPER or enable_bounds == Bound.ALL:
-                    bound = self.get_bound_type(Bound.UPPER, bound)
-                    if not in_segment:
-                        in_segment = True
-                        segment_start = dataframe['timestamp'][idx]
-                        segment_last_value = val
-                    continue
-
-            if val < lower_bound.values[idx]:
-                if enable_bounds == Bound.LOWER or enable_bounds == Bound.ALL:
-                    bound = self.get_bound_type(Bound.LOWER, bound)
-                    if not in_segment:
-                        in_segment = True
-                        segment_start = dataframe['timestamp'][idx]
-                        segment_last_value = val
-                    continue
+            if (len(upper_bound) > 0 and val > upper_bound.values[idx] or
+                len(lower_bound) > 0 and val < lower_bound.values[idx]):
+                bound = self.get_bound_type(val, idx, upper_bound, lower_bound, bound)
+                if not in_segment:
+                    in_segment = True
+                    segment_start = dataframe['timestamp'][idx]
+                    segment_last_value = val
+                continue
 
             if in_segment:
                 segment_end = dataframe['timestamp'][idx - 1]
@@ -318,7 +311,17 @@ class AnomalyDetector(ProcessingDetector):
                 message=f'{val} out of {str(bound.value)} bound'
             )
 
-    def get_bound_type(self, current_bound: Bound, old_bound: Optional[Bound]) -> Bound:
+    def get_bound_type(
+        self,
+        val: float,
+        idx: int,
+        upper_bound: pd.Series,
+        lower_bound: pd.Series,
+        old_bound: Optional[Bound]) -> Bound:
+        if len(upper_bound) > 0 and val > upper_bound.values[idx]:
+            current_bound = Bound.LOWER
+        if len(lower_bound) > 0 and val < lower_bound.values[idx]:
+            current_bound = Bound.UPPER
         if old_bound == None or current_bound == old_bound:
             return current_bound
         else:
