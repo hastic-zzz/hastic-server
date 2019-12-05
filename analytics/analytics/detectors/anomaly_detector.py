@@ -318,8 +318,8 @@ class AnomalyDetector(ProcessingDetector):
                 message=f'{val} out of {str(bound.value)} bound'
             )
 
-    def get_bound_type(self, currentBound: Bound, oldBound: Optional[Bound]) -> Bound:
-        if oldBound == None or currentBound == oldBound:
-            return currentBound
+    def get_bound_type(self, current_bound: Bound, old_bound: Optional[Bound]) -> Bound:
+        if old_bound == None or current_bound == old_bound:
+            return current_bound
         else:
             return Bound.ALL
