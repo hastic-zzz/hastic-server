@@ -191,8 +191,19 @@ class TestAnomalyDetector(unittest.TestCase):
             [timestamps[3], timestamps[4]],
             [timestamps[6], timestamps[11]]
         ]
-
         self.assertEqual(segments_borders, expected_result)
+
+    def test_get_bound_type(self):
+        detector = anomaly_detector.AnomalyDetector('test_id')
+        bound_list = [Bound.ALL, Bound.LOWER, None]
+        bounds = list(map(lambda b: detector.get_bound_type(Bound.UPPER, b), bound_list))
+
+        expected_result = [
+            Bound.ALL,
+            Bound.ALL,
+            Bound.UPPER
+        ]
+        self.assertEqual(bounds, expected_result)
 
 if __name__ == '__main__':
     unittest.main()

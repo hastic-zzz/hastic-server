@@ -278,13 +278,13 @@ class AnomalyDetector(ProcessingDetector):
         enable_bounds: Bound
     ) -> Generator[Segment, None, None]:
         in_segment = False
-        segment_last_value = 0
         segment_start = 0
+        segment_last_value = 0
         bound: Bound = None
         for idx, val in enumerate(dataframe['value'].values):
             if val > upper_bound.values[idx]:
                 if enable_bounds == Bound.UPPER or enable_bounds == Bound.ALL:
-                    bound = self.setBoundType(Bound.UPPER, bound)
+                    bound = self.get_bound_type(Bound.UPPER, bound)
                     if not in_segment:
                         in_segment = True
                         segment_start = dataframe['timestamp'][idx]
@@ -293,7 +293,7 @@ class AnomalyDetector(ProcessingDetector):
 
             if val < lower_bound.values[idx]:
                 if enable_bounds == Bound.LOWER or enable_bounds == Bound.ALL:
-                    bound = self.setBoundType(Bound.LOWER, bound)
+                    bound = self.get_bound_type(Bound.LOWER, bound)
                     if not in_segment:
                         in_segment = True
                         segment_start = dataframe['timestamp'][idx]
@@ -305,7 +305,7 @@ class AnomalyDetector(ProcessingDetector):
                 yield Segment(
                     utils.convert_pd_timestamp_to_ms(segment_start),
                     utils.convert_pd_timestamp_to_ms(segment_end),
-                    message=f"{segment_last_value} out of {str(bound.value)} bound"
+                    message=f'{segment_last_value} out of {str(bound.value)} bound'
                 )
                 in_segment = False
                 bound = None
@@ -318,7 +318,7 @@ class AnomalyDetector(ProcessingDetector):
                 message=f'{val} out of {str(bound.value)} bound'
             )
 
-    def setBoundType(self, currentBound: Bound, oldBound: Optional[Bound]) -> Bound:
+    def get_bound_type(self, currentBound: Bound, oldBound: Optional[Bound]) -> Bound:
         if oldBound == None or currentBound == oldBound:
             return currentBound
         else:
