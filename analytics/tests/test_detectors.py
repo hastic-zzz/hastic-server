@@ -193,17 +193,23 @@ class TestAnomalyDetector(unittest.TestCase):
         ]
         self.assertEqual(segments_borders, expected_result)
 
-    # def test_get_bound_type(self):
-    #     detector = anomaly_detector.AnomalyDetector('test_id')
-    #     bound_list = [Bound.ALL, Bound.LOWER, None]
-    #     bounds = list(map(lambda b: detector.get_bound_type(Bound.UPPER, b), bound_list))
-
-    #     expected_result = [
-    #         Bound.ALL,
-    #         Bound.ALL,
-    #         Bound.UPPER
-    #     ]
-    #     self.assertEqual(bounds, expected_result)
+    def test_get_bound_type(self):
+        detector = anomaly_detector.AnomalyDetector('test_id')
+        upper_bound = pd.Series([2])
+        lower_bound = pd.Series([0])
+        bound_list = [Bound.ALL, Bound.LOWER, None]
+        val_list = [-5, 5, 5]
+        detector_bounds = list(map(
+            lambda val, bound: detector.get_bound_type(val, 0, upper_bound, lower_bound, bound),
+            val_list,
+            bound_list
+        ))
+        expected_result = [
+            Bound.ALL,
+            Bound.ALL,
+            Bound.UPPER
+        ]
+        self.assertEqual(detector_bounds, expected_result)
 
 if __name__ == '__main__':
     unittest.main()

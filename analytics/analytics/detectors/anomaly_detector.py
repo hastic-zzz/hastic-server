@@ -319,9 +319,9 @@ class AnomalyDetector(ProcessingDetector):
         lower_bound: pd.Series,
         old_bound: Optional[Bound]) -> Bound:
         if len(upper_bound) > 0 and val > upper_bound.values[idx]:
-            current_bound = Bound.LOWER
-        if len(lower_bound) > 0 and val < lower_bound.values[idx]:
             current_bound = Bound.UPPER
+        if len(lower_bound) > 0 and val < lower_bound.values[idx]:
+            current_bound = Bound.LOWER
         if old_bound == None or current_bound == old_bound:
             return current_bound
         else:
