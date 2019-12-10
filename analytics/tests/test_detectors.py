@@ -73,6 +73,7 @@ class TestAnomalyDetector(unittest.TestCase):
         cache =  {
             'confidence': 2,
             'alpha': 0.1,
+            'enableBounds': 'ALL',
             'timeStep': 1
         }
         detector = anomaly_detector.AnomalyDetector('test_id')
@@ -85,6 +86,7 @@ class TestAnomalyDetector(unittest.TestCase):
         cache =  {
             'confidence': 2,
             'alpha': 0.1,
+            'enableBounds': 'ALL',
             'timeStep': 1,
             'seasonality': 4,
             'segments': [{ 'from': 1523889000001, 'to': 1523889000002, 'data': [10] }]
@@ -103,6 +105,7 @@ class TestAnomalyDetector(unittest.TestCase):
         cache =  {
             'confidence': 2,
             'alpha': 0.1,
+            'enableBounds': 'ALL',
             'timeStep': 1
         }
         detector = anomaly_detector.AnomalyDetector('test_id')
@@ -135,6 +138,7 @@ class TestAnomalyDetector(unittest.TestCase):
         cache =  {
             'confidence': 2,
             'alpha': 0.1,
+            'enableBounds': 'ALL',
             'timeStep': 1,
             'seasonality': 5,
             'segments': [{ 'from': 1523889000001, 'to': 1523889000002,'data': [1] }]

@@ -20,7 +20,7 @@ class AnomalyCache:
         self.confidence = confidence
         self.enable_bounds = enable_bounds
         if seasonality != None and seasonality < 0:
-            raise ValueError(f'{self.analytic_unit_id} got invalid seasonality {seasonality}')
+            raise ValueError(f'Can`t create AnomalyCache: got invalid seasonality {seasonality}')
         self.seasonality = seasonality
         self.segments = segments
         self.time_step = time_step
