@@ -143,31 +143,28 @@ class AnomalyDetector(ProcessingDetector):
 
     # TODO: remove duplication with detect()
     def process_data(self, dataframe: pd.DataFrame, cache: ModelCache) -> ProcessingResult:
-        segments = self.get_value_from_cache(cache, 'segments')
-        alpha = self.get_value_from_cache(cache, 'alpha', required = True)
-        confidence = self.get_value_from_cache(cache, 'confidence', required = True)
-        enable_bounds = Bound(self.get_value_from_cache(cache, 'enableBounds') or 'ALL')
+        cache_object = AnomalyCache.from_json(cache)
+        segments = cache_object.get_segments()
+        enable_bounds =  cache_object.get_enable_bounds()
 
         # TODO: exponential_smoothing should return dataframe with related timestamps
-        smoothed_data = utils.exponential_smoothing(dataframe['value'], alpha)
+        smoothed_data = utils.exponential_smoothing(dataframe['value'], cache_object.alpha)
 
-        lower_bound = smoothed_data - confidence
-        upper_bound = smoothed_data + confidence
+        lower_bound = smoothed_data - cache_object.confidence
+        upper_bound = smoothed_data + cache_object.confidence
 
         if segments is not None:
-            segments: List[AnomalyDetectorSegment] = map(AnomalyDetectorSegment.from_json, segments)
-            seasonality = self.get_value_from_cache(cache, 'seasonality', required = True)
-            assert seasonality > 0, \
-                f'{self.analytic_unit_id} got invalid seasonality {seasonality}'
-
             data_start_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])
 
-            time_step = self.get_value_from_cache(cache, 'timeStep', required = True)
-
             for segment in segments:
-                seasonality_index = seasonality // time_step
+                seasonality_index = cache_object.seasonality // cache_object.time_step
                 # TODO: move it to utils and add tests
-                seasonality_offset = self.get_seasonality_offset(segment.from_timestamp, seasonality, data_start_time, time_step)
+                seasonality_offset = self.get_seasonality_offset(
+                    segment.from_timestamp,
+                    cache_object.seasonality,
+                    data_start_time,
+                    cache_object.time_step
+                )
                 segment_data = pd.Series(segment.data)
 
                 lower_bound = self.add_season_to_data(lower_bound, segment_data, seasonality_offset, seasonality_index, Bound.LOWER)

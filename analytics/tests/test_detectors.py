@@ -1,8 +1,8 @@
 import unittest
 import pandas as pd
 
-from detectors import pattern_detector, threshold_detector, anomaly_detector, Bound
-from analytic_types.detector_typing import DetectionResult, ProcessingResult
+from detectors import pattern_detector, threshold_detector, anomaly_detector
+from analytic_types.detector_typing import DetectionResult, ProcessingResult, Bound
 from analytic_types.segment import Segment
 from tests.test_dataset import create_dataframe, create_list_of_timestamps
 from utils import convert_pd_timestamp_to_ms
