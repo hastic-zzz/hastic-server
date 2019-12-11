@@ -186,7 +186,7 @@ class TestAnomalyDetector(unittest.TestCase):
         dataframe = create_dataframe(data)
         upper_bound = pd.Series([2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
         lower_bound = pd.Series([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-        segments = list(detector.detections_generator(dataframe, upper_bound, lower_bound, enable_bounds=Bound.ALL))
+        segments = list(detector.detections_generator(dataframe, upper_bound, lower_bound, enabled_bounds=Bound.ALL))
 
         segments_borders = list(map(lambda s: [s.from_timestamp, s.to_timestamp], segments))
         self.assertEqual(segments_borders, [[timestamps[2], timestamps[2]], [timestamps[4], timestamps[8]]])
