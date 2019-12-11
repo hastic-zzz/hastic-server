@@ -22,12 +22,12 @@ class AnomalyCache:
         if seasonality != None and seasonality < 0:
             raise ValueError(f'Can`t create AnomalyCache: got invalid seasonality {seasonality}')
         self.seasonality = seasonality
-        self.segments = ExtendedList(list(map(AnomalyDetectorSegment.from_json, segments))) if segments != None else []
+        self.segments = SerializableList(list(map(AnomalyDetectorSegment.from_json, segments))) if segments != None else []
         self.time_step = time_step
 
     def set_segments(self, segments: List[AnomalyDetectorSegment]):
         if len(segments) > 0:
-            self.segments = ExtendedList(segments)
+            self.segments = SerializableList(segments)
 
     def get_segments(self) -> Optional[List[AnomalyDetectorSegment]]:
         if self.segments != None:
@@ -37,7 +37,7 @@ class AnomalyCache:
 
     def append_segment(self, segment: AnomalyDetectorSegment):
         if len(self.segments) == 0:
-            self.segments = ExtendedList[segment.to_json()]
+            self.segments = SerializableList([segment.to_json()])
         else:
             self.segments.append(segment.to_json())
 
@@ -45,6 +45,6 @@ class AnomalyCache:
         return Bound(self.enable_bounds)
 
 
-class ExtendedList(list):
+class SerializableList(list):
     def to_json(self):
         return list(map(lambda s: s.to_json(), self))

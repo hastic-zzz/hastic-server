@@ -1,4 +1,3 @@
-import inspect
 from inspect import signature, Parameter
 from functools import wraps
 from typing import Optional
