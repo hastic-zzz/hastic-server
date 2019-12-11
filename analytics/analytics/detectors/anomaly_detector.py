@@ -128,7 +128,7 @@ class AnomalyDetector(ProcessingDetector):
                 break
 
         seasonality = 0
-        if len(cache.segments) > 0 and cache.seasonality > 0:
+        if len(cache.segments) > 0:
             seasonality = cache.seasonality // cache.time_step
         return max(level, seasonality)
 
