@@ -1,3 +1,4 @@
+import inspect
 from inspect import signature, Parameter
 from functools import wraps
 from typing import Optional
@@ -21,6 +22,12 @@ def underscore_to_camel(name):
 def is_field_private(field_name: str) -> Optional[str]:
     m = re.match(r'_[^(__)]+__', field_name)
     return m is not None
+
+def find_to_json_methods(obj):
+    if hasattr(obj, 'to_json') == True:
+        return obj.to_json()
+    else:
+        return obj
 
 def inited_params(target_init):
     target_params = signature(target_init).parameters.values()
@@ -55,7 +62,7 @@ def JSONClass(target_class):
         where all None - values and private fileds are skipped
         """
         return {
-            underscore_to_camel(k): v for k, v in self.__dict__.items()
+            underscore_to_camel(k): find_to_json_methods(v) for k, v in self.__dict__.items()
             if v is not None and not is_field_private(k)
         }
 

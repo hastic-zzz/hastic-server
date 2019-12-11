@@ -28,7 +28,7 @@ class AnomalyDetector(ProcessingDetector):
     def train(self, dataframe: pd.DataFrame, payload: Union[list, dict], cache: Optional[ModelCache]) -> ModelCache:
         cache = AnomalyCache.from_json(payload)
         cache.time_step = utils.find_interval(dataframe)
-        segments = cache.get_segments()
+        segments = cache.segments
 
         if len(segments) > 0:
             seasonality = cache.seasonality
@@ -62,7 +62,7 @@ class AnomalyDetector(ProcessingDetector):
         data = dataframe['value']
 
         cache = AnomalyCache.from_json(cache)
-        segments = cache.get_segments()
+        segments = cache.segments
         enabled_bounds = cache.get_enabled_bounds()
 
         smoothed_data = utils.exponential_smoothing(data, cache.alpha)
@@ -128,7 +128,7 @@ class AnomalyDetector(ProcessingDetector):
                 break
 
         seasonality = 0
-        if cache.segments is not None and cache.seasonality > 0:
+        if len(cache.segments) > 0 and cache.seasonality > 0:
             seasonality = cache.seasonality // cache.time_step
         return max(level, seasonality)
 
@@ -145,7 +145,7 @@ class AnomalyDetector(ProcessingDetector):
     # TODO: remove duplication with detect()
     def process_data(self, dataframe: pd.DataFrame, cache: ModelCache) -> ProcessingResult:
         cache = AnomalyCache.from_json(cache)
-        segments = cache.get_segments()
+        segments = cache.segments
         enabled_bounds =  cache.get_enabled_bounds()
 
         # TODO: exponential_smoothing should return dataframe with related timestamps
