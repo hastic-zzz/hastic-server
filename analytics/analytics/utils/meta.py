@@ -22,7 +22,7 @@ def is_field_private(field_name: str) -> Optional[str]:
     m = re.match(r'_[^(__)]+__', field_name)
     return m is not None
 
-def find_to_json_methods(obj):
+def serialize(obj):
     if hasattr(obj, 'to_json') == True:
         return obj.to_json()
     else:
@@ -61,7 +61,7 @@ def JSONClass(target_class):
         where all None - values and private fileds are skipped
         """
         return {
-            underscore_to_camel(k): find_to_json_methods(v) for k, v in self.__dict__.items()
+            underscore_to_camel(k): serialize(v) for k, v in self.__dict__.items()
             if v is not None and not is_field_private(k)
         }
 
