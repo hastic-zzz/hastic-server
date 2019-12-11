@@ -11,7 +11,7 @@ class AnomalyCache:
         self,
         alpha: float,
         confidence: float,
-        enable_bounds: str = None,
+        enable_bounds: str,
         seasonality: Optional[int] = None,
         segments: Optional[List[Dict]] = None,
         time_step: Optional[int] = None,
@@ -29,17 +29,17 @@ class AnomalyCache:
         if len(segments) > 0:
             self.segments = list(map(lambda s: s.to_json(), segments))
 
-    def get_segments(self) -> List[AnomalyDetectorSegment]:
+    def get_segments(self) -> Optional[List[AnomalyDetectorSegment]]:
         if self.segments != None:
-            return map(AnomalyDetectorSegment.from_json, self.segments)
+            return list(map(AnomalyDetectorSegment.from_json, self.segments))
         else:
-            return None
+            return []
 
     def append_segment(self, segment: AnomalyDetectorSegment):
         if self.segments == None:
-            self.segment = [segment.to_json()]
+            self.segments = [segment.to_json()]
         else:
             self.segments.append(segment.to_json())
 
-    def get_enable_bounds(self) -> Bound:
+    def get_enabled_bounds(self) -> Bound:
         return Bound(self.enable_bounds)

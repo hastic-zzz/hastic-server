@@ -28,13 +28,13 @@ class AnomalyDetector(ProcessingDetector):
     def train(self, dataframe: pd.DataFrame, payload: Union[list, dict], cache: Optional[ModelCache]) -> ModelCache:
         cache = AnomalyCache.from_json(payload)
         cache.time_step = utils.find_interval(dataframe)
+        segments = cache.get_segments()
 
-        if cache.segments is not None:
+        if len(segments) > 0:
             seasonality = cache.seasonality
-            parsed_segments = map(Segment.from_json, cache.segments)
             prepared_segments = []
 
-            for segment in parsed_segments:
+            for segment in segments:
                 segment_len = (int(segment.to_timestamp) - int(segment.from_timestamp))
                 assert segment_len <= seasonality, \
                     f'seasonality {seasonality} must be greater than segment length {segment_len}'
@@ -63,14 +63,14 @@ class AnomalyDetector(ProcessingDetector):
 
         cache = AnomalyCache.from_json(cache)
         segments = cache.get_segments()
-        enable_bounds = cache.get_enable_bounds()
+        enabled_bounds = cache.get_enabled_bounds()
 
         smoothed_data = utils.exponential_smoothing(data, cache.alpha)
 
         lower_bound = smoothed_data - cache.confidence
         upper_bound = smoothed_data + cache.confidence
 
-        if segments is not None:
+        if len(segments) > 0:
             data_start_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])
 
             for segment in segments:
@@ -86,7 +86,7 @@ class AnomalyDetector(ProcessingDetector):
                 lower_bound = self.add_season_to_data(lower_bound, segment_data, seasonality_offset, seasonality_index, Bound.LOWER)
                 upper_bound = self.add_season_to_data(upper_bound, segment_data, seasonality_offset, seasonality_index, Bound.UPPER)
 
-        detected_segments = list(self.detections_generator(dataframe, upper_bound, lower_bound, enable_bounds))
+        detected_segments = list(self.detections_generator(dataframe, upper_bound, lower_bound, enabled_bounds))
 
         last_dataframe_time = dataframe.iloc[-1]['timestamp']
         last_detection_time = utils.convert_pd_timestamp_to_ms(last_dataframe_time)
@@ -146,7 +146,7 @@ class AnomalyDetector(ProcessingDetector):
     def process_data(self, dataframe: pd.DataFrame, cache: ModelCache) -> ProcessingResult:
         cache = AnomalyCache.from_json(cache)
         segments = cache.get_segments()
-        enable_bounds =  cache.get_enable_bounds()
+        enabled_bounds =  cache.get_enabled_bounds()
 
         # TODO: exponential_smoothing should return dataframe with related timestamps
         smoothed_data = utils.exponential_smoothing(dataframe['value'], cache.alpha)
@@ -154,7 +154,7 @@ class AnomalyDetector(ProcessingDetector):
         lower_bound = smoothed_data - cache.confidence
         upper_bound = smoothed_data + cache.confidence
 
-        if segments is not None:
+        if len(segments) > 0:
             data_start_time = utils.convert_pd_timestamp_to_ms(dataframe['timestamp'][0])
 
             for segment in segments:
@@ -177,11 +177,11 @@ class AnomalyDetector(ProcessingDetector):
         lower_bound_timeseries = list(zip(timestamps, lower_bound.values.tolist()))
         upper_bound_timeseries = list(zip(timestamps, upper_bound.values.tolist()))
 
-        if enable_bounds == Bound.ALL:
+        if enabled_bounds == Bound.ALL:
             return ProcessingResult(lower_bound_timeseries, upper_bound_timeseries)
-        elif enable_bounds == Bound.UPPER:
+        elif enabled_bounds == Bound.UPPER:
             return ProcessingResult(upper_bound = upper_bound_timeseries)
-        elif enable_bounds == Bound.LOWER:
+        elif enabled_bounds == Bound.LOWER:
             return ProcessingResult(lower_bound = lower_bound_timeseries)
 
     def add_season_to_data(self, data: pd.Series, segment: pd.Series, offset: int, seasonality: int, bound_type: Bound) -> pd.Series:
@@ -256,14 +256,14 @@ class AnomalyDetector(ProcessingDetector):
         dataframe: pd.DataFrame,
         upper_bound: pd.DataFrame,
         lower_bound: pd.DataFrame,
-        enable_bounds: Bound
+        enabled_bounds: Bound
     ) -> Generator[Segment, None, Segment]:
         in_segment = False
         segment_start = 0
         bound: Bound = None
         for idx, val in enumerate(dataframe['value'].values):
             if val > upper_bound.values[idx]:
-                if enable_bounds == Bound.UPPER or enable_bounds == Bound.ALL:
+                if enabled_bounds == Bound.UPPER or enabled_bounds == Bound.ALL:
                     if not in_segment:
                         in_segment = True
                         segment_start = dataframe['timestamp'][idx]
@@ -271,7 +271,7 @@ class AnomalyDetector(ProcessingDetector):
                     continue
 
             if val < lower_bound.values[idx]:
-                if enable_bounds == Bound.LOWER or enable_bounds == Bound.ALL:
+                if enabled_bounds == Bound.LOWER or enabled_bounds == Bound.ALL:
                     if not in_segment:
                         in_segment = True
                         segment_start = dataframe['timestamp'][idx]
