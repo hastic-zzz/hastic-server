@@ -3,9 +3,9 @@ from typing import Optional, List, Dict
 from analytic_types.segment import AnomalyDetectorSegment
 from analytic_types.detector_typing import Bound
 
-import utils.meta
+from utils.meta import JSONClass, SerializableList
 
-@utils.meta.JSONClass
+@JSONClass
 class AnomalyCache:
     def __init__(
         self,
@@ -35,8 +35,3 @@ class AnomalyCache:
 
     def get_enabled_bounds(self) -> Bound:
         return Bound(self.enable_bounds)
-
-
-class SerializableList(list):
-    def to_json(self):
-        return list(map(lambda s: s.to_json(), self))

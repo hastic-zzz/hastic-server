@@ -75,3 +75,7 @@ def JSONClass(target_class):
     target_class.to_json = to_json
     target_class.from_json = from_json
     return target_class
+
+class SerializableList(list):
+    def to_json(self):
+        return list(map(lambda s: s.to_json(), self))
