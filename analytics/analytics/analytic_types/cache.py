@@ -24,8 +24,8 @@ class AnomalyCache:
         self.seasonality = seasonality
         self.time_step = time_step
         if segments != None:
-            anomalySegments = list(map(AnomalyDetectorSegment.from_json, segments))
-            self.segments = SerializableList(anomalySegments)
+            anomaly_segments = map(AnomalyDetectorSegment.from_json, segments)
+            self.segments = SerializableList(anomaly_segments)
         else:
             self.segments = []
 
@@ -34,4 +34,5 @@ class AnomalyCache:
             self.segments = SerializableList(segments)
 
     def get_enabled_bounds(self) -> Bound:
+        #TODO: use class with to_json()
         return Bound(self.enable_bounds)
