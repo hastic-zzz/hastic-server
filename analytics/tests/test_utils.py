@@ -362,5 +362,12 @@ class TestUtils(unittest.TestCase):
                 self.assertEqual(got.from_timestamp, expected[0])
                 self.assertEqual(got.to_timestamp, expected[1])
 
+    def test_serialize(self):
+        segment_list = [Segment(100,200)]
+        serialize_list = utils.meta.SerializableList(segment_list)
+        meta_result = utils.meta.serialize(serialize_list)
+        expected_result = [{ 'from': 100, 'to': 200 }]
+        self.assertEqual(meta_result, expected_result)
+
 if __name__ == '__main__':
     unittest.main()
