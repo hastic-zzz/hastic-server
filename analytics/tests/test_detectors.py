@@ -195,6 +195,7 @@ class TestAnomalyDetector(unittest.TestCase):
         cache =  {
             'confidence': 2,
             'alpha': 0.1,
+            'enableBounds': 'ALL',
             'timeStep': 1
         }
         detector = anomaly_detector.AnomalyDetector('test_id')
