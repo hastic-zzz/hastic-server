@@ -187,5 +187,24 @@ class TestAnomalyDetector(unittest.TestCase):
         segments_borders = list(map(lambda s: [s.from_timestamp, s.to_timestamp], segments))
         self.assertEqual(segments_borders, [[timestamps[2], timestamps[2]], [timestamps[4], timestamps[8]]])
 
+    def test_consume_data(self):
+        cache =  {
+            'confidence': 2,
+            'alpha': 0.1,
+            'timeStep': 1
+        }
+        detector = anomaly_detector.AnomalyDetector('test_id')
+
+        detect_result: DetectionResult = None
+        for val in range(22):
+            value = 1 if val != 10 else 5
+            dataframe = pd.DataFrame({'value': [value], 'timestamp': [1523889000000 + val]})
+            dataframe['timestamp'] = pd.to_datetime(dataframe['timestamp'], unit='ms')
+            detect_result = detector.consume_data(dataframe, cache)
+
+        detected_segments = list(map(lambda s: {'from': s.from_timestamp, 'to': s.to_timestamp}, detect_result.segments))
+        result = [{ 'from': 1523889000010, 'to': 1523889000010 }]
+        self.assertEqual(result, detected_segments)
+
 if __name__ == '__main__':
     unittest.main()
