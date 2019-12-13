@@ -22,6 +22,12 @@ def is_field_private(field_name: str) -> Optional[str]:
     m = re.match(r'_[^(__)]+__', field_name)
     return m is not None
 
+def serialize(obj):
+    if hasattr(obj, 'to_json') == True:
+        return obj.to_json()
+    else:
+        return obj
+
 def inited_params(target_init):
     target_params = signature(target_init).parameters.values()
     if len(target_params) < 1:
@@ -55,7 +61,7 @@ def JSONClass(target_class):
         where all None - values and private fileds are skipped
         """
         return {
-            underscore_to_camel(k): v for k, v in self.__dict__.items()
+            underscore_to_camel(k): serialize(v) for k, v in self.__dict__.items()
             if v is not None and not is_field_private(k)
         }
 
@@ -69,3 +75,7 @@ def JSONClass(target_class):
     target_class.to_json = to_json
     target_class.from_json = from_json
     return target_class
+
+class SerializableList(list):
+    def to_json(self):
+        return list(map(lambda s: s.to_json(), self))

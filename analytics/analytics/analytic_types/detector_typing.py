@@ -1,9 +1,15 @@
 from analytic_types import ModelCache, TimeSeries
 from analytic_types.segment import Segment
 
+from enum import Enum
 from typing import List, Optional, Tuple
 
 import utils.meta
+
+class Bound(Enum):
+    ALL = 'ALL'
+    UPPER = 'UPPER'
+    LOWER = 'LOWER'
 
 class DetectionResult:
 

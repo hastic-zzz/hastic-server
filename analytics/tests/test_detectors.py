@@ -1,8 +1,8 @@
 import unittest
 import pandas as pd
 
-from detectors import pattern_detector, threshold_detector, anomaly_detector, Bound
-from analytic_types.detector_typing import DetectionResult, ProcessingResult
+from detectors import pattern_detector, threshold_detector, anomaly_detector
+from analytic_types.detector_typing import DetectionResult, ProcessingResult, Bound
 from analytic_types.segment import Segment
 from tests.test_dataset import create_dataframe, create_list_of_timestamps
 from utils import convert_pd_timestamp_to_ms
@@ -73,6 +73,7 @@ class TestAnomalyDetector(unittest.TestCase):
         cache =  {
             'confidence': 2,
             'alpha': 0.1,
+            'enableBounds': 'ALL',
             'timeStep': 1
         }
         detector = anomaly_detector.AnomalyDetector('test_id')
@@ -85,6 +86,7 @@ class TestAnomalyDetector(unittest.TestCase):
         cache =  {
             'confidence': 2,
             'alpha': 0.1,
+            'enableBounds': 'ALL',
             'timeStep': 1,
             'seasonality': 4,
             'segments': [{ 'from': 1523889000001, 'to': 1523889000002, 'data': [10] }]
@@ -103,6 +105,7 @@ class TestAnomalyDetector(unittest.TestCase):
         cache =  {
             'confidence': 2,
             'alpha': 0.1,
+            'enableBounds': 'ALL',
             'timeStep': 1
         }
         detector = anomaly_detector.AnomalyDetector('test_id')
@@ -135,6 +138,7 @@ class TestAnomalyDetector(unittest.TestCase):
         cache =  {
             'confidence': 2,
             'alpha': 0.1,
+            'enableBounds': 'ALL',
             'timeStep': 1,
             'seasonality': 5,
             'segments': [{ 'from': 1523889000001, 'to': 1523889000002,'data': [1] }]
@@ -182,7 +186,7 @@ class TestAnomalyDetector(unittest.TestCase):
         dataframe = create_dataframe(data)
         upper_bound = pd.Series([2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
         lower_bound = pd.Series([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-        segments = list(detector.detections_generator(dataframe, upper_bound, lower_bound, enable_bounds=Bound.ALL))
+        segments = list(detector.detections_generator(dataframe, upper_bound, lower_bound, enabled_bounds=Bound.ALL))
 
         segments_borders = list(map(lambda s: [s.from_timestamp, s.to_timestamp], segments))
         self.assertEqual(segments_borders, [[timestamps[2], timestamps[2]], [timestamps[4], timestamps[8]]])
