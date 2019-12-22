@@ -1,7 +1,6 @@
 import config
 
-import zmq
-import zmq.asyncio
+import websockets
 
 import logging
 import json
@@ -79,23 +78,22 @@ class ServerService(utils.concurrent.AsyncZmqActor):
 
     async def _run_thread(self):
         logger.info("Binding to %s ..." % config.HASTIC_SERVER_CONNECTION_STRING)
-        self.__server_socket = self._zmq_context.socket(zmq.PAIR)
-        self.__server_socket.bind(config.HASTIC_SERVER_CONNECTION_STRING)
+        self.__server_socket = await websockets.connect(config.HASTIC_SERVER_CONNECTION_STRING)
         await self.__server_socket_recv_loop()
 
     async def _on_message_to_thread(self, message: str):
-        await self.__server_socket.send_string(message)
+        await self.__server_socket.send(message)
 
     async def __server_socket_recv_loop(self):
         while not SERVER_SOCKET_RECV_LOOP_INTERRUPTED:
-            received_string = await self.__server_socket.recv_string()
+            received_string = await self.__server_socket.recv()
             if received_string == 'PING':
                 asyncio.ensure_future(self.__handle_ping())
             else:
                 asyncio.ensure_future(self._send_message_from_thread(received_string))
 
     async def __handle_ping(self):
-        await self.__server_socket.send_string('PONG')
+        await self.__server_socket.send('PONG')
 
     def __parse_message_or_save(self, text: str) -> Optional[ServerMessage]:
         try:

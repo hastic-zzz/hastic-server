@@ -72,7 +72,7 @@ export const GIT_INFO = getGitInfo();
 export const INSIDE_DOCKER = process.env.INSIDE_DOCKER !== undefined;
 export const PRODUCTION_MODE = process.env.NODE_ENV !== 'development';
 
-export const ZMQ_CONNECTION_STRING = getConfigField('HASTIC_SERVER_CONNECTION_STRING', null);
+export const HASTIC_SERVER_CONNECTION_STRING = getConfigField('HASTIC_SERVER_CONNECTION_STRING', null);
 export const HASTIC_INSTANCE_NAME = getConfigField('HASTIC_INSTANCE_NAME', os.hostname());
 
 

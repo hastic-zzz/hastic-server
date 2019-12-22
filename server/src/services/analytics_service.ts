@@ -15,12 +15,11 @@ import * as _ from 'lodash';
 export class AnalyticsService {
 
   private _alertService = new AlertService();
-  private _requester: any;
+  private _socket_server: any;
+  private _socket_connection: any;
   private _ready: boolean = false;
   private _lastAlive: Date = null;
   private _pingResponded = false;
-  private _zmqConnectionString: string = null;
-  private _ipcPath: string = null;
   private _analyticsPinger: NodeJS.Timer = null;
   private _isClosed = false;
   private _productionMode = false;
@@ -59,7 +58,7 @@ export class AnalyticsService {
 
   public async sendText(text: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      this._requester.send(text, undefined, (err: any) => {
+      this._socket_connection.send(text, undefined, (err: any) => {
         if(err) {
           console.trace(`got error while sending ${err}`);
           reject(err);
@@ -74,11 +73,7 @@ export class AnalyticsService {
     this._isClosed = true;
     console.log('Terminating analytics service...');
     clearInterval(this._analyticsPinger);
-    if(this._ipcPath !== null) {
-      console.log('Remove ipc path: ' + this._ipcPath);
-      fs.unlinkSync(this._ipcPath);
-    }
-    this._requester.close();
+    this._socket_connection.close();
     console.log('Terminating successful');
   }
 
@@ -86,23 +81,15 @@ export class AnalyticsService {
   public get lastAlive(): Date { return this._lastAlive; }
 
   private async _init() {
-    this._requester = zmq.socket('pair');
+    this._socket_server = new WebSocket.Server({ port: 8002 });
 
-    this._zmqConnectionString = config.ZMQ_CONNECTION_STRING;
-
-    if(this._zmqConnectionString.startsWith('ipc')) {
-      this._ipcPath = AnalyticsService.createIPCAddress(this._zmqConnectionString);
-    }
-
-    console.log("Binding to zmq... %s", this._zmqConnectionString);
-    this._requester.connect(this._zmqConnectionString);
-    this._requester.on("message", this._onAnalyticsMessage.bind(this));
-    console.log('Binding successful');
+    console.log("Creating websocket server ... %s", 'ws://localhost:8002');
+    this._socket_server.on("connection", this._onNewConnection.bind(this));
 
     if(this._productionMode && !this._inDocker) {
       console.log('Creating analytics process...');
       try {
-        var cp = await AnalyticsService._runAnalyticsProcess(this._zmqConnectionString);
+        var cp = await AnalyticsService._runAnalyticsProcess();
       } catch(error) {
         console.error('Can`t run analytics process: %s', error);
         return;
@@ -123,13 +110,13 @@ export class AnalyticsService {
    * @returns Creaded child process
    * @throws Process start error or first exception during python start
    */
-  private static async _runAnalyticsProcess(zmqConnectionString: string): Promise<childProcess.ChildProcess> {
+  private static async _runAnalyticsProcess(): Promise<childProcess.ChildProcess> {
     let cp: childProcess.ChildProcess;
     let cpOptions = {
       cwd: config.ANALYTICS_PATH,
       env: {
         ...process.env,
-        SERVER_CONNECTION_STRING: zmqConnectionString
+        HASTIC_SERVER_CONNECTION_STRING: config.HASTIC_SERVER_CONNECTION_STRING
       }
     };
 
@@ -190,8 +177,17 @@ export class AnalyticsService {
     console.log(msg);
     this._alertService.sendMessage(msg, WebhookType.FAILURE);
     if(this._productionMode && !this._inDocker) {
-      await AnalyticsService._runAnalyticsProcess(this._zmqConnectionString);
+      await AnalyticsService._runAnalyticsProcess();
     }
+  }
+
+  private async _onNewConnection(connection: any) {
+    if(connection !== undefined) {
+      console.error('There is already an analytics connection. Only one connection is supported');
+      return;
+    }
+    this._socket_connection = connection;
+    this._socket_connection.on("message", this._onAnalyticsMessage.bind(this));
   }
 
   private _onAnalyticsMessage(data: any) {

@@ -26,5 +26,5 @@ def get_config_field(field: str, default_val = None):
 
     raise Exception('Please configure {}'.format(field))
 
-SERVER_CONNECTION_STRING = get_config_field('HASTIC_SERVER_CONNECTION_STRING', 'ws://localhost:8002')
+HASTIC_SERVER_CONNECTION_STRING = get_config_field('HASTIC_SERVER_CONNECTION_STRING', 'ws://localhost:8002')
 LEARNING_TIMEOUT = get_config_field('LEARNING_TIMEOUT', 120)
