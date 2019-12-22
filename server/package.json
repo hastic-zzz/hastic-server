@@ -29,7 +29,6 @@
     "@types/lodash": "^4.14.116",
     "@types/mongodb": "^3.3.1",
     "@types/nedb": "^1.8.0",
-    "@types/zeromq": "^4.6.0",
     "axios": "^0.18.0",
     "babel-core": "^6.26.3",
     "babel-jest": "^23.4.2",
@@ -56,7 +55,6 @@
     "typescript": "^2.8.3",
     "url": "^0.11.0",
     "webpack": "^4.12.0",
-    "webpack-cli": "^3.0.8",
-    "zeromq": "^4.6.0"
+    "webpack-cli": "^3.0.8"
   }
 }
