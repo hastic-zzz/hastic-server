@@ -81,8 +81,7 @@ function maybeCreateDir(path: string): void {
 
 function checkDataFolders(): void {
   [
-    config.DATA_PATH,
-    config.ZMQ_IPC_PATH
+    config.DATA_PATH
   ].forEach(maybeCreateDir);
 }
 
