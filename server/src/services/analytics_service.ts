@@ -116,7 +116,7 @@ export class AnalyticsService {
       cwd: config.ANALYTICS_PATH,
       env: {
         ...process.env,
-        HASTIC_SERVER_CONNECTION_STRING: config.HASTIC_SERVER_CONNECTION_STRING
+        HASTIC_SERVER_URL: config.HASTIC_SERVER_URL
       }
     };
 
@@ -227,12 +227,6 @@ export class AnalyticsService {
       // TODO: set life limit for this ping
       this.sendText('PING');
     }, config.ANLYTICS_PING_INTERVAL);
-  }
-
-  private static createIPCAddress(zmqConnectionString: string): string {
-    let filename = zmqConnectionString.substring(6); //without 'ipc://'
-    fs.writeFileSync(filename, '');
-    return filename;
   }
 
   public get queueLength() {

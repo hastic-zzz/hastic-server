@@ -14,6 +14,5 @@ const nodemon = spawn(
   { env: env, shell: true }
 );
 
-
 nodemon.stdout.pipe(process.stdout);
 nodemon.stderr.pipe(process.stderr);

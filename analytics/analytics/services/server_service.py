@@ -77,8 +77,10 @@ class ServerService(utils.concurrent.AsyncZmqActor):
                 return server_message
 
     async def _run_thread(self):
-        logger.info("Binding to %s ..." % config.HASTIC_SERVER_CONNECTION_STRING)
-        self.__server_socket = await websockets.connect(config.HASTIC_SERVER_CONNECTION_STRING)
+        logger.info("Binding to %s ..." % config.HASTIC_SERVER_URL)
+        # TODO: reconnection on connection drop
+        # TODO: handle failed connection case
+        self.__server_socket = await websockets.connect(config.HASTIC_SERVER_URL)
         await self.__server_socket_recv_loop()
 
     async def _on_message_to_thread(self, message: str):
