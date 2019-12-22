@@ -8,6 +8,7 @@ import { ORG_ID, HASTIC_API_KEY, HASTIC_ALERT_IMAGE } from '../config';
 import axios from 'axios';
 import * as _ from 'lodash';
 
+
 const Notifier = getNotifier();
 export class Alert {
   public enabled = true;
