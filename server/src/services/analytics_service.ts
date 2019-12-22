@@ -4,7 +4,7 @@ import { WebhookType } from '../services/notification_service';
 import * as config from '../config';
 import { AlertService } from './alert_service';
 
-import WebSocket = require('ws');
+import * as WebSocket from 'ws';
 
 import * as childProcess from 'child_process'
 import * as fs from 'fs';
@@ -100,7 +100,6 @@ export class AnalyticsService {
     console.log('Start analytics pinger...');
     this._runAlalyticsPinger();
     console.log('Analytics pinger started');
-
   }
 
   /**

@@ -29,6 +29,7 @@
     "@types/lodash": "^4.14.116",
     "@types/mongodb": "^3.3.1",
     "@types/nedb": "^1.8.0",
+    "@types/ws": "^6.0.4",
     "axios": "^0.18.0",
     "babel-core": "^6.26.3",
     "babel-jest": "^23.4.2",
