@@ -4,7 +4,7 @@ import { WebhookType } from '../services/notification_service';
 import * as config from '../config';
 import { AlertService } from './alert_service';
 
-import * as zmq from 'zeromq';
+import WebSocket = require('ws');
 
 import * as childProcess from 'child_process'
 import * as fs from 'fs';
@@ -129,7 +129,7 @@ export class AnalyticsService {
       cwd: config.ANALYTICS_PATH,
       env: {
         ...process.env,
-        ZMQ_CONNECTION_STRING: zmqConnectionString
+        SERVER_CONNECTION_STRING: zmqConnectionString
       }
     };
 

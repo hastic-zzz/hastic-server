@@ -72,7 +72,7 @@ export const GIT_INFO = getGitInfo();
 export const INSIDE_DOCKER = process.env.INSIDE_DOCKER !== undefined;
 export const PRODUCTION_MODE = process.env.NODE_ENV !== 'development';
 
-export const ZMQ_CONNECTION_STRING = createZMQConnectionString();
+export const ZMQ_CONNECTION_STRING = getConfigField('HASTIC_SERVER_CONNECTION_STRING', null);
 export const HASTIC_INSTANCE_NAME = getConfigField('HASTIC_INSTANCE_NAME', os.hostname());
 
 
@@ -136,19 +136,6 @@ function getGitInfo() {
   }
   let commitHash = fs.readFileSync(branchFilename).toString().slice(0, 7);
   return { branch, commitHash };
-}
-
-function createZMQConnectionString() {
-  let zmq =`tcp://${ZMQ_HOST}:${ZMQ_DEV_PORT}`; //debug mode
-  let zmqConf = getConfigField('ZMQ_CONNECTION_STRING', null);
-  if(INSIDE_DOCKER) {
-    return zmqConf;
-  } else if(PRODUCTION_MODE) {
-    if(zmqConf === null) {
-      return 'ipc://' + `${path.join(ZMQ_IPC_PATH, process.pid.toString())}.ipc`;
-    }
-  }
-  return zmq;
 }
 
 // TODO: move to data_layer

@@ -78,9 +78,9 @@ class ServerService(utils.concurrent.AsyncZmqActor):
                 return server_message
 
     async def _run_thread(self):
-        logger.info("Binding to %s ..." % config.ZMQ_CONNECTION_STRING)
+        logger.info("Binding to %s ..." % config.HASTIC_SERVER_CONNECTION_STRING)
         self.__server_socket = self._zmq_context.socket(zmq.PAIR)
-        self.__server_socket.bind(config.ZMQ_CONNECTION_STRING)
+        self.__server_socket.bind(config.HASTIC_SERVER_CONNECTION_STRING)
         await self.__server_socket_recv_loop()
 
     async def _on_message_to_thread(self, message: str):
