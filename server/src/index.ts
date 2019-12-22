@@ -7,7 +7,7 @@ import * as AnalyticsController from './controllers/analytics_controller';
 
 import * as ProcessService from './services/process_service';
 
-import { HASTIC_PORT, PACKAGE_VERSION, GIT_INFO, ZMQ_CONNECTION_STRING, HASTIC_INSTANCE_NAME } from './config';
+import { HASTIC_PORT, PACKAGE_VERSION, GIT_INFO, HASTIC_INSTANCE_NAME } from './config';
 
 import { applyDBMigrations } from './migrations';
 
@@ -75,7 +75,6 @@ async function init() {
       packageVersion: PACKAGE_VERSION,
       npmUserAgent: process.env.npm_config_user_agent,
       docker: process.env.INSIDE_DOCKER !== undefined,
-      zmqConectionString: ZMQ_CONNECTION_STRING,
       serverPort: HASTIC_PORT,
       git: GIT_INFO,
       activeWebhooks: activeWebhooks.length,
