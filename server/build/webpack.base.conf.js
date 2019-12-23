@@ -23,7 +23,6 @@ module.exports = {
     minimize: false
   },
   plugins: [
-    
   ],
   resolve: {
     extensions: [".ts", ".js"],
@@ -34,7 +33,8 @@ module.exports = {
   stats: {
     warningsFilter: [
       'mongodb-client-encryption',
-      'saslprep'
+      'saslprep',
+      /require_optional/
     ]
   },
   module: {
