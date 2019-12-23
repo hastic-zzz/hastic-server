@@ -67,22 +67,15 @@ class WebhookNotifier implements Notifier {
     }
   
     notification.text += `\nInstance: ${config.HASTIC_INSTANCE_NAME}`;
-  
-    let data;
-    if(config.HASTIC_WEBHOOK_TYPE === ContentType.JSON) {
-      data = JSON.stringify(notification);
-    } else if(config.HASTIC_WEBHOOK_TYPE === ContentType.URLENCODED) {
-      data = querystring.stringify(notification);
-    } else {
-      throw new Error(`Unknown webhook type: ${config.HASTIC_WEBHOOK_TYPE}`);
-    }
-  
+
+    let data = JSON.stringify(notification);
+
     // TODO: use HASTIC_WEBHOOK_SECRET
     const options = {
       method: 'POST',
       url: config.HASTIC_WEBHOOK_URL,
       data,
-      headers: { 'Content-Type': config.HASTIC_WEBHOOK_TYPE }
+      headers: { 'Content-Type': ContentType.JSON }
     };
 
     await axios(options);
