@@ -2,13 +2,8 @@ import * as AnalyticUnit from '../models/analytic_units';
 import * as config from '../config';
 
 import axios from 'axios';
-import * as querystring from 'querystring';
 import * as _ from 'lodash';
 
-enum ContentType {
-  JSON = 'application/json',
-  URLENCODED ='application/x-www-form-urlencoded'
-}
 
 export enum WebhookType {
   DETECT = 'DETECT',
@@ -70,12 +65,11 @@ class WebhookNotifier implements Notifier {
 
     let data = JSON.stringify(notification);
 
-    // TODO: use HASTIC_WEBHOOK_SECRET
     const options = {
       method: 'POST',
       url: config.HASTIC_WEBHOOK_URL,
       data,
-      headers: { 'Content-Type': ContentType.JSON }
+      headers: { 'Content-Type': 'application/json' }
     };
 
     await axios(options);
@@ -139,7 +133,7 @@ class AlertManagerNotifier implements Notifier {
       method: 'POST',
       url: `${config.HASTIC_ALERTMANAGER_URL}/api/v2/alerts`,
       data: JSON.stringify([alertData]),
-      headers: { 'Content-Type': ContentType.JSON }
+      headers: { 'Content-Type': 'application/json' }
     };
   
     // first part: send "start" request
