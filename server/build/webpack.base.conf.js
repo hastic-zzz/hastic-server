@@ -31,6 +31,12 @@ module.exports = {
       'any-promise': 'es6-promise'
     }
   },
+  stats: {
+    warningsFilter: [
+      'mongodb-client-encryption',
+      'saslprep'
+    ]
+  },
   module: {
     rules: [
       {
