@@ -62,8 +62,7 @@ class WebhookNotifier implements Notifier {
     }
   
     notification.text += `\nInstance: ${config.HASTIC_INSTANCE_NAME}`;
-
-    let data = JSON.stringify(notification);
+    const data = JSON.stringify(notification);
 
     const options = {
       method: 'POST',
