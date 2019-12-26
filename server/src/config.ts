@@ -60,8 +60,6 @@ export const HASTIC_ALERT_TYPE = getConfigField('HASTIC_ALERT_TYPE', AlertTypes.
 export const HASTIC_ALERT_IMAGE = getConfigField('HASTIC_ALERT_IMAGE', false);
 
 export const HASTIC_WEBHOOK_URL = getConfigField('HASTIC_WEBHOOK_URL', null);
-export const HASTIC_WEBHOOK_TYPE = getConfigField('HASTIC_WEBHOOK_TYPE', 'application/json');
-export const HASTIC_WEBHOOK_SECRET = getConfigField('HASTIC_WEBHOOK_SECRET', null);
 export const HASTIC_TIMEZONE_OFFSET = getTimeZoneOffset();
 
 export const HASTIC_ALERTMANAGER_URL = getConfigField('HASTIC_ALERTMANAGER_URL', null);
