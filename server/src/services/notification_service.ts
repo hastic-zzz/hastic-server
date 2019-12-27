@@ -2,13 +2,8 @@ import * as AnalyticUnit from '../models/analytic_units';
 import * as config from '../config';
 
 import axios from 'axios';
-import * as querystring from 'querystring';
 import * as _ from 'lodash';
 
-enum ContentType {
-  JSON = 'application/json',
-  URLENCODED ='application/x-www-form-urlencoded'
-}
 
 export enum WebhookType {
   DETECT = 'DETECT',
@@ -67,22 +62,13 @@ class WebhookNotifier implements Notifier {
     }
   
     notification.text += `\nInstance: ${config.HASTIC_INSTANCE_NAME}`;
-  
-    let data;
-    if(config.HASTIC_WEBHOOK_TYPE === ContentType.JSON) {
-      data = JSON.stringify(notification);
-    } else if(config.HASTIC_WEBHOOK_TYPE === ContentType.URLENCODED) {
-      data = querystring.stringify(notification);
-    } else {
-      throw new Error(`Unknown webhook type: ${config.HASTIC_WEBHOOK_TYPE}`);
-    }
-  
-    // TODO: use HASTIC_WEBHOOK_SECRET
+    const data = JSON.stringify(notification);
+
     const options = {
       method: 'POST',
       url: config.HASTIC_WEBHOOK_URL,
       data,
-      headers: { 'Content-Type': config.HASTIC_WEBHOOK_TYPE }
+      headers: { 'Content-Type': 'application/json' }
     };
 
     await axios(options);
@@ -146,7 +132,7 @@ class AlertManagerNotifier implements Notifier {
       method: 'POST',
       url: `${config.HASTIC_ALERTMANAGER_URL}/api/v2/alerts`,
       data: JSON.stringify([alertData]),
-      headers: { 'Content-Type': ContentType.JSON }
+      headers: { 'Content-Type': 'application/json' }
     };
   
     // first part: send "start" request
