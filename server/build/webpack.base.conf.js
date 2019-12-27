@@ -23,13 +23,19 @@ module.exports = {
     minimize: false
   },
   plugins: [
-    
   ],
   resolve: {
     extensions: [".ts", ".js"],
     alias: {
       'any-promise': 'es6-promise'
     }
+  },
+  stats: {
+    warningsFilter: [
+      'mongodb-client-encryption',
+      'saslprep',
+      /require_optional/
+    ]
   },
   module: {
     rules: [
