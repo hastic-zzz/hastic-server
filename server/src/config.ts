@@ -125,15 +125,22 @@ function getGitInfo() {
     return null;
   }
   const ref = fs.readFileSync(gitHeadFile).toString();
-  let branchPath = ref.indexOf(':') === -1 ? ref : ref.slice(5, -1);
-  let branch = branchPath.split('/').pop();
-  const branchFilename = `${gitRoot}/${branchPath}`;
-  if(!fs.existsSync(branchFilename)) {
-    console.error(`Can't find git branch file ${branchFilename}`);
-    return null;
+  if(ref.includes('ref')) {
+    let branchPath = ref.indexOf(':') === -1 ? ref : ref.slice(5, -1);
+    let branch = branchPath.split('/').pop();
+    const branchFilename = `${gitRoot}/${branchPath}`;
+    if(!fs.existsSync(branchFilename)) {
+      console.error(`Can't find git branch file ${branchFilename}`);
+      return null;
+    }
+    let commitHash = fs.readFileSync(branchFilename).toString().slice(0, 7);
+    return { branch, commitHash };
+  } else {
+    return {
+      branch: 'detached',
+      commitHash: ref.toString().slice(0, 7)
+    };
   }
-  let commitHash = fs.readFileSync(branchFilename).toString().slice(0, 7);
-  return { branch, commitHash };
 }
 
 function createZMQConnectionString() {
