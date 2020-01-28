@@ -28,7 +28,7 @@ async function getStatus(ctx: Router.IRouterContext) {
   }
 }
 
-async function getJson(ctx: Router.IRouterContext) {
+async function getPanelTemplate(ctx: Router.IRouterContext) {
   let panelId = ctx.request.query.panelId;
   if(panelId === undefined) {
     throw new Error('Cannot export analytic units with undefined panelId');
@@ -160,7 +160,7 @@ export var router = new Router();
 router.get('/units', getUnits);
 router.get('/status', getStatus);
 router.get('/types', getTypes);
-router.get('/json', getJson);
+router.get('/panelTemplate', getPanelTemplate);
 router.patch('/metric', updateMetric);
 router.patch('/alert', updateAlert);
 
