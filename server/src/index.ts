@@ -1,7 +1,8 @@
 import { router as analyticUnitsRouter } from './routes/analytic_units_router';
 import { router as segmentsRouter } from './routes/segments_router';
 import { router as dataRouter } from './routes/data_router';
-import { router as detectionsRouter }  from './routes/detections_router';
+import { router as detectionsRouter } from './routes/detections_router';
+import { router as panelRouter } from './routes/panel_router';
 
 import * as AnalyticsController from './controllers/analytics_controller';
 
@@ -57,6 +58,7 @@ async function init() {
   rootRouter.use('/segments', segmentsRouter.routes(), segmentsRouter.allowedMethods());
   rootRouter.use('/query', dataRouter.routes(), dataRouter.allowedMethods());
   rootRouter.use('/detections', detectionsRouter.routes(), detectionsRouter.allowedMethods());
+  rootRouter.use('/panel', panelRouter.routes(), panelRouter.allowedMethods());
 
   rootRouter.get('/', async (ctx) => {
     const activeWebhooks = await AnalyticsController.getActiveWebhooks();

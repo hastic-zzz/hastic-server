@@ -4,7 +4,7 @@ import * as DetectionSpan from '../models/detection_model';
 import * as Segment from '../models/segment_model';
 
 
-export async function exportAnalyticUnits(panelId: string): Promise<{
+export async function exportPanel(panelId: string): Promise<{
   analyticUnitTemplates: any[],
   caches: AnalyticUnitCache.AnalyticUnitCache[],
   detectionSpans: DetectionSpan.DetectionSpan[],
