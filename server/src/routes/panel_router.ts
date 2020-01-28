@@ -2,6 +2,7 @@ import { exportPanel } from '../services/export_service';
 
 import * as Router from 'koa-router';
 
+
 async function getPanelTemplate(ctx: Router.IRouterContext) {
   let panelId = ctx.request.query.panelId;
   if(panelId === undefined) {
@@ -9,7 +10,6 @@ async function getPanelTemplate(ctx: Router.IRouterContext) {
   }
 
   const json = await exportPanel(panelId);
-
   ctx.response.body = json;
 }
 
