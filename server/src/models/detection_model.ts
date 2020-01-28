@@ -106,6 +106,16 @@ export async function findMany(id: AnalyticUnitId, query?: FindManyQuery): Promi
   return spans.map(DetectionSpan.fromObject);
 }
 
+// TODO: maybe it could have a better name
+export async function findByAnalyticUnitIds(analyticUnitIds: AnalyticUnitId[]): Promise<DetectionSpan[]> {
+  const spans = await db.findMany({ analyticUnitId: { $in: analyticUnitIds } });
+  
+  if(spans === null) {
+    return [];
+  }
+  return spans.map(DetectionSpan.fromObject);
+}
+
 export async function getIntersectedSpans(
   analyticUnitId: AnalyticUnitId,
   from: number,

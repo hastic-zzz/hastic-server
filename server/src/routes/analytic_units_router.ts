@@ -2,6 +2,7 @@ import * as AnalyticsController from '../controllers/analytics_controller';
 import * as AnalyticUnit from '../models/analytic_units';
 
 import { saveAnalyticUnitFromObject } from '../controllers/analytics_controller';
+import { exportAnalyticUnits } from '../services/export_service';
 
 import * as Router from 'koa-router';
 import * as _ from 'lodash';
@@ -25,6 +26,17 @@ async function getStatus(ctx: Router.IRouterContext) {
   if(analyticUnit.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
     ctx.response.body.errorMessage = analyticUnit.error;
   }
+}
+
+async function getJson(ctx: Router.IRouterContext) {
+  let panelId = ctx.request.query.panelId;
+  if(panelId === undefined) {
+    throw new Error('Cannot export analytic units with undefined panelId');
+  }
+
+  const json = await exportAnalyticUnits(panelId);
+
+  ctx.response.body = json;
 }
 
 async function getUnits(ctx: Router.IRouterContext) {
@@ -148,6 +160,7 @@ export var router = new Router();
 router.get('/units', getUnits);
 router.get('/status', getStatus);
 router.get('/types', getTypes);
+router.get('/json', getJson);
 router.patch('/metric', updateMetric);
 router.patch('/alert', updateAlert);
 

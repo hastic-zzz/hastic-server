@@ -1,3 +1,5 @@
+import { Omit } from '../../types';
+
 import { Metric } from 'grafana-datasource-kit';
 
 
@@ -71,3 +73,25 @@ export enum DetectorType {
   ANOMALY = 'anomaly',
   THRESHOLD = 'threshold'
 };
+
+export type SerializedPanelAnalyticUnit = {
+  id: string;
+  name: string;
+  type: string;
+  alert: boolean;
+  labeledColor?: string;
+  deletedColor?: string;
+  detectorType?: DetectorType;
+  visible?: boolean;
+  collapsed?: boolean;
+}
+
+export type SerializedAnalyticUnit = Omit<SerializedPanelAnalyticUnit, 'id'> & {
+  grafanaUrl: string;
+  panelId: string;
+  metric?: Metric;
+  _id?: AnalyticUnitId;
+  lastDetectionTime?: number;
+  status?: AnalyticUnitStatus;
+  error?: string;
+}
