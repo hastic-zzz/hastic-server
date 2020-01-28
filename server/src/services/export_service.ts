@@ -12,8 +12,7 @@ export async function exportPanel(panelId: string): Promise<{
 }> {
   const analyticUnits = await AnalyticUnit.findMany({ panelId });
   const analyticUnitIds = analyticUnits.map(analyticUnit => analyticUnit.id);
-
-  let analyticUnitTemplates = analyticUnits.map(analyticUnit => analyticUnit.toTemplate());
+  const analyticUnitTemplates = analyticUnits.map(analyticUnit => analyticUnit.toTemplate());
 
   const [caches, detectionSpans, segments] = await Promise.all([
     AnalyticUnitCache.findMany({ _id: { $in: analyticUnitIds } }),
