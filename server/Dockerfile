@@ -15,7 +15,6 @@ RUN npm run build
 FROM node:8-alpine
 
 # Note: context starts in directory above (see docker-compose file)
-COPY .git /var/www/.git
 COPY server/package.json /var/www/server/
 
 WORKDIR /var/www/server

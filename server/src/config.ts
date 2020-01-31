@@ -9,6 +9,10 @@ import * as fs from 'fs';
 import * as os from 'os';
 
 
+declare const GIT_BRANCH: string;
+declare const GIT_COMMITHASH: string;
+declare const GIT_VERSION: string;
+
 let configFile = path.join(__dirname, '../../config.json');
 let configExists = fs.existsSync(configFile);
 
@@ -66,7 +70,11 @@ export const HASTIC_ALERTMANAGER_URL = getConfigField('HASTIC_ALERTMANAGER_URL',
 
 export const ANLYTICS_PING_INTERVAL = 500; // ms
 export const PACKAGE_VERSION = getPackageVersion();
-export const GIT_INFO = getGitInfo();
+export const GIT_INFO = {
+  branch: GIT_BRANCH,
+  commitHash: GIT_COMMITHASH,
+  version: GIT_VERSION
+};
 export const INSIDE_DOCKER = process.env.INSIDE_DOCKER !== undefined;
 export const PRODUCTION_MODE = process.env.NODE_ENV !== 'development';
 
@@ -114,32 +122,6 @@ function getPackageVersion() {
       console.log(`Can't find package file ${packageFile}`);
       return null;
     }
-  }
-}
-
-function getGitInfo() {
-  let gitRoot = path.join(__dirname, '../../.git');
-  let gitHeadFile = path.join(gitRoot, 'HEAD');
-  if(!fs.existsSync(gitHeadFile)) {
-    console.error(`Can't find git HEAD file ${gitHeadFile}`);
-    return null;
-  }
-  const ref = fs.readFileSync(gitHeadFile).toString();
-  if(ref.includes('ref')) {
-    let branchPath = ref.indexOf(':') === -1 ? ref : ref.slice(5, -1);
-    let branch = branchPath.split('/').pop();
-    const branchFilename = `${gitRoot}/${branchPath}`;
-    if(!fs.existsSync(branchFilename)) {
-      console.error(`Can't find git branch file ${branchFilename}`);
-      return null;
-    }
-    let commitHash = fs.readFileSync(branchFilename).toString().slice(0, 7);
-    return { branch, commitHash };
-  } else {
-    return {
-      branch: 'detached',
-      commitHash: ref.toString().slice(0, 7)
-    };
   }
 }
 
