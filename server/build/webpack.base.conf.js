@@ -2,6 +2,8 @@ const path = require('path');
 const fs = require('fs');
 
 const webpack = require('webpack');
+const GitRevisionPlugin = require('git-revision-webpack-plugin');
+const gitRevisionPlugin = new GitRevisionPlugin();
 
 
 function resolve(p) {
@@ -23,6 +25,11 @@ module.exports = {
     minimize: false
   },
   plugins: [
+    new webpack.DefinePlugin({
+      'GIT_VERSION': JSON.stringify(gitRevisionPlugin.version()),
+      'GIT_COMMITHASH': JSON.stringify(gitRevisionPlugin.commithash()),
+      'GIT_BRANCH': JSON.stringify(gitRevisionPlugin.branch()),
+    })
   ],
   resolve: {
     extensions: [".ts", ".js"],
