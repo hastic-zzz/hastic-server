@@ -75,7 +75,7 @@ export enum DetectorType {
 };
 
 export type SerializedPanelAnalyticUnit = {
-  id: string;
+  id: AnalyticUnitId;
   name: string;
   type: string;
   alert: boolean;
