@@ -4,7 +4,7 @@ FROM node:8-alpine AS build
 
 RUN apk add --no-cache curl gnupg make g++ bash python
 
-# Note: context starts in directory above (see docker-compose file)
+# Note: context starts in the directory above (see docker-compose file)
 COPY server /var/www/server
 
 WORKDIR /var/www/server
@@ -14,7 +14,7 @@ RUN npm run build
 
 FROM node:8-alpine
 
-# Note: context starts in directory above (see docker-compose file)
+# Note: context starts in the directory above (see docker-compose file)
 COPY server/package.json /var/www/server/
 
 WORKDIR /var/www/server
