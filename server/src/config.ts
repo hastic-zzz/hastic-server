@@ -8,7 +8,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
 
-
+// GIT_BRANCH, GIT_COMMITHASH, GIT_VERSION variables defined by webpack
 declare const GIT_BRANCH: string;
 declare const GIT_COMMITHASH: string;
 declare const GIT_VERSION: string;

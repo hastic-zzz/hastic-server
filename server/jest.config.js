@@ -5,9 +5,9 @@ module.exports = {
       "useBabelrc": true,
       "tsConfigFile": "tsconfig.jest.json"
     },
-  "GIT_VERSION": "test_version",
-  "GIT_COMMITHASH": "test_commit_hash",
-  "GIT_BRANCH": "test_branch"
+    "GIT_VERSION": "version",
+    "GIT_COMMITHASH": "commit_hash",
+    "GIT_BRANCH": "branch"
   },
   "transform": {
     "\\.ts": "ts-jest"
