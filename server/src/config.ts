@@ -9,6 +9,10 @@ import * as fs from 'fs';
 import * as os from 'os';
 
 
+declare const GIT_BRANCH: string;
+declare const GIT_COMMITHASH: string;
+declare const GIT_VERSION: string;
+
 let configFile = path.join(__dirname, '../../config.json');
 let configExists = fs.existsSync(configFile);
 
@@ -57,15 +61,17 @@ export const HASTIC_ALERT_TYPE = getConfigField('HASTIC_ALERT_TYPE', AlertTypes.
 export const HASTIC_ALERT_IMAGE = getConfigField('HASTIC_ALERT_IMAGE', false);
 
 export const HASTIC_WEBHOOK_URL = getConfigField('HASTIC_WEBHOOK_URL', null);
-export const HASTIC_WEBHOOK_TYPE = getConfigField('HASTIC_WEBHOOK_TYPE', 'application/json');
-export const HASTIC_WEBHOOK_SECRET = getConfigField('HASTIC_WEBHOOK_SECRET', null);
 export const HASTIC_TIMEZONE_OFFSET = getTimeZoneOffset();
 
 export const HASTIC_ALERTMANAGER_URL = getConfigField('HASTIC_ALERTMANAGER_URL', null);
 
 export const ANLYTICS_PING_INTERVAL = 500; // ms
 export const PACKAGE_VERSION = getPackageVersion();
-export const GIT_INFO = getGitInfo();
+export const GIT_INFO = {
+  branch: GIT_BRANCH,
+  commitHash: GIT_COMMITHASH,
+  version: GIT_VERSION
+};
 export const INSIDE_DOCKER = process.env.INSIDE_DOCKER !== undefined;
 export const PRODUCTION_MODE = process.env.NODE_ENV !== 'development';
 

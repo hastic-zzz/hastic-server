@@ -41,6 +41,7 @@
     "es6-promise": "^4.2.4",
     "event-stream": "3.3.4",
     "file-loader": "^1.1.11",
+    "git-revision-webpack-plugin": "^3.0.4",
     "grafana-datasource-kit": "0.1.17",
     "jest": "^23.1.1",
     "koa": "^2.0.46",
