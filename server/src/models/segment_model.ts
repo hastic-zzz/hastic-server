@@ -106,6 +106,14 @@ export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promis
   return segs.map(Segment.fromObject);
 }
 
+export async function findByAnalyticUnitIds(analyticUnitIds: AnalyticUnitId[]): Promise<any[]> {
+  const segments = await db.findMany({ analyticUnitId: { $in: analyticUnitIds } });
+  
+  if(segments === null) {
+    return [];
+  }
+  return segments.map(Segment.fromObject);
+}
 
 /**
  * If `from` and `to` are defined: @returns segments intersected with `[from; to]`

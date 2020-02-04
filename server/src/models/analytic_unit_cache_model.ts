@@ -8,6 +8,10 @@ const db = makeDBQ(Collection.ANALYTIC_UNIT_CACHES);
 // TODO: count milliseconds in index from dataset
 const MILLISECONDS_IN_INDEX = 60000;
 
+type FindManyQuery = {
+  _id: { $in: AnalyticUnitId[] }
+};
+
 export class AnalyticUnitCache {
   public constructor(
     public id: AnalyticUnitId,
@@ -63,6 +67,14 @@ export async function findById(id: AnalyticUnitId): Promise<AnalyticUnitCache | 
     return null;
   }
   return AnalyticUnitCache.fromObject(obj);
+}
+
+export async function findMany(query: FindManyQuery): Promise<AnalyticUnitCache[]> {
+  let caches = await db.findMany(query);
+  if(caches === null) {
+    return [];
+  }
+  return caches.map(cache => AnalyticUnitCache.fromObject(cache));
 }
 
 export async function create(id: AnalyticUnitId): Promise<AnalyticUnitId> {
