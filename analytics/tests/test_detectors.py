@@ -226,10 +226,22 @@ class TestAnomalyDetector(unittest.TestCase):
         peak_detector_result = detector.get_bounds_for_segment(peak_segment)
         trough_detector_result = detector.get_bounds_for_segment(trough_segment)
 
-        self.assertGreaterEqual(max(peak_detector_result[0]), expected_peak_segment_results['max_value'])
-        self.assertLessEqual(max(peak_detector_result[1]), expected_peak_segment_results['min_value'])
-        self.assertGreaterEqual(max(trough_detector_result[0]), expected_trough_segment_results['max_value'])
-        self.assertLessEqual(max(trough_detector_result[1]), expected_trough_segment_results['min_value'])
+        self.assertGreaterEqual(
+            max(peak_detector_result[0]),
+            expected_peak_segment_results['max_value']
+        )
+        self.assertLessEqual(
+            max(peak_detector_result[1]),
+            expected_peak_segment_results['min_value']
+        )
+        self.assertGreaterEqual(
+            max(trough_detector_result[0]),
+            expected_trough_segment_results['max_value']
+        )
+        self.assertLessEqual(
+            max(trough_detector_result[1]),
+            expected_trough_segment_results['min_value']
+        )
 
 if __name__ == '__main__':
     unittest.main()
