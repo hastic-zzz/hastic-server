@@ -1,4 +1,4 @@
-import { PanelTemplate } from '../models/panel_model';
+import { PanelTemplate, TemplateVariables } from '../models/panel_model';
 import { exportPanel, importPanel } from '../services/export_service';
 
 import * as Router from 'koa-router';
@@ -15,7 +15,10 @@ async function exportPanelTemplate(ctx: Router.IRouterContext) {
 } 
 
 async function importPanelTemplate(ctx: Router.IRouterContext) {
-  const panelTemplate = ctx.request.body as PanelTemplate;
+  const { panelTemplate, templateVariables } = ctx.request.body as {
+    panelTemplate: PanelTemplate, 
+    templateVariables: TemplateVariables
+  };
 
   // TODO: move to model
   if(panelTemplate.analyticUnitTemplates === undefined) {
@@ -31,7 +34,17 @@ async function importPanelTemplate(ctx: Router.IRouterContext) {
     throw new Error('Cannot import analytic units with undefined segments');
   }
 
-  await importPanel(panelTemplate);
+  if(templateVariables.grafanaUrl === undefined) {
+    throw new Error('Cannot make analytic unit from template with undefined grafanaUrl');
+  }
+  if(templateVariables.panelId === undefined) {
+    throw new Error('Cannot make analytic unit from template with undefined panelId');
+  }
+  if(templateVariables.datasourceUrl === undefined) {
+    throw new Error('Cannot make analytic unit from template with undefined datasourceUrl');
+  }
+
+  await importPanel(panelTemplate, templateVariables);
   ctx.response.status = 200;
 }
 

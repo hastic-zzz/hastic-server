@@ -13,6 +13,7 @@ import {
   create,
   remove,
   update,
+  insertMany,
   setStatus,
   setDetectionTime,
   setAlert,
@@ -26,6 +27,6 @@ export {
   AnalyticUnitId, AnalyticUnitStatus, Bound, DetectorType, ANALYTIC_UNIT_TYPES,
   createAnalyticUnitFromObject, Condition,
   findById, findMany,
-  create, remove, update,
+  create, remove, update, insertMany,
   setStatus, setDetectionTime, setAlert, setMetric
 };
