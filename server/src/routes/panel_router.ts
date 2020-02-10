@@ -21,8 +21,8 @@ async function importPanelTemplate(ctx: Router.IRouterContext) {
   };
 
   // TODO: move to model
-  if(panelTemplate.analyticUnitTemplates === undefined) {
-    throw new Error('Cannot import analytic units with undefined analyticUnitTemplates');
+  if(panelTemplate.analyticUnits === undefined) {
+    throw new Error('Cannot import analytic units with undefined analyticUnits');
   }
   if(panelTemplate.caches === undefined) {
     throw new Error('Cannot import analytic units with undefined caches');

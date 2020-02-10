@@ -18,7 +18,7 @@ export async function exportPanel(panelId: string): Promise<PanelTemplate> {
   ]);
 
   return {
-    analyticUnitTemplates,
+    analyticUnits: analyticUnitTemplates,
     caches,
     detectionSpans,
     segments
@@ -29,12 +29,12 @@ export async function importPanel(
   panelTemplate: PanelTemplate,
   variables: TemplateVariables
 ): Promise<void> {
-  panelTemplate.analyticUnitTemplates.forEach(analyticUnit => {
+  panelTemplate.analyticUnits.forEach(analyticUnit => {
     analyticUnit.grafanaUrl = variables.grafanaUrl;
     analyticUnit.panelId = variables.panelId;
     analyticUnit.metric.datasource.url = variables.datasourceUrl;
   });
-  await AnalyticUnit.insertMany(panelTemplate.analyticUnitTemplates);
+  await AnalyticUnit.insertMany(panelTemplate.analyticUnits);
   await AnalyticUnitCache.insertMany(panelTemplate.caches);
   await Segment.insertMany(panelTemplate.segments);
   await DetectionSpan.insertMany(panelTemplate.detectionSpans);
