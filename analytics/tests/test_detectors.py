@@ -247,10 +247,6 @@ class TestAnomalyDetector(unittest.TestCase):
         detector = anomaly_detector.AnomalyDetector('test_id')
         empty_segment = pd.Series([])
         same_values_segment = pd.Series([2,2,2,2,2,2])
-        expected_same_values_segment_results = {
-            'max_value': 0,
-            'min_value': 0
-        }
         empty_detector_result = detector.get_bounds_for_segment(empty_segment)
         same_values_detector_result = detector.get_bounds_for_segment(same_values_segment)
 
