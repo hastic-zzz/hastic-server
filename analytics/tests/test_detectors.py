@@ -243,5 +243,23 @@ class TestAnomalyDetector(unittest.TestCase):
             expected_trough_segment_results['min_value']
         )
 
+    def test_get_bounds_for_segment_corner_cases(self):
+        detector = anomaly_detector.AnomalyDetector('test_id')
+        empty_segment = pd.Series([])
+        same_values_segment = pd.Series([2,2,2,2,2,2])
+        expected_same_values_segment_results = {
+            'max_value': 0,
+            'min_value': 0
+        }
+        empty_detector_result = detector.get_bounds_for_segment(empty_segment)
+        same_values_detector_result = detector.get_bounds_for_segment(same_values_segment)
+
+        self.assertEqual(len(empty_detector_result[0]), 0)
+        self.assertEqual(len(empty_detector_result[1]), 0)
+        self.assertEqual(min(same_values_detector_result[0]), 0)
+        self.assertEqual(max(same_values_detector_result[0]), 0)
+        self.assertEqual(min(same_values_detector_result[1]), 0)
+        self.assertEqual(max(same_values_detector_result[1]), 0)
+
 if __name__ == '__main__':
     unittest.main()
