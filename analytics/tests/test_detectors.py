@@ -211,5 +211,51 @@ class TestAnomalyDetector(unittest.TestCase):
         result = [{ 'from': 1523889000010, 'to': 1523889000010 }]
         self.assertEqual(result, detected_segments)
 
+    def test_get_bounds_for_segment(self):
+        detector = anomaly_detector.AnomalyDetector('test_id')
+        peak_segment = pd.Series([1,2,3,4,3,2,1])
+        trough_segment = pd.Series([4,3,2,1,2,3,4])
+        expected_peak_segment_results = {
+            'max_value': 3,
+            'min_value': 1.5
+        }
+        expected_trough_segment_results = {
+            'max_value': 3.5,
+            'min_value': 2.75
+        }
+        peak_detector_result = detector.get_bounds_for_segment(peak_segment)
+        trough_detector_result = detector.get_bounds_for_segment(trough_segment)
+
+        self.assertGreaterEqual(
+            max(peak_detector_result[0]),
+            expected_peak_segment_results['max_value']
+        )
+        self.assertLessEqual(
+            max(peak_detector_result[1]),
+            expected_peak_segment_results['min_value']
+        )
+        self.assertGreaterEqual(
+            max(trough_detector_result[0]),
+            expected_trough_segment_results['max_value']
+        )
+        self.assertLessEqual(
+            max(trough_detector_result[1]),
+            expected_trough_segment_results['min_value']
+        )
+
+    def test_get_bounds_for_segment_corner_cases(self):
+        detector = anomaly_detector.AnomalyDetector('test_id')
+        empty_segment = pd.Series([])
+        same_values_segment = pd.Series([2,2,2,2,2,2])
+        empty_detector_result = detector.get_bounds_for_segment(empty_segment)
+        same_values_detector_result = detector.get_bounds_for_segment(same_values_segment)
+
+        self.assertEqual(len(empty_detector_result[0]), 0)
+        self.assertEqual(len(empty_detector_result[1]), 0)
+        self.assertEqual(min(same_values_detector_result[0]), 0)
+        self.assertEqual(max(same_values_detector_result[0]), 0)
+        self.assertEqual(min(same_values_detector_result[1]), 0)
+        self.assertEqual(max(same_values_detector_result[1]), 0)
+
 if __name__ == '__main__':
     unittest.main()
