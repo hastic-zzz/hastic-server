@@ -109,7 +109,7 @@ export async function findMany(id: AnalyticUnitId, query?: FindManyQuery): Promi
 // TODO: maybe it could have a better name
 export async function findByAnalyticUnitIds(analyticUnitIds: AnalyticUnitId[]): Promise<DetectionSpan[]> {
   const spans = await db.findMany({ analyticUnitId: { $in: analyticUnitIds } });
-  
+
   if(spans === null) {
     return [];
   }
@@ -160,6 +160,11 @@ export async function insertSpan(span: DetectionSpan): Promise<SpanId> {
   spanToInsert = new DetectionSpan(span.analyticUnitId, from, to, span.status).toObject();
 
   return db.insertOne(spanToInsert);
+}
+
+// TODO: SerializedDetectionSpan type
+export async function insertMany(detectionSpans: any[]): Promise<SpanId[]> {
+  return db.insertMany(detectionSpans);
 }
 
 export function clearSpans(analyticUnitId: AnalyticUnitId) {

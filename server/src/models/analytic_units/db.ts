@@ -1,6 +1,6 @@
 import { createAnalyticUnitFromObject } from './utils';
 import { AnalyticUnit } from './analytic_unit_model';
-import { AnalyticUnitId, FindManyQuery } from './types';
+import { AnalyticUnitId, FindManyQuery, SerializedAnalyticUnit } from './types';
 import { Collection, makeDBQ, SortingOrder } from '../../services/data_service';
 
 import { Metric } from 'grafana-datasource-kit';
@@ -39,6 +39,10 @@ export async function findMany(query: FindManyQuery): Promise<AnalyticUnit[]> {
 export async function create(unit: AnalyticUnit): Promise<AnalyticUnitId> {
   let obj = unit.toObject();
   return db.insertOne(obj);
+}
+
+export async function insertMany(analyticUnits: SerializedAnalyticUnit[]): Promise<AnalyticUnitId[]> {
+  return db.insertMany(analyticUnits);
 }
 
 export async function remove(id: AnalyticUnitId): Promise<void> {
