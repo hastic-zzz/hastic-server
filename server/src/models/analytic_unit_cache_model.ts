@@ -8,6 +8,10 @@ const db = makeDBQ(Collection.ANALYTIC_UNIT_CACHES);
 // TODO: count milliseconds in index from dataset
 const MILLISECONDS_IN_INDEX = 60000;
 
+type FindManyQuery = {
+  _id: { $in: AnalyticUnitId[] }
+};
+
 export class AnalyticUnitCache {
   public constructor(
     public id: AnalyticUnitId,
@@ -65,9 +69,22 @@ export async function findById(id: AnalyticUnitId): Promise<AnalyticUnitCache | 
   return AnalyticUnitCache.fromObject(obj);
 }
 
+export async function findMany(query: FindManyQuery): Promise<AnalyticUnitCache[]> {
+  let caches = await db.findMany(query);
+  if(caches === null) {
+    return [];
+  }
+  return caches.map(cache => AnalyticUnitCache.fromObject(cache));
+}
+
 export async function create(id: AnalyticUnitId): Promise<AnalyticUnitId> {
   let cache = new AnalyticUnitCache(id);
   return db.insertOne(cache.toObject());
+}
+
+// TODO: SerializedCache type
+export async function insertMany(caches: any[]): Promise<AnalyticUnitId[]> {
+  return db.insertMany(caches);
 }
 
 export async function setData(id: AnalyticUnitId, data: any) {

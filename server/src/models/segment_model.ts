@@ -106,6 +106,14 @@ export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promis
   return segs.map(Segment.fromObject);
 }
 
+export async function findByAnalyticUnitIds(analyticUnitIds: AnalyticUnitId[]): Promise<any[]> {
+  const segments = await db.findMany({ analyticUnitId: { $in: analyticUnitIds } });
+  
+  if(segments === null) {
+    return [];
+  }
+  return segments.map(Segment.fromObject);
+}
 
 /**
  * If `from` and `to` are defined: @returns segments intersected with `[from; to]`
@@ -222,6 +230,11 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
     addedIds,
     removedIds: segmentIdsToRemove
   };
+}
+
+// TODO: SerializedSegment type
+export async function insertMany(segments: any[]): Promise<SegmentId[]> {
+  return db.insertMany(segments);
 }
 
 export async function setSegmentsDeleted(ids: SegmentId[]) {

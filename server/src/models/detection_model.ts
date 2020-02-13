@@ -106,6 +106,16 @@ export async function findMany(id: AnalyticUnitId, query?: FindManyQuery): Promi
   return spans.map(DetectionSpan.fromObject);
 }
 
+// TODO: maybe it could have a better name
+export async function findByAnalyticUnitIds(analyticUnitIds: AnalyticUnitId[]): Promise<DetectionSpan[]> {
+  const spans = await db.findMany({ analyticUnitId: { $in: analyticUnitIds } });
+
+  if(spans === null) {
+    return [];
+  }
+  return spans.map(DetectionSpan.fromObject);
+}
+
 export async function getIntersectedSpans(
   analyticUnitId: AnalyticUnitId,
   from: number,
@@ -150,6 +160,11 @@ export async function insertSpan(span: DetectionSpan): Promise<SpanId> {
   spanToInsert = new DetectionSpan(span.analyticUnitId, from, to, span.status).toObject();
 
   return db.insertOne(spanToInsert);
+}
+
+// TODO: SerializedDetectionSpan type
+export async function insertMany(detectionSpans: any[]): Promise<SpanId[]> {
+  return db.insertMany(detectionSpans);
 }
 
 export function clearSpans(analyticUnitId: AnalyticUnitId) {
