@@ -209,7 +209,7 @@ class AnomalyDetector(ProcessingDetector):
     def get_bound_for_segment(self, segment: pd.Series, bound: Bound) -> pd.Series:
         '''
         segment is divided by the median to determine its top or bottom part
-        part is smoothed and raised above the segment or down under the segment
+        the part is smoothed and raised above the segment or put down below the segment
         '''
         if len(segment) < 2:
             return segment
