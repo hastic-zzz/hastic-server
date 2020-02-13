@@ -234,6 +234,7 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
 
 // TODO: SerializedSegment type
 export async function insertMany(segments: any[]): Promise<SegmentId[]> {
+  console.log('segments', JSON.stringify(segments));
   return db.insertMany(segments);
 }
 

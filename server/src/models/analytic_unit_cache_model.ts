@@ -84,6 +84,7 @@ export async function create(id: AnalyticUnitId): Promise<AnalyticUnitId> {
 
 // TODO: SerializedCache type
 export async function insertMany(caches: any[]): Promise<AnalyticUnitId[]> {
+  console.log('caches', JSON.stringify(caches));
   return db.insertMany(caches);
 }
 
