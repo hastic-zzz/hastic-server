@@ -211,7 +211,7 @@ class TestAnomalyDetector(unittest.TestCase):
         result = [{ 'from': 1523889000010, 'to': 1523889000010 }]
         self.assertEqual(result, detected_segments)
 
-    def test_get_bound_for_segment(self):
+    def test_get_segment_bound(self):
         detector = anomaly_detector.AnomalyDetector('test_id')
         peak_segment = pd.Series([1,2,3,4,3,2,1])
         trough_segment = pd.Series([4,3,2,1,2,3,4])
@@ -223,10 +223,10 @@ class TestAnomalyDetector(unittest.TestCase):
             'max_value': 3.5,
             'min_value': 2.75
         }
-        peak_detector_result_upper = detector.get_bound_for_segment(peak_segment, Bound.UPPER)
-        peak_detector_result_lower = detector.get_bound_for_segment(peak_segment, Bound.LOWER)
-        trough_detector_result_upper = detector.get_bound_for_segment(trough_segment, Bound.UPPER)
-        trough_detector_result_lower = detector.get_bound_for_segment(trough_segment, Bound.LOWER)
+        peak_detector_result_upper = detector.get_segment_bound(peak_segment, Bound.UPPER)
+        peak_detector_result_lower = detector.get_segment_bound(peak_segment, Bound.LOWER)
+        trough_detector_result_upper = detector.get_segment_bound(trough_segment, Bound.UPPER)
+        trough_detector_result_lower = detector.get_segment_bound(trough_segment, Bound.LOWER)
 
         self.assertGreaterEqual(
             max(peak_detector_result_upper),
@@ -245,14 +245,14 @@ class TestAnomalyDetector(unittest.TestCase):
             expected_trough_segment_results['min_value']
         )
 
-    def test_get_bound_for_segment_corner_cases(self):
+    def test_get_segment_bound_corner_cases(self):
         detector = anomaly_detector.AnomalyDetector('test_id')
         empty_segment = pd.Series([])
         same_values_segment = pd.Series([2,2,2,2,2,2])
-        empty_detector_result_upper = detector.get_bound_for_segment(empty_segment, Bound.UPPER)
-        empty_detector_result_lower = detector.get_bound_for_segment(empty_segment, Bound.LOWER)
-        same_values_detector_result_upper = detector.get_bound_for_segment(same_values_segment, Bound.UPPER)
-        same_values_detector_result_lower = detector.get_bound_for_segment(same_values_segment, Bound.LOWER)
+        empty_detector_result_upper = detector.get_segment_bound(empty_segment, Bound.UPPER)
+        empty_detector_result_lower = detector.get_segment_bound(empty_segment, Bound.LOWER)
+        same_values_detector_result_upper = detector.get_segment_bound(same_values_segment, Bound.UPPER)
+        same_values_detector_result_lower = detector.get_segment_bound(same_values_segment, Bound.LOWER)
 
         self.assertEqual(len(empty_detector_result_upper), 0)
         self.assertEqual(len(empty_detector_result_lower), 0)

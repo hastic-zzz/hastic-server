@@ -196,17 +196,17 @@ class AnomalyDetector(ProcessingDetector):
                 continue
             if (idx - offset) % seasonality == 0:
                 if bound_type == Bound.UPPER:
-                    upper_segment_bound = self.get_bound_for_segment(segment, Bound.UPPER)
+                    upper_segment_bound = self.get_segment_bound(segment, Bound.UPPER)
                     data = data.add(pd.Series(upper_segment_bound.values, index = segment.index + idx), fill_value = 0)
                 elif bound_type == Bound.LOWER:
-                    lower_segment_bound = self.get_bound_for_segment(segment, Bound.LOWER)
+                    lower_segment_bound = self.get_segment_bound(segment, Bound.LOWER)
                     data = data.add(pd.Series(lower_segment_bound.values * -1, index = segment.index + idx), fill_value = 0)
                 else:
                     raise ValueError(f'unknown bound type: {bound_type.value}')
 
         return data[:len_smoothed_data]
 
-    def get_bound_for_segment(self, segment: pd.Series, bound: Bound) -> pd.Series:
+    def get_segment_bound(self, segment: pd.Series, bound: Bound) -> pd.Series:
         '''
         segment is divided by the median to determine its top or bottom part
         the part is smoothed and raised above the segment or put down below the segment
