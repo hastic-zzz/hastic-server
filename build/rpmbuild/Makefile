@@ -1,3 +1,3 @@
 all:
-	docker build  -t amper43/hastic-rpmbuilder .
-	docker push amper43/hastic-rpmbuilder
+	docker build  -t hastic/rpmbuilder .
+	docker push hastic/rpmbuilder
