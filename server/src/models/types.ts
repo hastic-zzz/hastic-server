@@ -26,16 +26,22 @@ export type AnomalyData = {
   confidence: number,
   enableBounds: string,
   timeStep: number,
-  segments: SerializedSegment[]
+  segments: AnomalySegment[]
 };
 
 export type ThresholdData = {
   value: number,
   condition: string,
   timeStep: number
-}
+};
 
 export type PatternData = GeneralPatternData & Partial<ModelData>;
+
+export type AnomalySegment = {
+  from: number,
+  to: number,
+  data: number[]
+};
 
 export type GeneralPatternData = {
   timeStep: number,
