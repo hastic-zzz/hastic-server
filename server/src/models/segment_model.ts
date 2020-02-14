@@ -3,6 +3,8 @@ import * as AnalyticUnit from '../models/analytic_units';
 import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import { Collection, makeDBQ } from '../services/data_service';
 
+import { SerializedSegment } from './types';
+
 import * as _ from 'lodash';
 
 let db = makeDBQ(Collection.SEGMENTS);
@@ -232,9 +234,7 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
   };
 }
 
-// TODO: SerializedSegment type
-export async function insertMany(segments: any[]): Promise<SegmentId[]> {
-  console.log('segments', JSON.stringify(segments));
+export async function insertMany(segments: SerializedSegment[]): Promise<SegmentId[]> {
   return db.insertMany(segments);
 }
 

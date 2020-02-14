@@ -1,6 +1,8 @@
 import { AnalyticUnitId } from './analytic_units';
 import { Collection, makeDBQ } from '../services/data_service';
 
+import { SerializedDetectionSpan } from './types';
+
 import * as _ from 'lodash';
 
 let db = makeDBQ(Collection.DETECTION_SPANS);
@@ -162,9 +164,7 @@ export async function insertSpan(span: DetectionSpan): Promise<SpanId> {
   return db.insertOne(spanToInsert);
 }
 
-// TODO: SerializedDetectionSpan type
-export async function insertMany(detectionSpans: any[]): Promise<SpanId[]> {
-  console.log('detectionSpans', JSON.stringify(detectionSpans));
+export async function insertMany(detectionSpans: SerializedDetectionSpan[]): Promise<SpanId[]> {
   return db.insertMany(detectionSpans);
 }
 

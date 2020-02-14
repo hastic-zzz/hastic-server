@@ -1,6 +1,8 @@
 import { AnalyticUnitId, AnalyticUnit } from './analytic_units';
 import { Collection, makeDBQ } from '../services/data_service';
 
+import { SerializedCache } from './types';
+
 import * as _ from 'lodash';
 
 
@@ -82,9 +84,7 @@ export async function create(id: AnalyticUnitId): Promise<AnalyticUnitId> {
   return db.insertOne(cache.toObject());
 }
 
-// TODO: SerializedCache type
-export async function insertMany(caches: any[]): Promise<AnalyticUnitId[]> {
-  console.log('caches', JSON.stringify(caches));
+export async function insertMany(caches: SerializedCache[]): Promise<AnalyticUnitId[]> {
   return db.insertMany(caches);
 }
 
