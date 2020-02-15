@@ -86,7 +86,7 @@ export class AnalyticsService {
   private async _init() {
     this._socket_server = new WebSocket.Server({ port: 8002 });
 
-    // TODO: move this to config
+    // TODO: move this to config OR use existing http server
     console.log("Creating websocket server ... %s", 'ws://localhost:8002');
 
     this._socket_server.on("connection", this._onNewConnection.bind(this));
@@ -186,7 +186,7 @@ export class AnalyticsService {
   private async _onNewConnection(connection: WebSocket) {
     if(connection !== undefined) {
       console.error('There is already an analytics connection. Only one connection is supported');
-      connection.send("I am sorry, but I busy. I have another analytics.");
+      connection.send("I am sorry, but I`m busy. I have another analytics.");
       return;
     }
     // TODO: log connection id

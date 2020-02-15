@@ -16,20 +16,23 @@ import * as Koa from 'koa';
 import * as Router from 'koa-router';
 import * as bodyParser from 'koa-bodyparser';
 
+import { createServer, Server } from 'http';
+
 init();
 
 async function init() {
   await applyDBMigrations();
-  AnalyticsController.init();
-  ProcessService.registerExitHandler(AnalyticsController.terminate);
 
   const app = new Koa();
+  let httpServer = createServer(app.callback());
+
+  AnalyticsController.init();
+  ProcessService.registerExitHandler(AnalyticsController.terminate);
 
   app.on('error', (err, ctx) => {
     console.log('got server error:');
     console.log(err);
   });
-
 
   app.use(bodyParser());
 
@@ -88,7 +91,17 @@ async function init() {
     .use(rootRouter.routes())
     .use(rootRouter.allowedMethods());
 
-  app.listen(HASTIC_PORT, () => {
+  httpServer.listen({ port: HASTIC_PORT, exclusive: true }, () => {
     console.log(`Server is running on :${HASTIC_PORT}`);
   });
+
+
+
+  httpServer.on('error', (err) => {
+    console.error(`Http server error: ${err.message}`)
+  })
+  // app.listen(, () => {
+
+  // });
+
 }
