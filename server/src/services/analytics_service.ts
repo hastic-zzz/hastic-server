@@ -16,7 +16,7 @@ export class AnalyticsService {
 
   private _alertService = new AlertService();
   private _socket_server: any;
-  private _socket_connection: any;
+  private _socket_connection: WebSocket = null;
   private _ready: boolean = false;
   private _lastAlive: Date = null;
   private _pingResponded = false;
@@ -58,6 +58,9 @@ export class AnalyticsService {
 
   public async sendText(text: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
+      if(this._socket_connection === null) {
+        reject('Can`t send because analytics is not connected');
+      }
       this._socket_connection.send(text, undefined, (err: any) => {
         if(err) {
           console.trace(`got error while sending ${err}`);
@@ -83,7 +86,9 @@ export class AnalyticsService {
   private async _init() {
     this._socket_server = new WebSocket.Server({ port: 8002 });
 
+    // TODO: move this to config
     console.log("Creating websocket server ... %s", 'ws://localhost:8002');
+
     this._socket_server.on("connection", this._onNewConnection.bind(this));
 
     if(this._productionMode && !this._inDocker) {
@@ -97,9 +102,6 @@ export class AnalyticsService {
       console.log('Analytics creating successful, pid: %s', cp.pid);
     }
 
-    console.log('Start analytics pinger...');
-    this._runAlalyticsPinger();
-    console.log('Analytics pinger started');
   }
 
   /**
@@ -179,18 +181,25 @@ export class AnalyticsService {
       await AnalyticsService._runAnalyticsProcess();
     }
   }
-
-  private async _onNewConnection(connection: any) {
+  
+  // cb(this: WebSocket, socket: WebSocket, request: http.IncomingMessage)
+  private async _onNewConnection(connection: WebSocket) {
     if(connection !== undefined) {
       console.error('There is already an analytics connection. Only one connection is supported');
+      connection.send("I am sorry, but I busy. I have another analytics.");
       return;
     }
+    // TODO: log connection id
+    console.log('Got new analytic connection');
     this._socket_connection = connection;
     this._socket_connection.on("message", this._onAnalyticsMessage.bind(this));
+
+    console.log('Start analytics pinger...');
+    this._runAlalyticsPinger();
+    console.log('Analytics pinger started');
   }
 
   private _onAnalyticsMessage(data: any) {
-
     let text = data.toString();
     if(text === 'PONG') {
       this._pingResponded = true;
