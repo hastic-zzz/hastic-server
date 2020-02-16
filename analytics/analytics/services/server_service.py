@@ -22,6 +22,7 @@ SERVER_SOCKET_RECV_LOOP_INTERRUPTED = False
 @utils.meta.JSONClass
 class ServerMessage:
     def __init__(self, method: str, payload: object = None, request_id: int = None):
+        # TODO: add error type / case
         self.method = method
         self.payload = payload
         self.request_id = request_id
@@ -34,6 +35,7 @@ class ServerService(utils.concurrent.AsyncZmqActor):
         self.__aiter_inited = False
         self.__request_next_id = 1
         self.__responses = dict()
+        # TODO: add self.__server_socket definition with type
         self.start()
 
     async def send_message_to_server(self, message: ServerMessage):

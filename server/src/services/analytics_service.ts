@@ -94,6 +94,7 @@ export class AnalyticsService {
     console.log("Creating websocket server ... %s", 'ws://localhost:8002');
 
     this._socket_server.on("connection", this._onNewConnection.bind(this));
+    // TODO: handle connection drop
 
     if(this._productionMode && !this._inDocker) {
       console.log('Creating analytics process...');
@@ -188,7 +189,7 @@ export class AnalyticsService {
   
   // cb(this: WebSocket, socket: WebSocket, request: http.IncomingMessage)
   private async _onNewConnection(connection: WebSocket) {
-    if(connection !== null) {
+    if(this._socket_connection !== null) {
       console.error('There is already an analytics connection. Only one connection is supported');
       // we send error and then close connection
       connection.send(JSON.stringify({
