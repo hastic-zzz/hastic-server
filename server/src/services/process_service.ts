@@ -1,4 +1,4 @@
-
+import * as config from '../config';
 
 var exitHandlers: (() => void)[] = [];
 var exitHandled = false;
@@ -18,9 +18,16 @@ function exitHandler(options: any, err?: any) {
   }
   exitHandled = true;
   for(let i = 0; i < exitHandlers.length; i++) {
-    exitHandlers[i]();
+    try {
+      exitHandlers[i]();
+    } catch(e) {
+      console.error('Got error during exit: ' + e);
+      if(e instanceof Error && !config.PRODUCTION_MODE) {
+        console.error(e.stack);
+      }
+    }
   }
-  console.log('process exit');
+  console.log('process exited successfully');
   process.exit();
 }
 
