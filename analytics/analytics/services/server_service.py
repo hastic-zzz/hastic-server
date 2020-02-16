@@ -33,9 +33,10 @@ class ServerService(utils.concurrent.AsyncZmqActor):
     def __init__(self):
         super(ServerService, self).__init__()
         self.__aiter_inited = False
+        # this typing doesn't help vscode, maybe there is a mistake
+        self.__server_socket: Optional[websockets.Connect] = None
         self.__request_next_id = 1
         self.__responses = dict()
-        # TODO: add self.__server_socket definition with type
         self.start()
 
     async def send_message_to_server(self, message: ServerMessage):
@@ -80,9 +81,7 @@ class ServerService(utils.concurrent.AsyncZmqActor):
 
     async def _run_thread(self):
         logger.info("Binding to %s ..." % config.HASTIC_SERVER_URL)
-        # TODO: reconnection on connection drop
-        # TODO: handle failed connection case
-        self.__server_socket = await websockets.connect(config.HASTIC_SERVER_URL)
+        # TODO: consider to use async context for socket
         await self.__server_socket_recv_loop()
 
     async def _on_message_to_thread(self, message: str):
@@ -90,13 +89,34 @@ class ServerService(utils.concurrent.AsyncZmqActor):
 
     async def __server_socket_recv_loop(self):
         while not SERVER_SOCKET_RECV_LOOP_INTERRUPTED:
-            received_string = await self.__server_socket.recv()
+            received_string = await self.__reconnect_recv()
             if received_string == 'PING':
                 asyncio.ensure_future(self.__handle_ping())
             else:
                 asyncio.ensure_future(self._send_message_from_thread(received_string))
+    
+    async def __reconnect_recv(self) -> str:
+        # TODO: reconnection on connection drop
+        # TODO: handle failed connection case
+        while not SERVER_SOCKET_RECV_LOOP_INTERRUPTED:
+            try:
+                if self.__server_socket is None:
+                    c = await websockets.connect(config.HASTIC_SERVER_URL)
+                    first_message = await c.recv()
+                    if first_message == 'EALREADYEXISTING':
+                        raise ConnectionError('Can`t connect as a second analytics')
+                    self.__server_socket = c
+                received_string = await self.__server_socket.recv()
+                return received_string
+            except ConnectionRefusedError:
+                self.__server_socket = None
+                # TODO: move to config
+                print('connection is refused, trying to reconnect in 3 seconds')
+                await asyncio.sleep(3000)
+        raise InterruptedError()
 
     async def __handle_ping(self):
+        # TODO: self.__server_socket can be None
         await self.__server_socket.send('PONG')
 
     def __parse_message_or_save(self, text: str) -> Optional[ServerMessage]:

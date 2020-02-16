@@ -190,12 +190,10 @@ export class AnalyticsService {
   // cb(this: WebSocket, socket: WebSocket, request: http.IncomingMessage)
   private async _onNewConnection(connection: WebSocket) {
     if(this._socket_connection !== null) {
-      console.error('There is already an analytics connection. Only one connection is supported');
+      // TODO: use buildin websocket validator
+      console.error('There is already an analytics connection. Only one connection is supported.');
       // we send error and then close connection
-      connection.send(JSON.stringify({
-        error: 'ALREADY_EXISTING', 
-        message: "I have another analytics."
-      }), () => { connection.close(); });
+      connection.send('EALREADYEXISTING', () => { connection.close(); });
       return;
     }
     // TODO: log connection id
