@@ -188,9 +188,13 @@ export class AnalyticsService {
   
   // cb(this: WebSocket, socket: WebSocket, request: http.IncomingMessage)
   private async _onNewConnection(connection: WebSocket) {
-    if(connection !== undefined) {
+    if(connection !== null) {
       console.error('There is already an analytics connection. Only one connection is supported');
-      connection.send("I am sorry, but I`m busy. I have another analytics.");
+      // we send error and then close connection
+      connection.send(JSON.stringify({
+        error: 'ALREADY_EXISTING', 
+        message: "I have another analytics."
+      }), () => { connection.close(); });
       return;
     }
     // TODO: log connection id
