@@ -75,9 +75,13 @@ export class AnalyticsService {
   public close() {
     this._isClosed = true;
     console.log('Terminating analytics service...');
-    clearInterval(this._analyticsPinger);
-    this._socket_connection.close();
-    console.log('Terminating successful');
+    if(this._analyticsPinger !== null) {
+      clearInterval(this._analyticsPinger);
+    }
+    if(this._socket_connection !== null) {
+      this._socket_connection.close();
+    }
+    console.log('Termination successful');
   }
 
   public get ready(): boolean { return this._ready; }
