@@ -22,7 +22,7 @@ function exitHandler(options: any, err?: any) {
       exitHandlers[i]();
     } catch(e) {
       console.error('Got error during exit: ' + e);
-      if(e instanceof Error && !config.PRODUCTION_MODE) {
+      if(!config.PRODUCTION_MODE && e instanceof Error) {
         console.error(e.stack);
       }
     }
