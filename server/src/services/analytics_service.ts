@@ -200,8 +200,11 @@ export class AnalyticsService {
     console.log('Got new analytic connection');
     this._socket_connection = connection;
     this._socket_connection.on("message", this._onAnalyticsMessage.bind(this));
+    // TODO: implement closing
+    // this._socket_connection.on("close")
 
     console.log('Start analytics pinger...');
+    // TODO: use websockets buildin pinger
     this._runAlalyticsPinger();
     console.log('Analytics pinger started');
   }

@@ -96,8 +96,6 @@ class ServerService(utils.concurrent.AsyncZmqActor):
                 asyncio.ensure_future(self._send_message_from_thread(received_string))
     
     async def __reconnect_recv(self) -> str:
-        # TODO: reconnection on connection drop
-        # TODO: handle failed connection case
         while not SERVER_SOCKET_RECV_LOOP_INTERRUPTED:
             try:
                 if self.__server_socket is None:
@@ -106,13 +104,20 @@ class ServerService(utils.concurrent.AsyncZmqActor):
                     if first_message == 'EALREADYEXISTING':
                         raise ConnectionError('Can`t connect as a second analytics')
                     self.__server_socket = c
-                received_string = await self.__server_socket.recv()
+                try:
+                    received_string = await self.__server_socket.recv()
+                except websockets.ConnectionClosedError:
+                    self.__server_socket = None
+                    print('lost connection, trying to reconnect')
+                    continue
                 return received_string
             except ConnectionRefusedError:
+                # TODO: this logic increates number of ThreadPoolExecutor
                 self.__server_socket = None
+                reconnect_delay = 3
                 # TODO: move to config
-                print('connection is refused, trying to reconnect in 3 seconds')
-                await asyncio.sleep(3000)
+                print('connection is refused, trying to reconnect in %s seconds' % reconnect_delay)
+                await asyncio.sleep(reconnect_delay)
         raise InterruptedError()
 
     async def __handle_ping(self):
