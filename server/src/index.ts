@@ -95,13 +95,12 @@ async function init() {
     console.log(`Server is running on :${HASTIC_PORT}`);
   });
 
-
-
   httpServer.on('error', (err) => {
     console.error(`Http server error: ${err.message}`)
-  })
-  // app.listen(, () => {
+  });
 
-  // });
+  ProcessService.registerExitHandler(() => {
+    httpServer.close();
+  });
 
 }
