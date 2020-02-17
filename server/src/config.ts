@@ -76,7 +76,8 @@ export const GIT_INFO = {
 export const INSIDE_DOCKER = process.env.INSIDE_DOCKER !== undefined;
 export const PRODUCTION_MODE = process.env.NODE_ENV !== 'development';
 
-export const HASTIC_SERVER_URL = getConfigField('HASTIC_SERVER_URL', null);
+// TODO: maybe rename it to "HASTIC_SERVER_ANALYTICS_URL"
+export const HASTIC_SERVER_URL = getConfigField('HASTIC_SERVER_URL', 'ws://localhost:8002');
 export const HASTIC_INSTANCE_NAME = getConfigField('HASTIC_INSTANCE_NAME', os.hostname());
 
 
