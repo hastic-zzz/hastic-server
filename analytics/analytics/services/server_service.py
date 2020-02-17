@@ -105,7 +105,9 @@ class ServerService(utils.concurrent.AsyncZmqActor):
                         raise ConnectionError('Can`t connect as a second analytics')
                 return await self.__server_socket.recv()
             except (ConnectionRefusedError, websockets.ConnectionClosedError):
-                # TODO: this logic increates the number of ThreadPoolExecutor, need to close __server_socket
+                if not self.__server_socket is None:
+                    self.__server_socket.close()
+                # TODO: this logic increases  the number of ThreadPoolExecutor
                 self.__server_socket = None
                 # TODO: move to config
                 reconnect_delay = 3
