@@ -99,24 +99,17 @@ class ServerService(utils.concurrent.AsyncZmqActor):
         while not SERVER_SOCKET_RECV_LOOP_INTERRUPTED:
             try:
                 if self.__server_socket is None:
-                    c = await websockets.connect(config.HASTIC_SERVER_URL)
-                    first_message = await c.recv()
+                    self.__server_socket = await websockets.connect(config.HASTIC_SERVER_URL)
+                    first_message = await self.__server_socket.recv()
                     if first_message == 'EALREADYEXISTING':
                         raise ConnectionError('Can`t connect as a second analytics')
-                    self.__server_socket = c
-                try:
-                    received_string = await self.__server_socket.recv()
-                except websockets.ConnectionClosedError:
-                    self.__server_socket = None
-                    print('lost connection, trying to reconnect')
-                    continue
-                return received_string
-            except ConnectionRefusedError:
-                # TODO: this logic increates number of ThreadPoolExecutor
+                return await self.__server_socket.recv()
+            except (ConnectionRefusedError, websockets.ConnectionClosedError):
+                # TODO: this logic increates the number of ThreadPoolExecutor, need to close __server_socket
                 self.__server_socket = None
-                reconnect_delay = 3
                 # TODO: move to config
-                print('connection is refused, trying to reconnect in %s seconds' % reconnect_delay)
+                reconnect_delay = 3
+                print('connection is refused or lost, trying to reconnect in %s seconds' % reconnect_delay)
                 await asyncio.sleep(reconnect_delay)
         raise InterruptedError()
 

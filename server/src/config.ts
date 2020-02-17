@@ -66,7 +66,7 @@ export const HASTIC_TIMEZONE_OFFSET = getTimeZoneOffset();
 
 export const HASTIC_ALERTMANAGER_URL = getConfigField('HASTIC_ALERTMANAGER_URL', null);
 
-export const ANLYTICS_PING_INTERVAL = 500; // ms
+export const ANALYTICS_PING_INTERVAL = 500; // ms
 export const PACKAGE_VERSION = getPackageVersion();
 export const GIT_INFO = {
   branch: GIT_BRANCH,

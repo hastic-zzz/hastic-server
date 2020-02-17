@@ -20,7 +20,7 @@ export class AnalyticsService {
   private _ready: boolean = false;
   private _lastAlive: Date = null;
   private _pingResponded = false;
-  private _analyticsPinger: NodeJS.Timer = null;
+  private _analyticsPinger: NodeJS.Timeout = null;
   private _isClosed = false;
   private _productionMode = false;
   private _inDocker = false;
@@ -70,18 +70,6 @@ export class AnalyticsService {
         }
       });
     });
-  }
-
-  public close() {
-    this._isClosed = true;
-    console.log('Terminating analytics service...');
-    if(this._analyticsPinger !== null) {
-      clearInterval(this._analyticsPinger);
-    }
-    if(this._socket_connection !== null) {
-      this._socket_connection.close();
-    }
-    console.log('Termination successful');
   }
 
   public get ready(): boolean { return this._ready; }
@@ -178,37 +166,6 @@ export class AnalyticsService {
     this._alertService.sendMessage(msg, WebhookType.RECOVERY);
   }
 
-  private async _onAnalyticsDown() {
-    const msg = 'Analytics is down';
-    console.log(msg);
-    this._alertService.sendMessage(msg, WebhookType.FAILURE);
-    if(this._productionMode && !this._inDocker) {
-      await AnalyticsService._runAnalyticsProcess();
-    }
-  }
-  
-  // cb(this: WebSocket, socket: WebSocket, request: http.IncomingMessage)
-  private async _onNewConnection(connection: WebSocket) {
-    if(this._socket_connection !== null) {
-      // TODO: use buildin websocket validator
-      console.error('There is already an analytics connection. Only one connection is supported.');
-      // we send error and then close connection
-      connection.send('EALREADYEXISTING', () => { connection.close(); });
-      return;
-    }
-    // TODO: log connection id
-    console.log('Got new analytic connection');
-    this._socket_connection = connection;
-    this._socket_connection.on("message", this._onAnalyticsMessage.bind(this));
-    // TODO: implement closing
-    // this._socket_connection.on("close")
-
-    console.log('Start analytics pinger...');
-    // TODO: use websockets buildin pinger
-    this._runAlalyticsPinger();
-    console.log('Analytics pinger started');
-  }
-
   private _onAnalyticsMessage(data: any) {
     let text = data.toString();
     if(text === 'PONG') {
@@ -231,24 +188,81 @@ export class AnalyticsService {
     }
     this._onMessage(AnalyticsMessage.fromObject(response));
   }
+  
+  // cb(this: WebSocket, socket: WebSocket, request: http.IncomingMessage)
+  private async _onNewConnection(connection: WebSocket) {
+    if(this._socket_connection !== null) {
+      // TODO: use buildin websocket validator
+      console.error('There is already an analytics connection. Only one connection is supported.');
+      // we send error and then close connection
+      connection.send('EALREADYEXISTING', () => { connection.close(); });
+      return;
+    }
+    // TODO: log connection id
+    console.log('Got new analytic connection');
+    this._socket_connection = connection;
+    this._socket_connection.on("message", this._onAnalyticsMessage.bind(this));
+    // TODO: implement closing
+    this._socket_connection.on("close", this._onAnalyticsDown.bind(this));
 
-  private async _runAlalyticsPinger() {
+    console.log('Start analytics pinger...');
+    // TODO: use websockets buildin pinger
+    this._runAlalyticsPinger();
+    console.log('Analytics pinger started');
+  }
+
+  private async _onAnalyticsDown() {
+    if(!this._ready) {
+      // it's possible that ping is too slow and connection is closed
+      return;
+    }
+    this._stopAlalyticsPinger();
+    if(this._socket_connection !== null) {
+      this._socket_connection.close();
+      this._socket_connection = null;
+    }
+    this._ready = false;
+    const msg = 'Analytics is down';
+    console.log(msg);
+    this._alertService.sendMessage(msg, WebhookType.FAILURE);
+    if(this._productionMode && !this._inDocker) {
+      await AnalyticsService._runAnalyticsProcess();
+    }
+  }
+
+  private _runAlalyticsPinger() {
     this._analyticsPinger = setInterval(() => {
       if(this._isClosed) {
         return;
       }
       if(!this._pingResponded && this._ready) {
-        this._ready = false;
         this._onAnalyticsDown();
       }
       this._pingResponded = false;
       // TODO: set life limit for this ping
       this.sendText('PING');
-    }, config.ANLYTICS_PING_INTERVAL);
+    }, config.ANALYTICS_PING_INTERVAL);
+  }
+
+  private _stopAlalyticsPinger() {
+    if(this._analyticsPinger !== null) {
+      clearInterval(this._analyticsPinger);
+    }
+    this._analyticsPinger = null;
   }
 
   public get queueLength() {
     return this._queue.length;
+  }
+
+  public close() {
+    this._isClosed = true;
+    console.log('Terminating analytics service...');
+    this._stopAlalyticsPinger();
+    if(this._socket_connection !== null) {
+      this._socket_connection.close();
+    }
+    console.log('Termination successful');
   }
 
 }
