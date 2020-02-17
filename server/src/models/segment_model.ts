@@ -3,14 +3,22 @@ import * as AnalyticUnit from '../models/analytic_units';
 import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import { Collection, makeDBQ } from '../services/data_service';
 
-import { SerializedSegment } from './types';
-
 import * as _ from 'lodash';
 
 let db = makeDBQ(Collection.SEGMENTS);
 
 
 export type SegmentId = string;
+
+export type SerializedSegment = {
+  analyticUnitId: string,
+  from: number,
+  to: number,
+  labeled: boolean,
+  deleted: boolean,
+  id?: string,
+  message?: string
+};
 
 export class Segment {
   constructor(

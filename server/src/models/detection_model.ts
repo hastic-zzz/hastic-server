@@ -1,8 +1,6 @@
 import { AnalyticUnitId } from './analytic_units';
 import { Collection, makeDBQ } from '../services/data_service';
 
-import { SerializedDetectionSpan } from './types';
-
 import * as _ from 'lodash';
 
 let db = makeDBQ(Collection.DETECTION_SPANS);
@@ -14,6 +12,14 @@ export enum DetectionStatus {
 }
 
 export type SpanId = string;
+
+export type SerializedDetectionSpan = {
+  analyticUnitId: string,
+  from: number,
+  to: number,
+  status: string,
+  id?: string
+};
 
 /**
  * Detection-span represents the state of dataset segment:
