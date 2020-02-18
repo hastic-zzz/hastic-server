@@ -13,7 +13,7 @@ from analytic_types import AnalyticUnitId, TimeSeries
 from analytic_types.learning_info import LearningInfo
 
 @utils.meta.JSONClass
-class DropModelState(ModelState):
+class StairModelState(ModelState):
 
     def __init__(
         self,
@@ -55,20 +55,20 @@ class StairModel(Model):
         for segment in deleted_segments:
             segment_cent_index = segment.center_index
             delete_pattern_timestamp.append(segment.pattern_timestamp)
-            deleted_drop = utils.get_interval(data, segment_cent_index, window_size)
-            deleted_drop = utils.subtract_min_without_nan(deleted_drop)
-            del_conv_drop = scipy.signal.fftconvolve(deleted_drop, self.state.pattern_model)
-            if len(del_conv_drop): del_conv_list.append(max(del_conv_drop))
+            deleted_stair = utils.get_interval(data, segment_cent_index, window_size)
+            deleted_stair = utils.subtract_min_without_nan(deleted_stair)
+            del_conv_stair = scipy.signal.fftconvolve(deleted_stair, self.state.pattern_model)
+            if len(del_conv_stair): del_conv_list.append(max(del_conv_stair))
 
         self._update_fiting_result(self.state, learning_info.confidence, convolve_list, del_conv_list)
-        self.state.drop_height = int(min(learning_info.pattern_height, default = 1))
-        self.state.drop_length = int(max(learning_info.pattern_width, default = 1))
+        self.state.stair_height = int(min(learning_info.pattern_height, default = 1))
+        self.state.stair_length = int(max(learning_info.pattern_width, default = 1))
 
     def do_detect(self, dataframe: pd.DataFrame) -> TimeSeries:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
-        possible_drops = utils.find_drop(data, self.state.drop_height, self.state.drop_length + 1)
-        result = self.__filter_detection(possible_drops, data)
+        possible_stairs = self.find_stair(data, self.state.stair_height, self.state.stair_length + 1)
+        result = self.__filter_detection(possible_stairs, data)
         return [(val - 1, val + 1) for val in result]
 
     def __filter_detection(self, segments: List[int], data: list):
