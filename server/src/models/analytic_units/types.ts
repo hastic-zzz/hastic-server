@@ -73,25 +73,3 @@ export enum DetectorType {
   ANOMALY = 'anomaly',
   THRESHOLD = 'threshold'
 };
-
-export type SerializedPanelAnalyticUnit = {
-  id: AnalyticUnitId;
-  name: string;
-  type: string;
-  alert: boolean;
-  labeledColor?: string;
-  deletedColor?: string;
-  detectorType?: DetectorType;
-  visible?: boolean;
-  collapsed?: boolean;
-}
-
-export type SerializedAnalyticUnit = Omit<SerializedPanelAnalyticUnit, 'id'> & {
-  grafanaUrl: string;
-  panelId: string;
-  metric?: Metric;
-  _id?: AnalyticUnitId;
-  lastDetectionTime?: number;
-  status?: AnalyticUnitStatus;
-  error?: string;
-}
