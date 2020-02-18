@@ -1,5 +1,3 @@
-import { Omit } from '../../types';
-
 import { Metric } from 'grafana-datasource-kit';
 
 
