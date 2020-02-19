@@ -29,13 +29,52 @@ export async function importPanel(
   panelTemplate: PanelTemplate,
   variables: TemplateVariables
 ): Promise<void> {
+  const oldAnalyticUnitIds = panelTemplate.analyticUnits.map(analyticUnit => analyticUnit._id);
+
   panelTemplate.analyticUnits.forEach(analyticUnit => {
+    analyticUnit._id = undefined;
     analyticUnit.grafanaUrl = variables.grafanaUrl;
     analyticUnit.panelId = variables.panelId;
     analyticUnit.metric.datasource.url = variables.datasourceUrl;
   });
-  await AnalyticUnit.insertMany(panelTemplate.analyticUnits);
-  await AnalyticUnitCache.insertMany(panelTemplate.caches);
-  await Segment.insertMany(panelTemplate.segments);
-  await DetectionSpan.insertMany(panelTemplate.detectionSpans);
+
+  const newAnalyticUnitIds = await AnalyticUnit.insertMany(panelTemplate.analyticUnits);
+
+  const oldToNewAnalyticUnitIdsMapping = new Map<AnalyticUnit.AnalyticUnitId, AnalyticUnit.AnalyticUnitId>();
+  if(newAnalyticUnitIds.length !== oldAnalyticUnitIds.length) {
+    throw new Error(`
+      Something went wrong while inserting analytic units:
+      inserted ${newAnalyticUnitIds.length} analytic units out of ${oldAnalyticUnitIds.length}
+    `);
+  }
+
+  for(let i = 0; i < newAnalyticUnitIds.length; i++) {
+    oldToNewAnalyticUnitIdsMapping.set(oldAnalyticUnitIds[i], newAnalyticUnitIds[i]);
+  }
+
+  const newCaches = panelTemplate.caches.map(
+    cache => ({
+      ...cache,
+      id: oldToNewAnalyticUnitIdsMapping.get(cache.id)
+    })
+  );
+  const newSegments = panelTemplate.segments.map(
+    segment => ({
+      ...segment,
+      analyticUnitId: oldToNewAnalyticUnitIdsMapping.get(segment.analyticUnitId),
+      id: undefined
+    })
+  );
+  const newDetectionSpans = panelTemplate.detectionSpans.map(
+    span => ({
+      ...span,
+      analyticUnitId: oldToNewAnalyticUnitIdsMapping.get(span.analyticUnitId)
+    })
+  );
+
+  await Promise.all([
+    AnalyticUnitCache.insertMany(newCaches),
+    Segment.insertMany(newSegments),
+    DetectionSpan.insertMany(newDetectionSpans)
+  ]);
 }
