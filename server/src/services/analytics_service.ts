@@ -15,7 +15,7 @@ import * as _ from 'lodash';
 export class AnalyticsService {
 
   private _alertService = new AlertService();
-  private _socket_server: any;
+  private _socket_server: WebSocket.Server;
   private _socket_connection: WebSocket = null;
   private _ready: boolean = false;
   private _lastAlive: Date = null;
