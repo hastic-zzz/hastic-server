@@ -5,6 +5,8 @@ import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import * as DetectionSpan from '../models/detection_model';
 import * as Segment from '../models/segment_model';
 
+import * as _ from 'lodash';
+
 
 export async function exportPanel(panelId: string): Promise<PanelTemplate> {
   const analyticUnits = await AnalyticUnit.findMany({ panelId });
@@ -40,7 +42,6 @@ export async function importPanel(
 
   const newAnalyticUnitIds = await AnalyticUnit.insertMany(panelTemplate.analyticUnits);
 
-  const oldToNewAnalyticUnitIdsMapping = new Map<AnalyticUnit.AnalyticUnitId, AnalyticUnit.AnalyticUnitId>();
   if(newAnalyticUnitIds.length !== oldAnalyticUnitIds.length) {
     throw new Error(`
       Something went wrong while inserting analytic units:
@@ -48,9 +49,9 @@ export async function importPanel(
     `);
   }
 
-  for(let i = 0; i < newAnalyticUnitIds.length; i++) {
-    oldToNewAnalyticUnitIdsMapping.set(oldAnalyticUnitIds[i], newAnalyticUnitIds[i]);
-  }
+  const oldToNewAnalyticUnitIdsMapping = new Map<AnalyticUnit.AnalyticUnitId, AnalyticUnit.AnalyticUnitId>(
+    _.zip(oldAnalyticUnitIds, newAnalyticUnitIds)
+  );
 
   const newCaches = panelTemplate.caches.map(
     cache => ({
