@@ -28,10 +28,10 @@ type TaskResult = {
   error?: any
 };
 type DetectionResult = {
-  cache: any,
+  cache?: any,
   segments: any[],
   lastDetectionTime: number,
-  analyticUnitId: string
+  analyticUnitId?: string
 };
 // TODO: move TableTimeSeries to grafana-datasource-kit
 // TODO: TableTimeSeries is bad name
