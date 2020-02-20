@@ -41,7 +41,7 @@ export async function create(unit: AnalyticUnit): Promise<AnalyticUnitId> {
   return db.insertOne(obj);
 }
 
-export async function insertMany(analyticUnits: any[]): Promise<AnalyticUnitId[]> {
+export async function insertMany(analyticUnits: AnalyticUnit[]): Promise<AnalyticUnitId[]> {
   return db.insertMany(analyticUnits);
 }
 
