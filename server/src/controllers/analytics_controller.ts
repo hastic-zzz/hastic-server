@@ -18,21 +18,8 @@ import * as _ from 'lodash';
 
 const SECONDS_IN_MINUTE = 60;
 
-// TODO: enum for status, task
-type TaskResult = {
-  _id: string,
-  status: string,
-  payload: any,
-  task?: string,
-  analyticUnitId?: string,
-  error?: any
-};
-type DetectionResult = {
-  cache?: any,
-  segments: any[],
-  lastDetectionTime: number,
-  analyticUnitId?: string
-};
+type TaskResult = any;
+type DetectionResult = any;
 // TODO: move TableTimeSeries to grafana-datasource-kit
 // TODO: TableTimeSeries is bad name
 type TableTimeSeries = { values: [number, number][], columns: string[] };
@@ -56,7 +43,6 @@ let detectionsCount: number = 0;
 
 
 function onTaskResult(taskResult: TaskResult) {
-  console.log('tusk result', taskResult);
   let id = taskResult._id;
   if(id === undefined) {
     throw new Error('id of task is undefined');
@@ -78,7 +64,6 @@ function onTaskResult(taskResult: TaskResult) {
  * @returns IDs of segments inserted into DB if there was no merging
  */
 export async function onDetect(detectionResult: DetectionResult): Promise<Segment.SegmentId[]> {
-  console.log('detectionResult', detectionResult);
   detectionsCount++;
   let id = detectionResult.analyticUnitId;
   let payload = await processDetectionResult(id, detectionResult);
@@ -100,7 +85,6 @@ export async function onDetect(detectionResult: DetectionResult): Promise<Segmen
  * Sends a webhook if it's needed
  */
 async function onPushDetect(detectionResult: DetectionResult): Promise<void> {
-  console.log('detectionResult', detectionResult);
   const analyticUnit = await AnalyticUnit.findById(detectionResult.analyticUnitId);
   const segments = await onDetect(detectionResult);
   if(!_.isEmpty(segments) && analyticUnit.alert) {
@@ -460,7 +444,6 @@ async function processDetectionResult(analyticUnitId: AnalyticUnit.AnalyticUnitI
     segments: Segment.Segment[],
     cache: any
   }> {
-  console.log('detectionResult', detectionResult);
   if(detectionResult.segments === undefined || !Array.isArray(detectionResult.segments)) {
     throw new Error(`Missing segments in result or it is corrupted: ${JSON.stringify(detectionResult)}`);
   }
