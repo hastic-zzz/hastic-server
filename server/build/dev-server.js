@@ -1,4 +1,5 @@
 const { spawn } = require('child_process');
+const nodemon = require('nodemon');
 
 const webpack = spawn('webpack', ['--config', 'build/webpack.dev.conf.js'], {
   stdio: 'inherit',
@@ -8,12 +9,9 @@ const webpack = spawn('webpack', ['--config', 'build/webpack.dev.conf.js'], {
 var env = Object.create(process.env);
 env.LOG_LEVEL = 'debug';
 
-const nodemon = spawn(
-  'nodemon',
-  ['--exec', '"node --inspect dist/server-dev.js"'],
-  { env: env, shell: true }
-);
-
-
-nodemon.stdout.pipe(process.stdout);
-nodemon.stderr.pipe(process.stderr);
+nodemon({ env, script: 'dist/server-dev.js' })
+  .on('start', function () {
+    console.log('nodemon started');
+  }).on('crash', function () {
+    console.log('hastic-server crashed');
+  });
