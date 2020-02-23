@@ -162,7 +162,6 @@ export async function insertSpan(span: DetectionSpan): Promise<SpanId> {
   return db.insertOne(spanToInsert);
 }
 
-// TODO: SerializedDetectionSpan type
 export async function insertMany(detectionSpans: any[]): Promise<SpanId[]> {
   return db.insertMany(detectionSpans);
 }
