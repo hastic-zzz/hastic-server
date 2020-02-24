@@ -1,7 +1,6 @@
 services:
   - docker
 
-
 matrix:
   include:
     - language: node_js
@@ -21,9 +20,6 @@ matrix:
         - pip install -r requirements.txt
       script:
         - python -m unittest discover
-
-script:
-  - make
 
 notifications:
   email: false
