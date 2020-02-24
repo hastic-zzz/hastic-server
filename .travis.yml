@@ -13,6 +13,16 @@ matrix:
         - npm install
       script:
         - npm test
+    - language: node_js
+      node_js:
+        - "6.14"
+      env:
+        - CXX=g++-4.8
+      before_script:
+        - cd server
+        - npm install
+      script:
+        - npm run build
     - language: python
       python: 3.6.6
       before_script:
