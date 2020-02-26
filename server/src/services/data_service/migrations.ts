@@ -7,7 +7,7 @@
   Note: do not import code from other modules here because it can be changed
 */
 
-import { Collection, makeDBQ } from './data_service';
+import { Collection, makeDBQ } from './index';
 
 import * as _ from 'lodash';
 
