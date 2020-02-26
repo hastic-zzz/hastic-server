@@ -48,8 +48,8 @@ class JumpModel(StairModel):
         Find jump indexes
         '''
         j_list = []
-        for i in range(len(data)-lenght-1):
-            for x in range(1, lenght):
+        for i in range(len(data)-length-1):
+            for x in range(1, length):
                 if(data[i + x] > data[i] + height):
                     j_list.append(i)
         return(j_list)
