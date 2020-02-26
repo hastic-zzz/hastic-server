@@ -3,7 +3,7 @@ from pandas import DataFrame
 from typing import Optional, Union, List
 
 from analytic_types import ModelCache, TimeSeries, AnalyticUnitId
-from analytic_types.detector_typing import DetectionResult, ProcessingResult
+from analytic_types.detector import DetectionResult, ProcessingResult
 from analytic_types.segment import Segment
 
 
