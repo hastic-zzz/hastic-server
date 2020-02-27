@@ -1,5 +1,5 @@
-import { getDbQueryWrapper, dbCollection, DBType } from './data_layer';
-import * as config from '../config';
+import { getDbQueryWrapper, dbCollection, DBType } from '../data_layer';
+import * as config from '../../config';
 
 import * as nedb from 'nedb';
 import * as fs from 'fs';

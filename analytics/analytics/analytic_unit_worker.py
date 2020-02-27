@@ -9,7 +9,7 @@ import utils
 from utils import get_intersected_chunks, get_chunks, prepare_data
 
 from analytic_types import ModelCache, TimeSeries
-from analytic_types.detector_typing import DetectionResult
+from analytic_types.detector import DetectionResult
 
 logger = logging.getLogger('AnalyticUnitWorker')
 
