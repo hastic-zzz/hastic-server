@@ -46,6 +46,7 @@ class DropModel(StairModel):
         '''
         Find drop indexes
         '''
+        #TODO: refactor and move method to stair_model
         indexes = []
         for i in range(len(data)-length-1):
             for x in range(1, length):
