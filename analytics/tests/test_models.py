@@ -1,13 +1,7 @@
 import unittest
 import pandas as pd
 import numpy as np 
-from utils import prepare_data
 import models
-import random
-import scipy.signal
-from typing import List
-
-from analytic_types.segment import Segment
 
 class TestModel(unittest.TestCase):
 
