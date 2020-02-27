@@ -6,7 +6,7 @@ import numpy as np
 from typing import Optional, List
 
 from analytic_types import ModelCache, AnalyticUnitId
-from analytic_types.detector_typing import DetectionResult, ProcessingResult
+from analytic_types.detector import DetectionResult, ProcessingResult
 from analytic_types.segment import Segment
 from detectors import ProcessingDetector
 from time import time

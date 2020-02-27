@@ -10,7 +10,7 @@ import * as ProcessService from './services/process_service';
 
 import { HASTIC_PORT, PACKAGE_VERSION, GIT_INFO, HASTIC_INSTANCE_NAME } from './config';
 
-import { applyDBMigrations } from './migrations';
+import { applyDBMigrations } from './services/data_service/migrations';
 
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
