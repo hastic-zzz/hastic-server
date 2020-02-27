@@ -2,14 +2,11 @@ from models import Model, ModelState, AnalyticSegment
 
 import scipy.signal
 from scipy.fftpack import fft
-from scipy.signal import argrelextrema
-from scipy.stats import gaussian_kde
-from typing import Optional, List, Tuple
+from typing import Optional, List
 import utils
 import utils.meta
-import numpy as np
 import pandas as pd
-from analytic_types import AnalyticUnitId, TimeSeries
+from analytic_types import TimeSeries
 from analytic_types.learning_info import LearningInfo
 
 @utils.meta.JSONClass
