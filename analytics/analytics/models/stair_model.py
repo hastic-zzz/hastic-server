@@ -67,7 +67,7 @@ class StairModel(Model):
     def do_detect(self, dataframe: pd.DataFrame) -> TimeSeries:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
-        possible_stairs = self.find_stair(data, self.state.stair_height, self.state.stair_length + 1)
+        possible_stairs = self.get_stair_indexes(data, self.state.stair_height, self.state.stair_length + 1)
         result = self.__filter_detection(possible_stairs, data)
         return [(val - 1, val + 1) for val in result]
 

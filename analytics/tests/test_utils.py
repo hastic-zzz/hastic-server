@@ -137,28 +137,6 @@ class TestUtils(unittest.TestCase):
         patterns_list = [[1, 1, 1], [2, 2, 2],[3,3,3]]
         result = [2.0, 2.0, 2.0]
         self.assertEqual(utils.get_av_model(patterns_list), result)
-
-    def test_find_jump_nan_data(self):
-        data = [np.nan, np.nan, np.nan, np.nan]
-        data = pd.Series(data)
-        length = 2
-        height = 3
-        length_zero = 0
-        height_zero = 0
-        result = []
-        self.assertEqual(utils.find_jump(data, height, length), result)
-        self.assertEqual(utils.find_jump(data, height_zero, length_zero), result)
-    
-    def test_find_drop_nan_data(self):
-        data = [np.nan, np.nan, np.nan, np.nan]
-        data = pd.Series(data)
-        length = 2
-        height = 3
-        length_zero = 0
-        height_zero = 0
-        result = []
-        self.assertEqual(utils.find_drop(data, height, length), result)
-        self.assertEqual(utils.find_drop(data, height_zero, length_zero), result)
     
     def test_get_distribution_density(self):
         segment = [1, 1, 1, 3, 5, 5, 5]
