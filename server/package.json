@@ -5,9 +5,7 @@
   "scripts": {
     "start": "node dist/server.js",
     "dev": "NODE_ENV=development node build/dev-server.js",
-    "build-prod": "npm rebuild zeromq && webpack --config build/webpack.prod.conf.js",
-    "build-614": "webpack --config build/webpack.614.prod.conf.js",
-    "build": "npm run build-prod && npm run build-614",
+    "build": "npm rebuild zeromq && webpack --config build/webpack.prod.conf.js",
     "test": "jest --config jest.config.js"
   },
   "repository": {

@@ -1,9 +1,8 @@
-const path = require('path');
-const fs = require('fs');
-
 const webpack = require('webpack');
 const GitRevisionPlugin = require('git-revision-webpack-plugin');
 const gitRevisionPlugin = new GitRevisionPlugin();
+
+const path = require('path');
 
 
 function resolve(p) {
@@ -18,7 +17,6 @@ module.exports = {
   },
   entry: [ 'babel-polyfill', './src/index.ts' ],
   output: {
-    filename: "server-dev.js",
     path: resolve('dist')
   },
   optimization: {

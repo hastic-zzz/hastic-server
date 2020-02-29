@@ -21,6 +21,7 @@ if(!fs.existsSync(DEASYNC_NODE_MODULES_PATH)) {
 }
 
 base.mode = 'production';
+base.output.filename = "server.js";
 
 base.externals = base.externals ? base.externals : [];
 base.externals.push(
@@ -58,4 +59,3 @@ base.module.rules = [...base.module.rules, ...prodRules];
 base.plugins = [...base.plugins, ...prodPlugins];
 
 module.exports = base;
-
