@@ -22,6 +22,7 @@ if(!fs.existsSync(DEASYNC_NODE_MODULES_PATH)) {
 
 base.mode = 'production';
 base.output.filename = "server.js";
+// base.optimization.minimize = true;  UNCOMMENT IT!
 
 base.externals = base.externals ? base.externals : [];
 base.externals.push(
