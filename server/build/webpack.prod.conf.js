@@ -8,16 +8,16 @@ const nodeVersion = 'node-' + /[0-9]+/.exec(process.versions.node)[0];
 const PLATFORM = `${process.platform}-${process.arch}-${nodeVersion}`;
 
 const DEASYNC_NODE_MODULES_PATH = path.resolve(
-  'node_modules',
-  'deasync',
-  'bin',
-  PLATFORM
+	'node_modules',
+	'deasync',
+	'bin',
+	PLATFORM
 );
 
 const DEASYNC_DIST_PATH = path.resolve('dist', 'bin', PLATFORM);
 
 if(!fs.existsSync(DEASYNC_NODE_MODULES_PATH)) {
-  throw new Error(`deasync doesn't support this platform: ${PLATFORM}`);
+	throw new Error(`deasync doesn't support this platform: ${PLATFORM}`);
 }
 
 base.mode = 'production';
@@ -26,40 +26,50 @@ base.output.filename = "server.js";
 
 base.externals = base.externals ? base.externals : [];
 base.externals.push(
-  function (context, request, callback) {
-    if(request.indexOf('bindings') === 0) {
-      callback(null, `() => require('./deasync.node')`)
-    } else {
-      callback();
-    }
-  }
+	function (context, request, callback) {
+		// hack for underscore, remove it if it's not used (in nedb)
+		if(request.indexOf('underscore') !== -1) {
+			callback(null, `(function() {
+				var _ = __webpack_require__(10); // replace "10" with lodash number resolving, look in "this"
+				_.plunk = function(e, key) {
+					return _.map(e, key);
+				}
+				return _;
+			})()`);
+			// callback();
+		} else if(request.indexOf('bindings') === 0) {
+			callback(null, `() => require('./deasync.node')`)
+		} else {
+			callback();
+		}
+	}
 );
 
 const prodRules = [
-  {
-    test: /\.m?js$/,
-    use: {
-      loader: 'babel-loader'
-    }
-  },
-  {
-    test: /\.node$/,
-    use: [
-      { loader: './build/node-loader' },
-      { loader: 'file-loader', options: { name: '[name].[ext]' } }
-    ]
-  }
+	{
+		test: /\.js$/,
+		use: {
+			loader: 'babel-loader'
+		}
+	},
+	{
+		test: /\.node$/,
+		use: [
+			{ loader: './build/node-loader' },
+			{ loader: 'file-loader', options: { name: '[name].[ext]' } }
+		]
+	}
 ];
 
 let contextPathMapping = {};
 contextPathMapping[path.resolve(DEASYNC_DIST_PATH, 'deasync')] = './deasync.node';
 
 const prodPlugins = [
-  new webpack.ContextReplacementPlugin(
-    /deasync/,
-    DEASYNC_NODE_MODULES_PATH,
-    contextPathMapping
-  )
+	new webpack.ContextReplacementPlugin(
+		/deasync/,
+		DEASYNC_NODE_MODULES_PATH,
+		contextPathMapping
+	)
 ];
 
 base.module.rules = [...base.module.rules, ...prodRules];
