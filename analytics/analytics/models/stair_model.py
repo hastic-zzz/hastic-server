@@ -9,6 +9,9 @@ import pandas as pd
 from analytic_types import TimeSeries
 from analytic_types.learning_info import LearningInfo
 
+POSITIVE_SEGMENT_MEASUREMENT_ERROR = 0.2
+NEGATIVE_SEGMENT_MEASUREMENT_ERROR = 0.02
+
 @utils.meta.JSONClass
 class StairModelState(ModelState):
 
@@ -89,10 +92,10 @@ class StairModel(Model):
                     convol_data = utils.nan_to_zero(convol_data, nan_list)
                     pattern_data = utils.nan_to_zero(pattern_data, nan_list)
                 conv = scipy.signal.fftconvolve(convol_data, pattern_data)
-                upper_bound = self.state.convolve_max * 1.2
-                lower_bound = self.state.convolve_min * 0.8
-                delete_up_bound = self.state.conv_del_max * 1.02
-                delete_low_bound = self.state.conv_del_min * 0.98
+                upper_bound = self.state.convolve_max * (1 + POSITIVE_SEGMENT_MEASUREMENT_ERROR)
+                lower_bound = self.state.convolve_min * (1 - POSITIVE_SEGMENT_MEASUREMENT_ERROR)
+                delete_up_bound = self.state.conv_del_max * (1 + NEGATIVE_SEGMENT_MEASUREMENT_ERROR)
+                delete_low_bound = self.state.conv_del_min * (1 - NEGATIVE_SEGMENT_MEASUREMENT_ERROR)
                 try:
                     if max(conv) > upper_bound or max(conv) < lower_bound:
                         delete_list.append(segment)
