@@ -37,6 +37,12 @@ base.externals.push(
 
 const prodRules = [
   {
+    test: /\.m?js$/,
+    use: {
+      loader: 'babel-loader'
+    }
+  },
+  {
     test: /\.node$/,
     use: [
       { loader: './build/node-loader' },
