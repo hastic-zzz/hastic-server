@@ -4,7 +4,7 @@ import * as DetectionSpan from '../models/detection_model';
 import * as Segment from '../models/segment_model';
 
 export type GrafanaPanelTemplate = {
-  analyticUnits: AnalyticUnit.AnalyticUnit[],
+  analyticUnits: any[],
   caches: AnalyticUnitCache.AnalyticUnitCache[],
   detectionSpans: DetectionSpan.DetectionSpan[],
   segments: Segment.Segment[]
