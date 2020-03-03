@@ -30,7 +30,9 @@ module.exports = {
     })
   ],
   resolve: {
-    modules: [__dirname, "node_modules"],
+    // default `modules` value is `["node_modules"]`
+    // we change it to resolve `underscore-lodash-wrapper`
+    modules: [__dirname, 'node_modules'],
     extensions: [".ts", ".js"],
     alias: {
       'any-promise': 'es6-promise',
