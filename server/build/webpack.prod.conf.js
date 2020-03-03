@@ -4,8 +4,12 @@ const fs = require('fs');
 
 var base = require('./webpack.base.conf');
 
-const nodeVersion = 'node-' + /[0-9]+/.exec(process.versions.node)[0];
-const PLATFORM = `${process.platform}-${process.arch}-${nodeVersion}`;
+const TARGET_NODE_VERSION = process.versions.node;
+const PLATFORM = `${process.platform}-${process.arch}-node-${TARGET_NODE_VERSION.split('.')[0]}`;
+
+console.log(`Target node version: ${TARGET_NODE_VERSION}`);
+console.log(`Platform: ${PLATFORM}`);
+
 
 const DEASYNC_NODE_MODULES_PATH = path.resolve(
   'node_modules',
@@ -22,7 +26,7 @@ if(!fs.existsSync(DEASYNC_NODE_MODULES_PATH)) {
 
 base.mode = 'production';
 base.output.filename = "server.js";
-// base.optimization.minimize = true;  UNCOMMENT IT!
+base.optimization.minimize = true;
 
 base.externals = base.externals ? base.externals : [];
 base.externals.push(
@@ -39,7 +43,16 @@ const prodRules = [
   {
     test: /\.js$/,
     use: {
-      loader: 'babel-loader'
+      loader: 'babel-loader',
+      options: {
+        presets: [
+          ["env", {
+            "targets": {
+              "node": TARGET_NODE_VERSION
+            }
+          }]
+        ]
+      }
     }
   },
   {
