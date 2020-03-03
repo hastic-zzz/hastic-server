@@ -30,9 +30,11 @@ module.exports = {
     })
   ],
   resolve: {
+    modules: [__dirname, "node_modules"],
     extensions: [".ts", ".js"],
     alias: {
-      'any-promise': 'es6-promise'
+      'any-promise': 'es6-promise',
+      'underscore': 'underscore-lodash-wrapper'
     }
   },
   stats: {
