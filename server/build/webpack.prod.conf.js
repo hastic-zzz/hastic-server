@@ -28,12 +28,11 @@ base.externals = base.externals ? base.externals : [];
 base.externals.push(
 	function (context, request, callback) {
 		// hack for underscore, remove it if it's not used (in nedb)
+		// todo: use resolve instead
 		if(request.indexOf('underscore') !== -1) {
-			callback(null, `(function() {
+			return callback(null, `(function() {
 				var _ = __webpack_require__(10); // replace "10" with lodash number resolving, look in "this"
-				_.plunk = function(e, key) {
-					return _.map(e, key);
-				}
+				_.plunk = _.map;
 				return _;
 			})()`);
 			// callback();
