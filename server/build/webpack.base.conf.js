@@ -1,9 +1,8 @@
-const path = require('path');
-const fs = require('fs');
-
 const webpack = require('webpack');
 const GitRevisionPlugin = require('git-revision-webpack-plugin');
 const gitRevisionPlugin = new GitRevisionPlugin();
+
+const path = require('path');
 
 
 function resolve(p) {
@@ -18,7 +17,6 @@ module.exports = {
   },
   entry: [ 'babel-polyfill', './src/index.ts' ],
   output: {
-    filename: "server-dev.js",
     path: resolve('dist')
   },
   optimization: {
@@ -32,9 +30,13 @@ module.exports = {
     })
   ],
   resolve: {
+    // default `modules` value is `["node_modules"]`
+    // we change it to resolve `underscore-lodash-wrapper`
+    modules: [__dirname, 'node_modules'],
     extensions: [".ts", ".js"],
     alias: {
-      'any-promise': 'es6-promise'
+      'any-promise': 'es6-promise',
+      'underscore': 'underscore-lodash-wrapper'
     }
   },
   stats: {
