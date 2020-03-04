@@ -37,12 +37,9 @@ const prodRules = [
     use: {
       loader: 'babel-loader',
       options: {
+        plugins: ["transform-object-rest-spread"], // for transpiling "ws" lib
         presets: [
-          ["env", {
-            "targets": {
-              "node": TARGET_NODE_VERSION
-            }
-          }]
+          ["env", { "targets": { "node": TARGET_NODE_VERSION }}]
         ]
       }
     }
