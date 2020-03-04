@@ -1,3 +1,5 @@
+const semver = require('semver');
+
 const webpack = require('webpack');
 const path = require('path');
 const fs = require('fs');
@@ -38,6 +40,8 @@ const prodRules = [
       loader: 'babel-loader',
       options: {
         plugins: ["transform-object-rest-spread"], // for transpiling "ws" lib
+                                                   // it's necessare only for node < 8.3.0, 
+                                                   // so could be optimized
         presets: [
           ["env", { "targets": { "node": TARGET_NODE_VERSION }}]
         ]
