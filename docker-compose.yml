@@ -29,12 +29,12 @@ services:
   analytics:
     image: hastic/analytics:latest
     build: analytics
-    networks:
-      - hastic-network
-    restart: always
     environment:
       # TODO: use any port for server connection
       HASTIC_SERVER_URL: "ws://server:8002"
+    networks:
+      - hastic-network
+    restart: always
 
 volumes:
   data-volume:

@@ -11,7 +11,6 @@ services:
       GRAFANA_URL: ${GRAFANA_URL?"GRAFANA_URL variable is required"}
 
       HASTIC_DB_CONNECTION_STRING: ${HASTIC_MONGO_USER:-hastic}:${HASTIC_MONGO_PASSWORD:-password}@mongo:27017/${HASTIC_MONGO_DB:-hastic}
-      ZMQ_CONNECTION_STRING: ${ZMQ_CONNECTION_STRING:-tcp://analytics:8002}
 
       HASTIC_ALERT_TYPE: ${HASTIC_ALERT_TYPE}
       HASTIC_ALERTMANAGER_URL: ${HASTIC_ALERTMANAGER_URL}
@@ -24,6 +23,8 @@ services:
 
     ports:
       - ${HASTIC_PORT:-8000}:8000
+    networks:
+      - hastic-network
     restart: always
     depends_on:
       - mongo
@@ -31,6 +32,11 @@ services:
   analytics:
     image: hastic/analytics:latest
     build: analytics
+    environment:
+      # TODO: use any port for server connection
+      HASTIC_SERVER_URL: "ws://server:8002"
+    networks:
+      - hastic-network
     restart: always
 
   mongo:
@@ -39,6 +45,8 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${HASTIC_MONGO_ADMIN_USER:-admin}
       MONGO_INITDB_ROOT_PASSWORD: ${HASTIC_MONGO_ADMIN_PASSWORD:-password}
       MONGO_INITDB_DATABASE: ${HASTIC_MONGO_DB:-hastic}
+    networks:
+      - hastic-network
     restart: always
     volumes:
       - hastic_mongo:/data/db
@@ -48,3 +56,6 @@ services:
 volumes:
   hastic_mongo:
   hastic_mongo_config:
+
+networks:
+  hastic-network:
