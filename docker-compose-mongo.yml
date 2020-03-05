@@ -6,7 +6,6 @@ services:
       dockerfile: server/Dockerfile
       context: .
     environment:
-
       HASTIC_API_KEY: ${HASTIC_API_KEY?"HASTIC_API_KEY variable is required"}
       GRAFANA_URL: ${GRAFANA_URL?"GRAFANA_URL variable is required"}
 
