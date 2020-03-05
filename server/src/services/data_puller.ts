@@ -10,12 +10,12 @@ import { getGrafanaUrl } from '../utils/grafana';
 import { queryByMetric, GrafanaUnavailable, DatasourceUnavailable } from 'grafana-datasource-kit';
 
 import * as _ from 'lodash';
-import { WebhookType } from './notification_service';
 
 
 type MetricDataChunk = { values: [number, number][], columns: string[] };
 
 const PULL_PERIOD_MS = 5000;
+
 
 export class DataPuller {
 
@@ -49,11 +49,9 @@ export class DataPuller {
     if(unit === undefined) {
       throw Error(`data puller: can't pull undefined unit`);
     }
-
     const grafanaUrl = getGrafanaUrl(unit.grafanaUrl);
     let data = queryByMetric(unit.metric, grafanaUrl, from, to, HASTIC_API_KEY);
     return data;
-    
   }
 
   private pushData(unit: AnalyticUnit.AnalyticUnit, data: any) {
@@ -74,7 +72,7 @@ export class DataPuller {
     }
   }
 
-  //TODO: group analyticUnits by panelID and send same dataset for group
+  // TODO: group analyticUnits by panelID and send same dataset for group
   public async runPuller() {
     const analyticUnits = await AnalyticUnit.findMany({ alert: true });
 

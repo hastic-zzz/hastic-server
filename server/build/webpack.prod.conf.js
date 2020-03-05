@@ -1,3 +1,5 @@
+const semver = require('semver');
+
 const webpack = require('webpack');
 const path = require('path');
 const fs = require('fs');
@@ -6,19 +8,11 @@ var base = require('./webpack.base.conf');
 
 const TARGET_NODE_VERSION = process.versions.node;
 const PLATFORM = `${process.platform}-${process.arch}-node-${TARGET_NODE_VERSION.split('.')[0]}`;
+const DEASYNC_NODE_MODULES_PATH = path.resolve('node_modules', 'deasync', 'bin', PLATFORM);
+const DEASYNC_DIST_PATH = path.resolve('dist', 'bin', PLATFORM);
 
 console.log(`Target node version: ${TARGET_NODE_VERSION}`);
 console.log(`Platform: ${PLATFORM}`);
-
-
-const DEASYNC_NODE_MODULES_PATH = path.resolve(
-  'node_modules',
-  'deasync',
-  'bin',
-  PLATFORM
-);
-
-const DEASYNC_DIST_PATH = path.resolve('dist', 'bin', PLATFORM);
 
 if(!fs.existsSync(DEASYNC_NODE_MODULES_PATH)) {
   throw new Error(`deasync doesn't support this platform: ${PLATFORM}`);
@@ -45,12 +39,11 @@ const prodRules = [
     use: {
       loader: 'babel-loader',
       options: {
+        plugins: ["transform-object-rest-spread"], // for transpiling "ws" lib
+                                                   // it's necessare only for node < 8.3.0, 
+                                                   // so could be optimized
         presets: [
-          ["env", {
-            "targets": {
-              "node": TARGET_NODE_VERSION
-            }
-          }]
+          ["env", { "targets": { "node": TARGET_NODE_VERSION }}]
         ]
       }
     }

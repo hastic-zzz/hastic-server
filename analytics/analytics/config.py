@@ -26,6 +26,5 @@ def get_config_field(field: str, default_val = None):
 
     raise Exception('Please configure {}'.format(field))
 
-ZMQ_DEV_PORT = get_config_field('ZMQ_DEV_PORT', '8002')
-ZMQ_CONNECTION_STRING = get_config_field('ZMQ_CONNECTION_STRING', 'tcp://0.0.0.0:%s' % ZMQ_DEV_PORT)
+HASTIC_SERVER_URL = get_config_field('HASTIC_SERVER_URL', 'ws://localhost:8002')
 LEARNING_TIMEOUT = get_config_field('LEARNING_TIMEOUT', 120)
