@@ -6,11 +6,8 @@ services:
       dockerfile: server/Dockerfile
       context: .
     environment:
-
       HASTIC_API_KEY: ${HASTIC_API_KEY?"HASTIC_API_KEY variable is required"}
       GRAFANA_URL: ${GRAFANA_URL?"GRAFANA_URL variable is required"}
-
-      ZMQ_CONNECTION_STRING: ${ZMQ_CONNECTION_STRING:-tcp://analytics:8002}
 
       HASTIC_ALERT_TYPE: ${HASTIC_ALERT_TYPE}
       HASTIC_ALERTMANAGER_URL: ${HASTIC_ALERTMANAGER_URL}
@@ -25,12 +22,22 @@ services:
       - ${HASTIC_PORT:-8000}:8000
     volumes:
       - data-volume:/var/www/data
+    networks:
+      - hastic-network
     restart: always
 
   analytics:
     image: hastic/analytics:latest
     build: analytics
+    networks:
+      - hastic-network
     restart: always
+    environment:
+      # TODO: use any port for server connection
+      HASTIC_SERVER_URL: "ws://server:8002"
 
 volumes:
   data-volume:
+
+networks:
+  hastic-network:
