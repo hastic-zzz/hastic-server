@@ -24,11 +24,9 @@ export async function exportPanel(panelId: string): Promise<GrafanaPanelTemplate
   analyticUnits.forEach(analyticUnit => {
     const analyticUnitTemplate = analyticUnit.toTemplate();
 
-    let analyticUnitCache = _.find(caches, cache => cache.id === analyticUnit.id);
-    if(analyticUnitCache !== undefined) {
+    let analyticUnitCache = _.find(caches, cache => cache.id === analyticUnit.id) || null;
+    if(analyticUnitCache !== null) {
       analyticUnitCache = analyticUnitCache.toTemplate();
-    } else {
-      analyticUnitCache = null;
     }
 
     const analyticUnitSegments = segments
