@@ -72,14 +72,14 @@ export async function _importAnalyticUnitTemplate(analyticUnitTemplate: any, var
   delete analyticUnitTemplate.segments;
   delete analyticUnitTemplate.detectionSpans;
 
-  const [ id ] = await AnalyticUnit.insertMany([analyticUnitTemplate]);
+  const [ newAnalyticUnitId ] = await AnalyticUnit.insertMany([analyticUnitTemplate]);
 
   if(cache !== null) {
-    cache._id = id;
+    cache._id = newAnalyticUnitId;
   }
 
-  segments.forEach(segment => segment.analyticUnitId = id);
-  detectionSpans.forEach(detectionSpan => detectionSpan.analyticUnitId = id);
+  segments.forEach(segment => segment.analyticUnitId = newAnalyticUnitId);
+  detectionSpans.forEach(detectionSpan => detectionSpan.analyticUnitId = newAnalyticUnitId);
 
   return Promise.all([
     AnalyticUnitCache.insertMany([cache]),
