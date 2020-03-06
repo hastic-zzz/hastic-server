@@ -60,6 +60,10 @@ export async function importPanel(
 }
 
 export async function _importAnalyticUnitTemplate(analyticUnitTemplate: any, variables: GrafanaTemplateVariables) {
+  analyticUnitTemplate.grafanaUrl = variables.grafanaUrl;
+  analyticUnitTemplate.panelId = variables.panelId;
+  analyticUnitTemplate.metric.datasource.url = variables.datasourceUrl;
+
   const cache = _.clone(analyticUnitTemplate.cache);
   const segments = _.clone(analyticUnitTemplate.segments);
   const detectionSpans = _.clone(analyticUnitTemplate.detectionSpans);
@@ -67,10 +71,6 @@ export async function _importAnalyticUnitTemplate(analyticUnitTemplate: any, var
   delete analyticUnitTemplate.cache;
   delete analyticUnitTemplate.segments;
   delete analyticUnitTemplate.detectionSpans;
-
-  analyticUnitTemplate.grafanaUrl = variables.grafanaUrl;
-  analyticUnitTemplate.panelId = variables.panelId;
-  analyticUnitTemplate.metric.datasource.url = variables.datasourceUrl;
 
   const [ id ] = await AnalyticUnit.insertMany([analyticUnitTemplate]);
 
