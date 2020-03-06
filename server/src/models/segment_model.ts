@@ -49,6 +49,14 @@ export class Segment {
     };
   }
 
+  public toTemplate(): any {
+    return {
+      ...this.toObject(),
+      _id: undefined,
+      analyticUnitId: undefined
+    };
+  }
+
   static fromObject(obj: any): Segment {
     if(obj === undefined) {
       throw new Error('obj is undefined');

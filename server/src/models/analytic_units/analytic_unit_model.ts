@@ -84,6 +84,7 @@ export abstract class AnalyticUnit {
   public toTemplate(): any {
     const obj = _.cloneDeep(this.toObject());
 
+    delete obj._id;
     obj.grafanaUrl = '${GRAFANA_URL}';
     obj.panelId = '${PANEL_ID}';
     obj.metric.datasource.url = '${DATASOURCE_URL}';

@@ -11,7 +11,6 @@ import * as _ from 'lodash';
 export async function exportPanel(panelId: string): Promise<GrafanaPanelTemplate> {
   const analyticUnits = await AnalyticUnit.findMany({ panelId });
   const analyticUnitIds = analyticUnits.map(analyticUnit => analyticUnit.id);
-  const analyticUnitTemplates = analyticUnits.map(analyticUnit => analyticUnit.toTemplate());
 
   const [caches, detectionSpans, segments] = await Promise.all([
     AnalyticUnitCache.findMany({ _id: { $in: analyticUnitIds } }),
@@ -19,63 +18,72 @@ export async function exportPanel(panelId: string): Promise<GrafanaPanelTemplate
     Segment.findByAnalyticUnitIds(analyticUnitIds)
   ]);
 
-  return {
-    analyticUnits: analyticUnitTemplates,
-    caches,
-    detectionSpans,
-    segments
-  };
+  // TODO: not any
+  let analyticUnitTemplates: any[] = [];
+
+  analyticUnits.forEach(analyticUnit => {
+    const analyticUnitTemplate = analyticUnit.toTemplate();
+
+    let analyticUnitCache = _.find(caches, cache => cache.id === analyticUnit.id);
+    if(analyticUnitCache !== undefined) {
+      analyticUnitCache = analyticUnitCache.toTemplate();
+    } else {
+      analyticUnitCache = null;
+    }
+
+    const analyticUnitSegments = segments
+      .filter(segment => segment.analyticUnitId === analyticUnit.id)
+      .map(segment => segment.toTemplate());
+
+    const analyticUnitSpans = detectionSpans
+      .filter(span => span.analyticUnitId === analyticUnit.id)
+      .map(span => span.toTemplate());
+
+    analyticUnitTemplates.push({
+      ...analyticUnitTemplate,
+      cache: analyticUnitCache,
+      segments: analyticUnitSegments,
+      detectionSpans: analyticUnitSpans
+    });
+  });
+
+  return { analyticUnitTemplates };
 }
 
 export async function importPanel(
   panelTemplate: GrafanaPanelTemplate,
   variables: GrafanaTemplateVariables
 ): Promise<void> {
-  const oldAnalyticUnitIds = panelTemplate.analyticUnits.map(analyticUnit => analyticUnit._id);
+  await Promise.all(panelTemplate.analyticUnitTemplates.map(
+    template => _importAnalyticUnitTemplate(template, variables)
+  ));
+}
 
-  panelTemplate.analyticUnits.forEach(analyticUnit => {
-    delete analyticUnit._id;
-    analyticUnit.grafanaUrl = variables.grafanaUrl;
-    analyticUnit.panelId = variables.panelId;
-    analyticUnit.metric.datasource.url = variables.datasourceUrl;
-  });
+export async function _importAnalyticUnitTemplate(analyticUnitTemplate: any, variables: GrafanaTemplateVariables) {
+  const cache = _.clone(analyticUnitTemplate.cache);
+  const segments = _.clone(analyticUnitTemplate.segments);
+  const detectionSpans = _.clone(analyticUnitTemplate.detectionSpans);
 
-  const newAnalyticUnitIds = await AnalyticUnit.insertMany(panelTemplate.analyticUnits);
+  delete analyticUnitTemplate.cache;
+  delete analyticUnitTemplate.segments;
+  delete analyticUnitTemplate.detectionSpans;
 
-  if(newAnalyticUnitIds.length !== oldAnalyticUnitIds.length) {
-    throw new Error(`
-      Inserted ${newAnalyticUnitIds.length} analytic units out of ${oldAnalyticUnitIds.length}
-    `);
+  analyticUnitTemplate.grafanaUrl = variables.grafanaUrl;
+  analyticUnitTemplate.panelId = variables.panelId;
+  analyticUnitTemplate.metric.datasource.url = variables.datasourceUrl;
+
+  const [ id ] = await AnalyticUnit.insertMany([analyticUnitTemplate]);
+
+  if(cache !== null) {
+    cache._id = id;
   }
 
-  const oldToNewAnalyticUnitIdsMapping = new Map<AnalyticUnit.AnalyticUnitId, AnalyticUnit.AnalyticUnitId>(
-    _.zip(oldAnalyticUnitIds, newAnalyticUnitIds)
-  );
+  segments.forEach(segment => segment.analyticUnitId = id);
+  detectionSpans.forEach(detectionSpan => detectionSpan.analyticUnitId = id);
 
-  const newCaches = panelTemplate.caches.map(
-    cache => ({
-      ...cache,
-      id: oldToNewAnalyticUnitIdsMapping.get(cache.id)
-    })
-  );
-  const newSegments = panelTemplate.segments.map(
-    segment => ({
-      ...segment,
-      analyticUnitId: oldToNewAnalyticUnitIdsMapping.get(segment.analyticUnitId),
-      id: undefined
-    })
-  );
-  const newDetectionSpans = panelTemplate.detectionSpans.map(
-    span => ({
-      ...span,
-      analyticUnitId: oldToNewAnalyticUnitIdsMapping.get(span.analyticUnitId)
-    })
-  );
-
-  // TODO: transaction
-  await Promise.all([
-    AnalyticUnitCache.insertMany(newCaches),
-    Segment.insertMany(newSegments),
-    DetectionSpan.insertMany(newDetectionSpans)
+  return Promise.all([
+    AnalyticUnitCache.insertMany([cache]),
+    Segment.insertMany(segments),
+    DetectionSpan.insertMany(detectionSpans)
   ]);
 }
