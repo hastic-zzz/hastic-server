@@ -29,6 +29,13 @@ export class AnalyticUnitCache {
     };
   }
 
+  public toTemplate(): any {
+    return {
+      ...this.toObject(),
+      _id: undefined
+    };
+  }
+
   static fromObject(obj: any): AnalyticUnitCache {
     return new AnalyticUnitCache(
       obj._id,

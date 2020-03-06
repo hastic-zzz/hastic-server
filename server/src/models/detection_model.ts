@@ -57,6 +57,14 @@ export class DetectionSpan {
     };
   }
 
+  public toTemplate(): any {
+    return {
+      ...this.toObject(),
+      _id: undefined,
+      analyticUnitId: undefined
+    };
+  }
+
   static fromObject(obj: any): DetectionSpan {
     if(obj === undefined) {
       throw new Error('obj is undefined');
