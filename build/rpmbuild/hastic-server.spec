@@ -42,7 +42,7 @@ touch dist/server/server
 save=$RPM_BUILD_ROOT
 unset RPM_BUILD_ROOT
 
-pip3 install -U pip setuptools pyinstaller
+pip3 install pyinstaller==3.4
 pip3 install -r requirements.txt
 pyinstaller -y --additional-hooks-dir=pyinstaller_hooks --paths=analytics/ bin/server
 
