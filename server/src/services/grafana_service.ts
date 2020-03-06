@@ -34,7 +34,7 @@ export async function importPanel(
   const oldAnalyticUnitIds = panelTemplate.analyticUnits.map(analyticUnit => analyticUnit._id);
 
   panelTemplate.analyticUnits.forEach(analyticUnit => {
-    analyticUnit._id = undefined;
+    delete analyticUnit._id;
     analyticUnit.grafanaUrl = variables.grafanaUrl;
     analyticUnit.panelId = variables.panelId;
     analyticUnit.metric.datasource.url = variables.datasourceUrl;
@@ -44,8 +44,7 @@ export async function importPanel(
 
   if(newAnalyticUnitIds.length !== oldAnalyticUnitIds.length) {
     throw new Error(`
-      Something went wrong while inserting analytic units:
-      inserted ${newAnalyticUnitIds.length} analytic units out of ${oldAnalyticUnitIds.length}
+      Inserted ${newAnalyticUnitIds.length} analytic units out of ${oldAnalyticUnitIds.length}
     `);
   }
 
@@ -73,6 +72,7 @@ export async function importPanel(
     })
   );
 
+  // TODO: transaction
   await Promise.all([
     AnalyticUnitCache.insertMany(newCaches),
     Segment.insertMany(newSegments),
