@@ -134,7 +134,6 @@ class ServerService(utils.concurrent.AsyncZmqActor):
     async def __handle_ping(self):
         if self.__server_socket is None or self.__server_socket.closed:
             await self.__reconnect()
-        # TODO: self.__server_socket can be None
         await self.__server_socket.send('PONG')
 
     def __parse_message_or_save(self, text: str) -> Optional[ServerMessage]:
