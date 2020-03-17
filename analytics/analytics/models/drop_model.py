@@ -41,17 +41,3 @@ class DropModel(StairModel):
         segment_center_index = utils.find_pattern_center(segment, start, 'drop')
         return segment_center_index
 
-    # def get_stair_indexes(self, data: pd.Series, height: float, length: int) -> List[int]:
-    #     '''
-    #     data: data, that contains drop segments,
-    #     length: the number of indexes to be contained in the drop segment,
-    #     height: the difference between drop max_line and min_line(see utils.find_parameters),
-    #     return: list of start drop segment indexes
-    #     '''
-    #     #TODO: refactor and move method to stair_model
-    #     indexes = []
-    #     for i in range(len(data) - length - 1):
-    #         for x in range(1, length):
-    #             if(data[i + x] < data[i] - height):
-    #                 indexes.append(i)
-    #     return indexes

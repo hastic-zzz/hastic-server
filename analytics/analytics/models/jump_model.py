@@ -42,17 +42,3 @@ class JumpModel(StairModel):
         segment_center_index = utils.find_pattern_center(segment, start, 'jump')
         return segment_center_index
 
-    # def get_stair_indexes(self, data: pd.Series, height: float, length: int) -> List[int]:
-    #     '''
-    #     data: data, that contains jump segments,
-    #     length: the number of indexes to be contained in the jump segment,
-    #     height: the difference between jump max_line and min_line(see utils.find_parameters),
-    #     return: list of start jump segment indexes
-    #     '''
-    #     #TODO: refactor and move method to stair_model
-    #     indexes = []
-    #     for i in range(len(data) - length - 1):
-    #         for x in range(1, length):
-    #             if(data[i + x] > data[i] + height):
-    #                 indexes.append(i)
-    #     return indexes
