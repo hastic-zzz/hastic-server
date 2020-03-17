@@ -6,6 +6,9 @@ from typing import Optional, List
 import utils
 import utils.meta
 import pandas as pd
+from enum import Enum
+import operator
+
 from analytic_types import TimeSeries
 from analytic_types.learning_info import LearningInfo
 
@@ -32,6 +35,25 @@ class StairModel(Model):
 
     def get_state(self, cache: Optional[dict] = None) -> StairModelState:
         return StairModelState.from_json(cache)
+
+    def get_stair_indexes(self, data: pd.Series, height: float, length: int) -> List[int]:
+        '''
+        data: data, that contains stair (jump or drop) segments,
+        length: the number of indexes to be contained in the stair segment,
+        height: the difference between stair max_line and min_line(see utils.find_parameters),
+        return: list of start stair segment indexes
+        '''
+        #TODO: refactor and move method to stair_model
+        indexes = []
+        comparison_operator = operator.gt
+        if self.get_model_type[0] == ModelName.DROP:
+            comparison_operator = operator.lt
+            height = operator.neg(height)
+        for i in range(len(data) - length - 1):
+            for x in range(1, length):
+                if(comparison_operator(data[i + x],data[i] + height)):
+                    indexes.append(i)
+        return indexes
 
     def do_fit(
         self,

@@ -6,11 +6,19 @@ from typing import Optional, List, Tuple
 import pandas as pd
 import math
 import logging
+from enum import Enum
+
 from analytic_types import AnalyticUnitId, ModelCache, TimeSeries
 from analytic_types.segment import Segment
 from analytic_types.learning_info import LearningInfo
 
 import utils.meta
+
+class ModelName(Enum):
+    JUMP = 'jump'
+    DROP = 'drop'
+    PEAK = 'peak'
+    TROUGH = 'trough'
 
 class AnalyticSegment(Segment):
     '''
@@ -205,10 +213,10 @@ class Model(ABC):
                     segment_center, self.state.window_size, len(data)))
                 continue
             learning_info.patterns_list.append(aligned_segment)
-            if model == 'peak' or model == 'trough':
+            if model == ModelName.PEAK or model == ModelName.TROUGH:
                 learning_info.pattern_height.append(utils.find_confidence(aligned_segment)[1])
                 learning_info.patterns_value.append(aligned_segment.values.max())
-            if model == 'jump' or model == 'drop':
+            if model == ModelName.JUMP or model == ModelName.DROP:
                 pattern_height, pattern_length = utils.find_parameters(segment.data, segment.from_index, model)
                 learning_info.pattern_height.append(pattern_height)
                 learning_info.pattern_width.append(pattern_length)
