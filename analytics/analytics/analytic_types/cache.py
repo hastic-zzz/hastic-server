@@ -1,7 +1,7 @@
 from typing import Optional, List, Dict
 
 from analytic_types.segment import AnomalyDetectorSegment
-from analytic_types.detector_typing import Bound
+from analytic_types.detector import Bound
 
 from utils.meta import JSONClass, SerializableList
 

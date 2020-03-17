@@ -29,6 +29,13 @@ export class AnalyticUnitCache {
     };
   }
 
+  public toTemplate(): any {
+    return {
+      ...this.toObject(),
+      _id: undefined
+    };
+  }
+
   static fromObject(obj: any): AnalyticUnitCache {
     return new AnalyticUnitCache(
       obj._id,
@@ -82,7 +89,6 @@ export async function create(id: AnalyticUnitId): Promise<AnalyticUnitId> {
   return db.insertOne(cache.toObject());
 }
 
-// TODO: SerializedCache type
 export async function insertMany(caches: any[]): Promise<AnalyticUnitId[]> {
   return db.insertMany(caches);
 }

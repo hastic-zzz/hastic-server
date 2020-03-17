@@ -1,6 +1,5 @@
 import {
-  AnalyticUnitId, AnalyticUnitStatus, DetectorType,
-  SerializedAnalyticUnit, SerializedPanelAnalyticUnit
+  AnalyticUnitId, AnalyticUnitStatus, DetectorType
 } from './types';
 
 import { Metric } from 'grafana-datasource-kit';
@@ -43,7 +42,7 @@ export abstract class AnalyticUnit {
     }
   }
 
-  public toObject(): SerializedAnalyticUnit {
+  public toObject(): any {
     let metric;
     if(this.metric !== undefined) {
       metric = this.metric.toObject();
@@ -68,7 +67,7 @@ export abstract class AnalyticUnit {
     };
   }
 
-  public toPanelObject(): SerializedPanelAnalyticUnit {
+  public toPanelObject(): any {
     return {
       id: this.id,
       name: this.name,
@@ -82,9 +81,10 @@ export abstract class AnalyticUnit {
     };
   }
 
-  public toTemplate(): SerializedAnalyticUnit {
+  public toTemplate(): any {
     const obj = _.cloneDeep(this.toObject());
 
+    delete obj._id;
     obj.grafanaUrl = '${GRAFANA_URL}';
     obj.panelId = '${PANEL_ID}';
     obj.metric.datasource.url = '${DATASOURCE_URL}';

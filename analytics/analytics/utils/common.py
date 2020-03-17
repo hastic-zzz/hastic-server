@@ -17,6 +17,7 @@ from analytic_types.segment import Segment
 SHIFT_FACTOR = 0.05
 CONFIDENCE_FACTOR = 0.5
 SMOOTHING_FACTOR = 5
+MEASUREMENT_ERROR = 0.05
 
 
 def exponential_smoothing(series: pd.Series, alpha: float, last_smoothed_value: Optional[float] = None) -> pd.Series:
@@ -369,7 +370,7 @@ def find_parameters(segment_data: pd.Series, segment_from_index: int, pat_type: 
         segment = flat_segment.dropna()
     segment_median, segment_max_line, segment_min_line = utils.get_distribution_density(segment)
     height = 0.95 * (segment_max_line - segment_min_line)
-    length = utils.find_length(segment_data, segment_min_line, segment_max_line, pat_type)
+    length = utils.get_pattern_length(segment_data, segment_min_line, segment_max_line, pat_type)
     return height, length
 
 def find_pattern_center(segment_data: pd.Series, segment_from_index: int, pattern_type: str):
@@ -382,14 +383,15 @@ def find_pattern_center(segment_data: pd.Series, segment_from_index: int, patter
         segment_cent_index = math.ceil((len(segment_data)) / 2)
     return segment_cent_index
 
-def find_length(segment_data: pd.Series, segment_min_line: float, segment_max_line: float, pat_type: str) -> int:
-    x_abscissa = np.arange(0, len(segment_data))
+def get_pattern_length(segment_data: pd.Series, segment_min_line: float, segment_max_line: float, pat_type: str) -> int:
+    # TODO: move function to jump & drop merged model
     segment_max = max(segment_data)
     segment_min = min(segment_data)
+    # TODO: use better way
     if segment_min_line <= segment_min:
-        segment_min_line = segment_min * 1.05
+        segment_min_line = segment_min * (1 + MEASUREMENT_ERROR)
     if segment_max_line >= segment_max:
-        segment_max_line = segment_max * 0.95
+        segment_max_line = segment_max * (1 - MEASUREMENT_ERROR)
     min_line = []
     max_line = []
     for i in range(len(segment_data)):

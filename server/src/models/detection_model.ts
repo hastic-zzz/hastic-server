@@ -57,6 +57,14 @@ export class DetectionSpan {
     };
   }
 
+  public toTemplate(): any {
+    return {
+      ...this.toObject(),
+      _id: undefined,
+      analyticUnitId: undefined
+    };
+  }
+
   static fromObject(obj: any): DetectionSpan {
     if(obj === undefined) {
       throw new Error('obj is undefined');
@@ -162,7 +170,6 @@ export async function insertSpan(span: DetectionSpan): Promise<SpanId> {
   return db.insertOne(spanToInsert);
 }
 
-// TODO: SerializedDetectionSpan type
 export async function insertMany(detectionSpans: any[]): Promise<SpanId[]> {
   return db.insertMany(detectionSpans);
 }

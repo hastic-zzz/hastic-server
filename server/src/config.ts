@@ -48,9 +48,6 @@ export const DETECTION_SPANS_DATABASE_PATH = path.join(DATA_PATH, 'detection_spa
 export const DB_META_PATH = path.join(DATA_PATH, 'db_meta.db');
 
 export const HASTIC_PORT = getConfigField('HASTIC_PORT', '8000');
-export const ZMQ_IPC_PATH = getConfigField('ZMQ_IPC_PATH', path.join(os.tmpdir(), 'hastic'));
-export const ZMQ_DEV_PORT = getConfigField('ZMQ_DEV_PORT', '8002');
-export const ZMQ_HOST = getConfigField('ZMQ_HOST', '127.0.0.1');
 export const HASTIC_API_KEY = getConfigField('HASTIC_API_KEY');
 export const GRAFANA_URL = normalizeUrl(getConfigField('GRAFANA_URL', null));
 
@@ -69,7 +66,7 @@ export const HASTIC_TIMEZONE_OFFSET = getTimeZoneOffset();
 
 export const HASTIC_ALERTMANAGER_URL = getConfigField('HASTIC_ALERTMANAGER_URL', null);
 
-export const ANLYTICS_PING_INTERVAL = 500; // ms
+export const ANALYTICS_PING_INTERVAL = 500; // ms
 export const PACKAGE_VERSION = getPackageVersion();
 export const GIT_INFO = {
   branch: GIT_BRANCH,
@@ -79,7 +76,8 @@ export const GIT_INFO = {
 export const INSIDE_DOCKER = process.env.INSIDE_DOCKER !== undefined;
 export const PRODUCTION_MODE = process.env.NODE_ENV !== 'development';
 
-export const ZMQ_CONNECTION_STRING = createZMQConnectionString();
+// TODO: maybe rename it to "HASTIC_SERVER_ANALYTICS_URL"
+export const HASTIC_SERVER_URL = getConfigField('HASTIC_SERVER_URL', 'ws://localhost:8002');
 export const HASTIC_INSTANCE_NAME = getConfigField('HASTIC_INSTANCE_NAME', os.hostname());
 
 
@@ -126,17 +124,23 @@ function getPackageVersion() {
   }
 }
 
-function createZMQConnectionString() {
-  let zmq =`tcp://${ZMQ_HOST}:${ZMQ_DEV_PORT}`; //debug mode
-  let zmqConf = getConfigField('ZMQ_CONNECTION_STRING', null);
-  if(INSIDE_DOCKER) {
-    return zmqConf;
-  } else if(PRODUCTION_MODE) {
-    if(zmqConf === null) {
-      return 'ipc://' + `${path.join(ZMQ_IPC_PATH, process.pid.toString())}.ipc`;
-    }
+function getGitInfo() {
+  let gitRoot = path.join(__dirname, '../../.git');
+  let gitHeadFile = path.join(gitRoot, 'HEAD');
+  if(!fs.existsSync(gitHeadFile)) {
+    console.error(`Can't find git HEAD file ${gitHeadFile}`);
+    return null;
   }
-  return zmq;
+  const ref = fs.readFileSync(gitHeadFile).toString();
+  let branchPath = ref.indexOf(':') === -1 ? ref : ref.slice(5, -1);
+  let branch = branchPath.split('/').pop();
+  const branchFilename = `${gitRoot}/${branchPath}`;
+  if(!fs.existsSync(branchFilename)) {
+    console.error(`Can't find git branch file ${branchFilename}`);
+    return null;
+  }
+  let commitHash = fs.readFileSync(branchFilename).toString().slice(0, 7);
+  return { branch, commitHash };
 }
 
 // TODO: move to data_layer

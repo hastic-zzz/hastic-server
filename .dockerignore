@@ -1,4 +1,4 @@
 *
-!.git/HEAD
-!.git/refs
+# TODO: we don't need all files from .git
+!.git
 !server

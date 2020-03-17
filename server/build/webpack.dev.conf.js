@@ -4,6 +4,7 @@ const webpack = require('webpack');
 
 base.mode = 'development';
 base.watch = true;
+base.output.filename = "server-dev.js";
 
 // https://webpack.js.org/configuration/devtool/
 base.devtool = 'inline-source-map';

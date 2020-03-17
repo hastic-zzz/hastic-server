@@ -4,7 +4,7 @@ import { WebhookType } from '../services/notification_service';
 import * as config from '../config';
 import { AlertService } from './alert_service';
 
-import * as zmq from 'zeromq';
+import * as WebSocket from 'ws';
 
 import * as childProcess from 'child_process'
 import * as fs from 'fs';
@@ -15,13 +15,12 @@ import * as _ from 'lodash';
 export class AnalyticsService {
 
   private _alertService = new AlertService();
-  private _requester: any;
+  private _socket_server: WebSocket.Server;
+  private _socket_connection: WebSocket = null;
   private _ready: boolean = false;
   private _lastAlive: Date = null;
   private _pingResponded = false;
-  private _zmqConnectionString: string = null;
-  private _ipcPath: string = null;
-  private _analyticsPinger: NodeJS.Timer = null;
+  private _analyticsPinger: NodeJS.Timeout = null;
   private _isClosed = false;
   private _productionMode = false;
   private _inDocker = false;
@@ -59,7 +58,10 @@ export class AnalyticsService {
 
   public async sendText(text: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      this._requester.send(text, undefined, (err: any) => {
+      if(this._socket_connection === null) {
+        reject('Can`t send because analytics is not connected');
+      }
+      this._socket_connection.send(text, undefined, (err: any) => {
         if(err) {
           console.trace(`got error while sending ${err}`);
           reject(err);
@@ -70,49 +72,28 @@ export class AnalyticsService {
     });
   }
 
-  public close() {
-    this._isClosed = true;
-    console.log('Terminating analytics service...');
-    clearInterval(this._analyticsPinger);
-    if(this._ipcPath !== null) {
-      console.log('Remove ipc path: ' + this._ipcPath);
-      fs.unlinkSync(this._ipcPath);
-    }
-    this._requester.close();
-    console.log('Terminating successful');
-  }
-
   public get ready(): boolean { return this._ready; }
   public get lastAlive(): Date { return this._lastAlive; }
 
   private async _init() {
-    this._requester = zmq.socket('pair');
+    this._socket_server = new WebSocket.Server({ port: 8002 });
 
-    this._zmqConnectionString = config.ZMQ_CONNECTION_STRING;
+    // TODO: move this to config OR use existing http server
+    console.log("Creating websocket server ... %s", 'ws://localhost:8002');
 
-    if(this._zmqConnectionString.startsWith('ipc')) {
-      this._ipcPath = AnalyticsService.createIPCAddress(this._zmqConnectionString);
-    }
-
-    console.log("Binding to zmq... %s", this._zmqConnectionString);
-    this._requester.connect(this._zmqConnectionString);
-    this._requester.on("message", this._onAnalyticsMessage.bind(this));
-    console.log('Binding successful');
+    this._socket_server.on("connection", this._onNewConnection.bind(this));
+    // TODO: handle connection drop
 
     if(this._productionMode && !this._inDocker) {
       console.log('Creating analytics process...');
       try {
-        var cp = await AnalyticsService._runAnalyticsProcess(this._zmqConnectionString);
+        var cp = await AnalyticsService._runAnalyticsProcess();
       } catch(error) {
         console.error('Can`t run analytics process: %s', error);
         return;
       }
       console.log('Analytics creating successful, pid: %s', cp.pid);
     }
-
-    console.log('Start analytics pinger...');
-    this._runAlalyticsPinger();
-    console.log('Analytics pinger started');
 
   }
 
@@ -123,13 +104,13 @@ export class AnalyticsService {
    * @returns Creaded child process
    * @throws Process start error or first exception during python start
    */
-  private static async _runAnalyticsProcess(zmqConnectionString: string): Promise<childProcess.ChildProcess> {
+  private static async _runAnalyticsProcess(): Promise<childProcess.ChildProcess> {
     let cp: childProcess.ChildProcess;
     let cpOptions = {
       cwd: config.ANALYTICS_PATH,
       env: {
         ...process.env,
-        ZMQ_CONNECTION_STRING: zmqConnectionString
+        HASTIC_SERVER_URL: config.HASTIC_SERVER_URL
       }
     };
 
@@ -185,17 +166,7 @@ export class AnalyticsService {
     this._alertService.sendMessage(msg, WebhookType.RECOVERY);
   }
 
-  private async _onAnalyticsDown() {
-    const msg = 'Analytics is down';
-    console.log(msg);
-    this._alertService.sendMessage(msg, WebhookType.FAILURE);
-    if(this._productionMode && !this._inDocker) {
-      await AnalyticsService._runAnalyticsProcess(this._zmqConnectionString);
-    }
-  }
-
   private _onAnalyticsMessage(data: any) {
-
     let text = data.toString();
     if(text === 'PONG') {
       this._pingResponded = true;
@@ -217,30 +188,82 @@ export class AnalyticsService {
     }
     this._onMessage(AnalyticsMessage.fromObject(response));
   }
+  
+  // cb(this: WebSocket, socket: WebSocket, request: http.IncomingMessage)
+  private async _onNewConnection(connection: WebSocket) {
+    if(this._socket_connection !== null) {
+      // TODO: use buildin websocket validator
+      console.error('There is already an analytics connection. Only one connection is supported.');
+      // we send error and then close connection
+      connection.send('EALREADYEXISTING', () => { connection.close(); });
+      return;
+    }
+    // TODO: log connection id
+    console.log('Got new analytic connection');
+    this._socket_connection = connection;
+    this._socket_connection.on("message", this._onAnalyticsMessage.bind(this));
+    // TODO: implement closing
+    this._socket_connection.on("close", this._onAnalyticsDown.bind(this));
+    await this.sendText('hey');
 
-  private async _runAlalyticsPinger() {
+    console.log('Start analytics pinger...');
+    // TODO: use websockets buildin pinger
+    this._runAlalyticsPinger();
+    console.log('Analytics pinger started');
+  }
+
+  private async _onAnalyticsDown() {
+    if(!this._ready) {
+      // it's possible that ping is too slow and connection is closed
+      return;
+    }
+    this._stopAlalyticsPinger();
+    if(this._socket_connection !== null) {
+      this._socket_connection.close();
+      this._socket_connection = null;
+    }
+    this._ready = false;
+    const msg = 'Analytics is down';
+    console.log(msg);
+    this._alertService.sendMessage(msg, WebhookType.FAILURE);
+    if(this._productionMode && !this._inDocker) {
+      await AnalyticsService._runAnalyticsProcess();
+    }
+  }
+
+  private _runAlalyticsPinger() {
     this._analyticsPinger = setInterval(() => {
       if(this._isClosed) {
         return;
       }
       if(!this._pingResponded && this._ready) {
-        this._ready = false;
         this._onAnalyticsDown();
       }
       this._pingResponded = false;
       // TODO: set life limit for this ping
       this.sendText('PING');
-    }, config.ANLYTICS_PING_INTERVAL);
+    }, config.ANALYTICS_PING_INTERVAL);
   }
 
-  private static createIPCAddress(zmqConnectionString: string): string {
-    let filename = zmqConnectionString.substring(6); //without 'ipc://'
-    fs.writeFileSync(filename, '');
-    return filename;
+  private _stopAlalyticsPinger() {
+    if(this._analyticsPinger !== null) {
+      clearInterval(this._analyticsPinger);
+    }
+    this._analyticsPinger = null;
   }
 
   public get queueLength() {
     return this._queue.length;
+  }
+
+  public close() {
+    this._isClosed = true;
+    console.log('Terminating analytics service...');
+    this._stopAlalyticsPinger();
+    if(this._socket_connection !== null) {
+      this._socket_connection.close();
+    }
+    console.log('Termination successful');
   }
 
 }

@@ -11,7 +11,7 @@ from detectors import Detector
 from analytic_types.data_bucket import DataBucket
 from utils import convert_pd_timestamp_to_ms
 from analytic_types import AnalyticUnitId, ModelCache
-from analytic_types.detector_typing import DetectionResult
+from analytic_types.detector import DetectionResult
 from analytic_types.segment import Segment
 import utils
 

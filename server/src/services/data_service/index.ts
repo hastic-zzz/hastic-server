@@ -1,5 +1,5 @@
-import { getDbQueryWrapper, dbCollection, DBType } from './data_layer';
-import * as config from '../config';
+import { getDbQueryWrapper, dbCollection, DBType } from '../data_layer';
+import * as config from '../../config';
 
 import * as nedb from 'nedb';
 import * as fs from 'fs';
@@ -81,8 +81,7 @@ function maybeCreateDir(path: string): void {
 
 function checkDataFolders(): void {
   [
-    config.DATA_PATH,
-    config.ZMQ_IPC_PATH
+    config.DATA_PATH
   ].forEach(maybeCreateDir);
 }
 

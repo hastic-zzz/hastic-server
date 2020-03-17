@@ -49,6 +49,14 @@ export class Segment {
     };
   }
 
+  public toTemplate(): any {
+    return {
+      ...this.toObject(),
+      _id: undefined,
+      analyticUnitId: undefined
+    };
+  }
+
   static fromObject(obj: any): Segment {
     if(obj === undefined) {
       throw new Error('obj is undefined');
@@ -232,7 +240,6 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
   };
 }
 
-// TODO: SerializedSegment type
 export async function insertMany(segments: any[]): Promise<SegmentId[]> {
   return db.insertMany(segments);
 }

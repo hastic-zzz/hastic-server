@@ -7,7 +7,7 @@ from typing import Optional, Union, List, Tuple, Generator
 import operator
 
 from analytic_types import AnalyticUnitId, ModelCache
-from analytic_types.detector_typing import DetectionResult, ProcessingResult, Bound
+from analytic_types.detector import DetectionResult, ProcessingResult, Bound
 from analytic_types.data_bucket import DataBucket
 from analytic_types.segment import Segment, AnomalyDetectorSegment
 from analytic_types.cache import AnomalyCache
