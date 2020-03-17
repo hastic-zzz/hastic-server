@@ -1,5 +1,4 @@
-from models import Model, ModelState, AnalyticSegment
-from models import StairModel
+from models import Model, ModelState, AnalyticSegment, StairModel
 
 import utils
 import utils.meta
@@ -31,11 +30,12 @@ class StairModelState(ModelState):
 
 
 class JumpModel(StairModel):
-    
+
     def get_model_type(self) -> (str, bool):
+        model = 'jump'
         type_model = True
-        return (ModelName.JUMP, type_model)
-    
+        return (model, type_model)
+
     def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
         data = dataframe['value']
         segment = data[start: end]

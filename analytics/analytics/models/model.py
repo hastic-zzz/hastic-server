@@ -213,10 +213,10 @@ class Model(ABC):
                     segment_center, self.state.window_size, len(data)))
                 continue
             learning_info.patterns_list.append(aligned_segment)
-            if model == ModelName.PEAK or model == ModelName.TROUGH:
+            if model == 'peak' or model == 'trough':
                 learning_info.pattern_height.append(utils.find_confidence(aligned_segment)[1])
                 learning_info.patterns_value.append(aligned_segment.values.max())
-            if model == ModelName.JUMP or model == ModelName.DROP:
+            if model == 'jump' or model == 'drop':
                 pattern_height, pattern_length = utils.find_parameters(segment.data, segment.from_index, model)
                 learning_info.pattern_height.append(pattern_height)
                 learning_info.pattern_width.append(pattern_length)

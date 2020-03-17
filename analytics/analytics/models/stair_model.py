@@ -46,7 +46,7 @@ class StairModel(Model):
         #TODO: refactor and move method to stair_model
         indexes = []
         comparison_operator = operator.gt
-        if self.get_model_type[0] == ModelName.DROP:
+        if self.get_model_type()[0] == 'drop':
             comparison_operator = operator.lt
             height = operator.neg(height)
         for i in range(len(data) - length - 1):
