@@ -11,8 +11,6 @@ import pandas as pd
 class TroughModel(TriangleModel):
     
     def get_model_type(self) -> ModelName:
-        model = 'trough'
-        type_model = False
         return ModelName.TROUGH
     
     def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:

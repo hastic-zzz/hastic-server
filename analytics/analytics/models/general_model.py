@@ -31,8 +31,6 @@ class GeneralModelState(ModelState):
 class GeneralModel(Model):
 
     def get_model_type(self) -> ModelName:
-        model = 'general'
-        type_model = True
         return ModelName.GENERAL
 
     def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:

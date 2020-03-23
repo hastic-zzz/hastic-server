@@ -32,8 +32,6 @@ class StairModelState(ModelState):
 class JumpModel(StairModel):
 
     def get_model_type(self) -> ModelName:
-        model = 'jump'
-        type_model = True
         return ModelName.JUMP
 
     def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:

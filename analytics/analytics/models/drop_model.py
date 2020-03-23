@@ -31,9 +31,6 @@ class StairModelState(ModelState):
 class DropModel(StairModel):
 
     def get_model_type(self) -> ModelName:
-        print('drop model type', ModelName.DROP)
-        model = 'drop'
-        type_model = False
         return ModelName.DROP
 
     def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:

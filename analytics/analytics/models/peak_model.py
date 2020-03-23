@@ -11,8 +11,6 @@ import pandas as pd
 class PeakModel(TriangleModel):
 
     def get_model_type(self) -> ModelName:
-        model = 'peak'
-        type_model = True
         return ModelName.PEAK
     
     def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
