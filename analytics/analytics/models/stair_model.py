@@ -1,4 +1,4 @@
-from models import Model, ModelState, AnalyticSegment
+from models import Model, ModelState, AnalyticSegment, ModelName
 
 import scipy.signal
 from scipy.fftpack import fft
@@ -46,7 +46,7 @@ class StairModel(Model):
         #TODO: refactor and move method to stair_model
         indexes = []
         comparison_operator = operator.gt
-        if self.get_model_type()[0] == 'drop':
+        if self.get_model_type() == ModelName.DROP:
             comparison_operator = operator.lt
             height = operator.neg(height)
         for i in range(len(data) - length - 1):

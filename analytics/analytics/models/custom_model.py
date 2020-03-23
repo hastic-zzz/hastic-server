@@ -1,4 +1,4 @@
-from models import Model, AnalyticSegment, ModelState
+from models import Model, AnalyticSegment, ModelState, ModelName
 from analytic_types import AnalyticUnitId, ModelCache
 from analytic_types.learning_info import LearningInfo
 import utils
@@ -23,7 +23,7 @@ class CustomModel(Model):
     def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
         pass
 
-    def get_model_type(self) -> (str, bool):
+    def get_model_type(self) -> ModelName:
         pass
 
     def get_state(self, cache: Optional[ModelCache] = None) -> ModelState:

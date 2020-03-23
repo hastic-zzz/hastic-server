@@ -1,5 +1,5 @@
 from analytic_types import TimeSeries
-from models import TriangleModel
+from models import TriangleModel, ModelName
 import utils
 
 import scipy.signal
@@ -10,10 +10,10 @@ import pandas as pd
 
 class TroughModel(TriangleModel):
     
-    def get_model_type(self) -> (str, bool):
+    def get_model_type(self) -> ModelName:
         model = 'trough'
         type_model = False
-        return (model, type_model)
+        return ModelName.TROUGH
     
     def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
         data = dataframe['value']

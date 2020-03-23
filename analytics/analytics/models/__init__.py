@@ -1,4 +1,4 @@
-from models.model import Model, ModelState, AnalyticSegment
+from models.model import Model, ModelState, AnalyticSegment, ModelName
 from models.triangle_model import TriangleModel, TriangleModelState
 from models.stair_model import StairModel, StairModelState
 from models.drop_model import DropModel

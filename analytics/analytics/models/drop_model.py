@@ -1,4 +1,4 @@
-from models import Model, ModelState, AnalyticSegment, StairModel
+from models import Model, ModelState, AnalyticSegment, StairModel, ModelName
 
 import scipy.signal
 from scipy.fftpack import fft
@@ -30,10 +30,11 @@ class StairModelState(ModelState):
 
 class DropModel(StairModel):
 
-    def get_model_type(self) -> (str, bool):
+    def get_model_type(self) -> ModelName:
+        print('drop model type', ModelName.DROP)
         model = 'drop'
         type_model = False
-        return (model, type_model)
+        return ModelName.DROP
 
     def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
         data = dataframe['value']

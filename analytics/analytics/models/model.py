@@ -19,6 +19,7 @@ class ModelName(Enum):
     DROP = 'drop'
     PEAK = 'peak'
     TROUGH = 'trough'
+    GENERAL = 'general'
 
 class AnalyticSegment(Segment):
     '''
@@ -129,7 +130,7 @@ class Model(ABC):
         pass
 
     @abstractmethod
-    def get_model_type(self) -> (str, bool):
+    def get_model_type(self) -> ModelName:
         pass
 
     @abstractmethod
@@ -168,8 +169,7 @@ class Model(ABC):
 
         if self.state.window_size == 0:
             self.state.window_size = math.ceil(max_length / 2) if max_length else 0
-        model, model_type = self.get_model_type()
-        learning_info = self.get_parameters_from_segments(dataframe, labeled, deleted, model, model_type)
+        learning_info = self.get_parameters_from_segments(dataframe, labeled, deleted, self.get_model_type())
         self.do_fit(dataframe, labeled, deleted, learning_info)
         logging.debug('fit complete successful with self.state: {} for analytic unit: {}'.format(self.state, id))
         return self.state
@@ -196,7 +196,7 @@ class Model(ABC):
         if height_list is not None:
             state.height_min, state.height_max = utils.get_min_max(height_list, 0)
 
-    def get_parameters_from_segments(self, dataframe: pd.DataFrame, labeled: List[dict], deleted: List[dict], model: str, model_type: bool) -> dict:
+    def get_parameters_from_segments(self, dataframe: pd.DataFrame, labeled: List[dict], deleted: List[dict], model: str) -> dict:
         logging.debug('Start parsing segments')
         learning_info = LearningInfo()
         data = dataframe['value']
@@ -213,11 +213,11 @@ class Model(ABC):
                     segment_center, self.state.window_size, len(data)))
                 continue
             learning_info.patterns_list.append(aligned_segment)
-            if model == 'peak' or model == 'trough':
+            if model == ModelName.PEAK or model == ModelName.TROUGH:
                 learning_info.pattern_height.append(utils.find_confidence(aligned_segment)[1])
                 learning_info.patterns_value.append(aligned_segment.values.max())
-            if model == 'jump' or model == 'drop':
-                pattern_height, pattern_length = utils.find_parameters(segment.data, segment.from_index, model)
+            if model == ModelName.JUMP or model == ModelName.DROP:
+                pattern_height, pattern_length = utils.find_parameters(segment.data, segment.from_index, model.value)
                 learning_info.pattern_height.append(pattern_height)
                 learning_info.pattern_width.append(pattern_length)
                 learning_info.patterns_value.append(aligned_segment.values[self.state.window_size])

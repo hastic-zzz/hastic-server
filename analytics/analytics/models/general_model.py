@@ -1,5 +1,5 @@
 from analytic_types import AnalyticUnitId
-from models import Model, ModelState, AnalyticSegment
+from models import Model, ModelState, AnalyticSegment, ModelName
 from typing import Union, List, Generator
 import utils
 import utils.meta
@@ -30,10 +30,10 @@ class GeneralModelState(ModelState):
 
 class GeneralModel(Model):
 
-    def get_model_type(self) -> (str, bool):
+    def get_model_type(self) -> ModelName:
         model = 'general'
         type_model = True
-        return (model, type_model)
+        return ModelName.GENERAL
 
     def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
         data = dataframe['value']
