@@ -1,4 +1,9 @@
+from analytic_types import AnalyticUnitId, ModelCache, TimeSeries
+from analytic_types.segment import Segment
+from analytic_types.learning_info import LearningInfo
+
 import utils
+import utils.meta
 
 from abc import ABC, abstractmethod
 from attrdict import AttrDict
@@ -7,12 +12,6 @@ import pandas as pd
 import math
 import logging
 from enum import Enum
-
-from analytic_types import AnalyticUnitId, ModelCache, TimeSeries
-from analytic_types.segment import Segment
-from analytic_types.learning_info import LearningInfo
-
-import utils.meta
 
 class ModelName(Enum):
     JUMP = 'jump'

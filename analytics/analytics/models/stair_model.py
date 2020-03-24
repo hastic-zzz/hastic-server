@@ -37,12 +37,13 @@ class StairModel(Model):
         return StairModelState.from_json(cache)
 
     def get_stair_indexes(self, data: pd.Series, height: float, length: int) -> List[int]:
-        '''
-        data: data, that contains stair (jump or drop) segments,
-        length: the number of indexes to be contained in the stair segment,
-        height: the difference between stair max_line and min_line(see utils.find_parameters),
-        return: list of start stair segment indexes
-        '''
+        """Get list of start stair segment indexes.
+
+        Keyword arguments:
+        data -- data, that contains stair (jump or drop) segments
+        length -- the number of indexes to be contained in the stair segment
+        height -- the difference between stair max_line and min_line(see utils.find_parameters)
+        """
         #TODO: refactor and move method to stair_model
         indexes = []
         comparison_operator = operator.gt
@@ -118,12 +119,12 @@ class StairModel(Model):
                 lower_bound = self.state.convolve_min * (1 - POSITIVE_SEGMENT_MEASUREMENT_ERROR)
                 delete_up_bound = self.state.conv_del_max * (1 + NEGATIVE_SEGMENT_MEASUREMENT_ERROR)
                 delete_low_bound = self.state.conv_del_min * (1 - NEGATIVE_SEGMENT_MEASUREMENT_ERROR)
-                try:
+                if len(conv) > 0:
                     if max(conv) > upper_bound or max(conv) < lower_bound:
                         delete_list.append(segment)
                     elif max(conv) < delete_up_bound and max(conv) > delete_low_bound:
                         delete_list.append(segment)
-                except ValueError:
+                else:
                     delete_list.append(segment)
             else:
                 delete_list.append(segment)
