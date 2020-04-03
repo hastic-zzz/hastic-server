@@ -43,7 +43,7 @@ class TriangleModel(Model):
     ) -> None:
         data = utils.cut_dataframe(dataframe)
         data = data['value']
-        self.state.pattern_center = list(set(self.state.pattern_center + learning_info.segment_center_list))
+        self.state.pattern_center = utils.remove_duplicates_and_sort(self.state.pattern_center + learning_info.segment_center_list)
         self.state.pattern_model = utils.get_av_model(learning_info.patterns_list)
         convolve_list = utils.get_convolve(self.state.pattern_center, self.state.pattern_model, data, self.state.window_size)
         correlation_list = utils.get_correlation(self.state.pattern_center, self.state.pattern_model, data, self.state.window_size)

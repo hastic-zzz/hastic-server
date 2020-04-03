@@ -195,7 +195,7 @@ class Model(ABC):
         if height_list is not None:
             state.height_min, state.height_max = utils.get_min_max(height_list, 0)
 
-    def get_parameters_from_segments(self, dataframe: pd.DataFrame, labeled: List[dict], deleted: List[dict], model: str) -> dict:
+    def get_parameters_from_segments(self, dataframe: pd.DataFrame, labeled: List[dict], deleted: List[dict], model: ModelName) -> dict:
         logging.debug('Start parsing segments')
         learning_info = LearningInfo()
         data = dataframe['value']
