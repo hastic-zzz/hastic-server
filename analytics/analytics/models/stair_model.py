@@ -1,16 +1,17 @@
 from models import Model, ModelState, AnalyticSegment, ModelName
 
-import scipy.signal
+from analytic_types import TimeSeries
+from analytic_types.learning_info import LearningInfo
+
 from scipy.fftpack import fft
 from typing import Optional, List
+from enum import Enum
+import scipy.signal
 import utils
 import utils.meta
 import pandas as pd
-from enum import Enum
+import numpy as np
 import operator
-
-from analytic_types import TimeSeries
-from analytic_types.learning_info import LearningInfo
 
 POSITIVE_SEGMENT_MEASUREMENT_ERROR = 0.2
 NEGATIVE_SEGMENT_MEASUREMENT_ERROR = 0.02
@@ -41,20 +42,24 @@ class StairModel(Model):
 
         Keyword arguments:
         data -- data, that contains stair (jump or drop) segments
-        length -- the number of indexes to be contained in the stair segment
+        length -- the maximum count of values to be contained in the stair
         height -- the difference between stair max_line and min_line(see utils.find_parameters)
         """
-        #TODO: refactor and move method to stair_model
         indexes = []
-        comparison_operator = operator.gt
-        if self.get_model_type() == ModelName.DROP:
-            comparison_operator = operator.lt
-            height = operator.neg(height)
         for i in range(len(data) - length - 1):
-            for x in range(1, length):
-                if(comparison_operator(data[i + x],data[i] + height)):
-                    indexes.append(i)
+            check_stair = self.is_stair_in_segment(data.values[i:i + length + 1], height)
+            if check_stair == True:
+                indexes.append(i)
         return indexes
+
+    def is_stair_in_segment(self, segment: np.ndarray, height: float) -> bool:
+        if len(segment) < 2:
+            return False
+        comparison_operator = operator.ge
+        if self.get_model_type() == ModelName.DROP:
+            comparison_operator = operator.le
+            height = operator.neg(height)
+        return comparison_operator(max(segment[1:]), segment[0] + height)
 
     def do_fit(
         self,
@@ -81,7 +86,8 @@ class StairModel(Model):
             deleted_stair = utils.get_interval(data, segment_cent_index, window_size)
             deleted_stair = utils.subtract_min_without_nan(deleted_stair)
             del_conv_stair = scipy.signal.fftconvolve(deleted_stair, self.state.pattern_model)
-            if len(del_conv_stair): del_conv_list.append(max(del_conv_stair))
+            if len(del_conv_stair) > 0:
+                del_conv_list.append(max(del_conv_stair))
 
         self._update_fiting_result(self.state, learning_info.confidence, convolve_list, del_conv_list)
         self.state.stair_height = int(min(learning_info.pattern_height, default = 1))
