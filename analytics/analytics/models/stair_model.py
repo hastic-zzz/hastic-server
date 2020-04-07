@@ -1,4 +1,4 @@
-from models import Model, ModelState, AnalyticSegment, ModelName
+from models import Model, ModelState, AnalyticSegment, ModelType
 
 from analytic_types import TimeSeries
 from analytic_types.learning_info import LearningInfo
@@ -42,13 +42,13 @@ class StairModel(Model):
 
         Keyword arguments:
         data -- data, that contains stair (jump or drop) segments
-        length -- the maximum count of values to be contained in the stair
+        length -- maximum count of values in the stair
         height -- the difference between stair max_line and min_line(see utils.find_parameters)
         """
         indexes = []
         for i in range(len(data) - length - 1):
-            check_stair = self.is_stair_in_segment(data.values[i:i + length + 1], height)
-            if check_stair == True:
+            is_stair = self.is_stair_in_segment(data.values[i:i + length + 1], height)
+            if is_stair == True:
                 indexes.append(i)
         return indexes
 
@@ -56,10 +56,16 @@ class StairModel(Model):
         if len(segment) < 2:
             return False
         comparison_operator = operator.ge
-        if self.get_model_type() == ModelName.DROP:
+        if self.get_model_type() == ModelType.DROP:
             comparison_operator = operator.le
-            height = operator.neg(height)
+            height = -height
         return comparison_operator(max(segment[1:]), segment[0] + height)
+
+    def find_segment_center(self, dataframe: pd.DataFrame, start: int, end: int) -> int:
+        data = dataframe['value']
+        segment = data[start: end]
+        segment_center_index = utils.find_pattern_center(segment, start, self.get_model_type().value)
+        return segment_center_index
 
     def do_fit(
         self,

@@ -347,5 +347,13 @@ class TestUtils(unittest.TestCase):
         expected_result = [{ 'from': 100, 'to': 200 }]
         self.assertEqual(meta_result, expected_result)
 
+    def test_remove_duplicates_and_sort(self):
+        a1 = [1, 3, 5]
+        a2 = [8, 3, 6]
+        expected_result = [1, 3, 5, 6, 8]
+        utils_result = utils.remove_duplicates_and_sort(a1+a2)
+        self.assertEqual(utils_result, expected_result)
+        self.assertEqual([], [])
+
 if __name__ == '__main__':
     unittest.main()

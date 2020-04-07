@@ -438,6 +438,6 @@ def get_min_max(array: list, default):
     return float(min(array, default=default)), float(max(array, default=default))
 
 def remove_duplicates_and_sort(array: list) -> list:
-    array = list(dict.fromkeys(array))
+    array = list(frozenset(array))
     array.sort()
     return array
