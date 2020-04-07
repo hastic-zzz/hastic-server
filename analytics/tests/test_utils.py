@@ -137,28 +137,6 @@ class TestUtils(unittest.TestCase):
         patterns_list = [[1, 1, 1], [2, 2, 2],[3,3,3]]
         result = [2.0, 2.0, 2.0]
         self.assertEqual(utils.get_av_model(patterns_list), result)
-
-    def test_find_jump_nan_data(self):
-        data = [np.nan, np.nan, np.nan, np.nan]
-        data = pd.Series(data)
-        length = 2
-        height = 3
-        length_zero = 0
-        height_zero = 0
-        result = []
-        self.assertEqual(utils.find_jump(data, height, length), result)
-        self.assertEqual(utils.find_jump(data, height_zero, length_zero), result)
-    
-    def test_find_drop_nan_data(self):
-        data = [np.nan, np.nan, np.nan, np.nan]
-        data = pd.Series(data)
-        length = 2
-        height = 3
-        length_zero = 0
-        height_zero = 0
-        result = []
-        self.assertEqual(utils.find_drop(data, height, length), result)
-        self.assertEqual(utils.find_drop(data, height_zero, length_zero), result)
     
     def test_get_distribution_density(self):
         segment = [1, 1, 1, 3, 5, 5, 5]
@@ -368,6 +346,14 @@ class TestUtils(unittest.TestCase):
         meta_result = utils.meta.serialize(serialize_list)
         expected_result = [{ 'from': 100, 'to': 200 }]
         self.assertEqual(meta_result, expected_result)
+
+    def test_remove_duplicates_and_sort(self):
+        a1 = [1, 3, 5]
+        a2 = [8, 3, 6]
+        expected_result = [1, 3, 5, 6, 8]
+        utils_result = utils.remove_duplicates_and_sort(a1+a2)
+        self.assertEqual(utils_result, expected_result)
+        self.assertEqual([], [])
 
 if __name__ == '__main__':
     unittest.main()

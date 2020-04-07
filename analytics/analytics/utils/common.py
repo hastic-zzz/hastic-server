@@ -55,28 +55,6 @@ def find_pattern(data: pd.Series, height: float, length: int, pattern_type: str)
                     pattern_list.append(i)
     return pattern_list
 
-def find_jump(data, height: float, lenght: int) -> List[int]:
-    '''
-    Find jump indexes
-    '''
-    j_list = []
-    for i in range(len(data)-lenght-1):
-        for x in range(1, lenght):
-            if(data[i + x] > data[i] + height):
-                j_list.append(i)
-    return(j_list)
-
-def find_drop(data, height: float, length: int) -> List[int]:
-    '''
-    Find drop indexes
-    '''
-    d_list = []
-    for i in range(len(data)-length-1):
-        for x in range(1, length):
-            if(data[i + x] < data[i] - height):
-                d_list.append(i)
-    return(d_list)
-
 def timestamp_to_index(dataframe: pd.DataFrame, timestamp: int):
     data = dataframe['timestamp']
     idx, = np.where(data >= timestamp)
@@ -459,3 +437,7 @@ def cut_dataframe(data: pd.DataFrame) -> pd.DataFrame:
 def get_min_max(array: list, default):
     return float(min(array, default=default)), float(max(array, default=default))
 
+def remove_duplicates_and_sort(array: list) -> list:
+    array = list(frozenset(array))
+    array.sort()
+    return array

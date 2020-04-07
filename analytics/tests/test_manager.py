@@ -1,5 +1,5 @@
 from models import PeakModel, DropModel, TroughModel, JumpModel, GeneralModel
-from models import DropModelState, JumpModelState, GeneralModelState
+from models import GeneralModelState
 import utils.meta
 import aiounittest
 from analytic_unit_manager import AnalyticUnitManager

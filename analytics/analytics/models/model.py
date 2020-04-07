@@ -1,4 +1,9 @@
+from analytic_types import AnalyticUnitId, ModelCache, TimeSeries
+from analytic_types.segment import Segment
+from analytic_types.learning_info import LearningInfo
+
 import utils
+import utils.meta
 
 from abc import ABC, abstractmethod
 from attrdict import AttrDict
@@ -6,11 +11,18 @@ from typing import Optional, List, Tuple
 import pandas as pd
 import math
 import logging
-from analytic_types import AnalyticUnitId, ModelCache, TimeSeries
-from analytic_types.segment import Segment
-from analytic_types.learning_info import LearningInfo
+from enum import Enum
 
-import utils.meta
+class ModelType(Enum):
+    JUMP = 'jump'
+    DROP = 'drop'
+    PEAK = 'peak'
+    TROUGH = 'trough'
+    GENERAL = 'general'
+
+class ExtremumType(Enum):
+    MAX = 'max'
+    MIN = 'min'
 
 class AnalyticSegment(Segment):
     '''
@@ -121,7 +133,7 @@ class Model(ABC):
         pass
 
     @abstractmethod
-    def get_model_type(self) -> (str, bool):
+    def get_model_type(self) -> ModelType:
         pass
 
     @abstractmethod
@@ -160,8 +172,7 @@ class Model(ABC):
 
         if self.state.window_size == 0:
             self.state.window_size = math.ceil(max_length / 2) if max_length else 0
-        model, model_type = self.get_model_type()
-        learning_info = self.get_parameters_from_segments(dataframe, labeled, deleted, model, model_type)
+        learning_info = self.get_parameters_from_segments(dataframe, labeled, deleted, self.get_model_type())
         self.do_fit(dataframe, labeled, deleted, learning_info)
         logging.debug('fit complete successful with self.state: {} for analytic unit: {}'.format(self.state, id))
         return self.state
@@ -181,14 +192,14 @@ class Model(ABC):
             'cache': self.state,
         }
 
-    def _update_fiting_result(self, state: ModelState, confidences: list, convolve_list: list, del_conv_list: list, height_list: Optional[list] = None) -> None:
+    def _update_fitting_result(self, state: ModelState, confidences: list, convolve_list: list, del_conv_list: list, height_list: Optional[list] = None) -> None:
         state.confidence = float(min(confidences, default = 1.5))
         state.convolve_min, state.convolve_max = utils.get_min_max(convolve_list, state.window_size)
         state.conv_del_min, state.conv_del_max = utils.get_min_max(del_conv_list, 0)
         if height_list is not None:
             state.height_min, state.height_max = utils.get_min_max(height_list, 0)
 
-    def get_parameters_from_segments(self, dataframe: pd.DataFrame, labeled: List[dict], deleted: List[dict], model: str, model_type: bool) -> dict:
+    def get_parameters_from_segments(self, dataframe: pd.DataFrame, labeled: List[dict], deleted: List[dict], model: ModelType) -> dict:
         logging.debug('Start parsing segments')
         learning_info = LearningInfo()
         data = dataframe['value']
@@ -205,11 +216,12 @@ class Model(ABC):
                     segment_center, self.state.window_size, len(data)))
                 continue
             learning_info.patterns_list.append(aligned_segment)
-            if model == 'peak' or model == 'trough':
+            # TODO: use Triangle/Stair types
+            if model == ModelType.PEAK or model == ModelType.TROUGH:
                 learning_info.pattern_height.append(utils.find_confidence(aligned_segment)[1])
                 learning_info.patterns_value.append(aligned_segment.values.max())
-            if model == 'jump' or model == 'drop':
-                pattern_height, pattern_length = utils.find_parameters(segment.data, segment.from_index, model)
+            if model == ModelType.JUMP or model == ModelType.DROP:
+                pattern_height, pattern_length = utils.find_parameters(segment.data, segment.from_index, model.value)
                 learning_info.pattern_height.append(pattern_height)
                 learning_info.pattern_width.append(pattern_length)
                 learning_info.patterns_value.append(aligned_segment.values[self.state.window_size])
