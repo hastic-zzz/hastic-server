@@ -216,6 +216,7 @@ class Model(ABC):
                     segment_center, self.state.window_size, len(data)))
                 continue
             learning_info.patterns_list.append(aligned_segment)
+            # TODO: use Triangle/Stair types
             if model == ModelType.PEAK or model == ModelType.TROUGH:
                 learning_info.pattern_height.append(utils.find_confidence(aligned_segment)[1])
                 learning_info.patterns_value.append(aligned_segment.values.max())
