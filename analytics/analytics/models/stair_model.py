@@ -115,7 +115,7 @@ class StairModel(Model):
             return []
         pattern_data = self.state.pattern_model
         for segment_index in segments_indexes:
-            if segment_index < self.state.window_size or segment_index > (len(data) - self.state.window_size):
+            if segment_index <= self.state.window_size or segment_index >= (len(data) - self.state.window_size):
                 delete_list.append(segment_index)
                 continue
             convol_data = utils.get_interval(data, segment_index, self.state.window_size)
@@ -143,4 +143,5 @@ class StairModel(Model):
 
         for item in delete_list:
             segments_indexes.remove(item)
-        return set(segments_indexes)
+        segments_indexes = utils.remove_duplicates_and_sort(segments_indexes)
+        return segments_indexes
