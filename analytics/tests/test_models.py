@@ -8,13 +8,13 @@ class TestModel(unittest.TestCase):
     def test_stair_model_get_indexes(self):
         drop_model = models.DropModel()
         jump_model = models.JumpModel()
-        drop_data = pd.Series([4,4,4,1,1,1,5,5,2,2,2])
-        jump_data = pd.Series([1,1,1,4,4,4,2,2,5,5,5])
-        jump_data_one_stair = pd.Series([1,3,3])
-        drop_data_one_stair = pd.Series([4,2,1])
+        drop_data = pd.Series([4, 4, 4, 1, 1, 1, 5, 5, 2, 2, 2])
+        jump_data = pd.Series([1, 1, 1, 4, 4, 4, 2, 2, 5, 5, 5])
+        jump_data_one_stair = pd.Series([1, 3, 3])
+        drop_data_one_stair = pd.Series([4, 2, 1])
         height = 2
         length = 2
-        expected_result = [2,7]
+        expected_result = [2, 7]
         drop_model_result = drop_model.get_stair_indexes(drop_data, height, length)
         jump_model_result = jump_model.get_stair_indexes(jump_data, height, length)
         drop_one_stair_result = drop_model.get_stair_indexes(drop_data_one_stair, height, 1)

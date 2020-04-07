@@ -20,6 +20,10 @@ class ModelType(Enum):
     TROUGH = 'trough'
     GENERAL = 'general'
 
+class ExtremumType(Enum):
+    MAX = 'max'
+    MIN = 'min'
+
 class AnalyticSegment(Segment):
     '''
     Segment with specific analytics fields used by models:
@@ -188,7 +192,7 @@ class Model(ABC):
             'cache': self.state,
         }
 
-    def _update_fiting_result(self, state: ModelState, confidences: list, convolve_list: list, del_conv_list: list, height_list: Optional[list] = None) -> None:
+    def _update_fitting_result(self, state: ModelState, confidences: list, convolve_list: list, del_conv_list: list, height_list: Optional[list] = None) -> None:
         state.confidence = float(min(confidences, default = 1.5))
         state.convolve_min, state.convolve_max = utils.get_min_max(convolve_list, state.window_size)
         state.conv_del_min, state.conv_del_max = utils.get_min_max(del_conv_list, 0)

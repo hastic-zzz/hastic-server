@@ -62,7 +62,7 @@ class TriangleModel(Model):
                 del_conv_list.append(max(del_conv))
             delete_pattern_height.append(utils.find_confidence(deleted)[1])
 
-        self._update_fiting_result(self.state, learning_info.confidence, convolve_list, del_conv_list, height_list)
+        self._update_fitting_result(self.state, learning_info.confidence, convolve_list, del_conv_list, height_list)
 
     def do_detect(self, dataframe: pd.DataFrame) -> TimeSeries:
         data = utils.cut_dataframe(dataframe)

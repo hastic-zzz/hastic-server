@@ -95,7 +95,7 @@ class StairModel(Model):
             if len(del_conv_stair) > 0:
                 del_conv_list.append(max(del_conv_stair))
 
-        self._update_fiting_result(self.state, learning_info.confidence, convolve_list, del_conv_list)
+        self._update_fitting_result(self.state, learning_info.confidence, convolve_list, del_conv_list)
         self.state.stair_height = int(min(learning_info.pattern_height, default = 1))
         self.state.stair_length = int(max(learning_info.pattern_width, default = 1))
 
@@ -106,41 +106,41 @@ class StairModel(Model):
         result = self.__filter_detection(possible_stairs, data)
         return [(val - 1, val + 1) for val in result]
 
-    def __filter_detection(self, segments: List[int], data: list):
+    def __filter_detection(self, segments_indexes: List[int], data: list):
         delete_list = []
         variance_error = self.state.window_size
-        close_patterns = utils.close_filtering(segments, variance_error)
-        segments = utils.best_pattern(close_patterns, data, 'min')
-        if len(segments) == 0 or len(self.state.pattern_center) == 0:
-            segments = []
-            return segments
+        close_segments = utils.close_filtering(segments_indexes, variance_error)
+        segments_indexes = utils.best_pattern(close_segments, data, self.get_extremum_type().value)
+        if len(segments_indexes) == 0 or len(self.state.pattern_center) == 0:
+            return []
         pattern_data = self.state.pattern_model
-        for segment in segments:
-            if segment > self.state.window_size and segment < (len(data) - self.state.window_size):
-                convol_data = utils.get_interval(data, segment, self.state.window_size)
-                percent_of_nans = convol_data.isnull().sum() / len(convol_data)
-                if len(convol_data) == 0 or percent_of_nans > 0.5:
-                    delete_list.append(segment)
-                    continue
-                elif 0 < percent_of_nans <= 0.5:
-                    nan_list = utils.find_nan_indexes(convol_data)
-                    convol_data = utils.nan_to_zero(convol_data, nan_list)
-                    pattern_data = utils.nan_to_zero(pattern_data, nan_list)
-                conv = scipy.signal.fftconvolve(convol_data, pattern_data)
-                upper_bound = self.state.convolve_max * (1 + POSITIVE_SEGMENT_MEASUREMENT_ERROR)
-                lower_bound = self.state.convolve_min * (1 - POSITIVE_SEGMENT_MEASUREMENT_ERROR)
-                delete_up_bound = self.state.conv_del_max * (1 + NEGATIVE_SEGMENT_MEASUREMENT_ERROR)
-                delete_low_bound = self.state.conv_del_min * (1 - NEGATIVE_SEGMENT_MEASUREMENT_ERROR)
-                if len(conv) > 0:
-                    if max(conv) > upper_bound or max(conv) < lower_bound:
-                        delete_list.append(segment)
-                    elif max(conv) < delete_up_bound and max(conv) > delete_low_bound:
-                        delete_list.append(segment)
-                else:
-                    delete_list.append(segment)
-            else:
-                delete_list.append(segment)
+        for segment_index in segments_indexes:
+            if segment_index < self.state.window_size or segment_index > (len(data) - self.state.window_size):
+                delete_list.append(segment_index)
+                continue
+            convol_data = utils.get_interval(data, segment_index, self.state.window_size)
+            percent_of_nans = convol_data.isnull().sum() / len(convol_data)
+            if len(convol_data) == 0 or percent_of_nans > 0.5:
+                delete_list.append(segment_index)
+                continue
+            elif 0 < percent_of_nans <= 0.5:
+                nan_list = utils.find_nan_indexes(convol_data)
+                convol_data = utils.nan_to_zero(convol_data, nan_list)
+                pattern_data = utils.nan_to_zero(pattern_data, nan_list)
+            conv = scipy.signal.fftconvolve(convol_data, pattern_data)
+            if len(conv) == 0:
+                delete_list.append(segment_index)
+                continue
+            upper_bound = self.state.convolve_max * (1 + POSITIVE_SEGMENT_MEASUREMENT_ERROR)
+            lower_bound = self.state.convolve_min * (1 - POSITIVE_SEGMENT_MEASUREMENT_ERROR)
+            delete_up_bound = self.state.conv_del_max * (1 + NEGATIVE_SEGMENT_MEASUREMENT_ERROR)
+            delete_low_bound = self.state.conv_del_min * (1 - NEGATIVE_SEGMENT_MEASUREMENT_ERROR)
+            max_conv = max(conv)
+            if max_conv > upper_bound or max_conv < lower_bound:
+                delete_list.append(segment_index)
+            elif max_conv < delete_up_bound and max_conv > delete_low_bound:
+                delete_list.append(segment_index)
 
         for item in delete_list:
-            segments.remove(item)
-        return set(segments)
+            segments_indexes.remove(item)
+        return set(segments_indexes)
