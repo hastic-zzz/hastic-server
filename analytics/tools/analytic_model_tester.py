@@ -94,8 +94,8 @@ def main(model_type: str) -> None:
             segments = data.get_segments_for_detection(1, 0)
             segments = [Segment.from_json(segment) for segment in segments]
             detector = pattern_detector.PatternDetector('PEAK', 'test_id')
-            train_result = detector.train(dataset, segments, {})
-            cache = train_result['cache']
+            training_result = detector.train(dataset, segments, {})
+            cache = training_result['cache']
             detect_result = detector.detect(dataset, cache)
             detect_result = detect_result.to_json()
             peak_metric = Metric(data.get_all_correct_segments(), detect_result)
