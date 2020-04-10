@@ -15,6 +15,7 @@ from detectors import pattern_detector, threshold_detector, anomaly_detector
 PEAK_DATASETS = []
 # dataset with 3 peaks
 TEST_DATA = test_dataset.create_dataframe([0, 0, 3, 5, 7, 5, 3, 0, 0, 1, 0, 1, 4, 6, 8, 6, 4, 1, 0, 0, 0, 1, 0, 3, 5, 7, 5, 3, 0, 1, 1])
+# TODO: more convenient way to specify labeled segments
 POSITIVE_SEGMENTS = [{'from': 1523889000001, 'to': 1523889000007}, {'from': 1523889000022, 'to': 1523889000028}]
 NEGATIVE_SEGMENTS = [{'from': 1523889000011, 'to': 1523889000017}]
 
@@ -117,6 +118,5 @@ if __name__ == '__main__':
         print(main(model_type))
     else:
         print('Enter one of models name: {}'.format(correct_name))
-
 
 
