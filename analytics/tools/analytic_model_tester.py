@@ -5,19 +5,22 @@ sys.path.extend([ANALYTICS_PATH, TESTS_PATH])
 
 import pandas as pd
 import numpy as np
-import utils
-import test_dataset
-from analytic_types.segment import Segment
-from detectors import pattern_detector, threshold_detector, anomaly_detector
+import asyncio
+from typing import List, Tuple
 
+import utils
+from analytic_types.segment import Segment
+from analytic_unit_manager import AnalyticUnitManager
+
+START_TIMESTAMP = 1523889000000
 # TODO: get_dataset
 # TODO: get_segment
 PEAK_DATASETS = []
 # dataset with 3 peaks
-TEST_DATA = test_dataset.create_dataframe([0, 0, 3, 5, 7, 5, 3, 0, 0, 1, 0, 1, 4, 6, 8, 6, 4, 1, 0, 0, 0, 1, 0, 3, 5, 7, 5, 3, 0, 1, 1])
+TEST_DATA = [0, 0, 3, 5, 7, 5, 3, 0, 0, 1, 0, 1, 4, 6, 8, 6, 4, 1, 0, 0, 0, 1, 0, 3, 5, 7, 5, 3, 0, 1, 1]
 # TODO: more convenient way to specify labeled segments
-POSITIVE_SEGMENTS = [{'from': 1523889000001, 'to': 1523889000007}, {'from': 1523889000022, 'to': 1523889000028}]
-NEGATIVE_SEGMENTS = [{'from': 1523889000011, 'to': 1523889000017}]
+POSITIVE_SEGMENTS = [{ 'from': 1, 'to': 7 }, { 'from': 22, 'to': 28 }]
+NEGATIVE_SEGMENTS = [{ 'from': 11, 'to': 17 }]
 
 class TesterSegment():
 
@@ -30,8 +33,8 @@ class TesterSegment():
         return {
             '_id': 'q',
             'analyticUnitId': 'q',
-            'from': self.start,
-            'to': self.end,
+            'from': START_TIMESTAMP + self.start,
+            'to': START_TIMESTAMP + self.end,
             'labeled': self.labeled,
             'deleted': not self.labeled
         }
@@ -61,45 +64,66 @@ class Metric():
 
 class ModelData():
 
-    def __init__(self, frame: pd.DataFrame, positive_segments, negative_segments, model_type: str):
-        self.frame = frame
+    def __init__(self, data_values: List[float], positive_segments, negative_segments, model_type: str):
+        self.data_values = data_values
         self.positive_segments = positive_segments
         self.negative_segments = negative_segments
         self.model_type = model_type
 
     def get_segments_for_detection(self, positive_amount, negative_amount):
-        segments = []
-        for idx, bounds in enumerate(self.positive_segments):
-            if idx >= positive_amount:
-                break
-            segments.append(TesterSegment(bounds['from'], bounds['to'], True).get_segment())
+        positive_segments = [segment for idx, segment in enumerate(self.get_positive_segments()) if idx < positive_amount]
+        negative_segments = [segment for idx, segment in enumerate(self.get_negative_segments()) if idx < negative_amount]
+        return positive_segments + negative_segments
 
-        for idx, bounds in enumerate(self.negative_segments):
-            if idx >= negative_amount:
-                break
-            segments.append(TesterSegment(bounds['from'], bounds['to'], False).get_segment())
+    def get_formated_segments(self, segments, positive: bool):
+        return [TesterSegment(segment['from'], segment['to'], positive).get_segment() for segment in segments]
 
-        return segments
+    def get_positive_segments(self):
+        return self.get_formated_segments(self.positive_segments, True)
 
-    def get_all_correct_segments(self):
-        return self.positive_segments
+    def get_negative_segments(self):
+        return self.get_formated_segments(self.negative_segments, False)
+
+    def get_timestamp_values_list(self) -> List[Tuple[int, float]]:
+        data_timestamp_list = [START_TIMESTAMP + i for i in range(len(self.data_values))]
+        return list(zip(data_timestamp_list, self.data_values))
+
+    def get_task(self, task_type: str, cache = None) -> dict:
+        data = self.get_timestamp_values_list()
+        start_timestamp, end_timestamp = data[0][0], data[-1][0]
+        analytic_unit_type = self.model_type.upper()
+        task = {
+            'analyticUnitId': 'testUnitId',
+            'type': task_type,
+            'payload': {
+                'data': data,
+                'from': start_timestamp,
+                'to': end_timestamp,
+                'analyticUnitType': analytic_unit_type,
+                'detector': 'pattern',
+                'cache': cache
+            },
+            '_id': 'testId'
+        }
+        # TODO: enum for task_type
+        if(task_type == 'LEARN'):
+            segments = self.get_segments_for_detection(1, 0)
+            task['payload']['segments'] = segments
+        return task
 
 PEAK_DATA_1 = ModelData(TEST_DATA, POSITIVE_SEGMENTS, NEGATIVE_SEGMENTS, 'peak')
 PEAK_DATASETS.append(PEAK_DATA_1)
 
-def main(model_type: str) -> None:
+async def main(model_type: str) -> None:
     table_metric = []
     if model_type == 'peak':
         for data in PEAK_DATASETS:
-            dataset = data.frame
-            segments = data.get_segments_for_detection(1, 0)
-            segments = [Segment.from_json(segment) for segment in segments]
-            detector = pattern_detector.PatternDetector('PEAK', 'test_id')
-            training_result = detector.train(dataset, segments, {})
-            cache = training_result['cache']
-            detect_result = detector.detect(dataset, cache)
-            detect_result = detect_result.to_json()
-            peak_metric = Metric(data.get_all_correct_segments(), detect_result)
+            manager = AnalyticUnitManager()
+            learning_task = data.get_task('LEARN')
+            learning_result = await manager.handle_analytic_task(learning_task)
+            detect_task = data.get_task('DETECT', learning_result['payload']['cache'])
+            detect_result = await manager.handle_analytic_task(detect_task)
+            peak_metric = Metric(data.get_positive_segments(), detect_result['payload'])
             table_metric.append((peak_metric.get_amount(), peak_metric.get_accuracy()))
     return table_metric
 
@@ -114,8 +138,10 @@ if __name__ == '__main__':
         print('Enter one of models name: {}'.format(correct_name))
         sys.exit(1)
     model_type = str(sys.argv[1]).lower()
+    loop = asyncio.get_event_loop()
     if model_type in correct_name:
-        print(main(model_type))
+        result = loop.run_until_complete(main(model_type))
+        print(result)
     else:
         print('Enter one of models name: {}'.format(correct_name))
 
