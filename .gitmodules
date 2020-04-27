@@ -1,0 +1,3 @@
+[submodule "analytics"]
+	path = analytics
+	url = https://github.com/hastic/analytics
