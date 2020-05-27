@@ -7,6 +7,10 @@ import * as moment from 'moment';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
+import { exit } from 'process'; // it's very bad to use it in config, but life is full of pain
+
+const EXIT_CODE_MISSING_FIELD = 3;
+const EXIT_CODE_BAD_VALUE_FIELD = 4;
 
 // GIT_BRANCH, GIT_COMMITHASH, GIT_VERSION variables are defined by webpack
 // TypeScript doesn't know that these variables exist
@@ -27,12 +31,12 @@ export type DBConfig = {
 
 export const ANALYTICS_PATH = path.join(__dirname, '../../analytics');
 
-export const HASTIC_DB_IN_MEMORY = getConfigField('HASTIC_IN_MEMORY_PERSISTANCE', false);
+export const HASTIC_DB_IN_MEMORY = getConfigFieldAndPrintOrExit('HASTIC_IN_MEMORY_PERSISTANCE', false);
 // TODO: enum for DB types
-export const HASTIC_DB_CONNECTION_TYPE = getConfigField('HASTIC_DB_CONNECTION_TYPE', 'nedb', ['nedb', 'mongodb']);
+export const HASTIC_DB_CONNECTION_TYPE = getConfigFieldAndPrintOrExit('HASTIC_DB_CONNECTION_TYPE', 'nedb', ['nedb', 'mongodb']);
 
 //connection string syntax: <db_user>:<db_password>@<db_url>/<db_name>
-export const HASTIC_DB_CONNECTION_STRING = getConfigField(
+export const HASTIC_DB_CONNECTION_STRING = getConfigFieldAndPrintOrExit(
   'HASTIC_DB_CONNECTION_STRING',
   'hastic:password@mongodb:27017/hastic'
 );
@@ -47,24 +51,24 @@ export const THRESHOLD_DATABASE_PATH = path.join(DATA_PATH, 'treshold.db');
 export const DETECTION_SPANS_DATABASE_PATH = path.join(DATA_PATH, 'detection_spans.db');
 export const DB_META_PATH = path.join(DATA_PATH, 'db_meta.db');
 
-export const HASTIC_PORT = getConfigField('HASTIC_PORT', '8000');
-export const HASTIC_API_KEY = getConfigField('HASTIC_API_KEY');
-export const GRAFANA_URL = normalizeUrl(getConfigField('GRAFANA_URL', null));
+export const HASTIC_PORT = getConfigFieldAndPrintOrExit('HASTIC_PORT', '8000');
+export const HASTIC_API_KEY = getConfigFieldAndPrintOrExit('HASTIC_API_KEY');
+export const GRAFANA_URL = normalizeUrl(getConfigFieldAndPrintOrExit('GRAFANA_URL', null));
 
 // TODO: save orgId in analytic_units.db
-export const ORG_ID = getConfigField('ORG_ID', 1);
+export const ORG_ID = getConfigFieldAndPrintOrExit('ORG_ID', 1);
 
 export enum AlertTypes {
   WEBHOOK = 'webhook',
   ALERTMANAGER = 'alertmanager'
 };
-export const HASTIC_ALERT_TYPE = getConfigField('HASTIC_ALERT_TYPE', AlertTypes.WEBHOOK, _.values(AlertTypes));
-export const HASTIC_ALERT_IMAGE = getConfigField('HASTIC_ALERT_IMAGE', false);
+export const HASTIC_ALERT_TYPE = getConfigFieldAndPrintOrExit('HASTIC_ALERT_TYPE', AlertTypes.WEBHOOK, _.values(AlertTypes));
+export const HASTIC_ALERT_IMAGE = getConfigFieldAndPrintOrExit('HASTIC_ALERT_IMAGE', false);
 
-export const HASTIC_WEBHOOK_URL = getConfigField('HASTIC_WEBHOOK_URL', null);
+export const HASTIC_WEBHOOK_URL = getConfigFieldAndPrintOrExit('HASTIC_WEBHOOK_URL', null);
 export const HASTIC_TIMEZONE_OFFSET = getTimeZoneOffset();
 
-export const HASTIC_ALERTMANAGER_URL = getConfigField('HASTIC_ALERTMANAGER_URL', null);
+export const HASTIC_ALERTMANAGER_URL = getConfigFieldAndPrintOrExit('HASTIC_ALERTMANAGER_URL', null);
 
 export const ANALYTICS_PING_INTERVAL = 500; // ms
 export const PACKAGE_VERSION = getPackageVersion();
@@ -77,11 +81,14 @@ export const INSIDE_DOCKER = process.env.INSIDE_DOCKER !== undefined;
 export const PRODUCTION_MODE = process.env.NODE_ENV !== 'development';
 
 // TODO: maybe rename it to "HASTIC_SERVER_ANALYTICS_URL"
-export const HASTIC_SERVER_URL = getConfigField('HASTIC_SERVER_URL', 'ws://localhost:8002');
-export const HASTIC_INSTANCE_NAME = getConfigField('HASTIC_INSTANCE_NAME', os.hostname());
+export const HASTIC_SERVER_URL = getConfigFieldAndPrintOrExit('HASTIC_SERVER_URL', 'ws://localhost:8002');
+export const HASTIC_INSTANCE_NAME = getConfigFieldAndPrintOrExit('HASTIC_INSTANCE_NAME', os.hostname());
 
 
-function getConfigField(field: string, defaultVal?: any, allowedVals?: any[]) {
+/**
+ * You get a value or exit from the main process
+ */
+function getConfigFieldAndPrintOrExit(field: string, defaultVal?: any, allowedVals?: any[]) {
   let val;
 
   if(process.env[field] !== undefined) {
@@ -96,13 +103,16 @@ function getConfigField(field: string, defaultVal?: any, allowedVals?: any[]) {
 
   if(val === undefined || val == '') {
     if(defaultVal === undefined) {
-      throw new Error(`Please configure ${field}`);
+      console.log(`Please configure ${field}`);
+      exit(EXIT_CODE_MISSING_FIELD);
     }
+
     val = defaultVal;
   }
 
   if(allowedVals !== undefined && !_.includes(allowedVals, val)) {
-    throw new Error(`${field} value must be in ${allowedVals}, got ${val}`);
+    console.log(`${field} value must be one of: ${allowedVals}, got ${val}`);
+    exit(EXIT_CODE_BAD_VALUE_FIELD);
   }
 
   console.log(`${field}: ${val}`);
@@ -159,7 +169,7 @@ function getDbConfig(connectionStr: string): DBConfig {
 }
 
 function getTimeZoneOffset(): number {
-  let configTimeZone = getConfigField('HASTIC_TIMEZONE_OFFSET', null);
+  let configTimeZone = getConfigFieldAndPrintOrExit('HASTIC_TIMEZONE_OFFSET', null);
   if(configTimeZone !== null) {
     return parseTimeZone(configTimeZone);
   } else {

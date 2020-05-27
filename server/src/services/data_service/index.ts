@@ -69,8 +69,6 @@ export function makeDBQ(collection: Collection): DBQ {
 }
 
 
-
-
 function maybeCreateDir(path: string): void {
   if(fs.existsSync(path)) {
     return;
