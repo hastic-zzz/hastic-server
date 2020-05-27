@@ -86,7 +86,7 @@ export const HASTIC_INSTANCE_NAME = getConfigFieldAndPrintOrExit('HASTIC_INSTANC
 
 
 /**
- * You get an value or exit from the main process
+ * You get a value or exit from the main process
  */
 function getConfigFieldAndPrintOrExit(field: string, defaultVal?: any, allowedVals?: any[]) {
   let val;
