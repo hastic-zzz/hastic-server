@@ -111,7 +111,7 @@ function getConfigFieldAndPrintOrExit(field: string, defaultVal?: any, allowedVa
   }
 
   if(allowedVals !== undefined && !_.includes(allowedVals, val)) {
-    console.log(`${field} value must be in ${allowedVals}, got ${val}`);
+    console.log(`${field} value must be one of: ${allowedVals}, got ${val}`);
     exit(EXIT_CODE_BAD_VALUE_FIELD);
   }
 
