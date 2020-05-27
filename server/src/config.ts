@@ -7,6 +7,10 @@ import * as moment from 'moment';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
+import { exit } from 'process'; // it's very bad to use it in config, but life is full of pain
+
+const EXIT_CODE_MISSING_FIELD = 3;
+const EXIT_CODE_BAD_VALUE_FIELD = 4;
 
 // GIT_BRANCH, GIT_COMMITHASH, GIT_VERSION variables are defined by webpack
 // TypeScript doesn't know that these variables exist
@@ -102,13 +106,16 @@ function getConfigFieldAndPrintOrExit(field: string, defaultVal?: any, allowedVa
 
   if(val === undefined || val == '') {
     if(defaultVal === undefined) {
-      throw new Error(`Please configure ${field}`);
+      console.log(`Please configure ${field}`);
+      exit(EXIT_CODE_MISSING_FIELD);
     }
+    
     val = defaultVal;
   }
 
   if(allowedVals !== undefined && !_.includes(allowedVals, val)) {
-    throw new Error(`${field} value must be in ${allowedVals}, got ${val}`);
+    console.log(`${field} value must be in ${allowedVals}, got ${val}`);
+    exit(EXIT_CODE_BAD_VALUE_FIELD);
   }
 
   console.log(`${field}: ${val}`);
