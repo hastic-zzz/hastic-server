@@ -134,25 +134,6 @@ function getPackageVersion() {
   }
 }
 
-function getGitInfo() {
-  let gitRoot = path.join(__dirname, '../../.git');
-  let gitHeadFile = path.join(gitRoot, 'HEAD');
-  if(!fs.existsSync(gitHeadFile)) {
-    console.error(`Can't find git HEAD file ${gitHeadFile}`);
-    return null;
-  }
-  const ref = fs.readFileSync(gitHeadFile).toString();
-  let branchPath = ref.indexOf(':') === -1 ? ref : ref.slice(5, -1);
-  let branch = branchPath.split('/').pop();
-  const branchFilename = `${gitRoot}/${branchPath}`;
-  if(!fs.existsSync(branchFilename)) {
-    console.error(`Can't find git branch file ${branchFilename}`);
-    return null;
-  }
-  let commitHash = fs.readFileSync(branchFilename).toString().slice(0, 7);
-  return { branch, commitHash };
-}
-
 // TODO: move to data_layer
 function getDbConfig(connectionStr: string): DBConfig {
   const [user, password] = connectionStr.split('@')[0].split(':');
