@@ -1,0 +1,8 @@
+export enum Collection {
+  ANALYTIC_UNITS,
+  ANALYTIC_UNIT_CACHES,
+  SEGMENTS,
+  THRESHOLD,
+  DETECTION_SPANS,
+  DB_META
+};
