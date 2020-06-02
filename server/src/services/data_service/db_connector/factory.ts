@@ -10,12 +10,12 @@ export class DbConnectorFactory {
   private static _connector: DbConnector;
 
   public static async getDbConnector(): Promise<DbConnector> {
-    if (this._connector !== undefined) {
+    if(this._connector !== undefined) {
       return this._connector;
     }
 
     let connector: DbConnector;
-    switch (config.HASTIC_DB_CONNECTION_TYPE) {
+    switch(config.HASTIC_DB_CONNECTION_TYPE) {
       case DBType.nedb:
         connector = new NedbConnector();
         break;
