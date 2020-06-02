@@ -1,11 +1,14 @@
 import { Collection } from '../collection';
 import { DbConnector } from './index';
+import { dbCollection } from '../../data_layer';
 import * as config from '../../../config';
 
 import * as mongodb from 'mongodb';
 
 
-export class MongodbConnector extends DbConnector {
+export class MongodbConnector implements DbConnector {
+  private _db = new Map<Collection, dbCollection>();
+
   private static COLLECTION_TO_NAME_MAPPING = new Map<Collection, string>([
     [Collection.ANALYTIC_UNITS, 'analytic_units'],
     [Collection.ANALYTIC_UNIT_CACHES, 'analytic_unit_caches'],
@@ -17,11 +20,9 @@ export class MongodbConnector extends DbConnector {
 
   private _client: mongodb.MongoClient;
 
-  constructor() {
-    super();
-  }
+  constructor() { }
 
-  async init() {
+  async init(): Promise<void> {
     const dbConfig = config.HASTIC_DB_CONFIG;
     const uri = `mongodb://${dbConfig.user}:${dbConfig.password}@${dbConfig.url}`;
     const auth = {
@@ -41,13 +42,19 @@ export class MongodbConnector extends DbConnector {
     try {
       const client: mongodb.MongoClient = await this._client.connect();
       const hasticDb: mongodb.Db = client.db(dbConfig.dbName);
-      MongodbConnector.COLLECTION_TO_NAME_MAPPING.forEach((name, collection) => {
-        this._db.set(collection, hasticDb.collection(name));
-      });
+      MongodbConnector.COLLECTION_TO_NAME_MAPPING.forEach(
+        (name: string, collection: Collection) => {
+          this._db.set(collection, hasticDb.collection(name));
+        }
+      );
     } catch(err) {
       console.log(`got error while connecting to MongoDB: ${err}`);
       // TODO: throw a better error, e.g.: ServiceInitializationError
       throw err;
     }
+  }
+
+  get db(): Map<Collection, dbCollection> {
+    return this._db;
   }
 }
