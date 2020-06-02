@@ -43,8 +43,9 @@ export class NedbConnector extends DbConnector {
     // TODO: move this log outside
     console.log('NeDB is used as the storage');
     checkDataFolders();
-    
+
     const inMemoryOnly = config.HASTIC_DB_IN_MEMORY;
+    // TODO: it can throw an error, so we should catch it
     NedbConnector.COLLECTION_TO_CONFIG_MAPPING.forEach(
       (config: NedbCollectionConfig, collection: Collection) => {
         this._db.set(collection, new nedb({ ...config, autoload: true, inMemoryOnly }));

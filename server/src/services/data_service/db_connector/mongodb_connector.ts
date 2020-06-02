@@ -45,8 +45,9 @@ export class MongodbConnector extends DbConnector {
       MongodbConnector.COLLECTION_TO_NAME_MAPPING.forEach((name, collection) => {
         this._db.set(collection, hasticDb.collection(name));
       });
-    } catch (err) {
+    } catch(err) {
       console.log(`got error while connecting to MongoDB: ${err}`);
+      // TODO: throw a better error, e.g.: ServiceInitializationError
       throw err;
     }
   }
