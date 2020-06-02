@@ -40,8 +40,6 @@ export class NedbConnector extends DbConnector {
   }
 
   async init() {
-    // TODO: move this log outside
-    console.log('NeDB is used as the storage');
     checkDataFolders();
 
     const inMemoryOnly = config.HASTIC_DB_IN_MEMORY;
