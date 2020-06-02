@@ -35,6 +35,7 @@ export class MongodbConnector extends DbConnector {
       auth,
       autoReconnect: true,
       useUnifiedTopology: true,
+      // TODO: it should be configurable
       authMechanism: 'SCRAM-SHA-1',
       authSource: dbConfig.dbName
     });
