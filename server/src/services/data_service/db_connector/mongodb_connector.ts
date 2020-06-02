@@ -22,6 +22,7 @@ export class MongodbConnector extends DbConnector {
   }
 
   async init() {
+    // TODO: move this log outside
     console.log('MongoDB is used as the storage');
     const dbConfig = config.HASTIC_DB_CONFIG;
     const uri = `mongodb://${dbConfig.user}:${dbConfig.password}@${dbConfig.url}`;

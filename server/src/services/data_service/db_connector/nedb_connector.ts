@@ -6,6 +6,11 @@ import * as nedb from 'nedb';
 import * as fs from 'fs';
 
 
+type NedbCollectionConfig = {
+  filename: string,
+  timestampData?: boolean
+};
+
 function maybeCreateDir(path: string): void {
   if (fs.existsSync(path)) {
     return;
@@ -21,7 +26,7 @@ function checkDataFolders(): void {
 }
 
 export class NedbConnector extends DbConnector {
-  private static COLLECTION_TO_CONFIG_MAPPING = new Map<Collection, { filename: string, timestampData?: boolean }>([
+  private static COLLECTION_TO_CONFIG_MAPPING = new Map<Collection, NedbCollectionConfig>([
     [Collection.ANALYTIC_UNITS, { filename: config.ANALYTIC_UNITS_DATABASE_PATH, timestampData: true }],
     [Collection.ANALYTIC_UNIT_CACHES, { filename: config.ANALYTIC_UNIT_CACHES_DATABASE_PATH }],
     [Collection.SEGMENTS, { filename: config.SEGMENTS_DATABASE_PATH }],
@@ -35,12 +40,13 @@ export class NedbConnector extends DbConnector {
   }
 
   async init() {
-    checkDataFolders();
-    const inMemoryOnly = config.HASTIC_DB_IN_MEMORY;
+    // TODO: move this log outside
     console.log('NeDB is used as the storage');
-    // TODO: it's better if models request db which we create if it`s needed
+    checkDataFolders();
+    
+    const inMemoryOnly = config.HASTIC_DB_IN_MEMORY;
     NedbConnector.COLLECTION_TO_CONFIG_MAPPING.forEach(
-      (config: { filename: string, timestampData?: boolean }, collection: Collection) => {
+      (config: NedbCollectionConfig, collection: Collection) => {
         this._db.set(collection, new nedb({ ...config, autoload: true, inMemoryOnly }));
       }
     );
