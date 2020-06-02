@@ -9,6 +9,8 @@ import * as config from '../../../config';
 export class DbConnectorFactory {
   private static _connector: DbConnector;
 
+  private constructor() { }
+
   public static async getDbConnector(): Promise<DbConnector> {
     if(this._connector !== undefined) {
       return this._connector;
@@ -17,11 +19,11 @@ export class DbConnectorFactory {
     let connector: DbConnector;
     switch(config.HASTIC_DB_CONNECTION_TYPE) {
       case DBType.nedb:
-        connector = new NedbConnector();
+        connector = NedbConnector.instance;
         break;
 
       case DBType.mongodb:
-        connector = new MongodbConnector();
+        connector = MongodbConnector.instance;
         break;
 
       default:

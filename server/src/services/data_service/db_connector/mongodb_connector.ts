@@ -7,6 +7,8 @@ import * as mongodb from 'mongodb';
 
 
 export class MongodbConnector implements DbConnector {
+  private static _instance: MongodbConnector;
+
   private _db = new Map<Collection, dbCollection>();
 
   private static COLLECTION_TO_NAME_MAPPING = new Map<Collection, string>([
@@ -20,7 +22,7 @@ export class MongodbConnector implements DbConnector {
 
   private _client: mongodb.MongoClient;
 
-  constructor() { }
+  private constructor() { }
 
   async init(): Promise<void> {
     const dbConfig = config.HASTIC_DB_CONFIG;
@@ -56,5 +58,12 @@ export class MongodbConnector implements DbConnector {
 
   get db(): Map<Collection, dbCollection> {
     return this._db;
+  }
+
+  static get instance(): MongodbConnector {
+    if(this._instance === undefined) {
+      this._instance = new this();
+    }
+    return this._instance;
   }
 }

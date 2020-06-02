@@ -27,6 +27,8 @@ function checkDataFolders(): void {
 }
 
 export class NedbConnector implements DbConnector {
+  private static _instance: NedbConnector;
+
   private _db = new Map<Collection, dbCollection>();
 
   private static COLLECTION_TO_CONFIG_MAPPING = new Map<Collection, NedbCollectionConfig>([
@@ -54,5 +56,12 @@ export class NedbConnector implements DbConnector {
 
   get db(): Map<Collection, dbCollection> {
     return this._db;
+  }
+
+  static get instance(): NedbConnector {
+    if (this._instance === undefined) {
+      this._instance = new this();
+    }
+    return this._instance;
   }
 }
