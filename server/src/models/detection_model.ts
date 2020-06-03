@@ -1,10 +1,11 @@
 import { AnalyticUnitId } from './analytic_units';
 import { Collection } from '../services/data_service/collection';
-import { makeDBQ } from '../services/data_service';
+import { DataService } from '../services/data_service';
 
 import * as _ from 'lodash';
 
-let db = makeDBQ(Collection.DETECTION_SPANS);
+
+const db = DataService.getInstance().makeDBQ(Collection.DETECTION_SPANS);
 
 export enum DetectionStatus {
   READY = 'READY',

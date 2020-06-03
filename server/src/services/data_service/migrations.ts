@@ -8,15 +8,15 @@
 */
 
 import { Collection } from './collection';
-import { makeDBQ } from './index';
+import { DataService } from './index';
 
 import * as _ from 'lodash';
 
 
-const metaDB = makeDBQ(Collection.DB_META);
-const analyticUnitsDB = makeDBQ(Collection.ANALYTIC_UNITS);
-const analyticUnitCachesDB = makeDBQ(Collection.ANALYTIC_UNIT_CACHES);
-const thresholdsDB = makeDBQ(Collection.THRESHOLD);
+const metaDB = DataService.getInstance().makeDBQ(Collection.DB_META);
+const analyticUnitsDB = DataService.getInstance().makeDBQ(Collection.ANALYTIC_UNITS);
+const analyticUnitCachesDB = DataService.getInstance().makeDBQ(Collection.ANALYTIC_UNIT_CACHES);
+const thresholdsDB = DataService.getInstance().makeDBQ(Collection.THRESHOLD);
 
 const DB_META_ID = '000000000000000000000001'; //24 symbols for mongodb
 
@@ -124,7 +124,7 @@ async function integrateThresholdsIntoAnalyticUnits() {
 async function addDetectorTypes() {
   const analyticUnits = await analyticUnitsDB.findMany({ detectorType: { $exists: false } });
 
-  const promises = analyticUnits.map(analyticUnit => 
+  const promises = analyticUnits.map(analyticUnit =>
     analyticUnitsDB.updateOne(analyticUnit._id, { detectorType: getDetectorByType(analyticUnit.type) })
   );
 

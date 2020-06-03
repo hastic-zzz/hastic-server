@@ -1,11 +1,11 @@
 import { AnalyticUnitId, AnalyticUnit } from './analytic_units';
 import { Collection } from '../services/data_service/collection';
-import { makeDBQ } from '../services/data_service';
+import { DataService } from '../services/data_service';
 
 import * as _ from 'lodash';
 
 
-const db = makeDBQ(Collection.ANALYTIC_UNIT_CACHES);
+const db = DataService.getInstance().makeDBQ(Collection.ANALYTIC_UNIT_CACHES);
 // TODO: count milliseconds in index from dataset
 const MILLISECONDS_IN_INDEX = 60000;
 
