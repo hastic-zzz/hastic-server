@@ -1,5 +1,6 @@
 import { AnalyticUnitId, AnalyticUnit } from './analytic_units';
-import { Collection, makeDBQ } from '../services/data_service';
+import { Collection } from '../services/data_service/collection';
+import { makeDBQ } from '../services/data_service';
 
 import * as _ from 'lodash';
 

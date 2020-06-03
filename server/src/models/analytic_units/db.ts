@@ -1,7 +1,8 @@
 import { createAnalyticUnitFromObject } from './utils';
 import { AnalyticUnit } from './analytic_unit_model';
 import { AnalyticUnitId, FindManyQuery } from './types';
-import { Collection, makeDBQ, SortingOrder } from '../../services/data_service';
+import { Collection } from '../../services/data_service/collection';
+import { makeDBQ, SortingOrder } from '../../services/data_service';
 
 import { Metric } from 'grafana-datasource-kit';
 
