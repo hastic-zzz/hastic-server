@@ -2,12 +2,12 @@ import { AnalyticUnitId } from './analytic_units';
 import * as AnalyticUnit from '../models/analytic_units';
 import * as AnalyticUnitCache from '../models/analytic_unit_cache_model';
 import { Collection } from '../services/data_service/collection';
-import { makeDBQ } from '../services/data_service';
+import { DataService } from '../services/data_service';
 
 import * as _ from 'lodash';
 
-let db = makeDBQ(Collection.SEGMENTS);
 
+const db = DataService.getInstance().makeDBQ(Collection.SEGMENTS);
 
 export type SegmentId = string;
 
@@ -117,7 +117,7 @@ export async function findMany(id: AnalyticUnitId, query: FindManyQuery): Promis
 
 export async function findByAnalyticUnitIds(analyticUnitIds: AnalyticUnitId[]): Promise<any[]> {
   const segments = await db.findMany({ analyticUnitId: { $in: analyticUnitIds } });
-  
+
   if(segments === null) {
     return [];
   }

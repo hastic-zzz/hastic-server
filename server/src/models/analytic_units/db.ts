@@ -2,14 +2,14 @@ import { createAnalyticUnitFromObject } from './utils';
 import { AnalyticUnit } from './analytic_unit_model';
 import { AnalyticUnitId, FindManyQuery } from './types';
 import { Collection } from '../../services/data_service/collection';
-import { makeDBQ, SortingOrder } from '../../services/data_service';
+import { DataService, SortingOrder } from '../../services/data_service';
 
 import { Metric } from 'grafana-datasource-kit';
 
 import * as _ from 'lodash';
 
 
-const db = makeDBQ(Collection.ANALYTIC_UNITS);
+const db = DataService.getInstance().makeDBQ(Collection.ANALYTIC_UNITS);
 
 export async function findById(id: AnalyticUnitId): Promise<AnalyticUnit | null> {
   let obj = await db.findOne(id);

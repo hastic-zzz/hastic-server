@@ -28,9 +28,6 @@ function checkDataFolders(): void {
 
 export class NedbConnector implements DbConnector {
   private static _instance: NedbConnector;
-
-  private _db = new Map<Collection, dbCollection>();
-
   private static COLLECTION_TO_CONFIG_MAPPING = new Map<Collection, NedbCollectionConfig>([
     [Collection.ANALYTIC_UNITS, { filename: config.ANALYTIC_UNITS_DATABASE_PATH, timestampData: true }],
     [Collection.ANALYTIC_UNIT_CACHES, { filename: config.ANALYTIC_UNIT_CACHES_DATABASE_PATH }],
@@ -40,7 +37,13 @@ export class NedbConnector implements DbConnector {
     [Collection.DB_META, { filename: config.DB_META_PATH }],
   ]);
 
-  constructor() { }
+  private _db = new Map<Collection, dbCollection>();
+
+  private constructor() {
+    if(NedbConnector._instance !== undefined) {
+      throw new Error(`Can't create 2nd instance of singleton MongodbConnector class`);
+    }
+  }
 
   async init(): Promise<void> {
     checkDataFolders();
