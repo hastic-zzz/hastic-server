@@ -24,22 +24,11 @@ export type DBQ = {
 
 export class DataService {
   private static _instance: DataService;
-
   private _queryWrapper = getDbQueryWrapper();
 
   private constructor() {
     if(DataService._instance !== undefined) {
       throw new Error(`Can't create 2nd instance of singleton class`);
-    }
-  }
-
-  private async getConnector(): Promise<DbConnector> {
-    try {
-      const connector = await DbConnectorFactory.getDbConnector();
-      return connector;
-    } catch(err) {
-      console.log(`data service got an error while connecting to database: ${err}`);
-      throw err;
     }
   }
 
@@ -53,46 +42,56 @@ export class DataService {
   public makeDBQ(collection: Collection): DBQ {
     return {
       findOne: async (query: object | string) => {
-        const dbCollection = await this.getDbCollectionFromCollection(collection);
+        const dbCollection = await this._getDbCollectionFromCollection(collection);
         return this._queryWrapper.dbFindOne(dbCollection, query);
       },
       findMany: async (query: object | string[], sortQuery: object) => {
-        const dbCollection = await this.getDbCollectionFromCollection(collection);
+        const dbCollection = await this._getDbCollectionFromCollection(collection);
         return this._queryWrapper.dbFindMany(dbCollection, query, sortQuery);
       },
       insertOne: async (doc: object) => {
-        const dbCollection = await this.getDbCollectionFromCollection(collection);
+        const dbCollection = await this._getDbCollectionFromCollection(collection);
         return this._queryWrapper.dbInsertOne(dbCollection, doc);
       },
       insertMany: async (docs: object[]) => {
-        const dbCollection = await this.getDbCollectionFromCollection(collection);
+        const dbCollection = await this._getDbCollectionFromCollection(collection);
         return this._queryWrapper.dbInsertMany(dbCollection, docs);
       },
       updateOne: async(query: object | string, updateQuery: object) => {
-        const dbCollection = await this.getDbCollectionFromCollection(collection);
+        const dbCollection = await this._getDbCollectionFromCollection(collection);
         return this._queryWrapper.dbUpdateOne(dbCollection, query, updateQuery);
       },
       updateMany: async (query: object | string[], updateQuery: object) => {
-        const dbCollection = await this.getDbCollectionFromCollection(collection);
+        const dbCollection = await this._getDbCollectionFromCollection(collection);
         return this._queryWrapper.dbUpdateMany(dbCollection, query, updateQuery);
       },
       removeOne: async (query: string | object) => {
-        const dbCollection = await this.getDbCollectionFromCollection(collection);
+        const dbCollection = await this._getDbCollectionFromCollection(collection);
         return this._queryWrapper.dbRemoveOne(dbCollection, query);
       },
       removeMany: async (query: object | string[]) => {
-        const dbCollection = await this.getDbCollectionFromCollection(collection);
+        const dbCollection = await this._getDbCollectionFromCollection(collection);
         return this._queryWrapper.dbRemoveMany(dbCollection, query);
       }
     };
   }
 
-  private async getDbCollectionFromCollection(collection: Collection): Promise<dbCollection> {
-    const connector = await this.getConnector();
+  private async _getConnector(): Promise<DbConnector> {
+    try {
+      const connector = await DbConnectorFactory.getDbConnector();
+      return connector;
+    } catch (err) {
+      console.log(`data service got an error while connecting to database: ${err}`);
+      throw err;
+    }
+  }
+
+  private async _getDbCollectionFromCollection(collection: Collection): Promise<dbCollection> {
+    const connector = await this._getConnector();
     const db = connector.db;
 
     let dbCollection = db.get(collection);
-    if (dbCollection === undefined) {
+    if(dbCollection === undefined) {
       throw new Error('Can`t find collection ' + collection);
     }
     return dbCollection;
