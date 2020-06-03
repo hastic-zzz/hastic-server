@@ -8,9 +8,6 @@ import * as mongodb from 'mongodb';
 
 export class MongodbConnector implements DbConnector {
   private static _instance: MongodbConnector;
-
-  private _db = new Map<Collection, dbCollection>();
-
   private static COLLECTION_TO_NAME_MAPPING = new Map<Collection, string>([
     [Collection.ANALYTIC_UNITS, 'analytic_units'],
     [Collection.ANALYTIC_UNIT_CACHES, 'analytic_unit_caches'],
@@ -20,9 +17,14 @@ export class MongodbConnector implements DbConnector {
     [Collection.DB_META, 'db_meta']
   ]);
 
+  private _db = new Map<Collection, dbCollection>();
   private _client: mongodb.MongoClient;
 
-  private constructor() { }
+  private constructor() {
+    if(MongodbConnector._instance !== undefined) {
+      throw new Error(`Can't create 2nd instance of singleton MongodbConnector class`);
+    }
+  }
 
   async init(): Promise<void> {
     const dbConfig = config.HASTIC_DB_CONFIG;
