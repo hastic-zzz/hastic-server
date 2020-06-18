@@ -22,8 +22,8 @@ Implementation of analytics unit for Hastic.
 See also:
 * [Getting started](https://github.com/hastic/hastic-server/wiki#getting-started)
 * [FAQ](https://github.com/hastic/hastic-server/wiki/FAQ)
-* [Hastic Grafana App](https://github.com/hastic/hastic-grafana-app) -- [Grafana](https://grafana.com/) application for visualisation of configuration
-* [Webhooks](https://github.com/hastic/hastic-server/wiki/Webhooks) -- notifications about events
+* [Hastic Grafana App](https://github.com/hastic/hastic-grafana-app) —- [Grafana](https://grafana.com/) application for visualization of configurations.
+* [Webhooks](https://github.com/hastic/hastic-server/wiki/Webhooks) -- notifications about events.
 * [Installation from source](https://github.com/hastic/hastic-server/wiki/Installation-from-source)
 * [Changelog](https://github.com/hastic/hastic-server/wiki/Changelog)
 * [Roadmap](https://github.com/hastic/hastic-server/wiki/Roadmap)
@@ -37,4 +37,4 @@ Please visit https://hastic.io/downloads
 Commercial support, professional services **or any help** — send us your inquiry at ping@hastic.io
 
 ## About CorpGlory Inc.
-Hastic project developed by [CorpGlory Inc.](https://corpglory.com/), a company which provides high quality software development, data visualization, Grafana and monitoring consulting.
+Hastic is a project developed by [CorpGlory Inc.](https://corpglory.com/), a company that provides high-quality software development, data visualization, Grafana and monitoring consulting.
