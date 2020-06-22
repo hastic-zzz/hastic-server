@@ -34,7 +34,7 @@ services:
     environment:
       # TODO: use any port for server connection
       HASTIC_SERVER_URL: "ws://server:8002"
-      HS_AL_LOGGING_LEVEL: ${HS_AL_LOGGING_LEVEL}
+      HS_AN_LOGGING_LEVEL: ${HS_AN_LOGGING_LEVEL}
     networks:
       - hastic-network
     restart: always

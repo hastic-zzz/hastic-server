@@ -4,5 +4,5 @@
   "HASTIC_WEBHOOK_URL": "http://localhost:8080",
   "GRAFANA_URL": "http://localhost:3000",
   "LEARNING_TIMEOUT": 120,
-  "HS_AL_LOGGING_LEVEL": "DEBUG"
+  "HS_AN_LOGGING_LEVEL": "DEBUG"
 }
