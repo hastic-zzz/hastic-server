@@ -13,7 +13,5 @@ jest.mock('../src/config.ts', () => ({
   AlertTypes: jest.requireActual('../src/config').AlertTypes,
 }));
 
-jest.mock('deasync', () => ({ loopWhile: jest.fn() }));
-
 clearSegmentsDB();
 createTestDB();
