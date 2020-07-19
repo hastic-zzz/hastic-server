@@ -10,7 +10,7 @@
 ================
 [Website](https://hastic.io) |
 [Twitter](https://twitter.com/hasticio) | 
-[IRC](https://webchat.freenode.net/?channels=#hastic)
+`#hastic:matrix.org`
 
 [![Build Status](https://travis-ci.org/hastic/hastic-server.svg?branch=master)](https://travis-ci.org/hastic/hastic-server)
 
