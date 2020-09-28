@@ -9,6 +9,8 @@ import * as fs from 'fs';
 import * as os from 'os';
 import { exit } from 'process'; // it's very bad to use it in config, but life is full of pain
 
+require('dotenv').config();
+
 const EXIT_CODE_MISSING_FIELD = 3;
 const EXIT_CODE_BAD_VALUE_FIELD = 4;
 
@@ -90,7 +92,9 @@ export const HASTIC_INSTANCE_NAME = getConfigFieldAndPrintOrExit('HASTIC_INSTANC
  */
 function getConfigFieldAndPrintOrExit(field: string, defaultVal?: any, allowedVals?: any[]) {
   let val;
-
+  if (field === 'HASTIC_API_KEY') {
+    console.log('HASTIC_API_KEY<-------', process.env[field]);
+  }
   if(process.env[field] !== undefined) {
     val = process.env[field];
   } else if(configExists) {

@@ -18,7 +18,9 @@
     "url": "https://github.com/hastic/hastic-server/issues"
   },
   "homepage": "https://github.com/hastic/hastic-server#readme",
-  "dependencies": {},
+  "dependencies": {
+    "dotenv": "^8.2.0"
+  },
   "devDependencies": {
     "@types/deasync": "^0.1.0",
     "@types/jest": "^23.3.14",
