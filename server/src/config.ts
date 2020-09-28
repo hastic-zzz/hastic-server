@@ -92,9 +92,7 @@ export const HASTIC_INSTANCE_NAME = getConfigFieldAndPrintOrExit('HASTIC_INSTANC
  */
 function getConfigFieldAndPrintOrExit(field: string, defaultVal?: any, allowedVals?: any[]) {
   let val;
-  if (field === 'HASTIC_API_KEY') {
-    console.log('HASTIC_API_KEY<-------', process.env[field]);
-  }
+
   if(process.env[field] !== undefined) {
     val = process.env[field];
   } else if(configExists) {
