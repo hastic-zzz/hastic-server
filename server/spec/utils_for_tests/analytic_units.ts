@@ -2,7 +2,7 @@ import * as AnalyticUnit from '../../src/models/analytic_units';
 import * as AnalyticUnitCache from '../../src/models/analytic_unit_cache_model';
 
 
-import { Metric } from 'grafana-datasource-kit';
+import { Metric } from '@corpglory/tsdb-kit';
 
 import * as _ from 'lodash';
 
