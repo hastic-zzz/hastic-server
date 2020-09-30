@@ -2,7 +2,7 @@ import {
   AnalyticUnitId, AnalyticUnitStatus, DetectorType
 } from './types';
 
-import { Metric } from 'grafana-datasource-kit';
+import { Metric } from '@corpglory/tsdb-kit';
 
 import * as _ from 'lodash';
 

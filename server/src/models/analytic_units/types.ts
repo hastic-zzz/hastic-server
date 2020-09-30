@@ -1,4 +1,4 @@
-import { Metric } from 'grafana-datasource-kit';
+import { Metric } from '@corpglory/tsdb-kit';
 
 
 export type AnalyticUnitId = string;

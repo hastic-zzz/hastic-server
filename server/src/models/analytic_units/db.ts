@@ -4,7 +4,7 @@ import { AnalyticUnitId, FindManyQuery } from './types';
 import { Collection } from '../../services/data_service/collection';
 import { DataService, SortingOrder } from '../../services/data_service';
 
-import { Metric } from 'grafana-datasource-kit';
+import { Metric } from '@corpglory/tsdb-kit';
 
 import * as _ from 'lodash';
 
