@@ -7,7 +7,7 @@ import { availableReporter } from '../utils/reporter';
 import { AlertService } from './alert_service';
 import { getGrafanaUrl } from '../utils/grafana';
 
-import { queryByMetric, GrafanaUnavailable, DatasourceUnavailable } from 'grafana-datasource-kit';
+import { queryByMetric, GrafanaUnavailable, DatasourceUnavailable } from '@corpglory/tsdb-kit';
 
 import * as _ from 'lodash';
 

@@ -1,8 +1,8 @@
-import { queryByMetric } from 'grafana-datasource-kit';
+import { queryByMetric } from '@corpglory/tsdb-kit';
 
-jest.mock('grafana-datasource-kit', () => (
+jest.mock('@corpglory/tsdb-kit', () => (
   {
-    ...(jest.requireActual('grafana-datasource-kit')),
+    ...(jest.requireActual('@corpglory/tsdb-kit')),
     queryByMetric: jest.fn((metric, url, from, to, apiKey) => {
       return { values:[], columns:[] }
     })

@@ -1,7 +1,7 @@
 import { AnalyticUnit } from './analytic_unit_model';
 import { AnalyticUnitId, AnalyticUnitStatus, DetectorType } from './types';
 
-import { Metric } from 'grafana-datasource-kit';
+import { Metric } from '@corpglory/tsdb-kit';
 
 
 export enum Condition {
