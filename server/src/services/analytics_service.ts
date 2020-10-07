@@ -77,11 +77,10 @@ export class AnalyticsService {
   public get lastAlive(): Date { return this._lastAlive; }
 
   private async _init() {
-    const hasticServerPort = +HASTIC_SERVER_URL.split(':').pop() || 80;
-    this._socket_server = new WebSocket.Server({ port: hasticServerPort });
+    this._socket_server = new WebSocket.Server({ host: HASTIC_SERVER_URL.hostname, port: +HASTIC_SERVER_URL.port });
 
     // TODO: move this to config OR use existing http server
-    console.log("Creating websocket server ... %s", HASTIC_SERVER_URL);
+    console.log("Creating websocket server ... %s", HASTIC_SERVER_URL.origin);
 
     this._socket_server.on("connection", this._onNewConnection.bind(this));
     // TODO: handle connection drop
@@ -112,7 +111,7 @@ export class AnalyticsService {
       cwd: config.ANALYTICS_PATH,
       env: {
         ...process.env,
-        HASTIC_SERVER_URL: config.HASTIC_SERVER_URL
+        HASTIC_SERVER_URL: config.HASTIC_SERVER_URL.origin
       }
     };
 
