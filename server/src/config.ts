@@ -168,13 +168,13 @@ function getHasticServerUrl() {
 
   try {
     const url = new URL(urlString);
-    if (url.protocol !== 'ws:') {
-      throw new Error('Invalid protocol');
+    if(url.protocol !== 'ws:') {
+      throw new Error(`Invalid protocol ${url.protocol}`);
     }
 
     return url;
-  } catch {
-    console.log('Invalid HASTIC_SERVER_URL, value must be url, got:', urlString);
+  } catch(e) {
+    console.log(`Invalid HASTIC_SERVER_URL, value must be url, got: ${urlString}`);
     exit(EXIT_CODE_BAD_VALUE_FIELD);
   }
 }
