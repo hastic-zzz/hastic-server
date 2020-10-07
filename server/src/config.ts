@@ -8,6 +8,8 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
 import { exit } from 'process'; // it's very bad to use it in config, but life is full of pain
+import * as dotenv from 'dotenv';
+import { URL } from 'url';
 
 const EXIT_CODE_MISSING_FIELD = 3;
 const EXIT_CODE_BAD_VALUE_FIELD = 4;
@@ -17,6 +19,8 @@ const EXIT_CODE_BAD_VALUE_FIELD = 4;
 declare const GIT_BRANCH: string;
 declare const GIT_COMMITHASH: string;
 declare const GIT_VERSION: string;
+
+dotenv.config();
 
 let configFile = path.join(__dirname, '../../config.json');
 let configExists = fs.existsSync(configFile);
@@ -81,7 +85,7 @@ export const INSIDE_DOCKER = process.env.INSIDE_DOCKER !== undefined;
 export const PRODUCTION_MODE = process.env.NODE_ENV !== 'development';
 
 // TODO: maybe rename it to "HASTIC_SERVER_ANALYTICS_URL"
-export const HASTIC_SERVER_URL = getConfigFieldAndPrintOrExit('HASTIC_SERVER_URL', 'ws://localhost:8002');
+export const HASTIC_SERVER_URL = getHasticServerUrl();
 export const HASTIC_INSTANCE_NAME = getConfigFieldAndPrintOrExit('HASTIC_INSTANCE_NAME', os.hostname());
 
 
@@ -156,5 +160,21 @@ function getTimeZoneOffset(): number {
   } else {
     const serverUtcOffset = moment().utcOffset();
     return serverUtcOffset;
+  }
+}
+
+function getHasticServerUrl() {
+  const urlString = getConfigFieldAndPrintOrExit('HASTIC_SERVER_URL', 'ws://localhost:8002');
+
+  try {
+    const url = new URL(urlString);
+    if(url.protocol !== 'ws:') {
+      throw new Error(`Invalid protocol ${url.protocol}`);
+    }
+
+    return url;
+  } catch(e) {
+    console.log(`Invalid HASTIC_SERVER_URL, value must be url, got: ${urlString}`);
+    exit(EXIT_CODE_BAD_VALUE_FIELD);
   }
 }

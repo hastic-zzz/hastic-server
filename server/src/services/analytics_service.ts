@@ -10,6 +10,7 @@ import * as childProcess from 'child_process'
 import * as fs from 'fs';
 import * as path from 'path';
 import * as _ from 'lodash';
+import { HASTIC_SERVER_URL } from '../config';
 
 
 export class AnalyticsService {
@@ -76,10 +77,10 @@ export class AnalyticsService {
   public get lastAlive(): Date { return this._lastAlive; }
 
   private async _init() {
-    this._socket_server = new WebSocket.Server({ port: 8002 });
+    this._socket_server = new WebSocket.Server({ host: HASTIC_SERVER_URL.hostname, port: +HASTIC_SERVER_URL.port });
 
     // TODO: move this to config OR use existing http server
-    console.log("Creating websocket server ... %s", 'ws://localhost:8002');
+    console.log("Creating websocket server ... %s", HASTIC_SERVER_URL.origin);
 
     this._socket_server.on("connection", this._onNewConnection.bind(this));
     // TODO: handle connection drop
@@ -110,7 +111,7 @@ export class AnalyticsService {
       cwd: config.ANALYTICS_PATH,
       env: {
         ...process.env,
-        HASTIC_SERVER_URL: config.HASTIC_SERVER_URL
+        HASTIC_SERVER_URL: config.HASTIC_SERVER_URL.origin
       }
     };
 
