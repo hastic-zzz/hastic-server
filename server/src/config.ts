@@ -8,8 +8,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
 import { exit } from 'process'; // it's very bad to use it in config, but life is full of pain
-
-require('dotenv').config();
+import * as dotenv from 'dotenv';
 
 const EXIT_CODE_MISSING_FIELD = 3;
 const EXIT_CODE_BAD_VALUE_FIELD = 4;
@@ -19,6 +18,8 @@ const EXIT_CODE_BAD_VALUE_FIELD = 4;
 declare const GIT_BRANCH: string;
 declare const GIT_COMMITHASH: string;
 declare const GIT_VERSION: string;
+
+dotenv.config();
 
 let configFile = path.join(__dirname, '../../config.json');
 let configExists = fs.existsSync(configFile);
