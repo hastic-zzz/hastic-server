@@ -77,7 +77,8 @@ export class AnalyticsService {
   public get lastAlive(): Date { return this._lastAlive; }
 
   private async _init() {
-    this._socket_server = new WebSocket.Server({ host: HASTIC_SERVER_URL });
+    const hasticServerPort = +HASTIC_SERVER_URL.split(':').pop() || 80;
+    this._socket_server = new WebSocket.Server({ port: hasticServerPort });
 
     // TODO: move this to config OR use existing http server
     console.log("Creating websocket server ... %s", HASTIC_SERVER_URL);
