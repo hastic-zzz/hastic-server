@@ -1,5 +1,5 @@
 %define name hastic-server
-%define version %{getenv:HASTIC_RELEASE_VERSION}_node%{getenv:RPM_NODE_VERSION}
+%define version %{getenv:HASTIC_RELEASE_VERSION}
 %define release 0
 %define buildroot /root/rpmbuild/BUILDROOT
 %define builddir /root/rpmbuild/BUILD
@@ -57,6 +57,8 @@ nvm use %{getenv:NODE_VERSION}
 set -x
 npm install
 npm run build
+npm install -g nexe
+nexe -t %{getenv:NODE_VERSION} dist/server.js
 popd
 
 %install
@@ -64,9 +66,6 @@ mkdir -p %{buildroot}/usr/lib/hastic-server/server/dist
 mkdir -p %{buildroot}/usr/lib/hastic-server/.git/refs/heads
 mkdir -p %{buildroot}/usr/lib/hastic-server/analytics/dist/server
 cp -r server/dist %{buildroot}/usr/lib/hastic-server/server/
-cp -r server/package.json %{buildroot}/usr/lib/hastic-server/server/
-cp -r .git/HEAD %{buildroot}/usr/lib/hastic-server/.git
-cp -r .git/refs/heads/ %{buildroot}/usr/lib/hastic-server/.git/refs/
 cp -r analytics/dist/server %{buildroot}/usr/lib/hastic-server/analytics/dist/
 
 %post
@@ -79,7 +78,7 @@ ln -s /etc/hastic-server/config.json /usr/lib/hastic-server/config.json
 mkdir -p /var/hastic-server/
 ln -s /usr/lib/hastic-server/data /var/hastic-server/data
 
-echo 'node /usr/lib/hastic-server/server/dist/server' > /usr/bin/hastic-server
+ln -s /usr/lib/hastic-server/server/dist/server /usr/bin/hastic-server
 chmod +x /usr/bin/hastic-server
 
 
