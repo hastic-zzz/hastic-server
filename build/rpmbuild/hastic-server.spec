@@ -73,7 +73,7 @@ fi
 ln -s /etc/hastic-server/config.json /usr/lib/hastic-server/config.json
 
 mkdir -p /var/hastic-server/
-ln -s /usr/lib/hastic-server/data /var/hastic-server/data
+ln -s /var/hastic-server/data /usr/lib/hastic-server/data 
 
 echo 'node /usr/lib/hastic-server/server/dist/server' > /usr/bin/hastic-server
 chmod +x /usr/bin/hastic-server
