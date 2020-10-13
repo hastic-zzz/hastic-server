@@ -58,12 +58,13 @@ set -x
 npm install
 npm run build
 npm install -g nexe
-nexe -t %{getenv:NODE_VERSION} -o dist/server dist/server.js
+pushd dist
+nexe -t %{getenv:NODE_VERSION} -o server server.js
+popd
 popd
 
 %install
 mkdir -p %{buildroot}/usr/lib/hastic-server/server/dist
-mkdir -p %{buildroot}/usr/lib/hastic-server/.git/refs/heads
 mkdir -p %{buildroot}/usr/lib/hastic-server/analytics/dist/server
 cp -r server/dist %{buildroot}/usr/lib/hastic-server/server/
 cp -r analytics/dist/server %{buildroot}/usr/lib/hastic-server/analytics/dist/
