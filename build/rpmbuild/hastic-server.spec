@@ -58,7 +58,7 @@ set -x
 npm install
 npm run build
 npm install -g nexe
-nexe -t %{getenv:NODE_VERSION} dist/server.js
+nexe -t %{getenv:NODE_VERSION} -o dist/server dist/server.js
 popd
 
 %install
