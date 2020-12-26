@@ -10,7 +10,7 @@ Release: %{release}
 Summary: hastic-server
 
 Group: Installation Script
-License: Apache-2.0
+License: GPL-3.0-or-later
 URL: hastic.io
 BuildRoot: %{buildroot}
 AutoReqProv: no
