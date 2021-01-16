@@ -72,8 +72,11 @@ export async function onDetect(detectionResult: DetectionResult): Promise<Segmen
     AnalyticUnitCache.setData(id, payload.cache),
     AnalyticUnit.setDetectionTime(id, payload.lastDetectionTime),
   ]);
-  // removedIds.length > 0 means that there was at least 1 merge
-  if(insertionResult.removedIds.length > 0) {
+
+  if(insertionResult.removedIds.length === insertionResult.addedIds.length) {
+    if (insertionResult.removedIds.length > 0) {
+      console.log('All found segments are merged with the existing ones');
+    }
     return [];
   }
 
@@ -86,6 +89,7 @@ export async function onDetect(detectionResult: DetectionResult): Promise<Segmen
  */
 async function onPushDetect(detectionResult: DetectionResult): Promise<void> {
   const analyticUnit = await AnalyticUnit.findById(detectionResult.analyticUnitId);
+  console.log('Webhook detection result:');
   const segments = await onDetect(detectionResult);
   if(!_.isEmpty(segments) && analyticUnit.alert) {
     try {
