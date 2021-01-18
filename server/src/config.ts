@@ -64,7 +64,8 @@ export const ORG_ID = getConfigFieldAndPrintOrExit('ORG_ID', 1);
 
 export enum AlertTypes {
   WEBHOOK = 'webhook',
-  ALERTMANAGER = 'alertmanager'
+  ALERTMANAGER = 'alertmanager',
+  SLACK = 'slack'
 };
 export const HASTIC_ALERT_TYPE = getConfigFieldAndPrintOrExit('HASTIC_ALERT_TYPE', AlertTypes.WEBHOOK, _.values(AlertTypes));
 export const HASTIC_ALERT_IMAGE = getConfigFieldAndPrintOrExit('HASTIC_ALERT_IMAGE', false);
@@ -73,6 +74,9 @@ export const HASTIC_WEBHOOK_URL = getConfigFieldAndPrintOrExit('HASTIC_WEBHOOK_U
 export const HASTIC_TIMEZONE_OFFSET = getTimeZoneOffset();
 
 export const HASTIC_ALERTMANAGER_URL = getConfigFieldAndPrintOrExit('HASTIC_ALERTMANAGER_URL', null);
+
+export const HASTIC_SLACK_API_TOKEN = getConfigFieldAndPrintOrExit('HASTIC_SLACK_API_TOKEN', null);
+export const HASTIC_SLACK_NOTIFICATION_CHANNEL = getConfigFieldAndPrintOrExit('HASTIC_SLACK_NOTIFICATION_CHANNEL', null);
 
 export const ANALYTICS_PING_INTERVAL = 500; // ms
 export const PACKAGE_VERSION = getPackageVersion();

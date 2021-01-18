@@ -20,15 +20,16 @@ export class Alert {
   };
 
   protected async send(segment) {
-    const notification = await this.makeNotification(segment);
+    const notification = await this.generateNotification(segment);
     try {
       await Notifier.sendNotification(notification);
+      console.log('notification is successfully sent');
     } catch(error) {
       console.error(`can't send notification ${error}`);
     };
   }
 
-  protected async makeNotification(segment: Segment): Promise<Notification> {
+  protected async generateNotification(segment: Segment): Promise<Notification> {
     const meta = this.makeMeta(segment);
     const text = this.makeMessage(meta);
     let result: Notification = { meta, text };
@@ -44,7 +45,7 @@ export class Alert {
     return result;
   }
 
-  protected async loadImage() {
+  protected async loadImage(): Promise<Buffer> {
     const headers = { Authorization: `Bearer ${HASTIC_API_KEY}` };
     const dashdoardId = this.analyticUnit.panelId.split('/')[0];
     const panelId = this.analyticUnit.panelId.split('/')[1];
@@ -63,7 +64,7 @@ export class Alert {
       headers,
       responseType: 'arraybuffer'
     });
-    return new Buffer(response.data, 'binary').toString('base64');
+    return new Buffer(response.data, 'binary');
   }
 
   protected makeMeta(segment: Segment): AnalyticMeta {
