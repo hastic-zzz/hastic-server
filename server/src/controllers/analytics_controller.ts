@@ -74,7 +74,7 @@ export async function onDetect(detectionResult: DetectionResult): Promise<Segmen
   ]);
 
   if(insertionResult.removedIds.length === insertionResult.addedIds.length) {
-    if (insertionResult.removedIds.length > 0) {
+    if(insertionResult.removedIds.length > 0) {
       console.log('All found segments are merged with the existing ones');
     }
     return [];
