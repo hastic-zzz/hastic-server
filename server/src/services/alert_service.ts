@@ -3,6 +3,7 @@ import * as AnalyticUnit from '../models/analytic_units';
 import { Segment } from '../models/segment_model';
 import { availableReporter } from '../utils/reporter';
 import { toTimeZone } from '../utils/time';
+import { getGrafanaUrl } from '../utils/grafana';
 import { ORG_ID, HASTIC_API_KEY, HASTIC_ALERT_IMAGE } from '../config';
 
 import axios from 'axios';
@@ -51,10 +52,11 @@ export class Alert {
     const headers = { Authorization: `Bearer ${HASTIC_API_KEY}` };
     const dashdoardId = this.analyticUnit.panelId.split('/')[0];
     const panelId = this.analyticUnit.panelId.split('/')[1];
-    const dashboardApiURL = `${this.analyticUnit.grafanaUrl}/api/dashboards/uid/${dashdoardId}`;
+    const grafanaUrl = getGrafanaUrl(this.analyticUnit.grafanaUrl);
+    const dashboardApiURL = `${grafanaUrl}/api/dashboards/uid/${dashdoardId}`;
     const dashboardInfo: any = await axios.get(dashboardApiURL, { headers });
     const dashboardName = _.last(dashboardInfo.data.meta.url.split('/'));
-    const renderUrl = `${this.analyticUnit.grafanaUrl}/render/d-solo/${dashdoardId}/${dashboardName}`;
+    const renderUrl = `${grafanaUrl}/render/d-solo/${dashdoardId}/${dashboardName}`;
     const params = {
       panelId,
       ordId: ORG_ID,
@@ -72,14 +74,15 @@ export class Alert {
   protected makeMeta(segment: Segment): AnalyticMeta {
     const dashdoardId = this.analyticUnit.panelId.split('/')[0];
     const panelId = this.analyticUnit.panelId.split('/')[1];
-    const grafanaUrl = `${this.analyticUnit.grafanaUrl}/d/${dashdoardId}?panelId=${panelId}&edit=true&fullscreen=true?orgId=${ORG_ID}`;
+    const grafanaUrl = getGrafanaUrl(this.analyticUnit.grafanaUrl);
+    const notificationUrl = `${grafanaUrl}/d/${dashdoardId}?panelId=${panelId}&edit=true&fullscreen=true?orgId=${ORG_ID}`;
 
     let alert: AnalyticMeta = {
       type: WebhookType.DETECT,
       analyticUnitType: this.analyticUnit.type,
       analyticUnitName: this.analyticUnit.name,
       analyticUnitId: this.analyticUnit.id,
-      grafanaUrl,
+      grafanaUrl: notificationUrl,
       from: segment.from,
       to: segment.to,
       message: segment.message
