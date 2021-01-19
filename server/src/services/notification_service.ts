@@ -1,6 +1,7 @@
 import * as AnalyticUnit from '../models/analytic_units';
 import * as config from '../config';
 
+import { WebClient } from '@slack/web-api';
 import axios from 'axios';
 import * as _ from 'lodash';
 
@@ -33,7 +34,7 @@ export type AnalyticMeta = {
 export declare type Notification = {
   text: string,
   meta: MetaInfo | AnalyticMeta,
-  image?: any
+  image?: Buffer
 }
 
 // TODO: split notifiers into 3 files
@@ -51,6 +52,10 @@ export function getNotifier(): Notifier {
     return new AlertManagerNotifier();
   }
 
+  if(config.HASTIC_ALERT_TYPE === config.AlertTypes.SLACK) {
+    return new SlackNotifier();
+  }
+
   throw new Error(`${config.HASTIC_ALERT_TYPE} alert type not supported`);
 }
 
@@ -60,9 +65,12 @@ class WebhookNotifier implements Notifier {
       console.log(`HASTIC_WEBHOOK_URL is not set, skip sending notification: ${notification.text}`);
       return;
     }
-  
+
     notification.text += `\nInstance: ${config.HASTIC_INSTANCE_NAME}`;
-    const data = JSON.stringify(notification);
+    const data = JSON.stringify({
+      ...notification,
+      image: notification.image === undefined ? notification.image : notification.image.toString('base64')
+    });
 
     const options = {
       method: 'POST',
@@ -121,7 +129,7 @@ class AlertManagerNotifier implements Notifier {
     }
 
     annotations.message += `\nInstance: ${config.HASTIC_INSTANCE_NAME}`;
-    
+
     let alertData: PostableAlert = {
       labels,
       annotations,
@@ -134,12 +142,51 @@ class AlertManagerNotifier implements Notifier {
       data: JSON.stringify([alertData]),
       headers: { 'Content-Type': 'application/json' }
     };
-  
+
     // first part: send "start" request
     await axios(options);
     // TODO: resolve FAILURE alert only after RECOVERY event
     // second part: send "end" request
     options.data = JSON.stringify([alertData]);
     await axios(options);
+  }
+}
+
+class SlackNotifier implements Notifier {
+  async sendNotification(notification: Notification) {
+    if(config.HASTIC_SLACK_API_TOKEN === null) {
+      console.log(`HASTIC_SLACK_API_TOKEN is not set, skip sending notification: ${notification.text}`);
+      return;
+    }
+
+    if(config.HASTIC_SLACK_NOTIFICATION_CHANNEL === null) {
+      console.log(`HASTIC_SLACK_NOTIFICATION_CHANNEL is not set, skip sending notification: ${notification.text}`);
+      return;
+    }
+
+    notification.text += `\nInstance: ${config.HASTIC_INSTANCE_NAME}`;
+
+    const client = new WebClient();
+
+    let imageUrl = '';
+    if(notification.image !== undefined) {
+      const uploadedFile = await client.files.upload({
+        channels: config.HASTIC_SLACK_NOTIFICATION_CHANNEL,
+        file: notification.image,
+        token: config.HASTIC_SLACK_API_TOKEN
+      });
+
+      if(uploadedFile.file) {
+        // @ts-ignore
+        imageUrl = uploadedFile.file.url_private;
+      }
+    }
+
+    await client.chat.postMessage({
+      text: notification.text,
+      attachments: [{ image_url: imageUrl }],
+      channel: config.HASTIC_SLACK_NOTIFICATION_CHANNEL,
+      token: config.HASTIC_SLACK_API_TOKEN
+    });
   }
 }

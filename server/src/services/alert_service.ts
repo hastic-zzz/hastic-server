@@ -3,6 +3,7 @@ import * as AnalyticUnit from '../models/analytic_units';
 import { Segment } from '../models/segment_model';
 import { availableReporter } from '../utils/reporter';
 import { toTimeZone } from '../utils/time';
+import { getGrafanaUrl } from '../utils/grafana';
 import { ORG_ID, HASTIC_API_KEY, HASTIC_ALERT_IMAGE } from '../config';
 
 import axios from 'axios';
@@ -20,20 +21,23 @@ export class Alert {
   };
 
   protected async send(segment) {
-    const notification = await this.makeNotification(segment);
+    const notification = await this.generateNotification(segment);
     try {
+      console.log('sending a notification...');
       await Notifier.sendNotification(notification);
+      console.log('notification is successfully sent');
     } catch(error) {
       console.error(`can't send notification ${error}`);
     };
   }
 
-  protected async makeNotification(segment: Segment): Promise<Notification> {
+  protected async generateNotification(segment: Segment): Promise<Notification> {
     const meta = this.makeMeta(segment);
     const text = this.makeMessage(meta);
     let result: Notification = { meta, text };
     if(HASTIC_ALERT_IMAGE) {
       try {
+        console.log('Trying to load image for notification');
         const image = await this.loadImage();
         result.image = image;
       } catch(err) {
@@ -44,14 +48,15 @@ export class Alert {
     return result;
   }
 
-  protected async loadImage() {
+  protected async loadImage(): Promise<Buffer> {
     const headers = { Authorization: `Bearer ${HASTIC_API_KEY}` };
     const dashdoardId = this.analyticUnit.panelId.split('/')[0];
     const panelId = this.analyticUnit.panelId.split('/')[1];
-    const dashboardApiURL = `${this.analyticUnit.grafanaUrl}/api/dashboards/uid/${dashdoardId}`;
+    const grafanaUrl = getGrafanaUrl(this.analyticUnit.grafanaUrl);
+    const dashboardApiURL = `${grafanaUrl}/api/dashboards/uid/${dashdoardId}`;
     const dashboardInfo: any = await axios.get(dashboardApiURL, { headers });
     const dashboardName = _.last(dashboardInfo.data.meta.url.split('/'));
-    const renderUrl = `${this.analyticUnit.grafanaUrl}/render/d-solo/${dashdoardId}/${dashboardName}`;
+    const renderUrl = `${grafanaUrl}/render/d-solo/${dashdoardId}/${dashboardName}`;
     const params = {
       panelId,
       ordId: ORG_ID,
@@ -63,20 +68,21 @@ export class Alert {
       headers,
       responseType: 'arraybuffer'
     });
-    return new Buffer(response.data, 'binary').toString('base64');
+    return new Buffer(response.data, 'binary');
   }
 
   protected makeMeta(segment: Segment): AnalyticMeta {
     const dashdoardId = this.analyticUnit.panelId.split('/')[0];
     const panelId = this.analyticUnit.panelId.split('/')[1];
-    const grafanaUrl = `${this.analyticUnit.grafanaUrl}/d/${dashdoardId}?panelId=${panelId}&edit=true&fullscreen=true?orgId=${ORG_ID}`;
+    const grafanaUrl = getGrafanaUrl(this.analyticUnit.grafanaUrl);
+    const notificationUrl = `${grafanaUrl}/d/${dashdoardId}?panelId=${panelId}&edit=true&fullscreen=true?orgId=${ORG_ID}`;
 
     let alert: AnalyticMeta = {
       type: WebhookType.DETECT,
       analyticUnitType: this.analyticUnit.type,
       analyticUnitName: this.analyticUnit.name,
       analyticUnitId: this.analyticUnit.id,
-      grafanaUrl,
+      grafanaUrl: notificationUrl,
       from: segment.from,
       to: segment.to,
       message: segment.message
@@ -214,6 +220,7 @@ export class AlertService {
       to: now
     }
 
+    console.log('sending a notification...');
     Notifier.sendNotification({ text, meta: infoAlert }).catch((err) => {
       console.error(`can't send message ${err.message}`);
     });

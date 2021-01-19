@@ -21,6 +21,7 @@
   "dependencies": {},
   "devDependencies": {
     "@corpglory/tsdb-kit": "^1.1.1",
+    "@slack/web-api": "^6.0.0",
     "@types/jest": "^23.3.14",
     "@types/koa": "^2.0.46",
     "@types/koa-bodyparser": "^4.2.0",
