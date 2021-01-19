@@ -22,6 +22,7 @@ export class Alert {
   protected async send(segment) {
     const notification = await this.generateNotification(segment);
     try {
+      console.log('sending a notification...');
       await Notifier.sendNotification(notification);
       console.log('notification is successfully sent');
     } catch(error) {
@@ -35,6 +36,7 @@ export class Alert {
     let result: Notification = { meta, text };
     if(HASTIC_ALERT_IMAGE) {
       try {
+        console.log('Trying to load image for notification');
         const image = await this.loadImage();
         result.image = image;
       } catch(err) {
@@ -215,6 +217,7 @@ export class AlertService {
       to: now
     }
 
+    console.log('sending a notification...');
     Notifier.sendNotification({ text, meta: infoAlert }).catch((err) => {
       console.error(`can't send message ${err.message}`);
     });

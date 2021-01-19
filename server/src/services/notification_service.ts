@@ -183,6 +183,8 @@ class SlackNotifier implements Notifier {
       }
     }
 
+    console.log('Sending a notification...')
+
     await client.chat.postMessage({
       text: notification.text,
       attachments: [{ image_url: imageUrl }],
