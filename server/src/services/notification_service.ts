@@ -177,7 +177,6 @@ class SlackNotifier implements Notifier {
       });
 
       if(uploadedFile.file) {
-        console.log(uploadedFile.file)
         // @ts-ignore
         imageUrl = uploadedFile.file.url_private;
       }
