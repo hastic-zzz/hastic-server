@@ -156,10 +156,11 @@ export async function findIntersectedSegments(
  */
 export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
   addedIds: SegmentId[],
-  removedIds: SegmentId[]
+  removedIds: SegmentId[],
+  anyNewSegments: boolean
 }> {
   if(_.isEmpty(segments)) {
-    return { addedIds: [], removedIds: [] };
+    return { addedIds: [], removedIds: [], anyNewSegments: false };
   }
   const analyticUnitId: AnalyticUnitId = segments[0].analyticUnitId;
   const unit = await AnalyticUnit.findById(analyticUnitId);
@@ -173,6 +174,7 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
   let segmentIdsToRemove: SegmentId[] = [];
   let segmentsToInsert: Segment[] = [];
 
+  let anyNewSegments = false;
   for(let segment of segments) {
     if(await isIntersectedWithExistingLabeled(segment)) {
       continue;
@@ -229,6 +231,7 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
       segmentIdsToRemove = segmentIdsToRemove.concat(_.compact(intersectedIds));
       segmentsToInsert.push(newSegment);
     } else {
+      anyNewSegments = true;
       segmentsToInsert.push(segment);
     }
   }
@@ -237,7 +240,8 @@ export async function mergeAndInsertSegments(segments: Segment[]): Promise<{
   const addedIds = await db.insertMany(segmentsToInsert.map(s => s.toObject()));
   return {
     addedIds,
-    removedIds: segmentIdsToRemove
+    removedIds: segmentIdsToRemove,
+    anyNewSegments
   };
 }
 
