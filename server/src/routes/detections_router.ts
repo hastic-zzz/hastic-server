@@ -10,7 +10,7 @@ declare type DetectionSpansResponse = {
 }
 
 export async function getDetectionSpans(ctx: Router.IRouterContext) {
-  let id: AnalyticUnitId = ctx.request.query.id;
+  const id = ctx.request.query.id as AnalyticUnitId;
   if(id === undefined || id === '') {
     throw new Error('analyticUnitId (id) is missing');
   }

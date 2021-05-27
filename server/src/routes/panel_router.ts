@@ -5,7 +5,7 @@ import * as Router from 'koa-router';
 
 
 async function exportGrafanaPanelTemplate(ctx: Router.IRouterContext) {
-  let panelId = ctx.request.query.panelId;
+  const panelId = ctx.request.query.panelId as string;
   if(panelId === undefined) {
     throw new Error('Cannot export analytic units with undefined panelId');
   }

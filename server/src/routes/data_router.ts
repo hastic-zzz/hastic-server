@@ -6,24 +6,24 @@ import * as Router from 'koa-router';
 
 async function query(ctx: Router.IRouterContext) {
 
-  let from = ctx.request.query.from;
-  let to = ctx.request.query.to;
-  const analyticUnitId = ctx.request.query.analyticUnitId;
+  let queryFrom = ctx.request.query.from as string;
+  let queryTo = ctx.request.query.to as string;
+  const analyticUnitId = ctx.request.query.analyticUnitId as string;
 
   if(analyticUnitId === undefined) {
     throw new Error(`data router error: request must contain analyticUnitId`);
   }
 
-  if(from === undefined) {
+  if(queryFrom === undefined) {
     throw new Error(`data router error: request must contain 'from'`)
   }
 
-  if(to === undefined) {
+  if(queryTo === undefined) {
     throw new Error(`data router error: request must contain 'to'`)
   }
 
-  from = +from;
-  to = +to;
+  const from = +queryFrom;
+  const to = +queryTo;
 
   if(from === NaN) {
     throw new Error(`from must be not NaN`);

@@ -8,7 +8,7 @@ import * as _ from 'lodash';
 
 
 async function getStatus(ctx: Router.IRouterContext) {
-  let analyticUnitId = ctx.request.query.id;
+  let analyticUnitId = ctx.request.query.id as string;
   if(analyticUnitId === undefined) {
     throw new Error('Cannot get status of undefined id');
   }
@@ -23,12 +23,14 @@ async function getStatus(ctx: Router.IRouterContext) {
   };
 
   if(analyticUnit.status === AnalyticUnit.AnalyticUnitStatus.FAILED) {
-    ctx.response.body.errorMessage = analyticUnit.error;
+    ctx.response.body = {
+      errorMessage: analyticUnit.error
+    };
   }
 }
 
 async function getUnits(ctx: Router.IRouterContext) {
-  const panelId = ctx.request.query.panelId;
+  const panelId = ctx.request.query.panelId as string;
   if(panelId === undefined) {
     throw new Error('Cannot get units of undefined panelId');
   }
@@ -118,7 +120,7 @@ async function updateAlert(ctx: Router.IRouterContext) {
 }
 
 async function deleteUnit(ctx: Router.IRouterContext) {
-  const analyticUnitId = ctx.request.query.id;
+  const analyticUnitId = ctx.request.query.id as string;
   if(analyticUnitId === undefined) {
     throw new Error('Cannot delete undefined id');
   }
