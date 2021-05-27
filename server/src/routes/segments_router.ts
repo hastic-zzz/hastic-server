@@ -7,7 +7,7 @@ import * as Router from 'koa-router';
 
 
 export async function getSegments(ctx: Router.IRouterContext) {
-  let id: AnalyticUnitId = ctx.request.query.id;
+  const id = ctx.request.query.id as string;
   if(id === undefined || id === '') {
     throw new Error('analyticUnitId (id) is missing');
   }

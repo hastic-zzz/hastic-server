@@ -42,7 +42,8 @@ module.exports = {
   stats: {
     warningsFilter: [
       'mongodb-client-encryption',
-      'saslprep',
+      /ws\/lib/,
+      /mongodb\/lib\/core/,
       /require_optional/
     ]
   },

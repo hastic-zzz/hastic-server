@@ -36,7 +36,7 @@ export class NeDbQueryWrapper implements DbQueryWrapper {
     // https://github.com/louischatriot/nedb#updating-documents
     let nedbUpdateQuery = { $set: updateQuery }
     query = wrapIdToQuery(query);
-    return new Promise<any>((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       nd.update(
         query,
         nedbUpdateQuery,

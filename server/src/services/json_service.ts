@@ -22,7 +22,7 @@ async function getJsonData(filename: string): Promise<Object> {
 }
 
 function writeJsonData(filename: string, data: Object) {
-  return new Promise((resolve, reject) => {
+  return new Promise<void>((resolve, reject) => {
     fs.writeFile(filename, JSON.stringify(data), 'utf8', (err) => {
       if(err) {
         console.error(err);
